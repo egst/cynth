@@ -29,6 +29,9 @@ to       (?i:to)
 by       (?i:by)
 type     (?i:type)
 buffer   (?i:buffer)
+fn       (?i:fn)
+true     (?i:true)
+false    (?i:false)
 
 %%
 
@@ -48,8 +51,11 @@ buffer   (?i:buffer)
 {by}       return parser::make_BY();
 */
 {type}     return parser::make_TYPE();
- /*
 {buffer}   return parser::make_BUFFER();
+{fn}       return parser::make_FN();
+ /*
+{true}     return parser::make_TRUE();
+{false}    return parser::make_FALSE();
 */
 
 {name}     return parser::make_NAME(yytext);
@@ -61,43 +67,45 @@ buffer   (?i:buffer)
 
 "("        return parser::make_OPAREN();
 ")"        return parser::make_CPAREN();
- /*
 "["        return parser::make_OBRACK();
 "]"        return parser::make_CBRACK();
-*/
 "{"        return parser::make_OBRACE();
 "}"        return parser::make_CBRACE();
- /*
 "+"        return parser::make_ADD();
 "-"        return parser::make_SUB();
-"*"        return parser::make_MULT();
+"*"        return parser::make_MUL();
 "/"        return parser::make_DIV();
 "%"        return parser::make_MOD();
 "^"        return parser::make_POW();
 "!"        return parser::make_NOT();
 "&&"       return parser::make_AND();
 "||"       return parser::make_NOT();
-*/
-"="        return parser::make_ASGN();
+"="        return parser::make_ASSGN();
  /*
-"+="       return parser::make_ADDASGN();
-"-="       return parser::make_SUBASGN();
-"*="       return parser::make_MULTASGN();
-"/="       return parser::make_DIVASGN();
-"%="       return parser::make_MODASGN();
-"^="       return parser::make_OWASGN();
-"&="       return parser::make_ANDASGN();
-"|="       return parser::make_ORASGN();
+"+="       return parser::make_ADDASSGN();
+"-="       return parser::make_SUBASSGN();
+"*="       return parser::make_MULTASSGN();
+"/="       return parser::make_DIVASSGN();
+"%="       return parser::make_MODASSGN();
+"^="       return parser::make_OWASSGN();
+"&="       return parser::make_ANDASSGN();
+"|="       return parser::make_ORASSGN();
+*/
 "=="       return parser::make_EQ();
 "!="       return parser::make_NE();
 ">="       return parser::make_GE();
 "<="       return parser::make_LE();
 ">"        return parser::make_GT();
 "<"        return parser::make_LT();
-*/
 ","        return parser::make_COMMA();
  /*
+"."        return parser::make_DOT();
+".."       return parser::make_DOT2();
+*/
+"..."      return parser::make_DOT3();
+ /*
 ":"        return parser::make_COLON();
+"::"       return parser::make_COL2();
 */
 ";"        return parser::make_SEMI();
 "$"        return parser::make_AUTO();

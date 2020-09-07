@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <tuple>
@@ -13,6 +14,11 @@
 
 // TODO: Organize
 namespace cynth::util {
+
+    template <typename t>
+    t * alloc (t && x) {
+        return new t{std::forward<t>(x)};
+    }
 
     namespace detail {
         template <typename t>
@@ -40,6 +46,12 @@ namespace cynth::util {
         return std::stoi(x.substr(0, pos )) * pow10<int>(std::stoi(x.substr(pos + 1, x.size())));
     }
 
+    inline std::string parenthesized (std::string const & x) { // TODO: Same problem with multiple definitions.
+        return x[0] == '('
+            ? x
+            : "(" + x + ")";
+    }
+
     template <typename t>
     struct registry {
         std::vector<t> container;
@@ -61,6 +73,11 @@ namespace cynth::util {
 
     template <typename t>
     std::vector<t> & push (t && value, std::vector<t> & target) {
+        target.push_back(std::forward<t>(value));
+        return target;
+    }
+    template <typename t>
+    std::vector<t> push (t && value, std::vector<t> && target) {
         target.push_back(std::forward<t>(value));
         return target;
     }
@@ -111,7 +128,7 @@ namespace cynth::util {
         template <typename, typename...> struct cat;
         template <template <typename...> typename t, typename... ts, typename... us, typename... vs>
         struct cat<t<ts...>, t<us...>, vs...> {
-            using type = cat<t<ts..., us...>, vs...>;
+            using type = typename cat<t<ts..., us...>, vs...>::type;
         };
         template <template <typename...> typename t, typename... ts, typename... us>
         struct cat<t<ts...>, t<us...>> {
@@ -160,6 +177,11 @@ namespace cynth::util {
             reference  operator *  () { return **raw; }
             bool operator == (iterator const & other) const { return raw == other.raw; }
             //bool operator != (iterator const & other) { return !(*this == other); }
+            iterator operator + (std::size_t offset) {
+                iterator copy{*this};
+                copy.raw += offset;
+                return copy;
+            }
         private:
             raw_iterator raw;
         };
@@ -172,6 +194,11 @@ namespace cynth::util {
         iterator end   () const { return target.end(); } // TODO
 
         std::size_t size () const { return target.size(); }
+
+        bool empty () const { return !target.size(); }
+
+        reference operator [] (std::size_t index)       { return *(begin() + index); }
+        reference operator [] (std::size_t index) const { return *(begin() + index); }
 
     private:
         t & target;

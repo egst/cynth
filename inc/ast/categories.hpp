@@ -15,13 +15,15 @@ namespace cynth::ast {
 
         template <typename... types>
         struct category {
-            std::variant<cynth::ast::node::None, types...> content;
+            //std::variant<cynth::ast::node::None, types...> content;
+            std::variant<types...> content;
 
             category ():
-                content{cynth::ast::node::None{}} {}
+                //content{cynth::ast::node::None{}} {}
+                content{} {}
 
             template <typename type> requires
-                std::same_as<std::remove_reference_t<type>, cynth::ast::node::None> ||
+                //std::same_as<std::remove_reference_t<type>, cynth::ast::node::None> ||
                 (std::same_as<std::remove_reference_t<type>, types> || ...)
             category (type && content):
                 content{std::forward<type>(content)} {}
@@ -65,124 +67,75 @@ namespace cynth::ast {
 
     namespace category {
 
-        using expressible_category = base::category <
-            node::Block,
-            node::ExprIf,
-            node::Name,
-            node::Integer,
-            node::Decimal,
-            node::String
-        >;
-        struct Expressible: expressible_category {
-            using expressible_category::expressible_category;
-        };
-
-        using statement_category = util::extend <
-            expressible_category,
-            node::If,
-            node::When,
-            node::Declaration,
-            node::Definition,
-            node::Assignment,
-            node::Alias,
-            node::Return
-        >;
-        struct Statement: statement_category {
-            using statement_category::statement_category;
-        };
-
         using type_category = base::category <
             node::Auto,
             node::TypeName,
             node::FunctionType,
+            node::ArrayType,
+            node::AutoArrayType,
+            node::DeclArrayType,
+            node::BufferType,
+            node::TypeDecl,
             node::TupleType
         >;
         struct Type: type_category {
             using type_category::type_category;
         };
 
-        using node_category = util::cat <
-            statement_category,
-            type_category
+        using expression_category = base::category <
+            node::Name,
+            node::Integer, node::Decimal, node::String,
+            node::Not,  node::Or,  node::And,
+            node::Eq,   node::Ne,  node::Ge,  node::Le,  node::Gt,  node::Lt,
+            node::Add,  node::Sub, node::Mul, node::Div, node::Mod, node::Pow,
+            node::Plus, node::Minus,
+            node::Application,
+            node::Subscript,
+            node::Conversion,
+            node::Block,
+            node::ExprIf,
+            node::Function,
+            //node::Array,
+            node::Tuple
         >;
-        struct Any: node_category {
-            using node_category::node_category;
+        struct Expression: expression_category {
+            using expression_category::expression_category;
         };
 
-        /*using keyword_category = base::category <
-            token::Return,
-            token::If,
-            token::Else,
-            token::When,
-            token::While,
-            token::For,
-            token::In,
-            token::To,
-            token::By,
-            token::Type,
-            token::Buffer
+        using declaration_category = base::category <
+            node::SingleDecl,
+            node::TupleDecl
         >;
-        using symbol_category = base::category <
-            token::Sep,
-            token::OParen,
-            token::CParen,
-            token::OBrack,
-            token::CBrack,
-            token::OBrace,
-            token::CBrace,
-            token::Add,
-            token::Sub,
-            token::Mult,
-            token::Div,
-            token::Mod,
-            token::Pow,
-            token::Asgn,
-            token::AddAsgn,
-            token::SubAsgn,
-            token::MultAsgn,
-            token::DivAsgn,
-            token::ModAsgn,
-            token::PowAsgn,
-            token::Eq,
-            token::Ne,
-            token::Ge,
-            token::Le,
-            token::Gt,
-            token::Lt,
-            token::Comma,
-            token::Colon,
-            token::Auto
+        struct Declaration: declaration_category {
+            using declaration_category::declaration_category;
+        };
+
+        /*using array_elem_category = util::extend <
+            expression_category,
+            node::RangeTo,
+            node::RangeToBy,
+            node::Spread
         >;
-        using token_category = util::extend<
-            util::cat <
-                keyword_category,
-                symbol_category
-            >,
-            token::Name,
-            token::TypeName,
-            token::Integer,
-            token::Decimal,
-            token::String,
-            token::NONE
-        >;
-        struct Token: token_category {
-            using token_category::token_category;
-            Token (int): token_category{token::NONE{}} {}
-            template <typename t>
-            category & operator = (t && x) {
-                base() = std::forward<t>(x);
-                return *this;
-            }
-            operator bool () const {
-                return std::visit(
-                    util::overload {
-                        [] (token::NONE) { return false; },
-                        [] (auto)        { return true;  },
-                    },
-                    content
-                );
-            }
+        struct ArrayElem: array_elem_category {
+            using array_elem_category::array_elem_category;
         };*/
+
+        using statement_category = util::extend <
+            util::cat <
+                expression_category,
+                declaration_category
+            >,
+            node::If,
+            node::When,
+            node::Definition,
+            node::TypeDef,
+            node::FunctionDef,
+            node::Assignment,
+            node::Return
+        >;
+        struct Statement: statement_category {
+            using statement_category::statement_category;
+        };
 
     }
 

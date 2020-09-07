@@ -1,0 +1,38 @@
+(a, (b), (c, d)) == (a, b, (c, d)) != (a, b, c, d)
+
+node::Type { category::TypeAtom *, vector<category::Type *> }
+
+node::Type{TypeName} == node::Type{node::Type{TypeName}}
+
+add (Int x, Int y) Int x + y
+
+Int(x)
+
+Int foo (Int x) x + 1
+
+$ foo = (Int x) x + 1
+
+
+
+
+
+
+() () foo;
+
+() bar () { return };
+
+foo = bar;
+
+Int[Int m] arr;
+
+Int size (type T [Int s] _) s;
+
+size([1, 2, 3]);
+
+[1 to 5];
+[1 to 5 by 2, 10 to 15];
+
+Int(Int)(Int) add (Int x) Int fn (Int y) x + y
+
+Int(Int)(Int) fn (Int x) Int fn (Int y) x + y
+$ fn (Int x) Int fn (Int y) x + y

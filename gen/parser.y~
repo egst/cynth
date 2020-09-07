@@ -1,0 +1,268 @@
+%code requires {
+    #include "ast.hpp"
+    #include "util.hpp"
+
+    #include <string>
+    #include <utility>
+    #include <type_traits>
+
+    /*namespace cynth::ast::interim {
+
+        struct type_list {
+            category::TypeAtom *          first;
+            std::vector<category::Type *> rest;
+        };
+
+        struct expr_list {
+            category::TypeAtom *          first;
+            std::vector<category::Type *> rest;
+        };
+
+        using stmt_list = std::vector<category::Statement *>;
+
+    }*/
+}
+
+%code provides {
+    namespace yy {
+
+        parser::symbol_type yylex ();
+
+    }
+
+    namespace cynth::ast::reg {
+
+        template <typename t>
+        util::registry<t> r;
+
+        template <typename t>
+        t * push (t && x) {
+            return &r<std::remove_reference_t<t>>.push(std::forward<t>(x));
+        }
+
+    }
+}
+
+%require "3.2"
+%language "c++"
+
+%define api.token.constructor
+%define api.value.type variant
+%define api.value.automove
+
+%token <std::string> NAME
+%token <std::string> TYPENAME
+
+%token <std::string> INTEGER
+%token <std::string> DECIMAL
+%token <std::string> STRING
+
+%token IF
+%token ELSE
+%token WHEN
+%token TYPE
+%token AUTO
+%token RETURN
+%token OPAREN
+%token CPAREN
+%token OBRACE
+%token CBRACE
+%token ASGN
+%token SEMI
+%token COMMA
+
+%parse-param { cynth::ast::node::Block & result }
+
+%nterm <int> start
+
+%nterm <cynth::ast::category::Statement> stmt
+%nterm <cynth::ast::category::Statement> pure
+
+%nterm <cynth::ast::category::Type>       type
+%nterm <cynth::ast::category::Expression> expr
+
+%nterm <cynth::ast::node::Integer>      integer
+%nterm <cynth::ast::node::Decimal>      decimal
+%nterm <cynth::ast::node::String>       string
+%nterm <cynth::ast::node::Name>         name
+%nterm <cynth::ast::node::TypeName>     type_name
+%nterm <cynth::ast::node::FunctionType> function_type
+%nterm <cynth::ast::node::Auto>         auto
+%nterm <cynth::ast::node::Declaration>  declaration
+%nterm <cynth::ast::node::Definition>   definition
+%nterm <cynth::ast::node::Assignment>   assignment
+%nterm <cynth::ast::node::Alias>        alias
+%nterm <cynth::ast::node::Return>       return
+%nterm <cynth::ast::node::Block>        block
+%nterm <cynth::ast::node::If>           if
+%nterm <cynth::ast::node::ExprIf>       expr_if
+%nterm <cynth::ast::node::When>         when
+%nterm <cynth::ast::node::TupleType>    tuple_type
+%nterm <cynth::ast::node::TupleType>    paren_type /* explicitly parenthesized type */
+%nterm <cynth::ast::node::Tuple>        tuple
+%nterm <cynth::ast::node::Tuple>        paren_expr /* explicitly parenthesized value */
+
+%nterm <cynth::ast::node::Block>     stmt_list
+%nterm <cynth::ast::node::TupleType> type_list
+%nterm <cynth::ast::node::Tuple>     expr_list
+
+%%
+
+start: /* TODO: simplify to "start: block" and insert {} with the lexer. */
+    %empty         { result = {{}}; } |
+    stmt_list      { result = {$1}; } |
+    stmt_list SEMI { result = {$1}; }
+
+tuple_type:
+    type       { $$ = {{cynth::util::alloc($type)}}; } /*|
+    paren_type { $$ = $1; }*/
+
+type:
+    auto          { $$ = {$1}; } |
+    type_name     { $$ = {$1}; } |
+    function_type { $$ = {$1}; } |
+
+stmt:
+    expr { $$ = {$1}; } |
+    pure { $$ = $1;   }
+
+pure:
+    declaration { $$ = {$1}; } |
+    definition  { $$ = {$1}; } |
+    assignment  { $$ = {$1}; } |
+    alias       { $$ = {$1}; } |
+    return      { $$ = {$1}; } |
+    if          { $$ = {$1}; } |
+    when        { $$ = {$1}; }
+
+tuple:
+    expr       { $$ = {{cynth::util::alloc{$expr}}}; } /*|
+    paren_expr { $$ = $1; }*/
+
+expr:
+    name    { $$ = {$1}; } |
+    integer { $$ = {$1}; } |
+    decimal { $$ = {$1}; } |
+    string  { $$ = {$1}; } |
+    block   { $$ = {$1}; } /*|
+    expr_if { $$ = {$1}; }*/
+
+integer: INTEGER {
+    $$ = cynth::ast::node::Integer{cynth::util::stoi($1)};
+}
+decimal: DECIMAL {
+    $$ = cynth::ast::node::Decimal{std::stof($1)};
+}
+string: STRING {
+    $$ = cynth::ast::node::String{cynth::util::trim($1)};
+}
+name: NAME {
+    $$ = cynth::ast::node::Name{$1};
+}
+
+auto: AUTO {
+    $$ = cynth::ast::node::Auto{};
+}
+type_name: TYPENAME {
+    $$ = cynth::ast::node::TypeName{$1};
+}
+function_type: tuple_type[output] paren_type[input] {
+    $$ = cynth::ast::node::FunctionType{cynth::util::alloc($output), cynth::util::alloc($input)};
+}
+
+declaration: tuple_type[type] name {
+    $$ = cynth::ast::node::Declaration{cynth::util::alloc($name), cynth::util::alloc($type)};
+}
+definition: tuple_type[type] name ASGN tuple[value] {
+    $$ = cynth::ast::node::Definition{cynth::util::alloc($name), cynth::util::alloc($type), cynth::util::alloc($value)};
+}
+assignment: name[target] ASGN tuple[source] {
+    $$ = cynth::ast::node::Assignment{cynth::util::alloc($target), cynth::util::alloc($source)};
+}
+alias: TYPE type_name[target] ASGN tuple_type[source] {
+    $$ = cynth::ast::node::Alias{cynth::util::alloc($target), cynth::util::alloc($source)};
+}
+return: RETURN tuple[value] {
+    $$ = cynth::ast::node::Return{cynth::util::alloc($value)};
+}
+if: IF OPAREN tuple[cond] CPAREN pure[pos] ELSE pure[neg] {
+    $$ = cynth::ast::node::If{cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)};
+}
+expr_if: IF OPAREN tuple[cond] CPAREN tuple[pos] ELSE tuple[neg] {
+    $$ = cynth::ast::node::ExprIf{cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)};
+}
+when: WHEN OPAREN tuple[cond] CPAREN stmt[pos] {
+    $$ = cynth::ast::node::When{cynth::util::alloc($cond), cynth::util::alloc($pos)};
+}
+
+block:
+    OBRACE                CBRACE { $$ = {{}};       } |
+    OBRACE stmt_list      CBRACE { $$ = $stmt_list; } |
+    OBRACE stmt_list SEMI CBRACE { $$ = $stmt_list; }
+stmt_list:
+    stmt[first] {
+        $$ = {{cynth::util::alloc($first)}};
+    } |
+    stmt_list[rest] SEMI stmt[next] {
+        auto rest = $rest;
+        cynth::ast::get_raw<cynth::ast::node::Block::statements>(rest).push_back(cynth::util::alloc($next));
+        $$ = std::move(rest);
+    }
+
+    /*OPAREN                 CPAREN { $$ = {nullptr, {}}; } |*/
+paren_type:
+    OPAREN type_list       CPAREN { $$ = $type_list; } |
+    OPAREN type_list COMMA CPAREN { $$ = $type_list; }
+type_list:
+    tuple_type[first] {
+        auto first = $first;
+        auto const & types = get<cynth::ast::node::TupleType::types>(first);
+        $$ = {cynth::util::alloc(
+            types.size() == 1
+                ? std::move(types[0])
+                : cynth::ast::category::Type{std::move(first)}
+        )}
+    } |
+    type_list[rest] COMMA tuple_type[next] {
+        auto rest = $rest;
+        auto next = $next;
+        auto const & types = get<cynth::ast::node::TupleType::types>(next);
+        cynth::ast::get_raw<cynth::ast::node::TupleType::types>(rest).push_back(cynth::util::alloc (
+            types.size() == 1
+                ? std::move(types[0])
+                : cynth::ast::category::Type{std::move(next)}
+        ));
+        $$ = std::move(rest);
+    }
+
+    /*OPAREN                 CPAREN { $$ = {nullptr, {}}; } |*/
+paren_expr:
+    OPAREN expr_list       CPAREN { $$ = $expr_list; } |
+    OPAREN expr_list COMMA CPAREN { $$ = $expr_list; }
+expr_list:
+    tuple[first] {
+        auto first = $first;
+        auto const & values = get<cynth::ast::node::Tuple::values>(first);
+        $$ = {cynth::util::alloc(
+            values.size() == 1
+                ? std::move(values[0])
+                : cynth::ast::category::Expression{std::move(first)}
+        )}
+    } |
+    expr_list[rest] COMMA tuple[next] {
+        auto rest = $rest;
+        auto next = $next;
+        auto const & values = get<cynth::ast::node::Tuple::values>(next);
+        cynth::ast::get_raw<cynth::ast::node::Tuple::values>(rest).push_back(cynth::util::alloc (
+            values.size() == 1
+                ? std::move(values[0])
+                : cynth::ast::category::Expression{std::move(next)}
+        ));
+        $$ = std::move(rest);
+    }
+
+%%
+
+void yy::parser::error (std::string const & msg) {
+    std::cerr << msg << '\n';
+}

@@ -51,18 +51,10 @@
     #include "util.hpp"
 
     #include <string>
+    #include <vector>
     #include <utility>
-    #include <type_traits>
 
-    using namespace cynth;
-    using namespace cynth::ast;
-
-    template <typename t>
-    t * alloc (t && x) {
-        return new t{std::forward<t>(x)};
-    }
-
-#line 66 "src/parser.hpp"
+#line 58 "src/parser.hpp"
 
 
 # include <cstdlib> // std::abort
@@ -196,7 +188,7 @@
 #endif
 
 namespace yy {
-#line 200 "src/parser.hpp"
+#line 192 "src/parser.hpp"
 
 
 
@@ -388,83 +380,186 @@ namespace yy {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
-      // expressible
-      char dummy1[sizeof (cynth::ast::category::Expressible)];
+      // declaration
+      // paren_decl
+      // void_decl
+      char dummy1[sizeof (cynth::ast::category::Declaration)];
+
+      // expression
+      // expr_or
+      // expr_and
+      // expr_eq
+      // expr_ord
+      // expr_add
+      // expr_mul
+      // expr_pow
+      // expr_pre
+      // expr_post
+      // expr_atom
+      // expr_right
+      // paren_expr
+      // void
+      char dummy2[sizeof (cynth::ast::category::Expression)];
 
       // statement
       // pure
-      char dummy2[sizeof (cynth::ast::category::Statement)];
+      char dummy3[sizeof (cynth::ast::category::Statement)];
 
       // type
-      char dummy3[sizeof (cynth::ast::category::Type)];
+      // paren_type
+      // void_type
+      char dummy4[sizeof (cynth::ast::category::Type)];
 
-      // alias
-      char dummy4[sizeof (cynth::ast::node::Alias)];
+      // add
+      char dummy5[sizeof (cynth::ast::node::Add)];
+
+      // and
+      char dummy6[sizeof (cynth::ast::node::And)];
+
+      // application
+      char dummy7[sizeof (cynth::ast::node::Application)];
+
+      // array_type
+      char dummy8[sizeof (cynth::ast::node::ArrayType)];
 
       // assignment
-      char dummy5[sizeof (cynth::ast::node::Assignment)];
+      char dummy9[sizeof (cynth::ast::node::Assignment)];
 
       // auto
-      char dummy6[sizeof (cynth::ast::node::Auto)];
+      char dummy10[sizeof (cynth::ast::node::Auto)];
+
+      // auto_array_type
+      char dummy11[sizeof (cynth::ast::node::AutoArrayType)];
 
       // block
-      char dummy7[sizeof (cynth::ast::node::Block)];
+      char dummy12[sizeof (cynth::ast::node::Block)];
+
+      // buffer_type
+      char dummy13[sizeof (cynth::ast::node::BufferType)];
+
+      // conversion
+      char dummy14[sizeof (cynth::ast::node::Conversion)];
 
       // decimal
-      char dummy8[sizeof (cynth::ast::node::Decimal)];
+      char dummy15[sizeof (cynth::ast::node::Decimal)];
 
-      // declaration
-      char dummy9[sizeof (cynth::ast::node::Declaration)];
+      // decl_array_type
+      char dummy16[sizeof (cynth::ast::node::DeclArrayType)];
 
       // definition
-      char dummy10[sizeof (cynth::ast::node::Definition)];
+      char dummy17[sizeof (cynth::ast::node::Definition)];
+
+      // div
+      char dummy18[sizeof (cynth::ast::node::Div)];
+
+      // eq
+      char dummy19[sizeof (cynth::ast::node::Eq)];
 
       // expr_if
-      char dummy11[sizeof (cynth::ast::node::ExprIf)];
+      char dummy20[sizeof (cynth::ast::node::ExprIf)];
+
+      // function
+      char dummy21[sizeof (cynth::ast::node::Function)];
+
+      // function_def
+      char dummy22[sizeof (cynth::ast::node::FunctionDef)];
 
       // function_type
-      char dummy12[sizeof (cynth::ast::node::FunctionType)];
+      char dummy23[sizeof (cynth::ast::node::FunctionType)];
+
+      // ge
+      char dummy24[sizeof (cynth::ast::node::Ge)];
+
+      // gt
+      char dummy25[sizeof (cynth::ast::node::Gt)];
 
       // if
-      char dummy13[sizeof (cynth::ast::node::If)];
+      char dummy26[sizeof (cynth::ast::node::If)];
 
       // integer
-      char dummy14[sizeof (cynth::ast::node::Integer)];
+      char dummy27[sizeof (cynth::ast::node::Integer)];
+
+      // le
+      char dummy28[sizeof (cynth::ast::node::Le)];
+
+      // lt
+      char dummy29[sizeof (cynth::ast::node::Lt)];
+
+      // minus
+      char dummy30[sizeof (cynth::ast::node::Minus)];
+
+      // mod
+      char dummy31[sizeof (cynth::ast::node::Mod)];
+
+      // mul
+      char dummy32[sizeof (cynth::ast::node::Mul)];
 
       // name
-      char dummy15[sizeof (cynth::ast::node::Name)];
+      char dummy33[sizeof (cynth::ast::node::Name)];
+
+      // ne
+      char dummy34[sizeof (cynth::ast::node::Ne)];
+
+      // not
+      char dummy35[sizeof (cynth::ast::node::Not)];
+
+      // or
+      char dummy36[sizeof (cynth::ast::node::Or)];
+
+      // plus
+      char dummy37[sizeof (cynth::ast::node::Plus)];
+
+      // pow
+      char dummy38[sizeof (cynth::ast::node::Pow)];
 
       // return
-      char dummy16[sizeof (cynth::ast::node::Return)];
+      char dummy39[sizeof (cynth::ast::node::Return)];
+
+      // single_decl
+      char dummy40[sizeof (cynth::ast::node::SingleDecl)];
 
       // string
-      char dummy17[sizeof (cynth::ast::node::String)];
+      char dummy41[sizeof (cynth::ast::node::String)];
 
-      // tuple_type
-      char dummy18[sizeof (cynth::ast::node::TupleType)];
+      // sub
+      char dummy42[sizeof (cynth::ast::node::Sub)];
+
+      // subscript
+      char dummy43[sizeof (cynth::ast::node::Subscript)];
+
+      // type_decl
+      char dummy44[sizeof (cynth::ast::node::TypeDecl)];
+
+      // type_def
+      char dummy45[sizeof (cynth::ast::node::TypeDef)];
 
       // type_name
-      char dummy19[sizeof (cynth::ast::node::TypeName)];
+      char dummy46[sizeof (cynth::ast::node::TypeName)];
 
       // when
-      char dummy20[sizeof (cynth::ast::node::When)];
+      char dummy47[sizeof (cynth::ast::node::When)];
 
       // start
-      char dummy21[sizeof (int)];
+      char dummy48[sizeof (int)];
 
       // NAME
       // TYPENAME
       // INTEGER
       // DECIMAL
       // STRING
-      char dummy22[sizeof (std::string)];
+      char dummy49[sizeof (std::string)];
 
-      // block_list
-      char dummy23[sizeof (std::vector<cynth::ast::category::Statement *>)];
+      // decl_list
+      char dummy50[sizeof (std::vector<cynth::ast::category::Declaration *>)];
 
-      // function_type_list
-      // tuple_type_list
-      char dummy24[sizeof (std::vector<cynth::ast::category::Type      *>)];
+      // expr_list
+      char dummy51[sizeof (std::vector<cynth::ast::category::Expression  *>)];
+
+      // stmt_list
+      char dummy52[sizeof (std::vector<cynth::ast::category::Statement   *>)];
+
+      // type_list
+      char dummy53[sizeof (std::vector<cynth::ast::category::Type        *>)];
     };
 
     /// The size of the largest semantic type.
@@ -516,15 +611,37 @@ namespace yy {
     ELSE = 264,                    // ELSE
     WHEN = 265,                    // WHEN
     TYPE = 266,                    // TYPE
-    AUTO = 267,                    // AUTO
-    RETURN = 268,                  // RETURN
-    OPAREN = 269,                  // OPAREN
-    CPAREN = 270,                  // CPAREN
-    OBRACE = 271,                  // OBRACE
-    CBRACE = 272,                  // CBRACE
-    ASGN = 273,                    // ASGN
-    SEMI = 274,                    // SEMI
-    COMMA = 275                    // COMMA
+    FN = 267,                      // FN
+    BUFFER = 268,                  // BUFFER
+    AUTO = 269,                    // AUTO
+    ASSGN = 270,                   // ASSGN
+    SEMI = 271,                    // SEMI
+    COMMA = 272,                   // COMMA
+    TO = 273,                      // TO
+    BY = 274,                      // BY
+    DOT3 = 275,                    // DOT3
+    RETURN = 276,                  // RETURN
+    OPAREN = 277,                  // OPAREN
+    CPAREN = 278,                  // CPAREN
+    OBRACE = 279,                  // OBRACE
+    CBRACE = 280,                  // CBRACE
+    OBRACK = 281,                  // OBRACK
+    CBRACK = 282,                  // CBRACK
+    ADD = 283,                     // ADD
+    SUB = 284,                     // SUB
+    MUL = 285,                     // MUL
+    DIV = 286,                     // DIV
+    MOD = 287,                     // MOD
+    POW = 288,                     // POW
+    NOT = 289,                     // NOT
+    AND = 290,                     // AND
+    OR = 291,                      // OR
+    EQ = 292,                      // EQ
+    NE = 293,                      // NE
+    GE = 294,                      // GE
+    LE = 295,                      // LE
+    GT = 296,                      // GT
+    LT = 297                       // LT
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -541,7 +658,7 @@ namespace yy {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 21, ///< Number of tokens.
+        YYNTOKENS = 43, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -555,41 +672,108 @@ namespace yy {
         S_ELSE = 9,                              // ELSE
         S_WHEN = 10,                             // WHEN
         S_TYPE = 11,                             // TYPE
-        S_AUTO = 12,                             // AUTO
-        S_RETURN = 13,                           // RETURN
-        S_OPAREN = 14,                           // OPAREN
-        S_CPAREN = 15,                           // CPAREN
-        S_OBRACE = 16,                           // OBRACE
-        S_CBRACE = 17,                           // CBRACE
-        S_ASGN = 18,                             // ASGN
-        S_SEMI = 19,                             // SEMI
-        S_COMMA = 20,                            // COMMA
-        S_YYACCEPT = 21,                         // $accept
-        S_start = 22,                            // start
-        S_type = 23,                             // type
-        S_expressible = 24,                      // expressible
-        S_statement = 25,                        // statement
-        S_pure = 26,                             // pure
-        S_integer = 27,                          // integer
-        S_decimal = 28,                          // decimal
-        S_string = 29,                           // string
-        S_name = 30,                             // name
-        S_type_name = 31,                        // type_name
-        S_function_type = 32,                    // function_type
-        S_tuple_type = 33,                       // tuple_type
-        S_auto = 34,                             // auto
-        S_declaration = 35,                      // declaration
-        S_definition = 36,                       // definition
-        S_assignment = 37,                       // assignment
-        S_alias = 38,                            // alias
-        S_return = 39,                           // return
-        S_block = 40,                            // block
-        S_if = 41,                               // if
-        S_expr_if = 42,                          // expr_if
-        S_when = 43,                             // when
-        S_block_list = 44,                       // block_list
-        S_function_type_list = 45,               // function_type_list
-        S_tuple_type_list = 46                   // tuple_type_list
+        S_FN = 12,                               // FN
+        S_BUFFER = 13,                           // BUFFER
+        S_AUTO = 14,                             // AUTO
+        S_ASSGN = 15,                            // ASSGN
+        S_SEMI = 16,                             // SEMI
+        S_COMMA = 17,                            // COMMA
+        S_TO = 18,                               // TO
+        S_BY = 19,                               // BY
+        S_DOT3 = 20,                             // DOT3
+        S_RETURN = 21,                           // RETURN
+        S_OPAREN = 22,                           // OPAREN
+        S_CPAREN = 23,                           // CPAREN
+        S_OBRACE = 24,                           // OBRACE
+        S_CBRACE = 25,                           // CBRACE
+        S_OBRACK = 26,                           // OBRACK
+        S_CBRACK = 27,                           // CBRACK
+        S_ADD = 28,                              // ADD
+        S_SUB = 29,                              // SUB
+        S_MUL = 30,                              // MUL
+        S_DIV = 31,                              // DIV
+        S_MOD = 32,                              // MOD
+        S_POW = 33,                              // POW
+        S_NOT = 34,                              // NOT
+        S_AND = 35,                              // AND
+        S_OR = 36,                               // OR
+        S_EQ = 37,                               // EQ
+        S_NE = 38,                               // NE
+        S_GE = 39,                               // GE
+        S_LE = 40,                               // LE
+        S_GT = 41,                               // GT
+        S_LT = 42,                               // LT
+        S_YYACCEPT = 43,                         // $accept
+        S_start = 44,                            // start
+        S_type = 45,                             // type
+        S_statement = 46,                        // statement
+        S_pure = 47,                             // pure
+        S_expression = 48,                       // expression
+        S_expr_or = 49,                          // expr_or
+        S_expr_and = 50,                         // expr_and
+        S_expr_eq = 51,                          // expr_eq
+        S_expr_ord = 52,                         // expr_ord
+        S_expr_add = 53,                         // expr_add
+        S_expr_mul = 54,                         // expr_mul
+        S_expr_pow = 55,                         // expr_pow
+        S_expr_pre = 56,                         // expr_pre
+        S_expr_post = 57,                        // expr_post
+        S_expr_atom = 58,                        // expr_atom
+        S_expr_right = 59,                       // expr_right
+        S_declaration = 60,                      // declaration
+        S_or = 61,                               // or
+        S_and = 62,                              // and
+        S_eq = 63,                               // eq
+        S_ne = 64,                               // ne
+        S_ge = 65,                               // ge
+        S_le = 66,                               // le
+        S_gt = 67,                               // gt
+        S_lt = 68,                               // lt
+        S_add = 69,                              // add
+        S_sub = 70,                              // sub
+        S_mul = 71,                              // mul
+        S_div = 72,                              // div
+        S_mod = 73,                              // mod
+        S_pow = 74,                              // pow
+        S_plus = 75,                             // plus
+        S_minus = 76,                            // minus
+        S_not = 77,                              // not
+        S_application = 78,                      // application
+        S_conversion = 79,                       // conversion
+        S_subscript = 80,                        // subscript
+        S_auto = 81,                             // auto
+        S_function_type = 82,                    // function_type
+        S_array_type = 83,                       // array_type
+        S_decl_array_type = 84,                  // decl_array_type
+        S_auto_array_type = 85,                  // auto_array_type
+        S_buffer_type = 86,                      // buffer_type
+        S_type_decl = 87,                        // type_decl
+        S_single_decl = 88,                      // single_decl
+        S_definition = 89,                       // definition
+        S_assignment = 90,                       // assignment
+        S_type_def = 91,                         // type_def
+        S_return = 92,                           // return
+        S_if = 93,                               // if
+        S_when = 94,                             // when
+        S_function_def = 95,                     // function_def
+        S_expr_if = 96,                          // expr_if
+        S_function = 97,                         // function
+        S_name = 98,                             // name
+        S_type_name = 99,                        // type_name
+        S_integer = 100,                         // integer
+        S_decimal = 101,                         // decimal
+        S_string = 102,                          // string
+        S_block = 103,                           // block
+        S_paren_expr = 104,                      // paren_expr
+        S_paren_decl = 105,                      // paren_decl
+        S_paren_type = 106,                      // paren_type
+        S_void = 107,                            // void
+        S_void_type = 108,                       // void_type
+        S_void_decl = 109,                       // void_decl
+        S_expr_list = 110,                       // expr_list
+        S_stmt_list = 111,                       // stmt_list
+        S_decl_list = 112,                       // decl_list
+        S_type_list = 113                        // type_list
       };
     };
 
@@ -624,8 +808,27 @@ namespace yy {
       {
         switch (this->kind ())
     {
-      case symbol_kind::S_expressible: // expressible
-        value.move< cynth::ast::category::Expressible > (std::move (that.value));
+      case symbol_kind::S_declaration: // declaration
+      case symbol_kind::S_paren_decl: // paren_decl
+      case symbol_kind::S_void_decl: // void_decl
+        value.move< cynth::ast::category::Declaration > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_expression: // expression
+      case symbol_kind::S_expr_or: // expr_or
+      case symbol_kind::S_expr_and: // expr_and
+      case symbol_kind::S_expr_eq: // expr_eq
+      case symbol_kind::S_expr_ord: // expr_ord
+      case symbol_kind::S_expr_add: // expr_add
+      case symbol_kind::S_expr_mul: // expr_mul
+      case symbol_kind::S_expr_pow: // expr_pow
+      case symbol_kind::S_expr_pre: // expr_pre
+      case symbol_kind::S_expr_post: // expr_post
+      case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_right: // expr_right
+      case symbol_kind::S_paren_expr: // paren_expr
+      case symbol_kind::S_void: // void
+        value.move< cynth::ast::category::Expression > (std::move (that.value));
         break;
 
       case symbol_kind::S_statement: // statement
@@ -634,11 +837,25 @@ namespace yy {
         break;
 
       case symbol_kind::S_type: // type
+      case symbol_kind::S_paren_type: // paren_type
+      case symbol_kind::S_void_type: // void_type
         value.move< cynth::ast::category::Type > (std::move (that.value));
         break;
 
-      case symbol_kind::S_alias: // alias
-        value.move< cynth::ast::node::Alias > (std::move (that.value));
+      case symbol_kind::S_add: // add
+        value.move< cynth::ast::node::Add > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_and: // and
+        value.move< cynth::ast::node::And > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_application: // application
+        value.move< cynth::ast::node::Application > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_array_type: // array_type
+        value.move< cynth::ast::node::ArrayType > (std::move (that.value));
         break;
 
       case symbol_kind::S_assignment: // assignment
@@ -649,28 +866,64 @@ namespace yy {
         value.move< cynth::ast::node::Auto > (std::move (that.value));
         break;
 
+      case symbol_kind::S_auto_array_type: // auto_array_type
+        value.move< cynth::ast::node::AutoArrayType > (std::move (that.value));
+        break;
+
       case symbol_kind::S_block: // block
         value.move< cynth::ast::node::Block > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_buffer_type: // buffer_type
+        value.move< cynth::ast::node::BufferType > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_conversion: // conversion
+        value.move< cynth::ast::node::Conversion > (std::move (that.value));
         break;
 
       case symbol_kind::S_decimal: // decimal
         value.move< cynth::ast::node::Decimal > (std::move (that.value));
         break;
 
-      case symbol_kind::S_declaration: // declaration
-        value.move< cynth::ast::node::Declaration > (std::move (that.value));
+      case symbol_kind::S_decl_array_type: // decl_array_type
+        value.move< cynth::ast::node::DeclArrayType > (std::move (that.value));
         break;
 
       case symbol_kind::S_definition: // definition
         value.move< cynth::ast::node::Definition > (std::move (that.value));
         break;
 
+      case symbol_kind::S_div: // div
+        value.move< cynth::ast::node::Div > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_eq: // eq
+        value.move< cynth::ast::node::Eq > (std::move (that.value));
+        break;
+
       case symbol_kind::S_expr_if: // expr_if
         value.move< cynth::ast::node::ExprIf > (std::move (that.value));
         break;
 
+      case symbol_kind::S_function: // function
+        value.move< cynth::ast::node::Function > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_function_def: // function_def
+        value.move< cynth::ast::node::FunctionDef > (std::move (that.value));
+        break;
+
       case symbol_kind::S_function_type: // function_type
         value.move< cynth::ast::node::FunctionType > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_ge: // ge
+        value.move< cynth::ast::node::Ge > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_gt: // gt
+        value.move< cynth::ast::node::Gt > (std::move (that.value));
         break;
 
       case symbol_kind::S_if: // if
@@ -681,20 +934,76 @@ namespace yy {
         value.move< cynth::ast::node::Integer > (std::move (that.value));
         break;
 
+      case symbol_kind::S_le: // le
+        value.move< cynth::ast::node::Le > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_lt: // lt
+        value.move< cynth::ast::node::Lt > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_minus: // minus
+        value.move< cynth::ast::node::Minus > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_mod: // mod
+        value.move< cynth::ast::node::Mod > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_mul: // mul
+        value.move< cynth::ast::node::Mul > (std::move (that.value));
+        break;
+
       case symbol_kind::S_name: // name
         value.move< cynth::ast::node::Name > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_ne: // ne
+        value.move< cynth::ast::node::Ne > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_not: // not
+        value.move< cynth::ast::node::Not > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_or: // or
+        value.move< cynth::ast::node::Or > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_plus: // plus
+        value.move< cynth::ast::node::Plus > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_pow: // pow
+        value.move< cynth::ast::node::Pow > (std::move (that.value));
         break;
 
       case symbol_kind::S_return: // return
         value.move< cynth::ast::node::Return > (std::move (that.value));
         break;
 
+      case symbol_kind::S_single_decl: // single_decl
+        value.move< cynth::ast::node::SingleDecl > (std::move (that.value));
+        break;
+
       case symbol_kind::S_string: // string
         value.move< cynth::ast::node::String > (std::move (that.value));
         break;
 
-      case symbol_kind::S_tuple_type: // tuple_type
-        value.move< cynth::ast::node::TupleType > (std::move (that.value));
+      case symbol_kind::S_sub: // sub
+        value.move< cynth::ast::node::Sub > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_subscript: // subscript
+        value.move< cynth::ast::node::Subscript > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_type_decl: // type_decl
+        value.move< cynth::ast::node::TypeDecl > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_type_def: // type_def
+        value.move< cynth::ast::node::TypeDef > (std::move (that.value));
         break;
 
       case symbol_kind::S_type_name: // type_name
@@ -717,13 +1026,20 @@ namespace yy {
         value.move< std::string > (std::move (that.value));
         break;
 
-      case symbol_kind::S_block_list: // block_list
-        value.move< std::vector<cynth::ast::category::Statement *> > (std::move (that.value));
+      case symbol_kind::S_decl_list: // decl_list
+        value.move< std::vector<cynth::ast::category::Declaration *> > (std::move (that.value));
         break;
 
-      case symbol_kind::S_function_type_list: // function_type_list
-      case symbol_kind::S_tuple_type_list: // tuple_type_list
-        value.move< std::vector<cynth::ast::category::Type      *> > (std::move (that.value));
+      case symbol_kind::S_expr_list: // expr_list
+        value.move< std::vector<cynth::ast::category::Expression  *> > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_stmt_list: // stmt_list
+        value.move< std::vector<cynth::ast::category::Statement   *> > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_type_list: // type_list
+        value.move< std::vector<cynth::ast::category::Type        *> > (std::move (that.value));
         break;
 
       default:
@@ -747,12 +1063,23 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::Expressible&& v)
+      basic_symbol (typename Base::kind_type t, cynth::ast::category::Declaration&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Expressible& v)
+      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Declaration& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::category::Expression&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Expression& v)
         : Base (t)
         , value (v)
       {}
@@ -780,12 +1107,45 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Alias&& v)
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Add&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Alias& v)
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Add& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::And&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::And& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Application&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Application& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::ArrayType&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::ArrayType& v)
         : Base (t)
         , value (v)
       {}
@@ -813,12 +1173,45 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::AutoArrayType&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::AutoArrayType& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::Block&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
       basic_symbol (typename Base::kind_type t, const cynth::ast::node::Block& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::BufferType&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::BufferType& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Conversion&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Conversion& v)
         : Base (t)
         , value (v)
       {}
@@ -835,12 +1228,12 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Declaration&& v)
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::DeclArrayType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Declaration& v)
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::DeclArrayType& v)
         : Base (t)
         , value (v)
       {}
@@ -857,6 +1250,28 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Div&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Div& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Eq&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Eq& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::ExprIf&& v)
         : Base (t)
         , value (std::move (v))
@@ -868,12 +1283,56 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Function&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Function& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::FunctionDef&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::FunctionDef& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::FunctionType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
       basic_symbol (typename Base::kind_type t, const cynth::ast::node::FunctionType& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Ge&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Ge& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Gt&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Gt& v)
         : Base (t)
         , value (v)
       {}
@@ -901,12 +1360,122 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Le&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Le& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Lt&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Lt& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Minus&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Minus& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Mod&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Mod& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Mul&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Mul& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::Name&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
       basic_symbol (typename Base::kind_type t, const cynth::ast::node::Name& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Ne&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Ne& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Not&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Not& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Or&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Or& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Plus&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Plus& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Pow&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Pow& v)
         : Base (t)
         , value (v)
       {}
@@ -923,6 +1492,17 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::SingleDecl&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::SingleDecl& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::String&& v)
         : Base (t)
         , value (std::move (v))
@@ -934,12 +1514,45 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::TupleType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Sub&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::TupleType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Sub& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::Subscript&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Subscript& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::TypeDecl&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::TypeDecl& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::TypeDef&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::TypeDef& v)
         : Base (t)
         , value (v)
       {}
@@ -989,23 +1602,45 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, std::vector<cynth::ast::category::Statement *>&& v)
+      basic_symbol (typename Base::kind_type t, std::vector<cynth::ast::category::Declaration *>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const std::vector<cynth::ast::category::Statement *>& v)
+      basic_symbol (typename Base::kind_type t, const std::vector<cynth::ast::category::Declaration *>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, std::vector<cynth::ast::category::Type      *>&& v)
+      basic_symbol (typename Base::kind_type t, std::vector<cynth::ast::category::Expression  *>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const std::vector<cynth::ast::category::Type      *>& v)
+      basic_symbol (typename Base::kind_type t, const std::vector<cynth::ast::category::Expression  *>& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<cynth::ast::category::Statement   *>&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<cynth::ast::category::Statement   *>& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<cynth::ast::category::Type        *>&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<cynth::ast::category::Type        *>& v)
         : Base (t)
         , value (v)
       {}
@@ -1033,8 +1668,27 @@ namespace yy {
         // Value type destructor.
 switch (yykind)
     {
-      case symbol_kind::S_expressible: // expressible
-        value.template destroy< cynth::ast::category::Expressible > ();
+      case symbol_kind::S_declaration: // declaration
+      case symbol_kind::S_paren_decl: // paren_decl
+      case symbol_kind::S_void_decl: // void_decl
+        value.template destroy< cynth::ast::category::Declaration > ();
+        break;
+
+      case symbol_kind::S_expression: // expression
+      case symbol_kind::S_expr_or: // expr_or
+      case symbol_kind::S_expr_and: // expr_and
+      case symbol_kind::S_expr_eq: // expr_eq
+      case symbol_kind::S_expr_ord: // expr_ord
+      case symbol_kind::S_expr_add: // expr_add
+      case symbol_kind::S_expr_mul: // expr_mul
+      case symbol_kind::S_expr_pow: // expr_pow
+      case symbol_kind::S_expr_pre: // expr_pre
+      case symbol_kind::S_expr_post: // expr_post
+      case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_right: // expr_right
+      case symbol_kind::S_paren_expr: // paren_expr
+      case symbol_kind::S_void: // void
+        value.template destroy< cynth::ast::category::Expression > ();
         break;
 
       case symbol_kind::S_statement: // statement
@@ -1043,11 +1697,25 @@ switch (yykind)
         break;
 
       case symbol_kind::S_type: // type
+      case symbol_kind::S_paren_type: // paren_type
+      case symbol_kind::S_void_type: // void_type
         value.template destroy< cynth::ast::category::Type > ();
         break;
 
-      case symbol_kind::S_alias: // alias
-        value.template destroy< cynth::ast::node::Alias > ();
+      case symbol_kind::S_add: // add
+        value.template destroy< cynth::ast::node::Add > ();
+        break;
+
+      case symbol_kind::S_and: // and
+        value.template destroy< cynth::ast::node::And > ();
+        break;
+
+      case symbol_kind::S_application: // application
+        value.template destroy< cynth::ast::node::Application > ();
+        break;
+
+      case symbol_kind::S_array_type: // array_type
+        value.template destroy< cynth::ast::node::ArrayType > ();
         break;
 
       case symbol_kind::S_assignment: // assignment
@@ -1058,28 +1726,64 @@ switch (yykind)
         value.template destroy< cynth::ast::node::Auto > ();
         break;
 
+      case symbol_kind::S_auto_array_type: // auto_array_type
+        value.template destroy< cynth::ast::node::AutoArrayType > ();
+        break;
+
       case symbol_kind::S_block: // block
         value.template destroy< cynth::ast::node::Block > ();
+        break;
+
+      case symbol_kind::S_buffer_type: // buffer_type
+        value.template destroy< cynth::ast::node::BufferType > ();
+        break;
+
+      case symbol_kind::S_conversion: // conversion
+        value.template destroy< cynth::ast::node::Conversion > ();
         break;
 
       case symbol_kind::S_decimal: // decimal
         value.template destroy< cynth::ast::node::Decimal > ();
         break;
 
-      case symbol_kind::S_declaration: // declaration
-        value.template destroy< cynth::ast::node::Declaration > ();
+      case symbol_kind::S_decl_array_type: // decl_array_type
+        value.template destroy< cynth::ast::node::DeclArrayType > ();
         break;
 
       case symbol_kind::S_definition: // definition
         value.template destroy< cynth::ast::node::Definition > ();
         break;
 
+      case symbol_kind::S_div: // div
+        value.template destroy< cynth::ast::node::Div > ();
+        break;
+
+      case symbol_kind::S_eq: // eq
+        value.template destroy< cynth::ast::node::Eq > ();
+        break;
+
       case symbol_kind::S_expr_if: // expr_if
         value.template destroy< cynth::ast::node::ExprIf > ();
         break;
 
+      case symbol_kind::S_function: // function
+        value.template destroy< cynth::ast::node::Function > ();
+        break;
+
+      case symbol_kind::S_function_def: // function_def
+        value.template destroy< cynth::ast::node::FunctionDef > ();
+        break;
+
       case symbol_kind::S_function_type: // function_type
         value.template destroy< cynth::ast::node::FunctionType > ();
+        break;
+
+      case symbol_kind::S_ge: // ge
+        value.template destroy< cynth::ast::node::Ge > ();
+        break;
+
+      case symbol_kind::S_gt: // gt
+        value.template destroy< cynth::ast::node::Gt > ();
         break;
 
       case symbol_kind::S_if: // if
@@ -1090,20 +1794,76 @@ switch (yykind)
         value.template destroy< cynth::ast::node::Integer > ();
         break;
 
+      case symbol_kind::S_le: // le
+        value.template destroy< cynth::ast::node::Le > ();
+        break;
+
+      case symbol_kind::S_lt: // lt
+        value.template destroy< cynth::ast::node::Lt > ();
+        break;
+
+      case symbol_kind::S_minus: // minus
+        value.template destroy< cynth::ast::node::Minus > ();
+        break;
+
+      case symbol_kind::S_mod: // mod
+        value.template destroy< cynth::ast::node::Mod > ();
+        break;
+
+      case symbol_kind::S_mul: // mul
+        value.template destroy< cynth::ast::node::Mul > ();
+        break;
+
       case symbol_kind::S_name: // name
         value.template destroy< cynth::ast::node::Name > ();
+        break;
+
+      case symbol_kind::S_ne: // ne
+        value.template destroy< cynth::ast::node::Ne > ();
+        break;
+
+      case symbol_kind::S_not: // not
+        value.template destroy< cynth::ast::node::Not > ();
+        break;
+
+      case symbol_kind::S_or: // or
+        value.template destroy< cynth::ast::node::Or > ();
+        break;
+
+      case symbol_kind::S_plus: // plus
+        value.template destroy< cynth::ast::node::Plus > ();
+        break;
+
+      case symbol_kind::S_pow: // pow
+        value.template destroy< cynth::ast::node::Pow > ();
         break;
 
       case symbol_kind::S_return: // return
         value.template destroy< cynth::ast::node::Return > ();
         break;
 
+      case symbol_kind::S_single_decl: // single_decl
+        value.template destroy< cynth::ast::node::SingleDecl > ();
+        break;
+
       case symbol_kind::S_string: // string
         value.template destroy< cynth::ast::node::String > ();
         break;
 
-      case symbol_kind::S_tuple_type: // tuple_type
-        value.template destroy< cynth::ast::node::TupleType > ();
+      case symbol_kind::S_sub: // sub
+        value.template destroy< cynth::ast::node::Sub > ();
+        break;
+
+      case symbol_kind::S_subscript: // subscript
+        value.template destroy< cynth::ast::node::Subscript > ();
+        break;
+
+      case symbol_kind::S_type_decl: // type_decl
+        value.template destroy< cynth::ast::node::TypeDecl > ();
+        break;
+
+      case symbol_kind::S_type_def: // type_def
+        value.template destroy< cynth::ast::node::TypeDef > ();
         break;
 
       case symbol_kind::S_type_name: // type_name
@@ -1126,13 +1886,20 @@ switch (yykind)
         value.template destroy< std::string > ();
         break;
 
-      case symbol_kind::S_block_list: // block_list
-        value.template destroy< std::vector<cynth::ast::category::Statement *> > ();
+      case symbol_kind::S_decl_list: // decl_list
+        value.template destroy< std::vector<cynth::ast::category::Declaration *> > ();
         break;
 
-      case symbol_kind::S_function_type_list: // function_type_list
-      case symbol_kind::S_tuple_type_list: // tuple_type_list
-        value.template destroy< std::vector<cynth::ast::category::Type      *> > ();
+      case symbol_kind::S_expr_list: // expr_list
+        value.template destroy< std::vector<cynth::ast::category::Expression  *> > ();
+        break;
+
+      case symbol_kind::S_stmt_list: // stmt_list
+        value.template destroy< std::vector<cynth::ast::category::Statement   *> > ();
+        break;
+
+      case symbol_kind::S_type_list: // type_list
+        value.template destroy< std::vector<cynth::ast::category::Type        *> > ();
         break;
 
       default:
@@ -1225,13 +1992,13 @@ switch (yykind)
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::AUTO || tok == token::RETURN || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::ASGN || tok == token::SEMI || tok == token::COMMA);
+        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::TO || tok == token::BY || tok == token::DOT3 || tok == token::RETURN || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT);
       }
 #else
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::AUTO || tok == token::RETURN || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::ASGN || tok == token::SEMI || tok == token::COMMA);
+        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::TO || tok == token::BY || tok == token::DOT3 || tok == token::RETURN || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1480,6 +2247,36 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_FN ()
+      {
+        return symbol_type (token::FN);
+      }
+#else
+      static
+      symbol_type
+      make_FN ()
+      {
+        return symbol_type (token::FN);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_BUFFER ()
+      {
+        return symbol_type (token::BUFFER);
+      }
+#else
+      static
+      symbol_type
+      make_BUFFER ()
+      {
+        return symbol_type (token::BUFFER);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_AUTO ()
       {
         return symbol_type (token::AUTO);
@@ -1490,6 +2287,96 @@ switch (yykind)
       make_AUTO ()
       {
         return symbol_type (token::AUTO);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_ASSGN ()
+      {
+        return symbol_type (token::ASSGN);
+      }
+#else
+      static
+      symbol_type
+      make_ASSGN ()
+      {
+        return symbol_type (token::ASSGN);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_SEMI ()
+      {
+        return symbol_type (token::SEMI);
+      }
+#else
+      static
+      symbol_type
+      make_SEMI ()
+      {
+        return symbol_type (token::SEMI);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_COMMA ()
+      {
+        return symbol_type (token::COMMA);
+      }
+#else
+      static
+      symbol_type
+      make_COMMA ()
+      {
+        return symbol_type (token::COMMA);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_TO ()
+      {
+        return symbol_type (token::TO);
+      }
+#else
+      static
+      symbol_type
+      make_TO ()
+      {
+        return symbol_type (token::TO);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_BY ()
+      {
+        return symbol_type (token::BY);
+      }
+#else
+      static
+      symbol_type
+      make_BY ()
+      {
+        return symbol_type (token::BY);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_DOT3 ()
+      {
+        return symbol_type (token::DOT3);
+      }
+#else
+      static
+      symbol_type
+      make_DOT3 ()
+      {
+        return symbol_type (token::DOT3);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1570,46 +2457,256 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_ASGN ()
+      make_OBRACK ()
       {
-        return symbol_type (token::ASGN);
+        return symbol_type (token::OBRACK);
       }
 #else
       static
       symbol_type
-      make_ASGN ()
+      make_OBRACK ()
       {
-        return symbol_type (token::ASGN);
+        return symbol_type (token::OBRACK);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_SEMI ()
+      make_CBRACK ()
       {
-        return symbol_type (token::SEMI);
+        return symbol_type (token::CBRACK);
       }
 #else
       static
       symbol_type
-      make_SEMI ()
+      make_CBRACK ()
       {
-        return symbol_type (token::SEMI);
+        return symbol_type (token::CBRACK);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_COMMA ()
+      make_ADD ()
       {
-        return symbol_type (token::COMMA);
+        return symbol_type (token::ADD);
       }
 #else
       static
       symbol_type
-      make_COMMA ()
+      make_ADD ()
       {
-        return symbol_type (token::COMMA);
+        return symbol_type (token::ADD);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_SUB ()
+      {
+        return symbol_type (token::SUB);
+      }
+#else
+      static
+      symbol_type
+      make_SUB ()
+      {
+        return symbol_type (token::SUB);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MUL ()
+      {
+        return symbol_type (token::MUL);
+      }
+#else
+      static
+      symbol_type
+      make_MUL ()
+      {
+        return symbol_type (token::MUL);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_DIV ()
+      {
+        return symbol_type (token::DIV);
+      }
+#else
+      static
+      symbol_type
+      make_DIV ()
+      {
+        return symbol_type (token::DIV);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MOD ()
+      {
+        return symbol_type (token::MOD);
+      }
+#else
+      static
+      symbol_type
+      make_MOD ()
+      {
+        return symbol_type (token::MOD);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_POW ()
+      {
+        return symbol_type (token::POW);
+      }
+#else
+      static
+      symbol_type
+      make_POW ()
+      {
+        return symbol_type (token::POW);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_NOT ()
+      {
+        return symbol_type (token::NOT);
+      }
+#else
+      static
+      symbol_type
+      make_NOT ()
+      {
+        return symbol_type (token::NOT);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_AND ()
+      {
+        return symbol_type (token::AND);
+      }
+#else
+      static
+      symbol_type
+      make_AND ()
+      {
+        return symbol_type (token::AND);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_OR ()
+      {
+        return symbol_type (token::OR);
+      }
+#else
+      static
+      symbol_type
+      make_OR ()
+      {
+        return symbol_type (token::OR);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_EQ ()
+      {
+        return symbol_type (token::EQ);
+      }
+#else
+      static
+      symbol_type
+      make_EQ ()
+      {
+        return symbol_type (token::EQ);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_NE ()
+      {
+        return symbol_type (token::NE);
+      }
+#else
+      static
+      symbol_type
+      make_NE ()
+      {
+        return symbol_type (token::NE);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_GE ()
+      {
+        return symbol_type (token::GE);
+      }
+#else
+      static
+      symbol_type
+      make_GE ()
+      {
+        return symbol_type (token::GE);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LE ()
+      {
+        return symbol_type (token::LE);
+      }
+#else
+      static
+      symbol_type
+      make_LE ()
+      {
+        return symbol_type (token::LE);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_GT ()
+      {
+        return symbol_type (token::GT);
+      }
+#else
+      static
+      symbol_type
+      make_GT ()
+      {
+        return symbol_type (token::GT);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LT ()
+      {
+        return symbol_type (token::LT);
+      }
+#else
+      static
+      symbol_type
+      make_LT ()
+      {
+        return symbol_type (token::LT);
       }
 #endif
 
@@ -1624,7 +2721,7 @@ switch (yykind)
 
 
     /// Stored state numbers (used for stacks).
-    typedef signed char state_type;
+    typedef unsigned char state_type;
 
     /// Compute post-reduction state.
     /// \param yystate   the current state
@@ -1656,25 +2753,25 @@ switch (yykind)
     // Tables.
     // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
     // STATE-NUM.
-    static const signed char yypact_[];
+    static const short yypact_[];
 
     // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
     // Performed when YYTABLE does not specify something else to do.  Zero
     // means the default is an error.
-    static const signed char yydefact_[];
+    static const unsigned char yydefact_[];
 
     // YYPGOTO[NTERM-NUM].
-    static const signed char yypgoto_[];
+    static const short yypgoto_[];
 
     // YYDEFGOTO[NTERM-NUM].
-    static const signed char yydefgoto_[];
+    static const short yydefgoto_[];
 
     // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
     // positive, shift that token.  If negative, reduce the rule whose
     // number is the opposite.  If YYTABLE_NINF, syntax error.
-    static const signed char yytable_[];
+    static const short yytable_[];
 
-    static const signed char yycheck_[];
+    static const short yycheck_[];
 
     // YYSTOS[STATE-NUM] -- The (internal number of the) accessing
     // symbol of state STATE-NUM.
@@ -1689,7 +2786,7 @@ switch (yykind)
 
 #if YYDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const unsigned char yyrline_[];
+    static const short yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r) const;
     /// Print the state stack on the debug stream.
@@ -1916,9 +3013,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 132,     ///< Last index in yytable_.
-      yynnts_ = 26,  ///< Number of nonterminal symbols.
-      yyfinal_ = 47 ///< Termination state number.
+      yylast_ = 811,     ///< Last index in yytable_.
+      yynnts_ = 71,  ///< Number of nonterminal symbols.
+      yyfinal_ = 110 ///< Termination state number.
     };
 
 
@@ -1964,10 +3061,12 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20
+      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,    41,    42
     };
     // Last valid token kind.
-    const int code_max = 275;
+    const int code_max = 297;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1985,8 +3084,27 @@ switch (yykind)
   {
     switch (this->kind ())
     {
-      case symbol_kind::S_expressible: // expressible
-        value.copy< cynth::ast::category::Expressible > (YY_MOVE (that.value));
+      case symbol_kind::S_declaration: // declaration
+      case symbol_kind::S_paren_decl: // paren_decl
+      case symbol_kind::S_void_decl: // void_decl
+        value.copy< cynth::ast::category::Declaration > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_expression: // expression
+      case symbol_kind::S_expr_or: // expr_or
+      case symbol_kind::S_expr_and: // expr_and
+      case symbol_kind::S_expr_eq: // expr_eq
+      case symbol_kind::S_expr_ord: // expr_ord
+      case symbol_kind::S_expr_add: // expr_add
+      case symbol_kind::S_expr_mul: // expr_mul
+      case symbol_kind::S_expr_pow: // expr_pow
+      case symbol_kind::S_expr_pre: // expr_pre
+      case symbol_kind::S_expr_post: // expr_post
+      case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_right: // expr_right
+      case symbol_kind::S_paren_expr: // paren_expr
+      case symbol_kind::S_void: // void
+        value.copy< cynth::ast::category::Expression > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_statement: // statement
@@ -1995,11 +3113,25 @@ switch (yykind)
         break;
 
       case symbol_kind::S_type: // type
+      case symbol_kind::S_paren_type: // paren_type
+      case symbol_kind::S_void_type: // void_type
         value.copy< cynth::ast::category::Type > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_alias: // alias
-        value.copy< cynth::ast::node::Alias > (YY_MOVE (that.value));
+      case symbol_kind::S_add: // add
+        value.copy< cynth::ast::node::Add > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_and: // and
+        value.copy< cynth::ast::node::And > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_application: // application
+        value.copy< cynth::ast::node::Application > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_array_type: // array_type
+        value.copy< cynth::ast::node::ArrayType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_assignment: // assignment
@@ -2010,28 +3142,64 @@ switch (yykind)
         value.copy< cynth::ast::node::Auto > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_auto_array_type: // auto_array_type
+        value.copy< cynth::ast::node::AutoArrayType > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_block: // block
         value.copy< cynth::ast::node::Block > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_buffer_type: // buffer_type
+        value.copy< cynth::ast::node::BufferType > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_conversion: // conversion
+        value.copy< cynth::ast::node::Conversion > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decimal: // decimal
         value.copy< cynth::ast::node::Decimal > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_declaration: // declaration
-        value.copy< cynth::ast::node::Declaration > (YY_MOVE (that.value));
+      case symbol_kind::S_decl_array_type: // decl_array_type
+        value.copy< cynth::ast::node::DeclArrayType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_definition: // definition
         value.copy< cynth::ast::node::Definition > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_div: // div
+        value.copy< cynth::ast::node::Div > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_eq: // eq
+        value.copy< cynth::ast::node::Eq > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_expr_if: // expr_if
         value.copy< cynth::ast::node::ExprIf > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_function: // function
+        value.copy< cynth::ast::node::Function > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_function_def: // function_def
+        value.copy< cynth::ast::node::FunctionDef > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_function_type: // function_type
         value.copy< cynth::ast::node::FunctionType > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_ge: // ge
+        value.copy< cynth::ast::node::Ge > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_gt: // gt
+        value.copy< cynth::ast::node::Gt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_if: // if
@@ -2042,20 +3210,76 @@ switch (yykind)
         value.copy< cynth::ast::node::Integer > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_le: // le
+        value.copy< cynth::ast::node::Le > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_lt: // lt
+        value.copy< cynth::ast::node::Lt > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_minus: // minus
+        value.copy< cynth::ast::node::Minus > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_mod: // mod
+        value.copy< cynth::ast::node::Mod > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_mul: // mul
+        value.copy< cynth::ast::node::Mul > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_name: // name
         value.copy< cynth::ast::node::Name > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_ne: // ne
+        value.copy< cynth::ast::node::Ne > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_not: // not
+        value.copy< cynth::ast::node::Not > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_or: // or
+        value.copy< cynth::ast::node::Or > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_plus: // plus
+        value.copy< cynth::ast::node::Plus > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_pow: // pow
+        value.copy< cynth::ast::node::Pow > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_return: // return
         value.copy< cynth::ast::node::Return > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_single_decl: // single_decl
+        value.copy< cynth::ast::node::SingleDecl > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_string: // string
         value.copy< cynth::ast::node::String > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_tuple_type: // tuple_type
-        value.copy< cynth::ast::node::TupleType > (YY_MOVE (that.value));
+      case symbol_kind::S_sub: // sub
+        value.copy< cynth::ast::node::Sub > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_subscript: // subscript
+        value.copy< cynth::ast::node::Subscript > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_type_decl: // type_decl
+        value.copy< cynth::ast::node::TypeDecl > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_type_def: // type_def
+        value.copy< cynth::ast::node::TypeDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_name: // type_name
@@ -2078,13 +3302,20 @@ switch (yykind)
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_block_list: // block_list
-        value.copy< std::vector<cynth::ast::category::Statement *> > (YY_MOVE (that.value));
+      case symbol_kind::S_decl_list: // decl_list
+        value.copy< std::vector<cynth::ast::category::Declaration *> > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_function_type_list: // function_type_list
-      case symbol_kind::S_tuple_type_list: // tuple_type_list
-        value.copy< std::vector<cynth::ast::category::Type      *> > (YY_MOVE (that.value));
+      case symbol_kind::S_expr_list: // expr_list
+        value.copy< std::vector<cynth::ast::category::Expression  *> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_stmt_list: // stmt_list
+        value.copy< std::vector<cynth::ast::category::Statement   *> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_type_list: // type_list
+        value.copy< std::vector<cynth::ast::category::Type        *> > (YY_MOVE (that.value));
         break;
 
       default:
@@ -2116,8 +3347,27 @@ switch (yykind)
     super_type::move (s);
     switch (this->kind ())
     {
-      case symbol_kind::S_expressible: // expressible
-        value.move< cynth::ast::category::Expressible > (YY_MOVE (s.value));
+      case symbol_kind::S_declaration: // declaration
+      case symbol_kind::S_paren_decl: // paren_decl
+      case symbol_kind::S_void_decl: // void_decl
+        value.move< cynth::ast::category::Declaration > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_expression: // expression
+      case symbol_kind::S_expr_or: // expr_or
+      case symbol_kind::S_expr_and: // expr_and
+      case symbol_kind::S_expr_eq: // expr_eq
+      case symbol_kind::S_expr_ord: // expr_ord
+      case symbol_kind::S_expr_add: // expr_add
+      case symbol_kind::S_expr_mul: // expr_mul
+      case symbol_kind::S_expr_pow: // expr_pow
+      case symbol_kind::S_expr_pre: // expr_pre
+      case symbol_kind::S_expr_post: // expr_post
+      case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_right: // expr_right
+      case symbol_kind::S_paren_expr: // paren_expr
+      case symbol_kind::S_void: // void
+        value.move< cynth::ast::category::Expression > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_statement: // statement
@@ -2126,11 +3376,25 @@ switch (yykind)
         break;
 
       case symbol_kind::S_type: // type
+      case symbol_kind::S_paren_type: // paren_type
+      case symbol_kind::S_void_type: // void_type
         value.move< cynth::ast::category::Type > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_alias: // alias
-        value.move< cynth::ast::node::Alias > (YY_MOVE (s.value));
+      case symbol_kind::S_add: // add
+        value.move< cynth::ast::node::Add > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_and: // and
+        value.move< cynth::ast::node::And > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_application: // application
+        value.move< cynth::ast::node::Application > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_array_type: // array_type
+        value.move< cynth::ast::node::ArrayType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_assignment: // assignment
@@ -2141,28 +3405,64 @@ switch (yykind)
         value.move< cynth::ast::node::Auto > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_auto_array_type: // auto_array_type
+        value.move< cynth::ast::node::AutoArrayType > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_block: // block
         value.move< cynth::ast::node::Block > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_buffer_type: // buffer_type
+        value.move< cynth::ast::node::BufferType > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_conversion: // conversion
+        value.move< cynth::ast::node::Conversion > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_decimal: // decimal
         value.move< cynth::ast::node::Decimal > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_declaration: // declaration
-        value.move< cynth::ast::node::Declaration > (YY_MOVE (s.value));
+      case symbol_kind::S_decl_array_type: // decl_array_type
+        value.move< cynth::ast::node::DeclArrayType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_definition: // definition
         value.move< cynth::ast::node::Definition > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_div: // div
+        value.move< cynth::ast::node::Div > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_eq: // eq
+        value.move< cynth::ast::node::Eq > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_expr_if: // expr_if
         value.move< cynth::ast::node::ExprIf > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_function: // function
+        value.move< cynth::ast::node::Function > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_function_def: // function_def
+        value.move< cynth::ast::node::FunctionDef > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_function_type: // function_type
         value.move< cynth::ast::node::FunctionType > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_ge: // ge
+        value.move< cynth::ast::node::Ge > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_gt: // gt
+        value.move< cynth::ast::node::Gt > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_if: // if
@@ -2173,20 +3473,76 @@ switch (yykind)
         value.move< cynth::ast::node::Integer > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_le: // le
+        value.move< cynth::ast::node::Le > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_lt: // lt
+        value.move< cynth::ast::node::Lt > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_minus: // minus
+        value.move< cynth::ast::node::Minus > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_mod: // mod
+        value.move< cynth::ast::node::Mod > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_mul: // mul
+        value.move< cynth::ast::node::Mul > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_name: // name
         value.move< cynth::ast::node::Name > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_ne: // ne
+        value.move< cynth::ast::node::Ne > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_not: // not
+        value.move< cynth::ast::node::Not > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_or: // or
+        value.move< cynth::ast::node::Or > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_plus: // plus
+        value.move< cynth::ast::node::Plus > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_pow: // pow
+        value.move< cynth::ast::node::Pow > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_return: // return
         value.move< cynth::ast::node::Return > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_single_decl: // single_decl
+        value.move< cynth::ast::node::SingleDecl > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_string: // string
         value.move< cynth::ast::node::String > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_tuple_type: // tuple_type
-        value.move< cynth::ast::node::TupleType > (YY_MOVE (s.value));
+      case symbol_kind::S_sub: // sub
+        value.move< cynth::ast::node::Sub > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_subscript: // subscript
+        value.move< cynth::ast::node::Subscript > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_type_decl: // type_decl
+        value.move< cynth::ast::node::TypeDecl > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_type_def: // type_def
+        value.move< cynth::ast::node::TypeDef > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_type_name: // type_name
@@ -2209,13 +3565,20 @@ switch (yykind)
         value.move< std::string > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_block_list: // block_list
-        value.move< std::vector<cynth::ast::category::Statement *> > (YY_MOVE (s.value));
+      case symbol_kind::S_decl_list: // decl_list
+        value.move< std::vector<cynth::ast::category::Declaration *> > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_function_type_list: // function_type_list
-      case symbol_kind::S_tuple_type_list: // tuple_type_list
-        value.move< std::vector<cynth::ast::category::Type      *> > (YY_MOVE (s.value));
+      case symbol_kind::S_expr_list: // expr_list
+        value.move< std::vector<cynth::ast::category::Expression  *> > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_stmt_list: // stmt_list
+        value.move< std::vector<cynth::ast::category::Statement   *> > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_type_list: // type_list
+        value.move< std::vector<cynth::ast::category::Type        *> > (YY_MOVE (s.value));
         break;
 
       default:
@@ -2279,31 +3642,17 @@ switch (yykind)
   }
 
 } // yy
-#line 2283 "src/parser.hpp"
+#line 3646 "src/parser.hpp"
 
 
 // "%code provides" blocks.
-#line 18 "gen/parser.y"
+#line 10 "gen/parser.y"
 
     namespace yy {
-
         parser::symbol_type yylex ();
-
     }
 
-    namespace cynth::ast::reg {
-
-        template <typename t>
-        util::registry<t> r;
-
-        template <typename t>
-        t * push (t && x) {
-            return &r<std::remove_reference_t<t>>.push(std::forward<t>(x));
-        }
-
-    }
-
-#line 2307 "src/parser.hpp"
+#line 3656 "src/parser.hpp"
 
 
 #endif // !YY_YY_SRC_PARSER_HPP_INCLUDED

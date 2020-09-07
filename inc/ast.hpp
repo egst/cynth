@@ -40,9 +40,13 @@ namespace cynth::ast {
         return detail::deref(std::get<index>(target.components));
     }
 
+    template <auto index, typename t> requires std::same_as<decltype(index), typename t::component_name>
+    decltype(auto) get_raw (t & target) {
+        return std::get<index>(target.components);
+    }
+
     namespace detail {
         struct display_functor {
-            // Nodes:
             std::string operator () (node::Auto const &) const {
                 return "$";
             }
@@ -50,52 +54,36 @@ namespace cynth::ast {
                 return get<node::TypeName::name>(n);
             }
             std::string operator () (node::FunctionType const & n) const {
-                return
-                    (*this)(get<node::FunctionType::return_type>(n)) +
-                    "(" + util::join(", ", util::lift{*this}(get<node::FunctionType::parameter_types>(n))) + ")";
+                return (*this)(get<node::FunctionType::output>(n)) + " " + util::parenthesized((*this)(get<node::FunctionType::input>(n)));
+            }
+            std::string operator () (node::ArrayType const & n) const {
+                return (*this)(get<node::ArrayType::type>(n)) + " [" + (*this)(get<node::ArrayType::size>(n)) + "]";
+            }
+            std::string operator () (node::AutoArrayType const & n) const {
+                return (*this)(get<node::AutoArrayType::type>(n)) + " [$]";
+            }
+            std::string operator () (node::DeclArrayType const & n) const {
+                return (*this)(get<node::DeclArrayType::value_type>(n)) + " [" + (*this)(get<node::DeclArrayType::size_decl>(n)) + "]";
+            }
+            std::string operator () (node::BufferType const & n) const {
+                return "buffer [" + (*this)(get<node::BufferType::size>(n)) + "]";
+            }
+            std::string operator () (node::TypeDecl const & n) const {
+                return "type " + (*this)(get<node::TypeDecl::name>(n));
             }
             std::string operator () (node::TupleType const & n) const {
                 return "(" + util::join(", ", util::lift{*this}(get<node::TupleType::types>(n))) + ")";
             }
+
+            std::string operator () (node::SingleDecl const & n) const {
+                return (*this)(get<node::SingleDecl::type>(n)) + " " + (*this)(get<node::SingleDecl::name>(n));
+            }
+            std::string operator () (node::TupleDecl const & n) const {
+                return "(" + util::join(", ", util::lift{*this}(get<node::TupleDecl::declarations>(n))) + ")";
+            }
+
             std::string operator () (node::Name const & n) const {
                 return get<node::Name::name>(n);
-            }
-            std::string operator () (node::Block const & n) const {
-                return "{\n" + util::join(";\n", util::lift{*this}(get<node::Block::statements>(n))) + "\n}";
-                /*std::string result = "{\n";
-                for (auto const & stmt : get<node::Block::statements>(n))
-                    result += (*this)(stmt) + ";\n";
-                return result + "}";*/
-            }
-            std::string operator () (node::When const & n) const {
-                return "when (" + (*this)(get<node::When::condition>(n)) + ") " + (*this)(get<node::When::branch>(n));
-            }
-            std::string operator () (node::If const & n) const {
-                return
-                    "if (" + (*this)(get<node::If::condition>(n)) + ") " +
-                    (*this)(get<node::If::positive>(n)) + " else " +
-                    (*this)(get<node::If::negative>(n));
-            }
-            std::string operator () (node::ExprIf const & n) const {
-                return
-                    "if (" + (*this)(get<node::ExprIf::condition>(n)) + ") " +
-                    (*this)(get<node::ExprIf::positive>(n)) + " else " +
-                    (*this)(get<node::ExprIf::negative>(n));
-            }
-            std::string operator () (node::Alias const & n) const {
-                return "type " + (*this)(get<node::Alias::name>(n)) + " = " + (*this)(get<node::Alias::type>(n));
-            }
-            std::string operator () (node::Declaration const & n) const {
-                return (*this)(get<node::Declaration::type>(n)) + " " + (*this)(get<node::Declaration::name>(n));
-            }
-            std::string operator () (node::Definition const & n) const {
-                return (*this)(get<node::Definition::type>(n)) + " " + (*this)(get<node::Definition::name>(n)) + " = " + (*this)(get<node::Definition::value>(n));
-            }
-            std::string operator () (node::Assignment const & n) const {
-                return (*this)(get<node::Assignment::name>(n)) + " = " + (*this)(get<node::Assignment::value>(n));
-            }
-            std::string operator () (node::Return const & n) const {
-                return "return " + (*this)(get<node::Return::value>(n));
             }
             std::string operator () (node::Integer const & n) const {
                 return std::to_string(get<node::Integer::value>(n));
@@ -106,59 +94,95 @@ namespace cynth::ast {
             std::string operator () (node::String const & n) const {
                 return "\"" + get<node::String::value>(n) + "\"";
             }
-            std::string operator () (node::None const &) const {
-                return "NONE";
+            /*std::string operator () (node::Array const & n) const {
+                return "[" + util::join(", ", util::lift{*this}(get<node::Array::elements>(n))) + "]";
             }
 
-            // Tokens:
-            /*std::string operator () (token::Name     const & t) const { return "Name("     + t.content + ")"; }
-            std::string operator () (token::TypeName const & t) const { return "TypeName(" + t.content + ")"; }
-            std::string operator () (token::Integer  const & t) const { return "Integer("  + t.content + ")"; }
-            std::string operator () (token::Decimal  const & t) const { return "Decimal("  + t.content + ")"; }
-            std::string operator () (token::String   const & t) const { return "String("   + t.content + ")"; }
-            std::string operator () (token::Return   const &)   const { return "Return";   }
-            std::string operator () (token::If       const &)   const { return "If";       }
-            std::string operator () (token::Else     const &)   const { return "Else";     }
-            std::string operator () (token::When     const &)   const { return "When";     }
-            std::string operator () (token::While    const &)   const { return "While";    }
-            std::string operator () (token::For      const &)   const { return "For";      }
-            std::string operator () (token::In       const &)   const { return "In";       }
-            std::string operator () (token::To       const &)   const { return "To";       }
-            std::string operator () (token::By       const &)   const { return "By";       }
-            std::string operator () (token::Type     const &)   const { return "Type";     }
-            std::string operator () (token::Buffer   const &)   const { return "Buffer";   }
-            std::string operator () (token::OParen   const &)   const { return "OParen";   }
-            std::string operator () (token::CParen   const &)   const { return "CParen";   }
-            std::string operator () (token::OBrack   const &)   const { return "OBrack";   }
-            std::string operator () (token::CBrack   const &)   const { return "CBrack";   }
-            std::string operator () (token::OBrace   const &)   const { return "OBrace";   }
-            std::string operator () (token::CBrace   const &)   const { return "CBrace";   }
-            std::string operator () (token::Add      const &)   const { return "Add";      }
-            std::string operator () (token::Sub      const &)   const { return "Sub";      }
-            std::string operator () (token::Mult     const &)   const { return "Mult";     }
-            std::string operator () (token::Div      const &)   const { return "Div";      }
-            std::string operator () (token::Mod      const &)   const { return "Mod";      }
-            std::string operator () (token::Pow      const &)   const { return "Pow";      }
-            std::string operator () (token::Asgn     const &)   const { return "Asgn";     }
-            std::string operator () (token::AddAsgn  const &)   const { return "AddAsgn";  }
-            std::string operator () (token::SubAsgn  const &)   const { return "SubAsgn";  }
-            std::string operator () (token::MultAsgn const &)   const { return "MultAsgn"; }
-            std::string operator () (token::DivAsgn  const &)   const { return "MultAsgn"; }
-            std::string operator () (token::ModAsgn  const &)   const { return "ModAsgn";  }
-            std::string operator () (token::PowAsgn  const &)   const { return "PowAsgn";  }
-            std::string operator () (token::Eq       const &)   const { return "Eq";       }
-            std::string operator () (token::Ne       const &)   const { return "Ne";       }
-            std::string operator () (token::Ge       const &)   const { return "Ge";       }
-            std::string operator () (token::Le       const &)   const { return "Le";       }
-            std::string operator () (token::Gt       const &)   const { return "Gt";       }
-            std::string operator () (token::Lt       const &)   const { return "Lt";       }
-            std::string operator () (token::Comma    const &)   const { return "Comma";    }
-            std::string operator () (token::Colon    const &)   const { return "Colon";    }
-            std::string operator () (token::Sep      const &)   const { return "Sep";      }
-            std::string operator () (token::Auto     const &)   const { return "Auto";     }
-            std::string operator () (token::NONE     const &)   const { return "NONE";     }*/
+            std::string operator () (node::RangeTo const & n) const {
+                return (*this)(get<node::RangeTo::from>(n)) + " to " + (*this)(get<node::RangeTo::to>(n));
+            }
+            std::string operator () (node::RangeToBy const & n) const {
+                return (*this)(get<node::RangeToBy::from>(n)) + " to " + (*this)(get<node::RangeToBy::to>(n)) + " by " + (*this)(get<node::RangeToBy::by>(n));
+            }
+            std::string operator () (node::Spread const & n) const {
+                return "..." + (*this)(get<node::Spread::container>(n));
+            }*/
 
-            // Categories:
+            std::string operator () (node::Or    const & n) const { return (*this)(get<node::Or ::lhs>(n)) + " || " + (*this)(get<node::Or ::rhs>(n)); }
+            std::string operator () (node::And   const & n) const { return (*this)(get<node::And::lhs>(n)) + " && " + (*this)(get<node::And::rhs>(n)); }
+            std::string operator () (node::Eq    const & n) const { return (*this)(get<node::Eq ::lhs>(n)) + " == " + (*this)(get<node::Eq ::rhs>(n)); }
+            std::string operator () (node::Ne    const & n) const { return (*this)(get<node::Ne ::lhs>(n)) + " != " + (*this)(get<node::Ne ::rhs>(n)); }
+            std::string operator () (node::Ge    const & n) const { return (*this)(get<node::Ge ::lhs>(n)) + " >= " + (*this)(get<node::Ge ::rhs>(n)); }
+            std::string operator () (node::Le    const & n) const { return (*this)(get<node::Le ::lhs>(n)) + " <= " + (*this)(get<node::Le ::rhs>(n)); }
+            std::string operator () (node::Gt    const & n) const { return (*this)(get<node::Gt ::lhs>(n)) + " > "  + (*this)(get<node::Gt ::rhs>(n)); }
+            std::string operator () (node::Lt    const & n) const { return (*this)(get<node::Lt ::lhs>(n)) + " < "  + (*this)(get<node::Lt ::rhs>(n)); }
+            std::string operator () (node::Add   const & n) const { return (*this)(get<node::Add::lhs>(n)) + " + "  + (*this)(get<node::Add::rhs>(n)); }
+            std::string operator () (node::Sub   const & n) const { return (*this)(get<node::Sub::lhs>(n)) + " - "  + (*this)(get<node::Sub::rhs>(n)); }
+            std::string operator () (node::Mul   const & n) const { return (*this)(get<node::Mul::lhs>(n)) + " * "  + (*this)(get<node::Mul::rhs>(n)); }
+            std::string operator () (node::Div   const & n) const { return (*this)(get<node::Div::lhs>(n)) + " / "  + (*this)(get<node::Div::rhs>(n)); }
+            std::string operator () (node::Mod   const & n) const { return (*this)(get<node::Mod::lhs>(n)) + " % "  + (*this)(get<node::Mod::rhs>(n)); }
+            std::string operator () (node::Pow   const & n) const { return (*this)(get<node::Pow::lhs>(n)) + " ^ "  + (*this)(get<node::Pow::rhs>(n)); }
+            std::string operator () (node::Plus  const & n) const { return "+" + (*this)(get<node::Plus ::argument>(n)); }
+            std::string operator () (node::Minus const & n) const { return "-" + (*this)(get<node::Minus::argument>(n)); }
+            std::string operator () (node::Not   const & n) const { return "!" + (*this)(get<node::Not  ::argument>(n)); }
+            std::string operator () (node::Application const & n) const {
+                return (*this)(get<node::Application::function>(n)) + util::parenthesized((*this)(get<node::Application::arguments>(n)));
+            }
+            std::string operator () (node::Subscript const & n) const {
+                return (*this)(get<node::Subscript::container>(n)) + "[" + (*this)(get<node::Subscript::index>(n)) + "]";
+            }
+            std::string operator () (node::Conversion const & n) const {
+                return (*this)(get<node::Conversion::type>(n)) + util::parenthesized((*this)(get<node::Conversion::value>(n)));
+            }
+
+            std::string operator () (node::Block const & n) const {
+                return "{\n" + util::join(";\n", util::lift{*this}(get<node::Block::statements>(n))) + "\n}";
+            }
+            std::string operator () (node::ExprIf const & n) const {
+                return
+                    "if " + util::parenthesized((*this)(get<node::ExprIf::condition>(n))) + " " +
+                    (*this)(get<node::ExprIf::positive>(n)) + " else " +
+                    (*this)(get<node::ExprIf::negative>(n));
+            }
+            std::string operator () (node::Function const & n) const {
+                return
+                    (*this)(get<node::Function::output>(n)) + " " +
+                    "fn " + util::parenthesized((*this)(get<node::Function::input>(n))) + " " +
+                    (*this)(get<node::Function::body>(n));
+            }
+            std::string operator () (node::Tuple const & n) const {
+                return "(" + util::join(", ", util::lift{*this}(get<node::Tuple::values>(n))) + ")";
+            }
+
+            std::string operator () (node::When const & n) const {
+                return "when " + util::parenthesized((*this)(get<node::When::condition>(n))) + " " + (*this)(get<node::When::branch>(n));
+            }
+            std::string operator () (node::If const & n) const {
+                return
+                    "if " + util::parenthesized((*this)(get<node::If::condition>(n))) + " " +
+                    (*this)(get<node::If::positive>(n)) + " else " +
+                    (*this)(get<node::If::negative>(n));
+            }
+            std::string operator () (node::Definition const & n) const {
+                return (*this)(get<node::Definition::pattern>(n)) + " = " + (*this)(get<node::Definition::value>(n));
+            }
+            std::string operator () (node::TypeDef const & n) const {
+                return "type " + (*this)(get<node::TypeDef::name>(n)) + " = " + (*this)(get<node::TypeDef::type>(n));
+            }
+            std::string operator () (node::FunctionDef const & n) const {
+                return
+                    (*this)(get<node::FunctionDef::output>(n)) + " " +
+                    (*this)(get<node::FunctionDef::name>(n)) + " " +
+                    util::parenthesized((*this)(get<node::FunctionDef::input>(n))) + " " +
+                    (*this)(get<node::FunctionDef::body>(n));
+            }
+            std::string operator () (node::Assignment const & n) const {
+                return (*this)(get<node::Assignment::name>(n)) + " = " + (*this)(get<node::Assignment::value>(n));
+            }
+            std::string operator () (node::Return const & n) const {
+                return "return " + (*this)(get<node::Return::value>(n));
+            }
+
             template <typename t> requires requires (t a) { a.content; } // TODO: Check if it's a variant.
             std::string operator () (t const & c) const {
                 return std::visit(*this, c.content);
