@@ -47,9 +47,9 @@ false    (?i:false)
 {while}    return parser::make_WHILE();
 {for}      return parser::make_FOR();
 {in}       return parser::make_IN();
+*/
 {to}       return parser::make_TO();
 {by}       return parser::make_BY();
-*/
 {type}     return parser::make_TYPE();
 {buffer}   return parser::make_BUFFER();
 {fn}       return parser::make_FN();

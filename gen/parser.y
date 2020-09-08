@@ -79,7 +79,7 @@
 %nterm <cynth::ast::category::Expression>  expr_atom
 %nterm <cynth::ast::category::Expression>  expr_right
 %nterm <cynth::ast::category::Declaration> declaration
-/*%nterm <cynth::ast::category::ArrayElem>   array_elem*/
+%nterm <cynth::ast::category::ArrayElem>   array_elem
 
 /* Expressions: */
 %nterm <cynth::ast::node::Or>          or
@@ -136,12 +136,12 @@
 %nterm <cynth::ast::node::Integer> integer
 %nterm <cynth::ast::node::Decimal> decimal
 %nterm <cynth::ast::node::String>  string
-/*%nterm <cynth::ast::node::Array>   array*/
+%nterm <cynth::ast::node::Array>   array
 
 /* Array literal elements: */
-/*%nterm <cynth::ast::node::RangeTo>   range_to
+%nterm <cynth::ast::node::RangeTo>   range_to
 %nterm <cynth::ast::node::RangeToBy> range_to_by
-%nterm <cynth::ast::node::Spread>    spread*/
+%nterm <cynth::ast::node::Spread>    spread
 
 /* Composite: */
 %nterm <cynth::ast::node::Block>           block
@@ -157,7 +157,7 @@
 %nterm <std::vector<cynth::ast::category::Statement   *>> stmt_list
 %nterm <std::vector<cynth::ast::category::Declaration *>> decl_list
 %nterm <std::vector<cynth::ast::category::Type        *>> type_list
-/*%nterm <std::vector<cynth::ast::category::ArrayElem   *>> array_elem_list*/
+%nterm <std::vector<cynth::ast::category::ArrayElem   *>> array_elem_list
 
 %%
 
@@ -232,28 +232,29 @@ expr_post:
     expr_atom
 
 expr_atom:
+    bool    { $$ = $1; } |
     name    { $$ = $1; } |
     integer { $$ = $1; } |
     decimal { $$ = $1; } |
     string  { $$ = $1; } |
     block   { $$ = $1; } |
-    /*array   { $$ = $1; } |*/
+    array   { $$ = $1; } |
     paren_expr
 
 expr_right:
     expr_if  { $$ = $1; } |
     function { $$ = $1; }
 
-or:  expr_mul[lhs] OR  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-and: expr_mul[lhs] AND expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-eq:  expr_mul[lhs] EQ  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-ne:  expr_mul[lhs] NE  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-ge:  expr_mul[lhs] GE  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-le:  expr_mul[lhs] LE  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-gt:  expr_mul[lhs] GT  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-lt:  expr_mul[lhs] LT  expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-add: expr_mul[lhs] ADD expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-sub: expr_mul[lhs] SUB expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+or:  expr_or[lhs]  OR  expr_and[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+and: expr_and[lhs] AND expr_eq[rhs]  { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+eq:  expr_eq[lhs]  EQ  expr_ord[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+ne:  expr_eq[lhs]  NE  expr_ord[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+ge:  expr_ord[lhs] GE  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+le:  expr_ord[lhs] LE  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+gt:  expr_ord[lhs] GT  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+lt:  expr_ord[lhs] LT  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+add: expr_add[lhs] ADD expr_mul[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
+sub: expr_add[lhs] SUB expr_mul[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
 mul: expr_mul[lhs] MUL expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
 div: expr_mul[lhs] DIV expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
 mod: expr_mul[lhs] MOD expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
@@ -312,8 +313,8 @@ return:
     RETURN void[val]       { $$ = {cynth::util::alloc($val)}; } |
     RETURN                 { $$ = {cynth::util::alloc(cynth::ast::category::Expression{cynth::ast::node::Tuple{}})}; }
 
-if:      IF paren_expr[cond]   pure[pos]       ELSE pure[neg]       { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)}; }
-expr_if: IF paren_expr[cond]   expression[pos] ELSE expression[neg] { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)}; }
+if:      IF   paren_expr[cond] pure[pos]       ELSE pure[neg]       { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)}; }
+expr_if: IF   paren_expr[cond] expression[pos] ELSE expression[neg] { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)}; }
 when:    WHEN paren_expr[cond] statement[pos]                       { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos)}; }
 
 function_def:
@@ -334,12 +335,14 @@ name:      NAME     { $$ = {$1}; }
 integer:   INTEGER  { $$ = {cynth::util::stoi($1)}; }
 decimal:   DECIMAL  { $$ = {std::stof($1)};         }
 string:    STRING   { $$ = {cynth::util::trim($1)}; }
+bool:      TRUE     { $$ = {true};  } |
+           FALSE    { $$ = {false}; }
 
 void:      OPAREN CPAREN { $$ = cynth::ast::node::Tuple{};     }
 void_type: OPAREN CPAREN { $$ = cynth::ast::node::TupleType{}; }
 void_decl: OPAREN CPAREN { $$ = cynth::ast::node::TupleDecl{}; }
 
-/*array_elem:
+array_elem:
     range_to    { $$ = $1; } |
     range_to_by { $$ = $1; } |
     spread      { $$ = $1; } |
@@ -359,7 +362,7 @@ array_elem_list:
     } |
     array_elem_list[rest] COMMA array_elem[next] {
         $$ = cynth::util::push(cynth::util::alloc($next), $rest);
-    }*/
+    }
 
 block:
     OBRACE                      CBRACE { $$ = {{}};    } |

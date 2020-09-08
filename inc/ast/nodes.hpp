@@ -77,7 +77,7 @@ namespace cynth::ast {
         struct Declaration;
         struct Expression;
         struct Statement;
-        //struct ArrayElem;
+        struct ArrayElem;
     }
 
     namespace node {
@@ -187,6 +187,16 @@ namespace cynth::ast {
             };
         };
 
+        using boolean_node = base::node <
+            bool
+        >;
+        struct Boolean: boolean_node {
+            using boolean_node::boolean_node;
+            enum component_name {
+                value
+            };
+        };
+
         using integer_node = base::node <
             int
         >;
@@ -282,7 +292,7 @@ namespace cynth::ast {
             };
         };
 
-        /*using array_node = base::node <
+        using array_node = base::node <
             std::vector<category::ArrayElem *>
         >;
         struct Array: array_node {
@@ -290,7 +300,7 @@ namespace cynth::ast {
             enum component_name {
                 elements
             };
-        };*/
+        };
 
         using tuple_node = base::node <
             std::vector<category::Expression *>
@@ -304,7 +314,7 @@ namespace cynth::ast {
 
         //// Array literal elements ////
 
-        /*using range_to_node = base::node <
+        using range_to_node = base::node <
             category::Expression *,
             category::Expression *
         >;
@@ -338,7 +348,7 @@ namespace cynth::ast {
             enum component_name {
                 container
             };
-        };*/
+        };
 
         //// Declarations ////
 
