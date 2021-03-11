@@ -25,21 +25,7 @@
 
 %code provides {
     namespace yy {
-
         parser::symbol_type yylex ();
-
-    }
-
-    namespace cynth::ast::reg {
-
-        template <typename t>
-        util::registry<t> r;
-
-        template <typename t>
-        t * push (t && x) {
-            return &r<std::remove_reference_t<t>>.push(std::forward<t>(x));
-        }
-
     }
 }
 

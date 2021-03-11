@@ -32,6 +32,8 @@ buffer   (?i:buffer)
 fn       (?i:fn)
 true     (?i:true)
 false    (?i:false)
+const    (?i:const)
+void     (?i:void)
 
 %%
 
@@ -53,9 +55,11 @@ false    (?i:false)
 {type}     return parser::make_TYPE();
 {buffer}   return parser::make_BUFFER();
 {fn}       return parser::make_FN();
- /*
 {true}     return parser::make_TRUE();
 {false}    return parser::make_FALSE();
+{const}    return parser::make_CONST();
+ /*
+{void}     return parser::make_VOID();
 */
 
 {name}     return parser::make_NAME(yytext);
@@ -109,3 +113,5 @@ false    (?i:false)
 */
 ";"        return parser::make_SEMI();
 "$"        return parser::make_AUTO();
+
+.          return parser::make_ILLEGAL();

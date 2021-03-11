@@ -12,7 +12,5 @@ int main () {
     node::Block ast;
     parser parse{ast};
     parse();
-    std::cout << display(ast);
-    /*for (auto const & item : reg::r<category::Statement>.container)
-        std::cout << display(item) << '\n';*/
+    std::cout << display(ast) << '\n';
 }

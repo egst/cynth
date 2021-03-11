@@ -1,0 +1,10 @@
+Int a = {
+    Int b = 5;
+    return b + 1;
+};
+
+Int f (Int x) x + 1;
+
+Int b = f(5);
+
+Int c = if (b == 5) 1 else 2;

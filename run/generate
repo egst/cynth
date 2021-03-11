@@ -1,5 +1,0 @@
-#!/bin/sh
-flex -o src/lexer.cpp gen/lexer.l
-bison -Wcounterexamples -d -o src/parser.cpp gen/parser.y
-#mv src/location.hpp inc/location.hpp
-mv src/parser.hpp inc/parser.hpp

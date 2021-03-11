@@ -1,7 +1,9 @@
-bin/**
-tmp
-ideas
-test
+tmp/
+dep/
+bin/
+dist/
 **/*.swp
 **/*.swo
 **/*.swn
+
+# TODO: compile_flags.txt

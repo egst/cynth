@@ -1,0 +1,2 @@
+-std=c++20
+-I/mnt/c/users/egst/eghe/personal/cynth/rp/impl/inc

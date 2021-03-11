@@ -32,6 +32,10 @@
 %token TYPE
 %token FN
 %token BUFFER
+%token RETURN
+%token TRUE
+%token FALSE
+%token CONST
 %token AUTO
 %token ASSGN
 %token SEMI
@@ -39,7 +43,6 @@
 %token TO
 %token BY
 %token DOT3
-%token RETURN
 %token OPAREN
 %token CPAREN
 %token OBRACE
@@ -61,6 +64,7 @@
 %token LE
 %token GT
 %token LT
+%token ILLEGAL
 
 %nterm <int> start
 %nterm <cynth::ast::category::Type>        type
@@ -111,6 +115,7 @@
 %nterm <cynth::ast::node::AutoArrayType> auto_array_type
 %nterm <cynth::ast::node::BufferType>    buffer_type
 %nterm <cynth::ast::node::TypeDecl>      type_decl
+%nterm <cynth::ast::node::ConstType>     const_type
 
 /* Declarations: */
 %nterm <cynth::ast::node::SingleDecl> single_decl
@@ -137,6 +142,7 @@
 %nterm <cynth::ast::node::Decimal> decimal
 %nterm <cynth::ast::node::String>  string
 %nterm <cynth::ast::node::Array>   array
+%nterm <cynth::ast::node::Boolean> boolean
 
 /* Array literal elements: */
 %nterm <cynth::ast::node::RangeTo>   range_to
@@ -232,8 +238,8 @@ expr_post:
     expr_atom
 
 expr_atom:
-    bool    { $$ = $1; } |
     name    { $$ = $1; } |
+    boolean { $$ = $1; } |
     integer { $$ = $1; } |
     decimal { $$ = $1; } |
     string  { $$ = $1; } |
@@ -279,13 +285,16 @@ type:
     decl_array_type { $$ = $1; } |
     auto_array_type { $$ = $1; } |
     type_decl       { $$ = $1; } |
+    const_type      { $$ = $1; } |
     paren_type      { $$ = $1; }
+
+const_type: type CONST { $$ = {cynth::util::alloc($type)}; }
 
 function_type:
     type[out]      paren_type[in] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
     void_type[out] paren_type[in] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
-    type[out]      void_type[in]       { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
-    void_type[out] void_type[in]       { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; }
+    type[out]      void_type[in]  { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
+    void_type[out] void_type[in]  { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; }
 
 array_type:
     type   OBRACK expression[size] CBRACK { $$ = {cynth::util::alloc($type), cynth::util::alloc($size)}; }
@@ -335,7 +344,7 @@ name:      NAME     { $$ = {$1}; }
 integer:   INTEGER  { $$ = {cynth::util::stoi($1)}; }
 decimal:   DECIMAL  { $$ = {std::stof($1)};         }
 string:    STRING   { $$ = {cynth::util::trim($1)}; }
-bool:      TRUE     { $$ = {true};  } |
+boolean:   TRUE     { $$ = {true};  } |
            FALSE    { $$ = {false}; }
 
 void:      OPAREN CPAREN { $$ = cynth::ast::node::Tuple{};     }
