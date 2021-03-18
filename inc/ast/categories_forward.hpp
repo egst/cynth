@@ -2,10 +2,12 @@
 
 namespace cynth::ast::category {
 
-    struct Type;
-    struct Expression;
-    struct Declaration;
     struct ArrayElem;
+    struct Declaration;
+    struct Expression;
+    struct Name;
+    struct Pattern;
     struct Statement;
+    struct Type;
 
 }

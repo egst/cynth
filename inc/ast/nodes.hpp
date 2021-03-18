@@ -1,17 +1,7 @@
 #pragma once
 
-
-#include "ast/nodes/auto.hpp"
-#include "ast/nodes/if.hpp"
-#include "ast/nodes/int.hpp"
-#include "ast/nodes/name.hpp"
-#include "ast/nodes/single_decl.hpp"
-
-namespace cynth::ast::node {
-
-
-
-
-
-
-}
+#include "ast/nodes/array_elems.hpp"
+#include "ast/nodes/declarations.hpp"
+#include "ast/nodes/expressions.hpp"
+#include "ast/nodes/statements.hpp"
+#include "ast/nodes/types.hpp"

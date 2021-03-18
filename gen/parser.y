@@ -1,10 +1,11 @@
 %code requires {
     #include "ast.hpp"
-    #include "util.hpp"
+    #include "util/string.hpp"
+    #include "util/general.hpp"
 
-    #include <string>
-    #include <vector>
-    #include <utility>
+    //#include <string>
+    //#include <vector>
+    //#include <utility>
 }
 
 %code provides {
@@ -16,6 +17,7 @@
 %require "3.2"
 %language "c++"
 
+/* TODO: %define api.namespace ... */
 %define api.token.constructor
 %define api.value.type variant
 %define api.value.automove
@@ -23,8 +25,8 @@
 
 %token <std::string> NAME
 %token <std::string> TYPENAME
-%token <std::string> INTEGER
-%token <std::string> DECIMAL
+%token <std::string> INT
+%token <std::string> FLOAT
 %token <std::string> STRING
 %token IF
 %token ELSE
@@ -42,7 +44,7 @@
 %token COMMA
 %token TO
 %token BY
-%token DOT3
+%token ELIP
 %token OPAREN
 %token CPAREN
 %token OBRACE
@@ -66,11 +68,25 @@
 %token LT
 %token ILLEGAL
 
+/*  Naming convention:
+    Non-terminals representing an AST node or category directly are prefixed with `node_` or `cat_` respectively.
+    Oter non-terminals have no such prefix. Such terminals include:
+    * Temporary structures that will form a part of an AST node. E.g. expr_list, stmt_list.
+    * Purely syntactic categories. E.g. pure, expr_or.
+    * Elements that may be represented by a single AST node as well as the tuple equivalent thereof depending on the number of elements. E.g. paren_expr, paren_type.
+    * Elements representing a node with specific properties. E.g. void, void_type. */
+
 %nterm <int> start
-%nterm <cynth::ast::category::Type>        type
-%nterm <cynth::ast::category::Statement>   statement
+
+/* [categories] */
+%nterm <cynth::ast::category::Type>        cat_type
+%nterm <cynth::ast::category::Declaration> cat_declaration
+%nterm <cynth::ast::category::ArrayElem>   cat_array_elem
+%nterm <cynth::ast::category::Expression>  cat_expression
+%nterm <cynth::ast::category::Statement>   cat_statement
+
+/* [syntactic categories] */
 %nterm <cynth::ast::category::Statement>   pure
-%nterm <cynth::ast::category::Expression>  expression
 %nterm <cynth::ast::category::Expression>  expr_or
 %nterm <cynth::ast::category::Expression>  expr_and
 %nterm <cynth::ast::category::Expression>  expr_eq
@@ -82,343 +98,595 @@
 %nterm <cynth::ast::category::Expression>  expr_post
 %nterm <cynth::ast::category::Expression>  expr_atom
 %nterm <cynth::ast::category::Expression>  expr_right
-%nterm <cynth::ast::category::Declaration> declaration
-%nterm <cynth::ast::category::ArrayElem>   array_elem
 
-/* Expressions: */
-%nterm <cynth::ast::node::Or>          or
-%nterm <cynth::ast::node::And>         and
-%nterm <cynth::ast::node::Eq>          eq
-%nterm <cynth::ast::node::Ne>          ne
-%nterm <cynth::ast::node::Ge>          ge
-%nterm <cynth::ast::node::Le>          le
-%nterm <cynth::ast::node::Gt>          gt
-%nterm <cynth::ast::node::Lt>          lt
-%nterm <cynth::ast::node::Add>         add
-%nterm <cynth::ast::node::Sub>         sub
-%nterm <cynth::ast::node::Mul>         mul
-%nterm <cynth::ast::node::Div>         div
-%nterm <cynth::ast::node::Mod>         mod
-%nterm <cynth::ast::node::Pow>         pow
-%nterm <cynth::ast::node::Plus>        plus
-%nterm <cynth::ast::node::Minus>       minus
-%nterm <cynth::ast::node::Not>         not
-%nterm <cynth::ast::node::Application> application
-%nterm <cynth::ast::node::Conversion>  conversion
-%nterm <cynth::ast::node::Subscript>   subscript
-
-/* Types: */
-%nterm <cynth::ast::node::Auto>          auto
-%nterm <cynth::ast::node::FunctionType>  function_type
-%nterm <cynth::ast::node::ArrayType>     array_type
-%nterm <cynth::ast::node::DeclArrayType> decl_array_type
-%nterm <cynth::ast::node::AutoArrayType> auto_array_type
-%nterm <cynth::ast::node::BufferType>    buffer_type
-%nterm <cynth::ast::node::TypeDecl>      type_decl
-%nterm <cynth::ast::node::ConstType>     const_type
-
-/* Declarations: */
-%nterm <cynth::ast::node::SingleDecl> single_decl
-
-/* Pure statements: */
-%nterm <cynth::ast::node::Definition>  definition
-%nterm <cynth::ast::node::Assignment>  assignment
-%nterm <cynth::ast::node::TypeDef>     type_def
-%nterm <cynth::ast::node::Return>      return
-%nterm <cynth::ast::node::If>          if
-%nterm <cynth::ast::node::When>        when
-%nterm <cynth::ast::node::FunctionDef> function_def
-
-/* Right consuming: */
-%nterm <cynth::ast::node::ExprIf>   expr_if
-%nterm <cynth::ast::node::Function> function
-
-/* Names: */
-%nterm <cynth::ast::node::Name>     name
-%nterm <cynth::ast::node::TypeName> type_name
-
-/* Literals: */
-%nterm <cynth::ast::node::Integer> integer
-%nterm <cynth::ast::node::Decimal> decimal
-%nterm <cynth::ast::node::String>  string
-%nterm <cynth::ast::node::Array>   array
-%nterm <cynth::ast::node::Boolean> boolean
-
-/* Array literal elements: */
-%nterm <cynth::ast::node::RangeTo>   range_to
-%nterm <cynth::ast::node::RangeToBy> range_to_by
-%nterm <cynth::ast::node::Spread>    spread
-
-/* Composite: */
-%nterm <cynth::ast::node::Block>           block
-%nterm <cynth::ast::category::Expression>  paren_expr
-%nterm <cynth::ast::category::Declaration> paren_decl
+/* [types] */
 %nterm <cynth::ast::category::Type>        paren_type
-%nterm <cynth::ast::category::Expression>  void
 %nterm <cynth::ast::category::Type>        void_type
-%nterm <cynth::ast::category::Declaration> void_decl
+%nterm <cynth::ast::node::Auto>            node_auto
+%nterm <cynth::ast::node::TypeName>        node_type_name
+%nterm <cynth::ast::node::ConstType>       node_const_type
+%nterm <cynth::ast::node::FunctionType>    node_function_type
+%nterm <cynth::ast::node::ArrayType>       node_array_type
+%nterm <cynth::ast::node::BufferType>      node_buffer_type
+%nterm <cynth::ast::node::TypeDecl>        node_type_decl
 
-/* Temporary: */
-%nterm <std::vector<cynth::ast::category::Expression  *>> expr_list
-%nterm <std::vector<cynth::ast::category::Statement   *>> stmt_list
-%nterm <std::vector<cynth::ast::category::Declaration *>> decl_list
-%nterm <std::vector<cynth::ast::category::Type        *>> type_list
-%nterm <std::vector<cynth::ast::category::ArrayElem   *>> array_elem_list
+/* [declarations] */
+%nterm <cynth::ast::category::Declaration> paren_decl
+%nterm <cynth::ast::category::Declaration> void_decl
+%nterm <cynth::ast::node::Declaration>     node_declaration
+
+/* [array elements] */
+%nterm <cynth::ast::node::RangeTo>         node_range_to
+%nterm <cynth::ast::node::RangeToBy>       node_range_to_by
+%nterm <cynth::ast::node::Spread>          node_spread
+
+/* [expressions] */
+%nterm <cynth::ast::category::Expression>  paren_expr
+%nterm <cynth::ast::category::Expression>  void
+%nterm <cynth::ast::node::Name>            node_name
+%nterm <cynth::ast::node::Block>           node_block
+/* (literals) */
+%nterm <cynth::ast::node::Bool>            node_bool
+%nterm <cynth::ast::node::Int>             node_int
+%nterm <cynth::ast::node::Float>           node_float
+%nterm <cynth::ast::node::String>          node_string
+%nterm <cynth::ast::node::Function>        node_function
+%nterm <cynth::ast::node::Array>           node_array
+/* (operators) */
+%nterm <cynth::ast::node::Or>              node_or
+%nterm <cynth::ast::node::And>             node_and
+%nterm <cynth::ast::node::Eq>              node_eq
+%nterm <cynth::ast::node::Ne>              node_ne
+%nterm <cynth::ast::node::Ge>              node_ge
+%nterm <cynth::ast::node::Le>              node_le
+%nterm <cynth::ast::node::Gt>              node_gt
+%nterm <cynth::ast::node::Lt>              node_lt
+%nterm <cynth::ast::node::Add>             node_add
+%nterm <cynth::ast::node::Sub>             node_sub
+%nterm <cynth::ast::node::Mul>             node_mul
+%nterm <cynth::ast::node::Div>             node_div
+%nterm <cynth::ast::node::Mod>             node_mod
+%nterm <cynth::ast::node::Pow>             node_pow
+%nterm <cynth::ast::node::Plus>            node_plus
+%nterm <cynth::ast::node::Minus>           node_minus
+%nterm <cynth::ast::node::Not>             node_not
+%nterm <cynth::ast::node::Application>     node_application
+%nterm <cynth::ast::node::Conversion>      node_conversion
+%nterm <cynth::ast::node::Subscript>       node_subscript
+%nterm <cynth::ast::node::ExprIf>          node_expr_if
+
+/* [statements] */
+%nterm <cynth::ast::node::Definition>      node_definition
+%nterm <cynth::ast::node::Assignment>      node_assignment
+%nterm <cynth::ast::node::FunctionDef>     node_function_def
+%nterm <cynth::ast::node::TypeDef>         node_type_def
+%nterm <cynth::ast::node::Return>          node_return
+%nterm <cynth::ast::node::If>              node_if
+%nterm <cynth::ast::node::When>            node_when
+
+/* [temporary structures] */
+%nterm <cynth::ast::node::component_vector<cynth::ast::category::Type>>        type_list
+%nterm <cynth::ast::node::component_vector<cynth::ast::category::Declaration>> decl_list
+%nterm <cynth::ast::node::component_vector<cynth::ast::category::ArrayElem>>   array_elem_list
+%nterm <cynth::ast::node::component_vector<cynth::ast::category::Expression>>  expr_list
+%nterm <cynth::ast::node::component_vector<cynth::ast::category::Statement>>   stmt_list
 
 %%
 
 start:
-     %empty               { result = {{}};    } |
-     stmt_list[list]      { result = {$list}; } |
-     stmt_list[list] SEMI { result = {$list}; }
+    %empty {
+        result = {};
+    } |
+    /*node_block[block] {
+        result = $block;
+    } |*/
+    stmt_list[list] {
+        result = {$list};
+    } |
+    stmt_list[list] SEMI {
+        result = {$list};
+    }
 
-statement:
-    pure       { $$ = $1; } |
-    expression { $$ = $1; }
+/* [categories] */
+
+cat_declaration:
+    node_declaration { $$ = $1; } |
+    paren_decl       { $$ = $1; }
+
+cat_array_elem:
+    node_range_to    { $$ = $1; } |
+    node_range_to_by { $$ = $1; } |
+    node_spread      { $$ = $1; } |
+    cat_expression   { $$ = $1; }
+
+cat_type:
+    node_auto          { $$ = $1; } |
+    node_type_name     { $$ = $1; } |
+    node_function_type { $$ = $1; } |
+    node_array_type    { $$ = $1; } |
+    node_buffer_type   { $$ = $1; } |
+    node_type_decl     { $$ = $1; } |
+    node_const_type    { $$ = $1; } |
+    paren_type         { $$ = $1; }
+
+cat_expression:
+    expr_or    { $$ = $1; } |
+    expr_right { $$ = $1; }
+
+cat_statement:
+    pure           { $$ = $1; } |
+    cat_expression { $$ = $1; }
+
+/* [syntactic categories] */
 
 pure:
-    declaration  { $$ = $1; } |
-    definition   { $$ = $1; } |
-    assignment   { $$ = $1; } |
-    type_def     { $$ = $1; } |
-    function_def { $$ = $1; } |
-    return       { $$ = $1; } |
-    if           { $$ = $1; } |
-    when         { $$ = $1; }
-
-expression:
-    expr_or |
-    expr_right
+    node_declaration  { $$ = $1; } |
+    node_definition   { $$ = $1; } |
+    node_assignment   { $$ = $1; } |
+    node_type_def     { $$ = $1; } |
+    node_function_def { $$ = $1; } |
+    node_return       { $$ = $1; } |
+    node_if           { $$ = $1; } |
+    node_when         { $$ = $1; }
 
 expr_or:
-    or { $$ = $1; } |
-    expr_and
+    node_or  { $$ = $1; } |
+    expr_and { $$ = $1; }
 
 expr_and:
-    and { $$ = $1; } |
-    expr_eq
+    node_and { $$ = $1; } |
+    expr_eq  { $$ = $1; }
 
 expr_eq:
-    eq { $$ = $1; } |
-    ne { $$ = $1; } |
-    expr_ord
+    node_eq  { $$ = $1; } |
+    node_ne  { $$ = $1; } |
+    expr_ord { $$ = $1; }
 
 expr_ord:
-    ge { $$ = $1; } |
-    le { $$ = $1; } |
-    gt { $$ = $1; } |
-    lt { $$ = $1; } |
-    expr_add
+    node_ge  { $$ = $1; } |
+    node_le  { $$ = $1; } |
+    node_gt  { $$ = $1; } |
+    node_lt  { $$ = $1; } |
+    expr_add { $$ = $1; }
 
 expr_add:
-    add { $$ = $1; } |
-    sub { $$ = $1; } |
-    expr_mul
+    node_add { $$ = $1; } |
+    node_sub { $$ = $1; } |
+    expr_mul { $$ = $1; }
 
 expr_mul:
-    mul { $$ = $1; } |
-    div { $$ = $1; } |
-    mod { $$ = $1; } |
-    expr_pow
+    node_mul { $$ = $1; } |
+    node_div { $$ = $1; } |
+    node_mod { $$ = $1; } |
+    expr_pow { $$ = $1; }
 
 expr_pow:
-    pow { $$ = $1; } |
-    expr_pre
+    node_pow { $$ = $1; } |
+    expr_pre { $$ = $1; }
 
 expr_pre:
-    minus { $$ = $1; } |
-    plus  { $$ = $1; } |
-    not   { $$ = $1; } |
-    expr_post
+    node_minus { $$ = $1; } |
+    node_plus  { $$ = $1; } |
+    node_not   { $$ = $1; } |
+    expr_post  { $$ = $1; }
 
 expr_post:
-    application { $$ = $1; } |
-    conversion  { $$ = $1; } |
-    subscript   { $$ = $1; } |
-    expr_atom
+    node_application { $$ = $1; } |
+    node_conversion  { $$ = $1; } |
+    node_subscript   { $$ = $1; } |
+    expr_atom        { $$ = $1; }
 
 expr_atom:
-    name    { $$ = $1; } |
-    boolean { $$ = $1; } |
-    integer { $$ = $1; } |
-    decimal { $$ = $1; } |
-    string  { $$ = $1; } |
-    block   { $$ = $1; } |
-    array   { $$ = $1; } |
-    paren_expr
+    node_name   { $$ = $1; } |
+    node_bool   { $$ = $1; } |
+    node_int    { $$ = $1; } |
+    node_float  { $$ = $1; } |
+    node_string { $$ = $1; } |
+    node_block  { $$ = $1; } |
+    node_array  { $$ = $1; } |
+    paren_expr  { $$ = $1; }
 
 expr_right:
-    expr_if  { $$ = $1; } |
-    function { $$ = $1; }
+    node_expr_if  { $$ = $1; } |
+    node_function { $$ = $1; }
 
-or:  expr_or[lhs]  OR  expr_and[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-and: expr_and[lhs] AND expr_eq[rhs]  { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-eq:  expr_eq[lhs]  EQ  expr_ord[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-ne:  expr_eq[lhs]  NE  expr_ord[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-ge:  expr_ord[lhs] GE  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-le:  expr_ord[lhs] LE  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-gt:  expr_ord[lhs] GT  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-lt:  expr_ord[lhs] LT  expr_add[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-add: expr_add[lhs] ADD expr_mul[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-sub: expr_add[lhs] SUB expr_mul[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-mul: expr_mul[lhs] MUL expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-div: expr_mul[lhs] DIV expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-mod: expr_mul[lhs] MOD expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-
-pow: expr_pre[lhs] POW expr_pow[rhs] { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-
-minus: SUB expr_pre[rhs] { $$ = {cynth::util::alloc($rhs)}; }
-plus:  ADD expr_pre[rhs] { $$ = {cynth::util::alloc($rhs)}; }
-not:   NOT expr_pre[rhs] { $$ = {cynth::util::alloc($rhs)}; }
-
-application: expr_post[lhs] paren_expr[rhs]               { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; } |
-             expr_post[lhs] void[rhs]                     { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-conversion:  type[lhs]      paren_expr[rhs]               { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-subscript:   expr_post[lhs] OBRACK expression[rhs] CBRACK { $$ = {cynth::util::alloc($lhs), cynth::util::alloc($rhs)}; }
-
-type:
-    auto            { $$ = $1; } |
-    type_name       { $$ = $1; } |
-    function_type   { $$ = $1; } |
-    array_type      { $$ = $1; } |
-    buffer_type     { $$ = $1; } |
-    decl_array_type { $$ = $1; } |
-    auto_array_type { $$ = $1; } |
-    type_decl       { $$ = $1; } |
-    const_type      { $$ = $1; } |
-    paren_type      { $$ = $1; }
-
-const_type: type CONST { $$ = {cynth::util::alloc($type)}; }
-
-function_type:
-    type[out]      paren_type[in] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
-    void_type[out] paren_type[in] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
-    type[out]      void_type[in]  { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; } |
-    void_type[out] void_type[in]  { $$ = {cynth::util::alloc($out), cynth::util::alloc($in)}; }
-
-array_type:
-    type   OBRACK expression[size] CBRACK { $$ = {cynth::util::alloc($type), cynth::util::alloc($size)}; }
-buffer_type:
-    BUFFER OBRACK expression[size] CBRACK { $$ = {cynth::util::alloc($size)}; }
-auto_array_type:
-    type[val_type] OBRACK AUTO CBRACK { $$ = {cynth::util::alloc($val_type)}; } |
-    type[val_type] OBRACK      CBRACK { $$ = {cynth::util::alloc($val_type)}; }
-decl_array_type:
-    type[val_type] OBRACK declaration[size_decl] CBRACK { $$ = {cynth::util::alloc($val_type), cynth::util::alloc($size_decl)}; }
-
-declaration:
-    single_decl { $$ = $1; } |
-    paren_decl  { $$ = $1; }
-
-single_decl: type name      { $$ = {$name, cynth::util::alloc($type)}; }
-type_decl:   TYPE type_name { $$ = {$type_name};                       }
-
-definition: declaration[target]    ASSGN expression[val] { $$ = {cynth::util::alloc($target), cynth::util::alloc($val)}; }
-assignment: name[target]           ASSGN expression[val] { $$ = {$target,                     cynth::util::alloc($val)}; }
-type_def:   TYPE type_name[target] ASSGN type[val]       { $$ = {$target,                     cynth::util::alloc($val)}; }
-
-return:
-    RETURN expression[val] { $$ = {cynth::util::alloc($val)}; } |
-    RETURN void[val]       { $$ = {cynth::util::alloc($val)}; } |
-    RETURN                 { $$ = {cynth::util::alloc(cynth::ast::category::Expression{cynth::ast::node::Tuple{}})}; }
-
-if:      IF   paren_expr[cond] pure[pos]       ELSE pure[neg]       { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)}; }
-expr_if: IF   paren_expr[cond] expression[pos] ELSE expression[neg] { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos), cynth::util::alloc($neg)}; }
-when:    WHEN paren_expr[cond] statement[pos]                       { $$ = {cynth::util::alloc($cond), cynth::util::alloc($pos)}; }
-
-function_def:
-    type[out]      name paren_decl[in] expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), $name, cynth::util::alloc($body)}; } |
-    void_type[out] name paren_decl[in] expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), $name, cynth::util::alloc($body)}; } |
-    type[out]      name void_decl[in]  expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), $name, cynth::util::alloc($body)}; } |
-    void_type[out] name void_decl[in]  expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), $name, cynth::util::alloc($body)}; }
-
-function:
-    type[out]      FN paren_decl[in] expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), cynth::util::alloc($body)}; } |
-    void_type[out] FN paren_decl[in] expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), cynth::util::alloc($body)}; } |
-    type[out]      FN void_decl[in]  expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), cynth::util::alloc($body)}; } |
-    void_type[out] FN void_decl[in]  expression[body] { $$ = {cynth::util::alloc($out), cynth::util::alloc($in), cynth::util::alloc($body)}; }
-
-auto:      AUTO     { $$ = {};   }
-type_name: TYPENAME { $$ = {$1}; }
-name:      NAME     { $$ = {$1}; }
-integer:   INTEGER  { $$ = {cynth::util::stoi($1)}; }
-decimal:   DECIMAL  { $$ = {std::stof($1)};         }
-string:    STRING   { $$ = {cynth::util::trim($1)}; }
-boolean:   TRUE     { $$ = {true};  } |
-           FALSE    { $$ = {false}; }
-
-void:      OPAREN CPAREN { $$ = cynth::ast::node::Tuple{};     }
-void_type: OPAREN CPAREN { $$ = cynth::ast::node::TupleType{}; }
-void_decl: OPAREN CPAREN { $$ = cynth::ast::node::TupleDecl{}; }
-
-array_elem:
-    range_to    { $$ = $1; } |
-    range_to_by { $$ = $1; } |
-    spread      { $$ = $1; } |
-    expression  { $$ = $1; }
-
-range_to:    expression[from] TO expression[to]                   { $$ = {cynth::util::alloc($from), cynth::util::alloc($to)}; }
-range_to_by: expression[from] TO expression[to] BY expression[by] { $$ = {cynth::util::alloc($from), cynth::util::alloc($to), cynth::util::alloc($by)}; }
-spread:      DOT3 expression[container]                           { $$ = {cynth::util::alloc($container)}; }
-
-array:
-    OBRACK                            CBRACK { $$ = {{}};    } |
-    OBRACK array_elem_list[list]      CBRACK { $$ = {$list}; } |
-    OBRACK array_elem_list[list] SEMI CBRACK { $$ = {$list}; }
-array_elem_list:
-    array_elem[first] {
-        $$ = {cynth::util::alloc($first)};
-    } |
-    array_elem_list[rest] COMMA array_elem[next] {
-        $$ = cynth::util::push(cynth::util::alloc($next), $rest);
-    }
-
-block:
-    OBRACE                      CBRACE { $$ = {{}};    } |
-    OBRACE stmt_list[list]      CBRACE { $$ = {$list}; } |
-    OBRACE stmt_list[list] SEMI CBRACE { $$ = {$list}; }
-stmt_list:
-    statement[first] {
-        $$ = {cynth::util::alloc($first)};
-    } |
-    stmt_list[rest] SEMI statement[next] {
-        $$ = cynth::util::push(cynth::util::alloc($next), $rest);
-    }
+/* [types] */
 
 paren_type:
-    OPAREN type[single]          CPAREN { $$ = $single; } |
-    OPAREN type_list[list]       CPAREN { $$ = cynth::ast::node::TupleType{$list}; } |
-    OPAREN type_list[list] COMMA CPAREN { $$ = cynth::ast::node::TupleType{$list}; }
-type_list:
-    type[first] COMMA type[second] {
-        $$ = {cynth::util::alloc($first), cynth::util::alloc($second)};
+    OPAREN cat_type[single] CPAREN {
+        $$ = $single;
     } |
-    type_list[rest] COMMA type[next] {
-        $$ = cynth::util::push(cynth::util::alloc($next), $rest);
+    OPAREN type_list[list] CPAREN {
+        $$ = cynth::ast::node::TupleType{$list};
+    } |
+    OPAREN type_list[list] COMMA CPAREN {
+        $$ = cynth::ast::node::TupleType{$list};
     }
 
-paren_expr:
-    OPAREN expression[single]    CPAREN { $$ = $single; } |
-    OPAREN expr_list[list]       CPAREN { $$ = cynth::ast::node::Tuple{$list}; } |
-    OPAREN expr_list[list] COMMA CPAREN { $$ = cynth::ast::node::Tuple{$list}; }
-expr_list:
-    expression[first] COMMA expression[second] {
-        $$ = {cynth::util::alloc($first), cynth::util::alloc($second)};
-    } |
-    expr_list[rest] COMMA expression[next] {
-        $$ = cynth::util::push(cynth::util::alloc($next), $rest);
+void_type:
+    OPAREN CPAREN {
+        $$ = cynth::ast::node::TupleType{};
     }
+
+node_auto:
+    AUTO {
+        $$ = {};
+    }
+
+node_type_name:
+    TYPENAME[name] {
+        $$ = {$name};
+    }
+
+node_const_type:
+    cat_type[type] CONST {
+        $$ = {.type = $type};
+    }
+
+node_function_type:
+    cat_type[out] paren_type[in] {
+        $$ = {.output = $out, .input = $in};
+    } |
+    void_type[out] paren_type[in] {
+        $$ = {.output = $out, .input = $in};
+    } |
+    cat_type[out] void_type[in] {
+        $$ = {.output = $out, .input = $in};
+    } |
+    void_type[out] void_type[in] {
+        $$ = {.output = $out, .input = $in};
+    }
+
+node_array_type:
+    cat_type[type] OBRACK cat_expression[size] CBRACK {
+        $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size}};
+    } |
+    cat_type[type] OBRACK AUTO CBRACK {
+        $$ = {.type = $type, .size = cynth::ast::node::optional_component<cynth::ast::category::Pattern>{}};
+    } |
+    cat_type[type] OBRACK CBRACK {
+        $$ = {.type = $type, .size = cynth::ast::node::optional_component<cynth::ast::category::Pattern>{}};
+    } |
+    cat_type[type] OBRACK cat_declaration[size_decl] CBRACK {
+        $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size_decl}};
+    }
+
+node_buffer_type:
+    BUFFER OBRACK cat_expression[size] CBRACK {
+        $$ = {.size = $size};
+    }
+
+node_type_decl:
+    TYPE node_type_name[name] {
+        $$ = {$name};
+    }
+
+/* [declarations] */
 
 paren_decl:
-    OPAREN declaration[single]   CPAREN { $$ = $single; } |
-    OPAREN decl_list[list]       CPAREN { $$ = cynth::ast::node::TupleDecl{$list}; } |
-    OPAREN decl_list[list] COMMA CPAREN { $$ = cynth::ast::node::TupleDecl{$list}; }
-decl_list:
-    declaration[first] COMMA declaration[second] {
-        $$ = {cynth::util::alloc($first), cynth::util::alloc($second)};
+    OPAREN cat_declaration[single] CPAREN {
+        $$ = $single;
     } |
-    decl_list[rest] COMMA declaration[next] {
-        $$ = cynth::util::push(cynth::util::alloc($next), $rest);
+    OPAREN decl_list[list] CPAREN {
+        $$ = cynth::ast::node::TupleDecl{$list};
+    } |
+    OPAREN decl_list[list] COMMA CPAREN {
+        $$ = cynth::ast::node::TupleDecl{$list};
+    }
+
+void_decl:
+    OPAREN CPAREN {
+        $$ = cynth::ast::node::TupleDecl{};
+    }
+
+node_declaration:
+    cat_type[type] node_name[name] {
+        $$ = {.name = $name, .type = $type};
+    }
+
+/* [array elements] */
+
+node_range_to:
+    cat_expression[from] TO cat_expression[to] {
+        $$ = {.from = $from, .to = $to};
+    }
+
+node_range_to_by:
+    cat_expression[from] TO cat_expression[to] BY cat_expression[by] {
+        $$ = {.from = $from, .to = $to, .by = $by};
+    }
+
+node_spread:
+    ELIP cat_expression[container] {
+        $$ = {$container};
+    }
+
+/** [expressions] */
+
+paren_expr:
+    OPAREN cat_expression[single] CPAREN {
+        $$ = $single;
+    } |
+    OPAREN expr_list[list] CPAREN {
+        $$ = cynth::ast::node::Tuple{$list};
+    } |
+    OPAREN expr_list[list] COMMA CPAREN {
+        $$ = cynth::ast::node::Tuple{$list};
+    }
+
+void:
+    OPAREN CPAREN {
+        $$ = cynth::ast::node::Tuple{};
+    }
+
+node_name:
+    NAME[name] {
+        $$ = {$name};
+    }
+
+node_block:
+    OBRACE CBRACE {
+        $$ = {};
+    } |
+    OBRACE stmt_list[list] CBRACE {
+        $$ = {$list};
+    } |
+    OBRACE stmt_list[list] SEMI CBRACE {
+        $$ = {$list};
+    }
+
+/* (literals) */
+
+node_bool:
+    TRUE {
+        $$ = {true};
+    } |
+    FALSE {
+        $$ = {false};
+    }
+
+node_int:
+    INT {
+        $$ = {cynth::util::stoi($1)};
+    }
+
+node_float:
+    FLOAT {
+        $$ = {std::stof($1)};
+    }
+
+node_string:
+    STRING {
+        $$ = {cynth::util::trim($1)};
+    }
+
+node_function:
+    cat_type[out] FN paren_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .body = $body};
+    } |
+    void_type[out] FN paren_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .body = $body};
+    } |
+    cat_type[out] FN void_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .body = $body};
+    } |
+    void_type[out] FN void_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .body = $body};
+    }
+
+node_array:
+    OBRACK CBRACK {
+        $$ = {};
+    } |
+    OBRACK array_elem_list[list] CBRACK {
+        $$ = {$list};
+    } |
+    OBRACK array_elem_list[list] SEMI CBRACK {
+        $$ = {$list};
+    }
+
+/* (operators) */
+
+node_or:
+    expr_or[lhs] OR expr_and[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_and:
+    expr_and[lhs] AND expr_eq[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_eq:
+    expr_eq[lhs] EQ expr_ord[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_ne:
+    expr_eq[lhs] NE expr_ord[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_ge:
+    expr_ord[lhs] GE expr_add[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_le:
+    expr_ord[lhs] LE expr_add[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_gt:
+    expr_ord[lhs] GT expr_add[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_lt:
+    expr_ord[lhs] LT expr_add[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_add:
+    expr_add[lhs] ADD expr_mul[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_sub:
+    expr_add[lhs] SUB expr_mul[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_mul:
+    expr_mul[lhs] MUL expr_pow[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_div:
+    expr_mul[lhs] DIV expr_pow[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_mod:
+    expr_mul[lhs] MOD expr_pow[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_pow:
+    expr_pre[lhs] POW expr_pow[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_minus:
+    SUB expr_pre[arg] {
+        $$ = {$arg};
+    }
+
+node_plus:
+    ADD expr_pre[arg] {
+        $$ = {$arg};
+    }
+
+node_not:
+    NOT expr_pre[arg] {
+        $$ = {$arg};
+    }
+
+node_application:
+    expr_post[function] paren_expr[arguments] {
+        $$ = {.function = $function, .arguments = $arguments};
+    } |
+    expr_post[function] void[arguments] {
+        $$ = {.function = $function, .arguments = $arguments};
+    }
+
+node_conversion:
+    cat_type[type] paren_expr[argument] {
+        $$ = {.type = $type, .argument = $argument};
+    }
+
+node_subscript:
+    expr_post[container] OBRACK array_elem_list[location] CBRACK {
+        $$ = {.container = $container, .location = $location};
+    }
+
+node_expr_if:
+    IF paren_expr[cond] cat_expression[pos] ELSE cat_expression[neg] {
+        $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
+    }
+
+/* [statements] */
+
+node_definition:
+    cat_declaration[target] ASSGN cat_expression[val] {
+        $$ = {.target = $target, .value = $val};
+    }
+
+node_assignment:
+    cat_expression[target] ASSGN cat_expression[val] {
+        $$ = {.target = $target, .value = $val};
+    }
+
+node_type_def:
+    TYPE node_type_name[target] ASSGN cat_type[type] {
+        $$ = {.target = $target, .type = $type};
+    }
+
+node_function_def:
+    cat_type[out] node_name[name] paren_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .name = $name, .body = $body};
+    } |
+    void_type[out] node_name[name] paren_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .name = $name, .body = $body};
+    } |
+    cat_type[out] node_name[name] void_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .name = $name, .body = $body};
+    } |
+    void_type[out] node_name[name] void_decl[in] cat_expression[body] {
+        $$ = {.output = $out, .input = $in, .name = $name, .body = $body};
+    }
+
+node_return:
+    RETURN cat_expression[val] {
+        $$ = {$val};
+    } |
+    RETURN void[val] {
+        $$ = {$val};
+    } |
+    RETURN {
+        $$ = {cynth::ast::category::Expression{cynth::ast::node::Tuple{}}};
+    }
+
+node_if:
+    IF paren_expr[cond] pure[pos] ELSE pure[neg] {
+        $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
+    }
+
+node_when:
+    WHEN paren_expr[cond] cat_statement[pos] {
+        $$ = {.condition = $cond, .branch = $pos};
+    }
+
+/* [temporary structures] */
+
+array_elem_list:
+    cat_array_elem[first] {
+        $$ = {$first};
+    } |
+    array_elem_list[rest] COMMA cat_array_elem[next] {
+        $$ = cynth::util::push_back($next, $rest);
+    }
+
+stmt_list:
+    cat_statement[first] {
+        $$ = {$first};
+    } |
+    stmt_list[rest] SEMI cat_statement[next] {
+        $$ = cynth::util::push_back($next, $rest);
+    }
+
+type_list:
+    cat_type[first] COMMA cat_type[second] {
+        $$ = {$first, $second};
+    } |
+    type_list[rest] COMMA cat_type[next] {
+        $$ = cynth::util::push_back($next, $rest);
+    }
+
+expr_list:
+    cat_expression[first] COMMA cat_expression[second] {
+        $$ = {$first, $second};
+    } |
+    expr_list[rest] COMMA cat_expression[next] {
+        $$ = cynth::util::push_back($next, $rest);
+    }
+
+decl_list:
+    cat_declaration[first] COMMA cat_declaration[second] {
+        $$ = {$first, $second};
+    } |
+    decl_list[rest] COMMA cat_declaration[next] {
+        $$ = cynth::util::push_back($next, $rest);
     }
 
 %%

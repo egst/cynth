@@ -15,8 +15,8 @@ endl     \n
 comment  ("//"|#).*
 name     [a-z][a-zA-Z0-9_]*
 typeName [A-Z][a-zA-Z0-9_]*
-integer  [0-9]+([eE][+-]?[0-9]+)?
-decimal  ([0-9]+\.[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?
+int      [0-9]+([eE][+-]?[0-9]+)?
+float    ([0-9]+\.[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?
 string   (\"([^"\\]|\\.)*\"|'([^'\\]|\\.)*')
 return   (?i:return)
 if       (?i:if)
@@ -65,8 +65,8 @@ void     (?i:void)
 {name}     return parser::make_NAME(yytext);
 {typeName} return parser::make_TYPENAME(yytext);
 
-{integer}  return parser::make_INTEGER(yytext);
-{decimal}  return parser::make_DECIMAL(yytext);
+{int}      return parser::make_INT(yytext);
+{float}    return parser::make_FLOAT(yytext);
 {string}   return parser::make_STRING(yytext);
 
 "("        return parser::make_OPAREN();
@@ -106,7 +106,7 @@ void     (?i:void)
 "."        return parser::make_DOT();
 ".."       return parser::make_DOT2();
 */
-"..."      return parser::make_DOT3();
+"..."      return parser::make_ELIP();
  /*
 ":"        return parser::make_COLON();
 "::"       return parser::make_COL2();

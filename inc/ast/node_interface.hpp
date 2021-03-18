@@ -12,5 +12,6 @@ namespace cynth::ast::node {
         //{ node.evaluate() } -> std::same_as<...>;
         //{ node.execute()  } -> std::same_as<...>;
     };
+    // TODO: Maybe split this into displayable_node, evaluatable_node, executable_node etc.
 
 }
