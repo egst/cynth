@@ -20,40 +20,40 @@ namespace cynth {
     };
     */
 
-    struct error {
+    struct result_error {
         //std::string_view message;
         std::string message;
 
-        error ():               message{""} {}
-        //error (char const * m): message{m}  {}
-        error (std::string  m): message{m}  {}
-        error (error const &) = default;
-        error (error &&)      = default;
+        result_error ():               message{""} {}
+        //result_error (char const * m): message{m}  {}
+        result_error (std::string  m): message{m}  {}
+        result_error (result_error const &) = default;
+        result_error (result_error &&)      = default;
     };
     // TODO: Instead of simple string error messages, introduce a typed system of errors with specific values.
 
     namespace detail {
 
-        template <typename Derived, typename T = cynth::error>
+        template <typename Derived, typename T = result_error>
         struct result_base {
-            constexpr T const & operator * () const & requires (!std::same_as<T, cynth::error>) {
+            constexpr T const & operator * () const & requires (!std::same_as<T, result_error>) {
                 return derived().value();
             }
 
-            constexpr T & operator * () & requires (!std::same_as<T, cynth::error>) {
+            constexpr T & operator * () & requires (!std::same_as<T, result_error>) {
                 return derived().value();
             }
 
-            constexpr T && operator * () && requires (!std::same_as<T, cynth::error>) {
+            constexpr T && operator * () && requires (!std::same_as<T, result_error>) {
                 //return derived().value();
                 return static_cast<Derived &&>(*std::move(this)).value();
             }
 
-            constexpr T const * operator -> () const requires (!std::same_as<T, cynth::error>) {
+            constexpr T const * operator -> () const requires (!std::same_as<T, result_error>) {
                 return derived().get();
             }
 
-            constexpr T * operator -> () requires (!std::same_as<T, cynth::error>) {
+            constexpr T * operator -> () requires (!std::same_as<T, result_error>) {
                 return derived().get();
             }
 
@@ -61,7 +61,7 @@ namespace cynth {
                 return derived().has_value();
             }
 
-            constexpr T value_or (T const & fallback) const requires (!std::same_as<T, cynth::error>) {
+            constexpr T value_or (T const & fallback) const requires (!std::same_as<T, result_error>) {
                 return derived().has_value()
                     ? derived().value()
                     : fallback;
@@ -84,16 +84,16 @@ namespace cynth {
 
     }
 
-    template <typename T> requires (!std::same_as<T, error>)
+    template <typename T> requires (!std::same_as<T, result_error>)
     struct result: detail::result_base<result<T>, T> {
         using value_type = T;
 
-        constexpr result (error      const & e): content{e}            {}
-        constexpr result (error      &&      e): content{std::move(e)} {}
-        constexpr result (value_type const & v): content{v}            {}
-        constexpr result (value_type &&      v): content{std::move(v)} {}
-        constexpr result (result     const &) = default;
-        constexpr result (result     &&)      = default;
+        constexpr result (result_error const & e): content{e}            {}
+        constexpr result (result_error &&      e): content{std::move(e)} {}
+        constexpr result (value_type   const & v): content{v}            {}
+        constexpr result (value_type   &&      v): content{std::move(v)} {}
+        constexpr result (result       const &) = default;
+        constexpr result (result       &&)      = default;
 
         constexpr bool has_value () const {
             return content.index() == 0;
@@ -123,20 +123,20 @@ namespace cynth {
             return std::get<value_type>(std::move(content));
         }
 
-        constexpr cynth::error const & error () const & {
-            return std::get<cynth::error>(content);
+        constexpr result_error const & error () const & {
+            return std::get<result_error>(content);
         }
 
-        constexpr cynth::error & error () & {
-            return std::get<cynth::error>(content);
+        constexpr result_error & error () & {
+            return std::get<result_error>(content);
         }
 
-        constexpr cynth::error && error () && {
-            return std::get<cynth::error>(std::move(content));
+        constexpr result_error && error () && {
+            return std::get<result_error>(std::move(content));
         }
 
     //protected:
-        std::variant<value_type, cynth::error> content;
+        std::variant<value_type, result_error> content;
     };
 
     template <>
@@ -144,10 +144,10 @@ namespace cynth {
         using value_type = void;
 
         constexpr result () {}
-        constexpr result (error      const & e): content{e}            {}
-        constexpr result (error      &&      e): content{std::move(e)} {}
-        constexpr result (result     const &) = default;
-        constexpr result (result     &&)      = default;
+        constexpr result (result_error const & e): content{e}            {}
+        constexpr result (result_error &&      e): content{std::move(e)} {}
+        constexpr result (result       const &) = default;
+        constexpr result (result       &&)      = default;
 
         constexpr bool has_value () const {
             return !content.has_value();
@@ -157,29 +157,29 @@ namespace cynth {
             return !has_value();
         }
 
-        constexpr cynth::error const & error () const & {
+        constexpr result_error const & error () const & {
             return *content;
         }
 
-        constexpr cynth::error & error () & {
+        constexpr result_error & error () & {
             return *content;
         }
 
-        constexpr cynth::error && error () && {
+        constexpr result_error && error () && {
             return *std::move(content);
         }
 
     //protected:
-        std::optional<cynth::error> content;
+        std::optional<result_error> content;
     };
 
-    template <typename T> requires (!std::same_as<T, error>)
+    template <typename T> requires (!std::same_as<T, result_error>)
     struct optional_result: detail::result_base<optional_result<T>, T> {
         using value_type = T;
 
         constexpr optional_result () {}
-        constexpr optional_result (error           const & e): content{e}            {}
-        constexpr optional_result (error           &&      e): content{std::move(e)} {}
+        constexpr optional_result (result_error    const & e): content{e}            {}
+        constexpr optional_result (result_error    &&      e): content{std::move(e)} {}
         constexpr optional_result (value_type      const & v): content{v}            {}
         constexpr optional_result (value_type      &&      v): content{std::move(v)} {}
         constexpr optional_result (optional_result const &) = default;
@@ -209,20 +209,20 @@ namespace cynth {
             return std::get<value_type>(*std::move(content));
         }
 
-        constexpr cynth::error const & error () const & {
-            return std::get<cynth::error>(*content);
+        constexpr result_error const & error () const & {
+            return std::get<result_error>(*content);
         }
 
-        constexpr cynth::error & error () & {
-            return std::get<cynth::error>(*content);
+        constexpr result_error & error () & {
+            return std::get<result_error>(*content);
         }
 
-        constexpr cynth::error && error () && {
-            return std::get<cynth::error>(*std::move(content));
+        constexpr result_error && error () && {
+            return std::get<result_error>(*std::move(content));
         }
 
     //protected:
-        std::optional<std::variant<value_type, cynth::error>> content;
+        std::optional<std::variant<value_type, result_error>> content;
     };
 
     constexpr auto make_result = [] <typename T> (T && value) {

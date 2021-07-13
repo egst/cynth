@@ -62,12 +62,12 @@ namespace cynth::ast {
         return util::init<tuple_vector>(result<asg::incomplete_decl>{std::forward<T>(value)});
     }
 
-    template <typename T> requires (!util::same_as_no_cvref<T, error>)
+    template <typename T> requires (!util::same_as_no_cvref<T, result_error>)
     constexpr auto make_execution_result (T && value) {
         return execution_result{util::init<tuple_vector>(std::forward<T>(value))};
     }
 
-    template <util::same_as_no_cvref<error> T>
+    template <util::same_as_no_cvref<result_error> T>
     constexpr auto make_execution_result (T && value) {
         return execution_result{std::forward<T>(value)};
     }

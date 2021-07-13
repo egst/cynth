@@ -30,32 +30,32 @@ namespace cynth {
     template <>
     void component_deleter<asg::value::complete>::operator () (asg::value::complete * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     asg::value::complete * component_allocator<asg::value::complete>::operator () (asg::value::complete const & other) const {
         return new asg::value::complete{other};
-    };
+    }
 
     template <>
     asg::value::complete * component_allocator<asg::value::complete>::operator () (asg::value::complete && other) const {
         return new asg::value::complete{std::move(other)};
-    };
+    }
 
     template <>
     void component_deleter<asg::value::incomplete>::operator () (asg::value::incomplete * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     asg::value::incomplete * component_allocator<asg::value::incomplete>::operator () (asg::value::incomplete const & other) const {
         return new asg::value::incomplete{other};
-    };
+    }
 
     template <>
     asg::value::incomplete * component_allocator<asg::value::incomplete>::operator () (asg::value::incomplete && other) const {
         return new asg::value::incomplete{std::move(other)};
-    };
+    }
 
     //// Bool ////
 
@@ -154,7 +154,7 @@ namespace cynth {
     }
 
     asg::get_result<string> asg::value::String::get () const {
-        return error{"Strings are not supported yet."};
+        return result_error{"Strings are not supported yet."};
     }
 
     asg::value_type_result asg::value::String::value_type () const {
@@ -180,7 +180,7 @@ namespace cynth {
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::In const &) const {
-        return error{"In to in type conversion is not supported yet."};
+        return result_error{"In to in type conversion is not supported yet."};
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::Const const & to) const {
@@ -200,7 +200,7 @@ namespace cynth {
     }
 
     asg::conversion_result asg::value::Out::convert (asg::type::Out const &) const {
-        return error{"Out to out type conversion is not supported yet."};
+        return result_error{"Out to out type conversion is not supported yet."};
     }
 
     asg::value_type_result asg::value::Out::value_type () const {
@@ -255,7 +255,7 @@ namespace cynth {
     asg::conversion_result asg::value::Array::convert (asg::type::Array const & to) const {
         if (asg::same(to)(value_type()))
             return {*this};
-        return error{"Invalid array conversion."};
+        return result_error{"Invalid array conversion."};
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Const const & to) const {
@@ -276,7 +276,7 @@ namespace cynth {
     }
 
     asg::conversion_result asg::value::Buffer::convert (asg::type::Buffer const &) const {
-        return error{"Array type conversions are not supported yet."};
+        return result_error{"Array type conversions are not supported yet."};
     }
 
     asg::value_type_result asg::value::Buffer::value_type () const {
@@ -298,12 +298,12 @@ namespace cynth {
     asg::conversion_result asg::value::Function::convert (asg::type::Function const & to) const {
         if (asg::same(to)(value_type()))
             return {*this};
-        return error{"Invalid function conversion."};
+        return result_error{"Invalid function conversion."};
     }
 
     asg::conversion_result asg::value::Function::convert (asg::type::Buffer const &) const {
         // TODO
-        return error{"Function to buffer conversion is not implemented yet."};
+        return result_error{"Function to buffer conversion is not implemented yet."};
     }
 
     asg::value_type_result asg::value::Function::value_type () const {

@@ -16,7 +16,7 @@ namespace cynth::asg {
 
         template <typename T>
         result<tuple_vector<std::string>> eval_name_node (T const &) {
-            return error{"A name or a tuple of names expected."};
+            return result_error{"A name or a tuple of names expected."};
         }
 
         //template <>

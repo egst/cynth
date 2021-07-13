@@ -44,9 +44,10 @@ ENTRY_POINTS += interpreter
 #ENTRY_POINTS += test
 
 # Compiler:
-# (Tested on GCC and Clang.)
-#COMPILER = g++
-COMPILER = clang++
+# (Tested with GCC 10, Clang 10 and 11.)
+#COMPILER = g++-10
+#COMPILER = clang++-10
+COMPILER = clang++-11
 
 # GCC (g++), Flex and Bison executable names/locations:
 # (GCC must be installed even when compiling with Clang. It is used for dependencies generation.)
@@ -139,7 +140,8 @@ GEN_PARSER = $(BISON) $(BISON_OPTIONS) --defines=$(INC)$(HEAD_PARSER)$(EXT_HEAD)
 
 all: $(GEN_FILES) $(DEP_SRC_FILES) $(DEP_ENTRY_FILES) $(BIN_SRC_FILES) $(BIN_ENTRY_FILES) $(BIN_DIST_FILES)
 
-clean: clean-dist clean-bin clean-dep clean-gen
+clean: clean-dist clean-bin clean-dep
+#clean-gen
 
 # Generating lexer files:
 $(SRC)$(IMPL_LEXER)$(EXT_IMPL): $(GEN)lexer.l

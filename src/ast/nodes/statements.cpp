@@ -22,17 +22,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Assignment>::operator () (ast::node::Assignment * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Assignment * component_allocator<ast::node::Assignment>::operator () (ast::node::Assignment const & other) const {
         return new ast::node::Assignment{other};
-    };
+    }
 
     template <>
     ast::node::Assignment * component_allocator<ast::node::Assignment>::operator () (ast::node::Assignment && other) const {
         return new ast::node::Assignment{std::move(other)};
-    };
+    }
 
     std::string ast::node::Assignment::display () const {
         return ast::display(target) + " = " + ast::display(value);
@@ -47,7 +47,7 @@ namespace cynth {
 
         // TODO: What about .size() == 0? And elsewhere as well...
         if (names.size() > 1)
-            return ast::make_execution_result(error{"Assigning to tuples of names is not supported yet."});
+            return ast::make_execution_result(result_error{"Assigning to tuples of names is not supported yet."});
 
         auto name = std::move(names)[0];
 
@@ -58,13 +58,13 @@ namespace cynth {
 
         auto value_result = ctx.find_value(name);
         if (!value_result)
-            return ast::make_execution_result(error{"Name not found."});
+            return ast::make_execution_result(result_error{"Name not found."});
 
         for (auto & type : value_result->type) {
             auto const_check = lift::category{util::overload {
                 // TODO: arrays of const values (once assignment by elements is implemented).
                 [] (asg::type::Const const &) -> cynth::result<void> {
-                    return error{"Cannot assign to a const type."};
+                    return result_error{"Cannot assign to a const type."};
                 },
                 [] <typename Type> (Type &&) -> cynth::result<void> requires (!util::same_as_no_cvref<Type, asg::type::Const>) {
                     return {};
@@ -91,17 +91,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Definition>::operator () (ast::node::Definition * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Definition * component_allocator<ast::node::Definition>::operator () (ast::node::Definition const & other) const {
         return new ast::node::Definition{other};
-    };
+    }
 
     template <>
     ast::node::Definition * component_allocator<ast::node::Definition>::operator () (ast::node::Definition && other) const {
         return new ast::node::Definition{std::move(other)};
-    };
+    }
 
     std::string ast::node::Definition::display () const {
         return ast::display(target) + " = " + ast::display(value);
@@ -130,17 +130,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::FunctionDef>::operator () (ast::node::FunctionDef * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::FunctionDef * component_allocator<ast::node::FunctionDef>::operator () (ast::node::FunctionDef const & other) const {
         return new ast::node::FunctionDef{other};
-    };
+    }
 
     template <>
     ast::node::FunctionDef * component_allocator<ast::node::FunctionDef>::operator () (ast::node::FunctionDef && other) const {
         return new ast::node::FunctionDef{std::move(other)};
-    };
+    }
 
     std::string ast::node::FunctionDef::display () const {
         return ast::display(output) + " " + ast::display(name) + " " + util::parenthesized(ast::display(input)) + " " + ast::display(body);
@@ -176,17 +176,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::If>::operator () (ast::node::If * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::If * component_allocator<ast::node::If>::operator () (ast::node::If const & other) const {
         return new ast::node::If{other};
-    };
+    }
 
     template <>
     ast::node::If * component_allocator<ast::node::If>::operator () (ast::node::If && other) const {
         return new ast::node::If{std::move(other)};
-    };
+    }
 
     std::string ast::node::If::display () const {
         return
@@ -210,17 +210,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Return>::operator () (ast::node::Return * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Return * component_allocator<ast::node::Return>::operator () (ast::node::Return const & other) const {
         return new ast::node::Return{other};
-    };
+    }
 
     template <>
     ast::node::Return * component_allocator<ast::node::Return>::operator () (ast::node::Return && other) const {
         return new ast::node::Return{std::move(other)};
-    };
+    }
 
     std::string ast::node::Return::display () const {
         return "return " + ast::display(value);
@@ -240,17 +240,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::TypeDef>::operator () (ast::node::TypeDef * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::TypeDef * component_allocator<ast::node::TypeDef>::operator () (ast::node::TypeDef const & other) const {
         return new ast::node::TypeDef{other};
-    };
+    }
 
     template <>
     ast::node::TypeDef * component_allocator<ast::node::TypeDef>::operator () (ast::node::TypeDef && other) const {
         return new ast::node::TypeDef{std::move(other)};
-    };
+    }
 
     std::string ast::node::TypeDef::display () const {
         return "type " + ast::display(target) + " = " + ast::display(type);
@@ -276,17 +276,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::When>::operator () (ast::node::When * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::When * component_allocator<ast::node::When>::operator () (ast::node::When const & other) const {
         return new ast::node::When{other};
-    };
+    }
 
     template <>
     ast::node::When * component_allocator<ast::node::When>::operator () (ast::node::When && other) const {
         return new ast::node::When{std::move(other)};
-    };
+    }
 
     std::string ast::node::When::display () const {
         return

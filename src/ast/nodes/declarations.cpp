@@ -31,17 +31,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Declaration>::operator () (ast::node::Declaration * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Declaration * component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration const & other) const {
         return new ast::node::Declaration{other};
-    };
+    }
 
     template <>
     ast::node::Declaration * component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration && other) const {
         return new ast::node::Declaration{std::move(other)};
-    };
+    }
 
     std::string ast::node::Declaration::display () const {
         return ast::display(type) + " " + ast::display(name);
@@ -68,17 +68,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::TupleDecl>::operator () (ast::node::TupleDecl * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::TupleDecl * component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl const & other) const {
         return new ast::node::TupleDecl{other};
-    };
+    }
 
     template <>
     ast::node::TupleDecl * component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl && other) const {
         return new ast::node::TupleDecl{std::move(other)};
-    };
+    }
 
     std::string ast::node::TupleDecl::display () const {
         return "(" + util::join(", ", ast::display(declarations)) + ")";

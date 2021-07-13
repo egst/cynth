@@ -22,7 +22,7 @@ namespace cynth {
 
         for (auto & decl : decls) {
             if (static_cast<std::size_t>(values.end() - value_begin) < decl.type.size())
-                return error{"Less values than types in a declaration."};
+                return result_error{"Less values than types in a declaration."};
 
             tuple_vector<asg::value::complete> value;
             // TODO: Why none of these options work?
@@ -50,7 +50,7 @@ namespace cynth {
         }
 
         if (value_begin != values.end())
-            return error{"More values than types in a declaration."};
+            return result_error{"More values than types in a declaration."};
 
         return {};
     }
@@ -62,7 +62,7 @@ namespace cynth {
         for (auto & decl : decls) {
             auto const_check = util::unite_results(lift::category_component{util::overload {
                 [] (asg::type::Const const &) -> cynth::result<void> {
-                    return error{"Cannot declare a const value with no definition."};
+                    return result_error{"Cannot declare a const value with no definition."};
                 },
                 [] <typename Type> (Type &&) -> cynth::result<void> requires (!util::same_as_no_cvref<Type, asg::type::Const>) {
                     return {};
@@ -71,7 +71,7 @@ namespace cynth {
             if (!const_check)
                 return const_check.error();
 
-            auto define_result = ctx.define_value(decl.name, {.value = {}, .type = decl.type});
+            auto define_result = ctx.define_value(decl.name, context::typed_value{.value = {}, .type = decl.type});
             if (!define_result)
                 return define_result.error();
         }

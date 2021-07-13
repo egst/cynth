@@ -28,7 +28,7 @@ namespace cynth::util {
         using result_type = typename detail::result_value_type<value_type>::type;
         return values.size() == 1
             ? result<result_type>{*util::make_forwarding_iterator<Container>(values.begin())}
-            : result<result_type>{error{"Single item expected."}};
+            : result<result_type>{result_error{"Single item expected."}};
     };
 
     /**

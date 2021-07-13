@@ -28,7 +28,7 @@ namespace cynth::util {
 
         // Note: I can't use raw pointers here, because of the possible std::vector<bool> optimization.
         template <typename T, bool Constant>
-        using iterator = std::conditional_t <
+        using container_iterator = std::conditional_t <
             Constant,
             typename dynamic_type<T>::const_iterator,
             typename dynamic_type<T>::iterator
@@ -38,7 +38,7 @@ namespace cynth::util {
         struct tiny_iterator: util::iterator<tiny_iterator<Constant, T>> {
             using value_type = std::conditional_t<Constant, std::add_const_t<T>, T>;
             using fixed_type = std::conditional_t<Constant, std::add_const_t<std::optional<T>>, std::optional<T>>;
-            using iterator   = iterator<T, Constant>;
+            using iterator   = container_iterator<T, Constant>;
             // TODO: I thing it shouldn't actually matter whether it is const or not,
             // because non-const iterator should be a sentinel of a const iterator.
 

@@ -13,16 +13,16 @@ namespace cynth {
     template <>
     void component_deleter<std::string>::operator () (std::string * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     std::string * component_allocator<std::string>::operator () (std::string const & other) const {
         return new std::string{other};
-    };
+    }
 
     template <>
     std::string * component_allocator<std::string>::operator () (std::string && other) const {
         return new std::string{std::move(other)};
-    };
+    }
 
 }

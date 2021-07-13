@@ -12,54 +12,51 @@ namespace cynth {
 
     //// Forward declarations/instantiations ////
 
-    // This is just crazy...
-    // C++ is supposed to be an OOP language, yet the more I follow the OOP structure, the more boilerplate I need to write.
-    // All of this wouldn't be necessary if common, same etc. were free functions.
-    // I don't want to rewrite it all though, so for now, let's keep it the way it is.
+    /*
+    template asg::common_type_result asg::type::const_type    <true>::common(asg::type::Const    const &) const;
+    template asg::common_type_result asg::type::array_type    <true>::common(asg::type::Array    const &) const;
+    template asg::common_type_result asg::type::buffer_type   <true>::common(asg::type::Buffer   const &) const;
+    template asg::common_type_result asg::type::function_type <true>::common(asg::type::Function const &) const;
 
-    template <> asg::common_type_result asg::type::Const    ::common(asg::type::Const    const &) const requires true;
-    template <> asg::common_type_result asg::type::Array    ::common(asg::type::Array    const &) const requires true;
-    template <> asg::common_type_result asg::type::Buffer   ::common(asg::type::Buffer   const &) const requires true;
-    template <> asg::common_type_result asg::type::Function ::common(asg::type::Function const &) const requires true;
-
-    template <> bool asg::type::In       ::same(asg::type::In       const &) const requires true;
-    template <> bool asg::type::Out      ::same(asg::type::Out      const &) const requires true;
-    template <> bool asg::type::Const    ::same(asg::type::Const    const &) const requires true;
-    template <> bool asg::type::Array    ::same(asg::type::Array    const &) const requires true;
-    template <> bool asg::type::Buffer   ::same(asg::type::Buffer   const &) const requires true;
-    template <> bool asg::type::Function ::same(asg::type::Function const &) const requires true;
+    template bool asg::type::in_type       <true>::same(asg::type::In       const &) const;
+    template bool asg::type::out_type      <true>::same(asg::type::Out      const &) const;
+    template bool asg::type::const_type    <true>::same(asg::type::Const    const &) const;
+    template bool asg::type::array_type    <true>::same(asg::type::Array    const &) const;
+    template bool asg::type::buffer_type   <true>::same(asg::type::Buffer   const &) const;
+    template bool asg::type::function_type <true>::same(asg::type::Function const &) const;
+    */
 
     //// Categories ////
 
     template <>
     void component_deleter<asg::type::complete>::operator () (asg::type::complete * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     asg::type::complete * component_allocator<asg::type::complete>::operator () (asg::type::complete const & other) const {
         return new asg::type::complete{other};
-    };
+    }
 
     template <>
     asg::type::complete * component_allocator<asg::type::complete>::operator () (asg::type::complete && other) const {
         return new asg::type::complete{std::move(other)};
-    };
+    }
 
     template <>
     void component_deleter<asg::type::incomplete>::operator () (asg::type::incomplete * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     asg::type::incomplete * component_allocator<asg::type::incomplete>::operator () (asg::type::incomplete const & other) const {
         return new asg::type::incomplete{other};
-    };
+    }
 
     template <>
     asg::type::incomplete * component_allocator<asg::type::incomplete>::operator () (asg::type::incomplete && other) const {
         return new asg::type::incomplete{std::move(other)};
-    };
+    }
 
     //// Bool ////
 
@@ -164,18 +161,20 @@ namespace cynth {
     // are necessary because of the original declarations `requires Complete` and `requires (!Complete)`.
     // (Complete is explicitly specified here as either true or false.)
 
-    template <>
-    asg::decay_result asg::type::In::decay () const requires true {
+    template <bool Complete>
+    asg::decay_result asg::type::in_type<Complete>::decay () const requires Complete {
         return *type;
     }
+    template asg::decay_result asg::type::in_type<true>::decay () const;
 
-    template <>
-    bool asg::type::In::same (asg::type::In const & other) const requires true {
+    template <bool Complete>
+    bool asg::type::in_type<Complete>::same (asg::type::In const & other) const requires Complete {
         return asg::same(type, other.type);
     }
+    template bool asg::type::in_type<true>::same (asg::type::In const & other) const;
 
-    template <>
-    asg::complete_result asg::type::in_type<false>::complete () const requires (!false) {
+    template <bool Complete>
+    asg::complete_result asg::type::in_type<Complete>::complete () const requires (!Complete) {
         auto result = asg::complete(type);
         if (!result)
             return result.error();
@@ -183,6 +182,7 @@ namespace cynth {
             .type = *result
         }};
     }
+    template asg::complete_result asg::type::in_type<false>::complete () const;
 
     //// Out ////
 
@@ -191,18 +191,20 @@ namespace cynth {
         return "T out"; // TODO
     }
 
-    template <>
-    asg::decay_result asg::type::Out::decay () const requires true {
+    template <bool Complete>
+    asg::decay_result asg::type::out_type<Complete>::decay () const requires Complete {
         return *type;
     }
+    template asg::decay_result asg::type::out_type<true>::decay () const;
 
-    template <>
-    bool asg::type::Out::same (asg::type::Out const & other) const requires true {
+    template <bool Complete>
+    bool asg::type::out_type<Complete>::same (asg::type::Out const & other) const requires Complete {
         return asg::same(type, other.type);
     }
+    template bool asg::type::out_type<true>::same (asg::type::Out const & other) const;
 
-    template <>
-    asg::complete_result asg::type::out_type<false>::complete () const requires (!false) {
+    template <bool Complete>
+    asg::complete_result asg::type::out_type<Complete>::complete () const requires (!Complete) {
         auto result = asg::complete(type);
         if (!result)
             return result.error();
@@ -210,6 +212,7 @@ namespace cynth {
             .type = *result
         }};
     }
+    template asg::complete_result asg::type::out_type<false>::complete () const;
 
     //// Const ////
 
@@ -218,13 +221,14 @@ namespace cynth {
         return "T const"; // TODO
     }
 
-    template <>
-    asg::decay_result asg::type::Const::decay () const requires true {
+    template <bool Complete>
+    asg::decay_result asg::type::const_type<Complete>::decay () const requires Complete {
         return *type;
     }
+    template asg::decay_result asg::type::const_type<true>::decay () const;
 
-    template <>
-    asg::common_type_result asg::type::Const::common (asg::type::Const const & other) const requires true {
+    template <bool Complete>
+    asg::common_type_result asg::type::const_type<Complete>::common (asg::type::Const const & other) const requires Complete {
         auto result = asg::common(type, other.type);
         if (!result)
             return result.error();
@@ -232,14 +236,16 @@ namespace cynth {
             .type = *result
         }};
     }
+    template asg::common_type_result asg::type::const_type<true>::common (asg::type::Const const & other) const;
 
-    template <>
-    bool asg::type::Const::same (asg::type::Const const & other) const requires true {
+    template <bool Complete>
+    bool asg::type::const_type<Complete>::same (asg::type::Const const & other) const requires Complete {
         return asg::same(type, other.type);
     }
+    template bool asg::type::const_type<true>::same (asg::type::Const const & other) const;
 
-    template <>
-    asg::complete_result asg::type::const_type<false>::complete () const requires (!false) {
+    template <bool Complete>
+    asg::complete_result asg::type::const_type<Complete>::complete () const requires (!Complete) {
         auto result = asg::complete(type);
         if (!result)
             return result.error();
@@ -247,6 +253,7 @@ namespace cynth {
             .type = *result
         }};
     }
+    template asg::complete_result asg::type::const_type<false>::complete () const;
 
     //// Array ////
 
@@ -255,20 +262,21 @@ namespace cynth {
         return "T [n]"; // TODO
     }
 
-    template <>
-    asg::common_type_result asg::type::Array::common (asg::type::Array const & other) const requires true {
+    template <bool Complete>
+    asg::common_type_result asg::type::array_type<Complete>::common (asg::type::Array const & other) const requires Complete {
         auto result = asg::same(type, other.type);
         if (!result)
             return result.error();
         if (!util::all(*result))
-            return error{"No common type for two arrays because of mismatched elements type."};
+            return result_error{"No common type for two arrays because of mismatched elements type."};
         if (size != other.size)
-            return error{"No common type for two arrays because of different sizes."};
+            return result_error{"No common type for two arrays because of different sizes."};
         return {*this};
     }
+    template asg::common_type_result asg::type::array_type<true>::common (asg::type::Array const & other) const;
 
-    template <>
-    bool asg::type::Array::same (asg::type::Array const & other) const requires true {
+    template <bool Complete>
+    bool asg::type::array_type<Complete>::same (asg::type::Array const & other) const requires Complete {
         auto result = asg::same(type, other.type);
         if (!result)
             return false;
@@ -276,16 +284,17 @@ namespace cynth {
             size == other.size &&
             util::all(*result);
     }
+    template bool asg::type::array_type<true>::same (asg::type::Array const & other) const;
 
-    template <>
-    asg::complete_result asg::type::array_type<false>::complete () const requires (!false) {
+    template <bool Complete>
+    asg::complete_result asg::type::array_type<Complete>::complete () const requires (!Complete) {
         auto type_result = util::unite_results(asg::complete(type));
         if (!type_result)
             return type_result.error();
 
         auto size_result = lift::category_component{util::overload {
             [] (value::unknown const &) -> result<int> {
-                return error{"Unknown array size."};
+                return result_error{"Unknown array size."};
             },
             [] <asg::interface::value Value> (Value const & value) -> result<int> {
                 return asg::get<integral>(asg::convert(asg::type::Int{})(value));
@@ -299,6 +308,7 @@ namespace cynth {
             .size = *size_result
         }};
     }
+    template asg::complete_result asg::type::array_type<false>::complete () const;
 
     //// Buffer ////
 
@@ -307,23 +317,25 @@ namespace cynth {
         return "buffer [n]"; // TODO
     }
 
-    template <>
-    asg::common_type_result asg::type::Buffer::common (asg::type::Buffer const & other) const requires true {
+    template <bool Complete>
+    asg::common_type_result asg::type::buffer_type<Complete>::common (asg::type::Buffer const & other) const requires Complete {
         if (size != other.size)
-            return error{"No common type for two buffers because of different sizes."};
+            return result_error{"No common type for two buffers because of different sizes."};
         return {*this};
     }
+    template asg::common_type_result asg::type::buffer_type<true>::common (asg::type::Buffer const & other) const;
 
-    template <>
-    bool asg::type::Buffer::same (asg::type::Buffer const & other) const requires true {
+    template <bool Complete>
+    bool asg::type::buffer_type<Complete>::same (asg::type::Buffer const & other) const requires Complete {
         return size == other.size;
     }
+    template bool asg::type::buffer_type<true>::same (asg::type::Buffer const & other) const;
 
-    template <>
-    asg::complete_result asg::type::buffer_type<false>::complete () const requires (!false) {
+    template <bool Complete>
+    asg::complete_result asg::type::buffer_type<Complete>::complete () const requires (!Complete) {
         auto size_result = lift::category_component{util::overload {
             [] (value::unknown const &) -> result<integral> {
-                return error{"Unknown array size."};
+                return result_error{"Unknown array size."};
             },
             [] <asg::interface::value Value> (Value const & value) -> result<integral> {
                 return asg::get<integral>(asg::convert(asg::type::Int{})(value));
@@ -336,6 +348,7 @@ namespace cynth {
             .size = *size_result
         }};
     }
+    template asg::complete_result asg::type::buffer_type<false>::complete () const;
 
     //// Function ////
 
@@ -344,32 +357,34 @@ namespace cynth {
         return "Out (In)"; // TODO
     }
 
-    template <>
-    asg::common_type_result asg::type::Function::common (asg::type::Function const & other) const requires true {
+    template <bool Complete>
+    asg::common_type_result asg::type::function_type<Complete>::common (asg::type::Function const & other) const requires Complete {
         auto out_result = asg::same(out, other.out);
         if (!out_result)
             return out_result.error();
         if (!util::all(*out_result))
-            return error{"No common type for two functions because of diferent output types."};
+            return result_error{"No common type for two functions because of diferent output types."};
         auto in_result = asg::same(in, other.in);
         if (!in_result)
             return in_result.error();
         if (!util::all(*in_result))
-            return error{"No common type for two functions because of diferent input types."};
+            return result_error{"No common type for two functions because of diferent input types."};
         return {*this};
     }
+    template asg::common_type_result asg::type::function_type<true>::common (asg::type::Function const & other) const;
 
-    template <>
-    bool asg::type::Function::same (asg::type::Function const & other) const requires true {
+    template <bool Complete>
+    bool asg::type::function_type<Complete>::same (asg::type::Function const & other) const requires Complete {
         auto out_result = asg::same(out, other.out);
         auto in_result  = asg::same(in,  other.in);
         return
             out_result && util::all(*out_result) &&
             in_result  && util::all(*in_result);
     }
+    template bool asg::type::function_type<true>::same (asg::type::Function const & other) const;
 
-    template <>
-    asg::complete_result asg::type::function_type<false>::complete () const requires (!false) {
+    template <bool Complete>
+    asg::complete_result asg::type::function_type<Complete>::complete () const requires (!Complete) {
         auto out_result = util::unite_results(asg::complete(out));
         if (!out_result)
             return out_result.error();
@@ -381,5 +396,6 @@ namespace cynth {
             .in  = *in_result,
         }};
     }
+    template asg::complete_result asg::type::function_type<false>::complete () const;
 
 }

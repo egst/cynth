@@ -119,7 +119,7 @@ namespace cynth::asg {
             return node.get();
         },
         [] <interface::value Node> (Node const &) -> get_result<Out> requires (!interface::value_of<Node, Out>) {
-            return error{"Value does not contain the requested type."};
+            return result_error{"Value does not contain the requested type."};
         },
     }};
 
@@ -189,12 +189,12 @@ namespace cynth::asg {
         },
         [] <interface::type Node, interface::type With> (Node const &, With const &)
         requires /*(!std::same_as<Node, With>) &&*/ (!interface::common<Node, With>) && (!interface::common<With, Node>) {
-            return common_type_result{error{"No comomn type."}};
+            return common_type_result{result_error{"No comomn type."}};
         },
         // TODO: This problem should be caught at compile-time.
         [] <interface::type Node, interface::type With> (Node const &, With const &)
         requires /*(!std::same_as<Node, With>) &&*/ interface::common<Node, With> && interface::common<With, Node> {
-            return common_type_result{error{"Two-way node.common(with) implementation found."}};
+            return common_type_result{result_error{"Two-way node.common(with) implementation found."}};
         }
     }};
 
@@ -207,7 +207,7 @@ namespace cynth::asg {
             return node.convert(to);
         },
         [] <interface::type To, interface::value Node> (Node const &, To const &) requires (!interface::convertible<Node, To>) {
-            return result<value::complete>{error{"No conversion available."}};
+            return result<value::complete>{result_error{"No conversion available."}};
         }
     }};
 
@@ -220,7 +220,7 @@ namespace cynth::asg {
             return node.convert(to);
         },
         [] <interface::type To, interface::value Node> (To const &, Node const &) requires (!interface::convertible<Node, To>) {
-            return result<value::complete>{error{"No conversion available."}};
+            return result<value::complete>{result_error{"No conversion available."}};
         }
     }};
 
@@ -234,10 +234,10 @@ namespace cynth::asg {
                 return node.complete();
             },
             [] (type::unknown const &) -> complete_result {
-                return {error{"An unknown type ($ or type T) is not complete."}};
+                return {result_error{"An unknown type ($ or type T) is not complete."}};
             },
             /*[] <interface::incomplete_type Node> (Node const &) -> complete_result requires (!interface::completable_type<Node>) {
-                return {error{"Complete type expected."}};
+                return {result_error{"Complete type expected."}};
             }*/
         };
 

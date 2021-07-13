@@ -127,30 +127,30 @@ namespace cynth {
                 );
             },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Function> {
-                return result<asg::value::complete>{error{"Cannot compare functions."}};
+                return result<asg::value::complete>{result_error{"Cannot compare functions."}};
             },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Array> {
                 // TODO
-                return result<asg::value::complete>{error{"Array comparison not supported yet."}};
+                return result<asg::value::complete>{result_error{"Array comparison not supported yet."}};
             },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::String> {
                 // TODO
-                return result<asg::value::complete>{error{"Strings are not supported yet."}};
+                return result<asg::value::complete>{result_error{"Strings are not supported yet."}};
             },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::In> {
                 // This shouldn't happen unless this overload set is used incorectly.
-                return result<asg::value::complete>{error{}};
+                return result<asg::value::complete>{result_error{}};
             },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Out> {
                 // This shouldn't happen unless this overload set is used incorectly.
-                return result<asg::value::complete>{error{}};
+                return result<asg::value::complete>{result_error{}};
             },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Const> {
                 // This shouldn't happen unless this overload set is used incorectly.
-                return result<asg::value::complete>{error{}};
+                return result<asg::value::complete>{result_error{}};
             },
             [] <util::temporary T, util::temporary U> (T &&, U &&) requires asg::interface::value<T> && asg::interface::value<U> && (!util::same_as_no_cvref<T, U>) {
-                return result<asg::value::complete>{error{"Cannot compare incompatible types."}};
+                return result<asg::value::complete>{result_error{"Cannot compare incompatible types."}};
             }
         }};
     };
@@ -209,15 +209,15 @@ namespace cynth {
             auto result = lift::category{util::overload {
                 [] (ast::node::RangeTo const &) -> cynth::result<void> {
                     // TODO
-                    return error{"Range array elements are not supported yet."};
+                    return result_error{"Range array elements are not supported yet."};
                 },
                 [] (ast::node::RangeToBy const &) -> cynth::result<void> {
                     // TODO
-                    return error{"Range array elements are not supported yet."};
+                    return result_error{"Range array elements are not supported yet."};
                 },
                 [] (ast::node::Spread const &) -> cynth::result<void> {
                     // TODO
-                    return error{"Spread array elements are not supported yet."};
+                    return result_error{"Spread array elements are not supported yet."};
                 },
                 [&ctx, &result_type, &result_values] <ast::interface::expression T> (T const & e) -> cynth::result<void> {
                     auto result = util::unite_results(ast::evaluate(ctx)(e)); // evaluation_result aka tuple_vector<result<value::complete>> -> result<tuple_vector<value::complete>>
@@ -247,7 +247,7 @@ namespace cynth {
         }
 
         if (!result_type)
-            return {error{"No common type for an array."}};
+            return {result_error{"No common type for an array."}};
 
         return {{
             std::move(result_values),
@@ -260,17 +260,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Add>::operator () (ast::node::Add * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Add * component_allocator<ast::node::Add>::operator () (ast::node::Add const & other) const {
         return new ast::node::Add{other};
-    };
+    }
 
     template <>
     ast::node::Add * component_allocator<ast::node::Add>::operator () (ast::node::Add && other) const {
         return new ast::node::Add{std::move(other)};
-    };
+    }
 
     ast::display_result ast::node::Add::display () const {
         return "(" + ast::display(left_argument) + " + " + ast::display(right_argument) + ")";
@@ -288,17 +288,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::And>::operator () (ast::node::And * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::And * component_allocator<ast::node::And>::operator () (ast::node::And const & other) const {
         return new ast::node::And{other};
-    };
+    }
 
     template <>
     ast::node::And * component_allocator<ast::node::And>::operator () (ast::node::And && other) const {
         return new ast::node::And{std::move(other)};
-    };
+    }
 
     std::string ast::node::And::display () const {
         return "(" + ast::display(left_argument) + " && " + ast::display(right_argument) + ")";
@@ -320,17 +320,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Application>::operator () (ast::node::Application * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Application * component_allocator<ast::node::Application>::operator () (ast::node::Application const & other) const {
         return new ast::node::Application{other};
-    };
+    }
 
     template <>
     ast::node::Application * component_allocator<ast::node::Application>::operator () (ast::node::Application && other) const {
         return new ast::node::Application{std::move(other)};
-    };
+    }
 
     std::string ast::node::Application::display () const {
         return ast::display(function) + util::parenthesized(ast::display(arguments));
@@ -384,17 +384,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Array>::operator () (ast::node::Array * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Array * component_allocator<ast::node::Array>::operator () (ast::node::Array const & other) const {
         return new ast::node::Array{other};
-    };
+    }
 
     template <>
     ast::node::Array * component_allocator<ast::node::Array>::operator () (ast::node::Array && other) const {
         return new ast::node::Array{std::move(other)};
-    };
+    }
 
     std::string ast::node::Array::display () const {
         return "[" + util::join(", ", ast::display(elements)) + "]";
@@ -436,17 +436,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Block>::operator () (ast::node::Block * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Block * component_allocator<ast::node::Block>::operator () (ast::node::Block const & other) const {
         return new ast::node::Block{other};
-    };
+    }
 
     template <>
     ast::node::Block * component_allocator<ast::node::Block>::operator () (ast::node::Block && other) const {
         return new ast::node::Block{std::move(other)};
-    };
+    }
 
     std::string ast::node::Block::display () const {
         return statements.empty()
@@ -468,7 +468,7 @@ namespace cynth {
                 return ast::make_evaluation_result(returned.error());
         }
 
-        return ast::make_evaluation_result(error{"Evaluated block does not return."});
+        return ast::make_evaluation_result(result_error{"Evaluated block does not return."});
     }
 
     ast::execution_result ast::node::Block::execute (context & ctx) const {
@@ -490,17 +490,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Bool>::operator () (ast::node::Bool * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Bool * component_allocator<ast::node::Bool>::operator () (ast::node::Bool const & other) const {
         return new ast::node::Bool{other};
-    };
+    }
 
     template <>
     ast::node::Bool * component_allocator<ast::node::Bool>::operator () (ast::node::Bool && other) const {
         return new ast::node::Bool{std::move(other)};
-    };
+    }
 
     std::string ast::node::Bool::display () const {
         return value ? "true" : "false";
@@ -515,17 +515,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Conversion>::operator () (ast::node::Conversion * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Conversion * component_allocator<ast::node::Conversion>::operator () (ast::node::Conversion const & other) const {
         return new ast::node::Conversion{other};
-    };
+    }
 
     template <>
     ast::node::Conversion * component_allocator<ast::node::Conversion>::operator () (ast::node::Conversion && other) const {
         return new ast::node::Conversion{std::move(other)};
-    };
+    }
 
     std::string ast::node::Conversion::display () const {
         return ast::display(type) + util::parenthesized(ast::display(argument));
@@ -544,17 +544,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Div>::operator () (ast::node::Div * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Div * component_allocator<ast::node::Div>::operator () (ast::node::Div const & other) const {
         return new ast::node::Div{other};
-    };
+    }
 
     template <>
     ast::node::Div * component_allocator<ast::node::Div>::operator () (ast::node::Div && other) const {
         return new ast::node::Div{std::move(other)};
-    };
+    }
 
     std::string ast::node::Div::display () const {
         return "(" + ast::display(left_argument) + " / " + ast::display(right_argument) + ")";
@@ -572,17 +572,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Eq>::operator () (ast::node::Eq * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Eq * component_allocator<ast::node::Eq>::operator () (ast::node::Eq const & other) const {
         return new ast::node::Eq{other};
-    };
+    }
 
     template <>
     ast::node::Eq * component_allocator<ast::node::Eq>::operator () (ast::node::Eq && other) const {
         return new ast::node::Eq{std::move(other)};
-    };
+    }
 
     std::string ast::node::Eq::display () const {
         return "(" + ast::display(left_argument) + " == " + ast::display(right_argument) + ")";
@@ -600,17 +600,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::ExprIf>::operator () (ast::node::ExprIf * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::ExprIf * component_allocator<ast::node::ExprIf>::operator () (ast::node::ExprIf const & other) const {
         return new ast::node::ExprIf{other};
-    };
+    }
 
     template <>
     ast::node::ExprIf * component_allocator<ast::node::ExprIf>::operator () (ast::node::ExprIf && other) const {
         return new ast::node::ExprIf{std::move(other)};
-    };
+    }
 
     std::string ast::node::ExprIf::display () const {
         return
@@ -644,17 +644,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Float>::operator () (ast::node::Float * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Float * component_allocator<ast::node::Float>::operator () (ast::node::Float const & other) const {
         return new ast::node::Float{other};
-    };
+    }
 
     template <>
     ast::node::Float * component_allocator<ast::node::Float>::operator () (ast::node::Float && other) const {
         return new ast::node::Float{std::move(other)};
-    };
+    }
 
     std::string ast::node::Float::display () const {
         return std::to_string(value);
@@ -669,17 +669,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Function>::operator () (ast::node::Function * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Function * component_allocator<ast::node::Function>::operator () (ast::node::Function const & other) const {
         return new ast::node::Function{other};
-    };
+    }
 
     template <>
     ast::node::Function * component_allocator<ast::node::Function>::operator () (ast::node::Function && other) const {
         return new ast::node::Function{std::move(other)};
-    };
+    }
 
     std::string ast::node::Function::display () const {
         return ast::display(output) + " fn " + util::parenthesized(ast::display(input)) + " " + ast::display(body);
@@ -706,17 +706,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Ge>::operator () (ast::node::Ge * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Ge * component_allocator<ast::node::Ge>::operator () (ast::node::Ge const & other) const {
         return new ast::node::Ge{other};
-    };
+    }
 
     template <>
     ast::node::Ge * component_allocator<ast::node::Ge>::operator () (ast::node::Ge && other) const {
         return new ast::node::Ge{std::move(other)};
-    };
+    }
 
     std::string ast::node::Ge::display () const {
         return "(" + ast::display(left_argument) + " >= " + ast::display(right_argument) + ")";
@@ -734,17 +734,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Gt>::operator () (ast::node::Gt * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Gt * component_allocator<ast::node::Gt>::operator () (ast::node::Gt const & other) const {
         return new ast::node::Gt{other};
-    };
+    }
 
     template <>
     ast::node::Gt * component_allocator<ast::node::Gt>::operator () (ast::node::Gt && other) const {
         return new ast::node::Gt{std::move(other)};
-    };
+    }
 
     std::string ast::node::Gt::display () const {
         return "(" + ast::display(left_argument) + " > " + ast::display(right_argument) + ")";
@@ -762,17 +762,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Int>::operator () (ast::node::Int * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Int * component_allocator<ast::node::Int>::operator () (ast::node::Int const & other) const {
         return new ast::node::Int{other};
-    };
+    }
 
     template <>
     ast::node::Int * component_allocator<ast::node::Int>::operator () (ast::node::Int && other) const {
         return new ast::node::Int{std::move(other)};
-    };
+    }
 
     std::string ast::node::Int::display () const {
         return std::to_string(value);
@@ -787,17 +787,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Le>::operator () (ast::node::Le * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Le * component_allocator<ast::node::Le>::operator () (ast::node::Le const & other) const {
         return new ast::node::Le{other};
-    };
+    }
 
     template <>
     ast::node::Le * component_allocator<ast::node::Le>::operator () (ast::node::Le && other) const {
         return new ast::node::Le{std::move(other)};
-    };
+    }
 
     std::string ast::node::Le::display () const {
         return "(" + ast::display(left_argument) + " <= " + ast::display(right_argument) + ")";
@@ -815,17 +815,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Lt>::operator () (ast::node::Lt * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Lt * component_allocator<ast::node::Lt>::operator () (ast::node::Lt const & other) const {
         return new ast::node::Lt{other};
-    };
+    }
 
     template <>
     ast::node::Lt * component_allocator<ast::node::Lt>::operator () (ast::node::Lt && other) const {
         return new ast::node::Lt{std::move(other)};
-    };
+    }
 
     std::string ast::node::Lt::display () const {
         return "(" + ast::display(left_argument) + " < " + ast::display(right_argument) + ")";
@@ -843,17 +843,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Minus>::operator () (ast::node::Minus * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Minus * component_allocator<ast::node::Minus>::operator () (ast::node::Minus const & other) const {
         return new ast::node::Minus{other};
-    };
+    }
 
     template <>
     ast::node::Minus * component_allocator<ast::node::Minus>::operator () (ast::node::Minus && other) const {
         return new ast::node::Minus{std::move(other)};
-    };
+    }
 
     std::string ast::node::Minus::display () const {
         return "-" + ast::display(argument);
@@ -868,17 +868,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Mod>::operator () (ast::node::Mod * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Mod * component_allocator<ast::node::Mod>::operator () (ast::node::Mod const & other) const {
         return new ast::node::Mod{other};
-    };
+    }
 
     template <>
     ast::node::Mod * component_allocator<ast::node::Mod>::operator () (ast::node::Mod && other) const {
         return new ast::node::Mod{std::move(other)};
-    };
+    }
 
     std::string ast::node::Mod::display () const {
         return "(" + ast::display(left_argument) + " % " + ast::display(right_argument) + ")";
@@ -896,17 +896,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Mul>::operator () (ast::node::Mul * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Mul * component_allocator<ast::node::Mul>::operator () (ast::node::Mul const & other) const {
         return new ast::node::Mul{other};
-    };
+    }
 
     template <>
     ast::node::Mul * component_allocator<ast::node::Mul>::operator () (ast::node::Mul && other) const {
         return new ast::node::Mul{std::move(other)};
-    };
+    }
 
     std::string ast::node::Mul::display () const {
         return "(" + ast::display(left_argument) + " * " + ast::display(right_argument) + ")";
@@ -924,17 +924,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Name>::operator () (ast::node::Name * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Name * component_allocator<ast::node::Name>::operator () (ast::node::Name const & other) const {
         return new ast::node::Name{other};
-    };
+    }
 
     template <>
     ast::node::Name * component_allocator<ast::node::Name>::operator () (ast::node::Name && other) const {
         return new ast::node::Name{std::move(other)};
-    };
+    }
 
     std::string ast::node::Name::display () const {
         return *name;
@@ -944,7 +944,7 @@ namespace cynth {
         auto value = ctx.find_value(*name);
         return value
             ? lift::tuple_vector{make_result}(value->value)
-            : ast::make_evaluation_result(error{"Name not found."});
+            : ast::make_evaluation_result(result_error{"Name not found."});
     }
 
     //// Ne ////
@@ -952,17 +952,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Ne>::operator () (ast::node::Ne * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Ne * component_allocator<ast::node::Ne>::operator () (ast::node::Ne const & other) const {
         return new ast::node::Ne{other};
-    };
+    }
 
     template <>
     ast::node::Ne * component_allocator<ast::node::Ne>::operator () (ast::node::Ne && other) const {
         return new ast::node::Ne{std::move(other)};
-    };
+    }
 
     std::string ast::node::Ne::display () const {
         return "(" + ast::display(left_argument) + " != " + ast::display(right_argument) + ")";
@@ -980,17 +980,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Not>::operator () (ast::node::Not * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Not * component_allocator<ast::node::Not>::operator () (ast::node::Not const & other) const {
         return new ast::node::Not{other};
-    };
+    }
 
     template <>
     ast::node::Not * component_allocator<ast::node::Not>::operator () (ast::node::Not && other) const {
         return new ast::node::Not{std::move(other)};
-    };
+    }
 
     std::string ast::node::Not::display () const {
         return "!" + ast::display(argument);
@@ -1013,17 +1013,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Or>::operator () (ast::node::Or * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Or * component_allocator<ast::node::Or>::operator () (ast::node::Or const & other) const {
         return new ast::node::Or{other};
-    };
+    }
 
     template <>
     ast::node::Or * component_allocator<ast::node::Or>::operator () (ast::node::Or && other) const {
         return new ast::node::Or{std::move(other)};
-    };
+    }
 
     std::string ast::node::Or::display () const {
         return "(" + ast::display(left_argument) + " || " + ast::display(right_argument) + ")";
@@ -1045,17 +1045,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Plus>::operator () (ast::node::Plus * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Plus * component_allocator<ast::node::Plus>::operator () (ast::node::Plus const & other) const {
         return new ast::node::Plus{other};
-    };
+    }
 
     template <>
     ast::node::Plus * component_allocator<ast::node::Plus>::operator () (ast::node::Plus && other) const {
         return new ast::node::Plus{std::move(other)};
-    };
+    }
 
     std::string ast::node::Plus::display () const {
         return "+" + ast::display(argument);
@@ -1070,17 +1070,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Pow>::operator () (ast::node::Pow * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Pow * component_allocator<ast::node::Pow>::operator () (ast::node::Pow const & other) const {
         return new ast::node::Pow{other};
-    };
+    }
 
     template <>
     ast::node::Pow * component_allocator<ast::node::Pow>::operator () (ast::node::Pow && other) const {
         return new ast::node::Pow{std::move(other)};
-    };
+    }
 
     std::string ast::node::Pow::display () const {
         return "(" + ast::display(left_argument) + " ** " + ast::display(right_argument) + ")";
@@ -1098,17 +1098,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::String>::operator () (ast::node::String * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::String * component_allocator<ast::node::String>::operator () (ast::node::String const & other) const {
         return new ast::node::String{other};
-    };
+    }
 
     template <>
     ast::node::String * component_allocator<ast::node::String>::operator () (ast::node::String && other) const {
         return new ast::node::String{std::move(other)};
-    };
+    }
 
     std::string ast::node::String::display () const {
         //return "\"" + value + "\"";
@@ -1116,7 +1116,7 @@ namespace cynth {
     }
 
     ast::evaluation_result ast::node::String::evaluate (context &) const {
-        return ast::make_evaluation_result(error{"Strings are not supported yet."});
+        return ast::make_evaluation_result(result_error{"Strings are not supported yet."});
     }
 
     //// Sub ////
@@ -1124,17 +1124,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Sub>::operator () (ast::node::Sub * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Sub * component_allocator<ast::node::Sub>::operator () (ast::node::Sub const & other) const {
         return new ast::node::Sub{other};
-    };
+    }
 
     template <>
     ast::node::Sub * component_allocator<ast::node::Sub>::operator () (ast::node::Sub && other) const {
         return new ast::node::Sub{std::move(other)};
-    };
+    }
 
     std::string ast::node::Sub::display () const {
         return "(" + ast::display(left_argument) + " - " + ast::display(right_argument) + ")";
@@ -1152,17 +1152,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Subscript>::operator () (ast::node::Subscript * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Subscript * component_allocator<ast::node::Subscript>::operator () (ast::node::Subscript const & other) const {
         return new ast::node::Subscript{other};
-    };
+    }
 
     template <>
     ast::node::Subscript * component_allocator<ast::node::Subscript>::operator () (ast::node::Subscript && other) const {
         return new ast::node::Subscript{std::move(other)};
-    };
+    }
 
     std::string ast::node::Subscript::display () const {
         return ast::display(container) + " [" + util::join(", ", ast::display(location)) + "]";
@@ -1196,13 +1196,13 @@ namespace cynth {
             [index] (asg::value::Array const & a) -> result_type {
                 integral size = a.value.size();
                 if (index >= size)
-                    return {error{"Subscript index out of bounds."}};
+                    return {result_error{"Subscript index out of bounds."}};
                 if (index < 0)
-                    return {error{"Negative subscripts not supported yet."}};
+                    return {result_error{"Negative subscripts not supported yet."}};
                 return {a.value[index]};
             },
             [] (auto const &) -> result_type {
-                return {error{"Cannot subscript a non-array value."}};
+                return {result_error{"Cannot subscript a non-array value."}};
             }
         }}(util::single(ast::evaluate(ctx)(container)));
         if (!result)
@@ -1216,17 +1216,17 @@ namespace cynth {
     template <>
     void component_deleter<ast::node::Tuple>::operator () (ast::node::Tuple * ptr) const {
         delete ptr;
-    };
+    }
 
     template <>
     ast::node::Tuple * component_allocator<ast::node::Tuple>::operator () (ast::node::Tuple const & other) const {
         return new ast::node::Tuple{other};
-    };
+    }
 
     template <>
     ast::node::Tuple * component_allocator<ast::node::Tuple>::operator () (ast::node::Tuple && other) const {
         return new ast::node::Tuple{std::move(other)};
-    };
+    }
 
     std::string ast::node::Tuple::display () const {
         return "(" + util::join(", ", ast::display(values)) + ")";

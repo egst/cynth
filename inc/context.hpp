@@ -14,16 +14,16 @@ namespace cynth {
         template <typename T>
         using vector = tuple_vector<T>;
 
-        using value = vector<asg::value ::complete>;
-        using type  = vector<asg::type  ::complete>;
+        using value_vector = vector<asg::value ::complete>;
+        using type_vector  = vector<asg::type  ::complete>;
 
         struct typed_value {
-            value value;
-            type  type;
+            value_vector value;
+            type_vector  type;
         };
 
         std::unordered_map<std::string, typed_value> values;
-        std::unordered_map<std::string, type>  types;
+        std::unordered_map<std::string, type_vector> types;
 
         context * parent;
 
@@ -34,21 +34,21 @@ namespace cynth {
 
         result<void> define_value (std::string name, typed_value const & v) {
             if (find_value_inside(name))
-                return error{"Cannot redefine a value in the same scope."};
+                return result_error{"Cannot redefine a value in the same scope."};
             values.insert({name, v});
             return {};
         }
 
-        result<void> define_value (std::string name, value const & v) {
+        result<void> define_value (std::string name, value_vector const & v) {
             if (find_value_inside(name))
-                return error{"Cannot redefine a value in the same scope."};
+                return result_error{"Cannot redefine a value in the same scope."};
             values.insert({name, {v, asg::value_type(v)}});
             return {};
         }
 
-        result<void> define_type (std::string name, type const & t) {
+        result<void> define_type (std::string name, type_vector const & t) {
             if (find_type_inside(name))
-                return error{"Cannot redefine a type in the same scope."};
+                return result_error{"Cannot redefine a type in the same scope."};
             types.insert({name, t});
             return {};
         }
@@ -60,7 +60,7 @@ namespace cynth {
                 : nullptr;
         }
 
-        type * find_type_inside (std::string const & name) {
+        type_vector * find_type_inside (std::string const & name) {
             auto iter = types.find(name);
             return iter != types.end()
                 ? &iter->second
@@ -74,7 +74,7 @@ namespace cynth {
             return parent->find_value(name);
         }
 
-        type * find_type (std::string const & name) {
+        type_vector * find_type (std::string const & name) {
             auto inside = find_type_inside(name);
             if (!parent || inside)
                 return inside;

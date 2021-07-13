@@ -49,7 +49,7 @@ namespace cynth::lift {
             using result_type = decltype(functor.invoke(std::declval<first_type>(), std::declval<second_type>()));
             using vector      = V<result_type>;
             if (first.size() != second.size())
-                return cynth::result<vector>{error{
+                return cynth::result<vector>{result_error{
                     "Binary tuple operation values count mismatch. -- " +
                     std::to_string(first.size()) +
                     " and " +
@@ -165,13 +165,13 @@ namespace cynth::lift {
 
         template <typename Result>
         static constexpr auto handle_one_error =
-            [] (cynth::error e) { return cynth::result<Result>{e}; };
+            [] (result_error e) { return result<Result>{e}; };
 
         template <typename First, typename Second, typename Result>
         static constexpr auto handle_two_errors = util::overload {
-            [] (cynth::error   e, Second const &) { return cynth::result<Result>{e}; },
-            [] (First const &,    cynth::error e) { return cynth::result<Result>{e}; },
-            [] (cynth::error   a, cynth::error)   { return cynth::result<Result>{a}; } // TODO: Combining multiple errors...
+            [] (result_error   e, Second const &) { return cynth::result<Result>{e}; },
+            [] (First const &,    result_error e) { return cynth::result<Result>{e}; },
+            [] (result_error   a, result_error)   { return cynth::result<Result>{a}; } // TODO: Combining multiple errors...
         };
 
         template <typename Derived, typename F>
