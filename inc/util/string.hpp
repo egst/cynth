@@ -1,7 +1,7 @@
 #pragma once
 
+#include "config.hpp"
 #include "util/general.hpp"
-#include "util/config.hpp"
 
 #include <cstddef>
 #include <string>
@@ -38,7 +38,7 @@ namespace cynth::util {
     std::string trim (std::string const & x);
 
     /** Parse integral numeric string with the scientific notation. */
-    util::integral stoi (std::string const & x);
+    integral stoi (std::string const & x);
 
     std::string pretty (std::string const &);
 

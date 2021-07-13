@@ -1,4 +1,5 @@
 %code requires {
+
     #include "ast.hpp"
     #include "util/string.hpp"
     #include "util/general.hpp"
@@ -6,18 +7,24 @@
     //#include <string>
     //#include <vector>
     //#include <utility>
+
 }
 
 %code provides {
+
     namespace yy {
+
         parser::symbol_type yylex ();
+
     }
+
 }
 
 %require "3.2"
 %language "c++"
 
 /* TODO: %define api.namespace ... */
+/*%define parse.assert*/
 %define api.token.constructor
 %define api.value.type variant
 %define api.value.automove
@@ -42,6 +49,8 @@
 %token ASSGN
 %token SEMI
 %token COMMA
+%token IN
+%token OUT
 %token TO
 %token BY
 %token ELIP
@@ -105,6 +114,8 @@
 %nterm <cynth::ast::node::Auto>            node_auto
 %nterm <cynth::ast::node::TypeName>        node_type_name
 %nterm <cynth::ast::node::ConstType>       node_const_type
+%nterm <cynth::ast::node::InType>          node_in_type
+%nterm <cynth::ast::node::OutType>         node_out_type
 %nterm <cynth::ast::node::FunctionType>    node_function_type
 %nterm <cynth::ast::node::ArrayType>       node_array_type
 %nterm <cynth::ast::node::BufferType>      node_buffer_type
@@ -165,11 +176,11 @@
 %nterm <cynth::ast::node::When>            node_when
 
 /* [temporary structures] */
-%nterm <cynth::ast::node::component_vector<cynth::ast::category::Type>>        type_list
-%nterm <cynth::ast::node::component_vector<cynth::ast::category::Declaration>> decl_list
-%nterm <cynth::ast::node::component_vector<cynth::ast::category::ArrayElem>>   array_elem_list
-%nterm <cynth::ast::node::component_vector<cynth::ast::category::Expression>>  expr_list
-%nterm <cynth::ast::node::component_vector<cynth::ast::category::Statement>>   stmt_list
+%nterm <cynth::component_vector<cynth::ast::category::Type>>        type_list
+%nterm <cynth::component_vector<cynth::ast::category::Declaration>> decl_list
+%nterm <cynth::component_vector<cynth::ast::category::ArrayElem>>   array_elem_list
+%nterm <cynth::component_vector<cynth::ast::category::Expression>>  expr_list
+%nterm <cynth::component_vector<cynth::ast::category::Statement>>   stmt_list
 
 %%
 
@@ -177,9 +188,6 @@ start:
     %empty {
         result = {};
     } |
-    /*node_block[block] {
-        result = $block;
-    } |*/
     stmt_list[list] {
         result = {$list};
     } |
@@ -207,6 +215,8 @@ cat_type:
     node_buffer_type   { $$ = $1; } |
     node_type_decl     { $$ = $1; } |
     node_const_type    { $$ = $1; } |
+    node_in_type       { $$ = $1; } |
+    node_out_type      { $$ = $1; } |
     paren_type         { $$ = $1; }
 
 cat_expression:
@@ -323,6 +333,16 @@ node_const_type:
         $$ = {.type = $type};
     }
 
+node_in_type:
+    cat_type[type] IN {
+        $$ = {.type = $type};
+    }
+
+node_out_type:
+    cat_type[type] OUT {
+        $$ = {.type = $type};
+    }
+
 node_function_type:
     cat_type[out] paren_type[in] {
         $$ = {.output = $out, .input = $in};
@@ -342,10 +362,10 @@ node_array_type:
         $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size}};
     } |
     cat_type[type] OBRACK AUTO CBRACK {
-        $$ = {.type = $type, .size = cynth::ast::node::optional_component<cynth::ast::category::Pattern>{}};
+        $$ = {.type = $type, .size = cynth::optional_component<cynth::ast::category::Pattern>{}};
     } |
     cat_type[type] OBRACK CBRACK {
-        $$ = {.type = $type, .size = cynth::ast::node::optional_component<cynth::ast::category::Pattern>{}};
+        $$ = {.type = $type, .size = cynth::optional_component<cynth::ast::category::Pattern>{}};
     } |
     cat_type[type] OBRACK cat_declaration[size_decl] CBRACK {
         $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size_decl}};
@@ -692,5 +712,6 @@ decl_list:
 %%
 
 void yy::parser::error (std::string const & msg) {
-    std::cerr << msg << '\n';
+    // TODO: There's a syntax error every time for some reason.
+    //std::cerr << "parser error: " << msg << '\n';
 }

@@ -1,0 +1,21 @@
+# This would have been possible, if capture by reference was allowed.
+# To simplify implementation and reduce compile-time and run-time differences,
+# all captures except for in, out and buffer values, happens by value.
+
+(Int (), () (Int)) makeIntRef (Int init) {
+    Int val = init;
+    # val is acutally captured by value, so this shouldn't work.
+    return (
+        Int fn () val,
+        () fn (Int newVal) {
+            val = newVal;
+        }
+    );
+};
+
+(Int () get, () (Int) set) = makeIntRef(0);
+
+set(12);
+set(15);
+
+return get();

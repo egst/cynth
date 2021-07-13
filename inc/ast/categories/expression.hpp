@@ -1,14 +1,14 @@
 #pragma once
 
-#include "ast/category_base.hpp"
+#include "config.hpp"
+#include "category_base.hpp"
 #include "ast/nodes/expressions.hpp"
-#include "util/config.hpp"
 
 namespace cynth::ast::category {
 
     namespace detail {
 
-        using expression = util::variant <
+        using expression = variant <
             node::Add,
             node::And,
             node::Application,
@@ -43,10 +43,10 @@ namespace cynth::ast::category {
 
     }
 
-    struct Expression: detail::category_base<Expression, detail::expression> {
-        using base = detail::category_base<Expression, detail::expression>;
+    // TODO: Once everything is settled with the copyable category here, do the same elsewhere.
+    struct Expression: category_base<Expression, detail::expression, true> {
+        using base = category_base<Expression, detail::expression, true>;
         using base::base;
-        using base::operator=;
     };
 
 }

@@ -32,7 +32,7 @@
 
 
 /**
- ** \file src/parser.hpp
+ ** \file inc/parser.hpp
  ** Define the yy::parser class.
  */
 
@@ -42,10 +42,11 @@
 // especially those whose name start with YY_ or yy_.  They are
 // private implementation details that can be changed or removed.
 
-#ifndef YY_YY_SRC_PARSER_HPP_INCLUDED
-# define YY_YY_SRC_PARSER_HPP_INCLUDED
+#ifndef YY_YY_INC_PARSER_HPP_INCLUDED
+# define YY_YY_INC_PARSER_HPP_INCLUDED
 // "%code requires" blocks.
 #line 1 "gen/parser.y"
+
 
     #include "ast.hpp"
     #include "util/string.hpp"
@@ -55,7 +56,8 @@
     //#include <vector>
     //#include <utility>
 
-#line 59 "src/parser.hpp"
+
+#line 61 "inc/parser.hpp"
 
 
 # include <cstdlib> // std::abort
@@ -189,7 +191,7 @@
 #endif
 
 namespace yy {
-#line 193 "src/parser.hpp"
+#line 195 "inc/parser.hpp"
 
 
 
@@ -486,99 +488,105 @@ namespace yy {
       // node_if
       char dummy29[sizeof (cynth::ast::node::If)];
 
+      // node_in_type
+      char dummy30[sizeof (cynth::ast::node::InType)];
+
       // node_int
-      char dummy30[sizeof (cynth::ast::node::Int)];
+      char dummy31[sizeof (cynth::ast::node::Int)];
 
       // node_le
-      char dummy31[sizeof (cynth::ast::node::Le)];
+      char dummy32[sizeof (cynth::ast::node::Le)];
 
       // node_lt
-      char dummy32[sizeof (cynth::ast::node::Lt)];
+      char dummy33[sizeof (cynth::ast::node::Lt)];
 
       // node_minus
-      char dummy33[sizeof (cynth::ast::node::Minus)];
+      char dummy34[sizeof (cynth::ast::node::Minus)];
 
       // node_mod
-      char dummy34[sizeof (cynth::ast::node::Mod)];
+      char dummy35[sizeof (cynth::ast::node::Mod)];
 
       // node_mul
-      char dummy35[sizeof (cynth::ast::node::Mul)];
+      char dummy36[sizeof (cynth::ast::node::Mul)];
 
       // node_name
-      char dummy36[sizeof (cynth::ast::node::Name)];
+      char dummy37[sizeof (cynth::ast::node::Name)];
 
       // node_ne
-      char dummy37[sizeof (cynth::ast::node::Ne)];
+      char dummy38[sizeof (cynth::ast::node::Ne)];
 
       // node_not
-      char dummy38[sizeof (cynth::ast::node::Not)];
+      char dummy39[sizeof (cynth::ast::node::Not)];
 
       // node_or
-      char dummy39[sizeof (cynth::ast::node::Or)];
+      char dummy40[sizeof (cynth::ast::node::Or)];
+
+      // node_out_type
+      char dummy41[sizeof (cynth::ast::node::OutType)];
 
       // node_plus
-      char dummy40[sizeof (cynth::ast::node::Plus)];
+      char dummy42[sizeof (cynth::ast::node::Plus)];
 
       // node_pow
-      char dummy41[sizeof (cynth::ast::node::Pow)];
+      char dummy43[sizeof (cynth::ast::node::Pow)];
 
       // node_range_to
-      char dummy42[sizeof (cynth::ast::node::RangeTo)];
+      char dummy44[sizeof (cynth::ast::node::RangeTo)];
 
       // node_range_to_by
-      char dummy43[sizeof (cynth::ast::node::RangeToBy)];
+      char dummy45[sizeof (cynth::ast::node::RangeToBy)];
 
       // node_return
-      char dummy44[sizeof (cynth::ast::node::Return)];
+      char dummy46[sizeof (cynth::ast::node::Return)];
 
       // node_spread
-      char dummy45[sizeof (cynth::ast::node::Spread)];
+      char dummy47[sizeof (cynth::ast::node::Spread)];
 
       // node_string
-      char dummy46[sizeof (cynth::ast::node::String)];
+      char dummy48[sizeof (cynth::ast::node::String)];
 
       // node_sub
-      char dummy47[sizeof (cynth::ast::node::Sub)];
+      char dummy49[sizeof (cynth::ast::node::Sub)];
 
       // node_subscript
-      char dummy48[sizeof (cynth::ast::node::Subscript)];
+      char dummy50[sizeof (cynth::ast::node::Subscript)];
 
       // node_type_decl
-      char dummy49[sizeof (cynth::ast::node::TypeDecl)];
+      char dummy51[sizeof (cynth::ast::node::TypeDecl)];
 
       // node_type_def
-      char dummy50[sizeof (cynth::ast::node::TypeDef)];
+      char dummy52[sizeof (cynth::ast::node::TypeDef)];
 
       // node_type_name
-      char dummy51[sizeof (cynth::ast::node::TypeName)];
+      char dummy53[sizeof (cynth::ast::node::TypeName)];
 
       // node_when
-      char dummy52[sizeof (cynth::ast::node::When)];
+      char dummy54[sizeof (cynth::ast::node::When)];
 
       // array_elem_list
-      char dummy53[sizeof (cynth::ast::node::component_vector<cynth::ast::category::ArrayElem>)];
+      char dummy55[sizeof (cynth::component_vector<cynth::ast::category::ArrayElem>)];
 
       // decl_list
-      char dummy54[sizeof (cynth::ast::node::component_vector<cynth::ast::category::Declaration>)];
+      char dummy56[sizeof (cynth::component_vector<cynth::ast::category::Declaration>)];
 
       // expr_list
-      char dummy55[sizeof (cynth::ast::node::component_vector<cynth::ast::category::Expression>)];
+      char dummy57[sizeof (cynth::component_vector<cynth::ast::category::Expression>)];
 
       // stmt_list
-      char dummy56[sizeof (cynth::ast::node::component_vector<cynth::ast::category::Statement>)];
+      char dummy58[sizeof (cynth::component_vector<cynth::ast::category::Statement>)];
 
       // type_list
-      char dummy57[sizeof (cynth::ast::node::component_vector<cynth::ast::category::Type>)];
+      char dummy59[sizeof (cynth::component_vector<cynth::ast::category::Type>)];
 
       // start
-      char dummy58[sizeof (int)];
+      char dummy60[sizeof (int)];
 
       // NAME
       // TYPENAME
       // INT
       // FLOAT
       // STRING
-      char dummy59[sizeof (std::string)];
+      char dummy61[sizeof (std::string)];
     };
 
     /// The size of the largest semantic type.
@@ -640,31 +648,33 @@ namespace yy {
     ASSGN = 274,                   // ASSGN
     SEMI = 275,                    // SEMI
     COMMA = 276,                   // COMMA
-    TO = 277,                      // TO
-    BY = 278,                      // BY
-    ELIP = 279,                    // ELIP
-    OPAREN = 280,                  // OPAREN
-    CPAREN = 281,                  // CPAREN
-    OBRACE = 282,                  // OBRACE
-    CBRACE = 283,                  // CBRACE
-    OBRACK = 284,                  // OBRACK
-    CBRACK = 285,                  // CBRACK
-    ADD = 286,                     // ADD
-    SUB = 287,                     // SUB
-    MUL = 288,                     // MUL
-    DIV = 289,                     // DIV
-    MOD = 290,                     // MOD
-    POW = 291,                     // POW
-    NOT = 292,                     // NOT
-    AND = 293,                     // AND
-    OR = 294,                      // OR
-    EQ = 295,                      // EQ
-    NE = 296,                      // NE
-    GE = 297,                      // GE
-    LE = 298,                      // LE
-    GT = 299,                      // GT
-    LT = 300,                      // LT
-    ILLEGAL = 301                  // ILLEGAL
+    IN = 277,                      // IN
+    OUT = 278,                     // OUT
+    TO = 279,                      // TO
+    BY = 280,                      // BY
+    ELIP = 281,                    // ELIP
+    OPAREN = 282,                  // OPAREN
+    CPAREN = 283,                  // CPAREN
+    OBRACE = 284,                  // OBRACE
+    CBRACE = 285,                  // CBRACE
+    OBRACK = 286,                  // OBRACK
+    CBRACK = 287,                  // CBRACK
+    ADD = 288,                     // ADD
+    SUB = 289,                     // SUB
+    MUL = 290,                     // MUL
+    DIV = 291,                     // DIV
+    MOD = 292,                     // MOD
+    POW = 293,                     // POW
+    NOT = 294,                     // NOT
+    AND = 295,                     // AND
+    OR = 296,                      // OR
+    EQ = 297,                      // EQ
+    NE = 298,                      // NE
+    GE = 299,                      // GE
+    LE = 300,                      // LE
+    GT = 301,                      // GT
+    LT = 302,                      // LT
+    ILLEGAL = 303                  // ILLEGAL
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -681,7 +691,7 @@ namespace yy {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 47, ///< Number of tokens.
+        YYNTOKENS = 49, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -705,108 +715,112 @@ namespace yy {
         S_ASSGN = 19,                            // ASSGN
         S_SEMI = 20,                             // SEMI
         S_COMMA = 21,                            // COMMA
-        S_TO = 22,                               // TO
-        S_BY = 23,                               // BY
-        S_ELIP = 24,                             // ELIP
-        S_OPAREN = 25,                           // OPAREN
-        S_CPAREN = 26,                           // CPAREN
-        S_OBRACE = 27,                           // OBRACE
-        S_CBRACE = 28,                           // CBRACE
-        S_OBRACK = 29,                           // OBRACK
-        S_CBRACK = 30,                           // CBRACK
-        S_ADD = 31,                              // ADD
-        S_SUB = 32,                              // SUB
-        S_MUL = 33,                              // MUL
-        S_DIV = 34,                              // DIV
-        S_MOD = 35,                              // MOD
-        S_POW = 36,                              // POW
-        S_NOT = 37,                              // NOT
-        S_AND = 38,                              // AND
-        S_OR = 39,                               // OR
-        S_EQ = 40,                               // EQ
-        S_NE = 41,                               // NE
-        S_GE = 42,                               // GE
-        S_LE = 43,                               // LE
-        S_GT = 44,                               // GT
-        S_LT = 45,                               // LT
-        S_ILLEGAL = 46,                          // ILLEGAL
-        S_YYACCEPT = 47,                         // $accept
-        S_start = 48,                            // start
-        S_cat_type = 49,                         // cat_type
-        S_cat_declaration = 50,                  // cat_declaration
-        S_cat_array_elem = 51,                   // cat_array_elem
-        S_cat_expression = 52,                   // cat_expression
-        S_cat_statement = 53,                    // cat_statement
-        S_pure = 54,                             // pure
-        S_expr_or = 55,                          // expr_or
-        S_expr_and = 56,                         // expr_and
-        S_expr_eq = 57,                          // expr_eq
-        S_expr_ord = 58,                         // expr_ord
-        S_expr_add = 59,                         // expr_add
-        S_expr_mul = 60,                         // expr_mul
-        S_expr_pow = 61,                         // expr_pow
-        S_expr_pre = 62,                         // expr_pre
-        S_expr_post = 63,                        // expr_post
-        S_expr_atom = 64,                        // expr_atom
-        S_expr_right = 65,                       // expr_right
-        S_paren_type = 66,                       // paren_type
-        S_void_type = 67,                        // void_type
-        S_node_auto = 68,                        // node_auto
-        S_node_type_name = 69,                   // node_type_name
-        S_node_const_type = 70,                  // node_const_type
-        S_node_function_type = 71,               // node_function_type
-        S_node_array_type = 72,                  // node_array_type
-        S_node_buffer_type = 73,                 // node_buffer_type
-        S_node_type_decl = 74,                   // node_type_decl
-        S_paren_decl = 75,                       // paren_decl
-        S_void_decl = 76,                        // void_decl
-        S_node_declaration = 77,                 // node_declaration
-        S_node_range_to = 78,                    // node_range_to
-        S_node_range_to_by = 79,                 // node_range_to_by
-        S_node_spread = 80,                      // node_spread
-        S_paren_expr = 81,                       // paren_expr
-        S_void = 82,                             // void
-        S_node_name = 83,                        // node_name
-        S_node_block = 84,                       // node_block
-        S_node_bool = 85,                        // node_bool
-        S_node_int = 86,                         // node_int
-        S_node_float = 87,                       // node_float
-        S_node_string = 88,                      // node_string
-        S_node_function = 89,                    // node_function
-        S_node_array = 90,                       // node_array
-        S_node_or = 91,                          // node_or
-        S_node_and = 92,                         // node_and
-        S_node_eq = 93,                          // node_eq
-        S_node_ne = 94,                          // node_ne
-        S_node_ge = 95,                          // node_ge
-        S_node_le = 96,                          // node_le
-        S_node_gt = 97,                          // node_gt
-        S_node_lt = 98,                          // node_lt
-        S_node_add = 99,                         // node_add
-        S_node_sub = 100,                        // node_sub
-        S_node_mul = 101,                        // node_mul
-        S_node_div = 102,                        // node_div
-        S_node_mod = 103,                        // node_mod
-        S_node_pow = 104,                        // node_pow
-        S_node_plus = 105,                       // node_plus
-        S_node_minus = 106,                      // node_minus
-        S_node_not = 107,                        // node_not
-        S_node_application = 108,                // node_application
-        S_node_conversion = 109,                 // node_conversion
-        S_node_subscript = 110,                  // node_subscript
-        S_node_expr_if = 111,                    // node_expr_if
-        S_node_definition = 112,                 // node_definition
-        S_node_assignment = 113,                 // node_assignment
-        S_node_function_def = 114,               // node_function_def
-        S_node_type_def = 115,                   // node_type_def
-        S_node_return = 116,                     // node_return
-        S_node_if = 117,                         // node_if
-        S_node_when = 118,                       // node_when
-        S_type_list = 119,                       // type_list
-        S_decl_list = 120,                       // decl_list
-        S_array_elem_list = 121,                 // array_elem_list
-        S_expr_list = 122,                       // expr_list
-        S_stmt_list = 123                        // stmt_list
+        S_IN = 22,                               // IN
+        S_OUT = 23,                              // OUT
+        S_TO = 24,                               // TO
+        S_BY = 25,                               // BY
+        S_ELIP = 26,                             // ELIP
+        S_OPAREN = 27,                           // OPAREN
+        S_CPAREN = 28,                           // CPAREN
+        S_OBRACE = 29,                           // OBRACE
+        S_CBRACE = 30,                           // CBRACE
+        S_OBRACK = 31,                           // OBRACK
+        S_CBRACK = 32,                           // CBRACK
+        S_ADD = 33,                              // ADD
+        S_SUB = 34,                              // SUB
+        S_MUL = 35,                              // MUL
+        S_DIV = 36,                              // DIV
+        S_MOD = 37,                              // MOD
+        S_POW = 38,                              // POW
+        S_NOT = 39,                              // NOT
+        S_AND = 40,                              // AND
+        S_OR = 41,                               // OR
+        S_EQ = 42,                               // EQ
+        S_NE = 43,                               // NE
+        S_GE = 44,                               // GE
+        S_LE = 45,                               // LE
+        S_GT = 46,                               // GT
+        S_LT = 47,                               // LT
+        S_ILLEGAL = 48,                          // ILLEGAL
+        S_YYACCEPT = 49,                         // $accept
+        S_start = 50,                            // start
+        S_cat_type = 51,                         // cat_type
+        S_cat_declaration = 52,                  // cat_declaration
+        S_cat_array_elem = 53,                   // cat_array_elem
+        S_cat_expression = 54,                   // cat_expression
+        S_cat_statement = 55,                    // cat_statement
+        S_pure = 56,                             // pure
+        S_expr_or = 57,                          // expr_or
+        S_expr_and = 58,                         // expr_and
+        S_expr_eq = 59,                          // expr_eq
+        S_expr_ord = 60,                         // expr_ord
+        S_expr_add = 61,                         // expr_add
+        S_expr_mul = 62,                         // expr_mul
+        S_expr_pow = 63,                         // expr_pow
+        S_expr_pre = 64,                         // expr_pre
+        S_expr_post = 65,                        // expr_post
+        S_expr_atom = 66,                        // expr_atom
+        S_expr_right = 67,                       // expr_right
+        S_paren_type = 68,                       // paren_type
+        S_void_type = 69,                        // void_type
+        S_node_auto = 70,                        // node_auto
+        S_node_type_name = 71,                   // node_type_name
+        S_node_const_type = 72,                  // node_const_type
+        S_node_in_type = 73,                     // node_in_type
+        S_node_out_type = 74,                    // node_out_type
+        S_node_function_type = 75,               // node_function_type
+        S_node_array_type = 76,                  // node_array_type
+        S_node_buffer_type = 77,                 // node_buffer_type
+        S_node_type_decl = 78,                   // node_type_decl
+        S_paren_decl = 79,                       // paren_decl
+        S_void_decl = 80,                        // void_decl
+        S_node_declaration = 81,                 // node_declaration
+        S_node_range_to = 82,                    // node_range_to
+        S_node_range_to_by = 83,                 // node_range_to_by
+        S_node_spread = 84,                      // node_spread
+        S_paren_expr = 85,                       // paren_expr
+        S_void = 86,                             // void
+        S_node_name = 87,                        // node_name
+        S_node_block = 88,                       // node_block
+        S_node_bool = 89,                        // node_bool
+        S_node_int = 90,                         // node_int
+        S_node_float = 91,                       // node_float
+        S_node_string = 92,                      // node_string
+        S_node_function = 93,                    // node_function
+        S_node_array = 94,                       // node_array
+        S_node_or = 95,                          // node_or
+        S_node_and = 96,                         // node_and
+        S_node_eq = 97,                          // node_eq
+        S_node_ne = 98,                          // node_ne
+        S_node_ge = 99,                          // node_ge
+        S_node_le = 100,                         // node_le
+        S_node_gt = 101,                         // node_gt
+        S_node_lt = 102,                         // node_lt
+        S_node_add = 103,                        // node_add
+        S_node_sub = 104,                        // node_sub
+        S_node_mul = 105,                        // node_mul
+        S_node_div = 106,                        // node_div
+        S_node_mod = 107,                        // node_mod
+        S_node_pow = 108,                        // node_pow
+        S_node_plus = 109,                       // node_plus
+        S_node_minus = 110,                      // node_minus
+        S_node_not = 111,                        // node_not
+        S_node_application = 112,                // node_application
+        S_node_conversion = 113,                 // node_conversion
+        S_node_subscript = 114,                  // node_subscript
+        S_node_expr_if = 115,                    // node_expr_if
+        S_node_definition = 116,                 // node_definition
+        S_node_assignment = 117,                 // node_assignment
+        S_node_function_def = 118,               // node_function_def
+        S_node_type_def = 119,                   // node_type_def
+        S_node_return = 120,                     // node_return
+        S_node_if = 121,                         // node_if
+        S_node_when = 122,                       // node_when
+        S_type_list = 123,                       // type_list
+        S_decl_list = 124,                       // decl_list
+        S_array_elem_list = 125,                 // array_elem_list
+        S_expr_list = 126,                       // expr_list
+        S_stmt_list = 127                        // stmt_list
       };
     };
 
@@ -975,6 +989,10 @@ namespace yy {
         value.move< cynth::ast::node::If > (std::move (that.value));
         break;
 
+      case symbol_kind::S_node_in_type: // node_in_type
+        value.move< cynth::ast::node::InType > (std::move (that.value));
+        break;
+
       case symbol_kind::S_node_int: // node_int
         value.move< cynth::ast::node::Int > (std::move (that.value));
         break;
@@ -1013,6 +1031,10 @@ namespace yy {
 
       case symbol_kind::S_node_or: // node_or
         value.move< cynth::ast::node::Or > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_node_out_type: // node_out_type
+        value.move< cynth::ast::node::OutType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
@@ -1068,23 +1090,23 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::ArrayElem> > (std::move (that.value));
+        value.move< cynth::component_vector<cynth::ast::category::ArrayElem> > (std::move (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Declaration> > (std::move (that.value));
+        value.move< cynth::component_vector<cynth::ast::category::Declaration> > (std::move (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Expression> > (std::move (that.value));
+        value.move< cynth::component_vector<cynth::ast::category::Expression> > (std::move (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Statement> > (std::move (that.value));
+        value.move< cynth::component_vector<cynth::ast::category::Statement> > (std::move (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Type> > (std::move (that.value));
+        value.move< cynth::component_vector<cynth::ast::category::Type> > (std::move (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -1439,6 +1461,17 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::InType&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::InType& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::Int&& v)
         : Base (t)
         , value (std::move (v))
@@ -1544,6 +1577,17 @@ namespace yy {
       {}
 #else
       basic_symbol (typename Base::kind_type t, const cynth::ast::node::Or& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::OutType&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::OutType& v)
         : Base (t)
         , value (v)
       {}
@@ -1692,56 +1736,56 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::component_vector<cynth::ast::category::ArrayElem>&& v)
+      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::ArrayElem>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::component_vector<cynth::ast::category::ArrayElem>& v)
+      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::ArrayElem>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::component_vector<cynth::ast::category::Declaration>&& v)
+      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Declaration>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::component_vector<cynth::ast::category::Declaration>& v)
+      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Declaration>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::component_vector<cynth::ast::category::Expression>&& v)
+      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Expression>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::component_vector<cynth::ast::category::Expression>& v)
+      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Expression>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::component_vector<cynth::ast::category::Statement>&& v)
+      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Statement>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::component_vector<cynth::ast::category::Statement>& v)
+      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Statement>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::component_vector<cynth::ast::category::Type>&& v)
+      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Type>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::component_vector<cynth::ast::category::Type>& v)
+      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Type>& v)
         : Base (t)
         , value (v)
       {}
@@ -1925,6 +1969,10 @@ switch (yykind)
         value.template destroy< cynth::ast::node::If > ();
         break;
 
+      case symbol_kind::S_node_in_type: // node_in_type
+        value.template destroy< cynth::ast::node::InType > ();
+        break;
+
       case symbol_kind::S_node_int: // node_int
         value.template destroy< cynth::ast::node::Int > ();
         break;
@@ -1963,6 +2011,10 @@ switch (yykind)
 
       case symbol_kind::S_node_or: // node_or
         value.template destroy< cynth::ast::node::Or > ();
+        break;
+
+      case symbol_kind::S_node_out_type: // node_out_type
+        value.template destroy< cynth::ast::node::OutType > ();
         break;
 
       case symbol_kind::S_node_plus: // node_plus
@@ -2018,23 +2070,23 @@ switch (yykind)
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.template destroy< cynth::ast::node::component_vector<cynth::ast::category::ArrayElem> > ();
+        value.template destroy< cynth::component_vector<cynth::ast::category::ArrayElem> > ();
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.template destroy< cynth::ast::node::component_vector<cynth::ast::category::Declaration> > ();
+        value.template destroy< cynth::component_vector<cynth::ast::category::Declaration> > ();
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.template destroy< cynth::ast::node::component_vector<cynth::ast::category::Expression> > ();
+        value.template destroy< cynth::component_vector<cynth::ast::category::Expression> > ();
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.template destroy< cynth::ast::node::component_vector<cynth::ast::category::Statement> > ();
+        value.template destroy< cynth::component_vector<cynth::ast::category::Statement> > ();
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.template destroy< cynth::ast::node::component_vector<cynth::ast::category::Type> > ();
+        value.template destroy< cynth::component_vector<cynth::ast::category::Type> > ();
         break;
 
       case symbol_kind::S_start: // start
@@ -2139,13 +2191,13 @@ switch (yykind)
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT || tok == token::ILLEGAL);
+        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::IN || tok == token::OUT || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT || tok == token::ILLEGAL);
       }
 #else
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT || tok == token::ILLEGAL);
+        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::IN || tok == token::OUT || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT || tok == token::ILLEGAL);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -2539,6 +2591,36 @@ switch (yykind)
       make_COMMA ()
       {
         return symbol_type (token::COMMA);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_IN ()
+      {
+        return symbol_type (token::IN);
+      }
+#else
+      static
+      symbol_type
+      make_IN ()
+      {
+        return symbol_type (token::IN);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_OUT ()
+      {
+        return symbol_type (token::OUT);
+      }
+#else
+      static
+      symbol_type
+      make_OUT ()
+      {
+        return symbol_type (token::OUT);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -3220,9 +3302,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 812,     ///< Last index in yytable_.
-      yynnts_ = 77,  ///< Number of nonterminal symbols.
-      yyfinal_ = 122 ///< Termination state number.
+      yylast_ = 872,     ///< Last index in yytable_.
+      yynnts_ = 79,  ///< Number of nonterminal symbols.
+      yyfinal_ = 124 ///< Termination state number.
     };
 
 
@@ -3271,10 +3353,10 @@ switch (yykind)
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-      45,    46
+      45,    46,    47,    48
     };
     // Last valid token kind.
-    const int code_max = 301;
+    const int code_max = 303;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -3426,6 +3508,10 @@ switch (yykind)
         value.copy< cynth::ast::node::If > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_node_in_type: // node_in_type
+        value.copy< cynth::ast::node::InType > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_node_int: // node_int
         value.copy< cynth::ast::node::Int > (YY_MOVE (that.value));
         break;
@@ -3464,6 +3550,10 @@ switch (yykind)
 
       case symbol_kind::S_node_or: // node_or
         value.copy< cynth::ast::node::Or > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_node_out_type: // node_out_type
+        value.copy< cynth::ast::node::OutType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
@@ -3519,23 +3609,23 @@ switch (yykind)
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.copy< cynth::ast::node::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (that.value));
+        value.copy< cynth::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.copy< cynth::ast::node::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.copy< cynth::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.copy< cynth::ast::node::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.copy< cynth::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.copy< cynth::ast::node::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.copy< cynth::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.copy< cynth::ast::node::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.copy< cynth::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -3713,6 +3803,10 @@ switch (yykind)
         value.move< cynth::ast::node::If > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_node_in_type: // node_in_type
+        value.move< cynth::ast::node::InType > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_node_int: // node_int
         value.move< cynth::ast::node::Int > (YY_MOVE (s.value));
         break;
@@ -3751,6 +3845,10 @@ switch (yykind)
 
       case symbol_kind::S_node_or: // node_or
         value.move< cynth::ast::node::Or > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_node_out_type: // node_out_type
+        value.move< cynth::ast::node::OutType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
@@ -3806,23 +3904,23 @@ switch (yykind)
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (s.value));
+        value.move< cynth::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (s.value));
+        value.move< cynth::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Expression> > (YY_MOVE (s.value));
+        value.move< cynth::component_vector<cynth::ast::category::Expression> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Statement> > (YY_MOVE (s.value));
+        value.move< cynth::component_vector<cynth::ast::category::Statement> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< cynth::ast::node::component_vector<cynth::ast::category::Type> > (YY_MOVE (s.value));
+        value.move< cynth::component_vector<cynth::ast::category::Type> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -3898,17 +3996,21 @@ switch (yykind)
   }
 
 } // yy
-#line 3902 "src/parser.hpp"
+#line 4000 "inc/parser.hpp"
 
 
 // "%code provides" blocks.
-#line 11 "gen/parser.y"
+#line 13 "gen/parser.y"
+
 
     namespace yy {
+
         parser::symbol_type yylex ();
+
     }
 
-#line 3912 "src/parser.hpp"
+
+#line 4014 "inc/parser.hpp"
 
 
-#endif // !YY_YY_SRC_PARSER_HPP_INCLUDED
+#endif // !YY_YY_INC_PARSER_HPP_INCLUDED

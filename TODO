@@ -1,0 +1,46 @@
+* include clean-up (careful with asg/declarations)
+* check places where return std::move could mess with copy elision
+* in functions, prefer explicit return type with generic initializer return over auto return type with explicit initializer return
+    i.e. `-> result` and `return {value}` instead of `-> auto` and `return result{value}`
+* fix everything with empty tuples (void).
+    * check for empty tuples everywhere except for the few allowed contexts.
+    * uninitialized variables (declarations without definitions) are implemented as empty tuples (even though the type doesn't match)
+* separate util/general.hpp
+* don't specify asg:: and ast:: inside those namespaces.
+* specify util:: everywhere (even inside util).
+* specify interface::, node::, category::, type:: and value:: everywhere.
+* f {\n...\n} ()
+* rename util::same_as_no_cvref (too long) and util::is (too generic and cryptic).
+* decide whether to keep type info in values, or to compute it every time. maybe it could be cashed in an optional value?
+* rename util::some, util::none, util::all to be more explicit about what acts on types and what on values.
+* type.complete() returns result, but optional makes more sense.
+    i think there were complications with vector<optional<result<...>>> kind of thing though
+    (vector<result<result<...>>> would colapse into vector<result<...>>)
+    yeah maybe i'll keep it the way it is.
+    maybe i should restrict return types to result<vector<...>> - not alowing vector<result<...>>
+* check if everything is ok with stuff that uses std::vector<bool>
+    * or i could use char instead of bool (using cynth::boolean = char) - std::vector<char> is no special case
+* rename util::string, util::container
+* solve the makefile includes problem
+* don't forget about the clang sanitizer
+* the whole program is an evaluated block with implicit braces and implicit `return true` at the end.
+    TODO - the `return true` part
+* use `*std::get_if<T>(variant)` instead of `std::get<T>(variant)` to avoid checking.
+    or maybe even that doesn't avoid a check?
+* fix util::compose or remove its use everywhere.
+* TODO: Decide about implicit conversions.
+* in lift for two vectors, iterate over the size of the smallest one to avoid out of bounds access.
+    * returning an error now, when trying to iterate over differently sized vectors.
+* how to implement fallback overloads in lift without explicit requires (!...)
+* for and while loop still missing
+* stop naming variables `result`, it's confusing when i need refer to the type result as `cynth::result`
+* empty array type
+    * ehm... do i actually need an empty statically sized array?
+* test procedures (try using their result)
+* negative indices?
+* errors in statements
+* lambda capture (just copy the whole context for now)
+* make sure arrays have referential semantics.
+
+* cedupoc
+* pristuf

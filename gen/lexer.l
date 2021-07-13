@@ -25,6 +25,7 @@ when     (?i:when)
 while    (?i:while)
 for      (?i:for)
 in       (?i:in)
+out      (?i:out)
 to       (?i:to)
 by       (?i:by)
 type     (?i:type)
@@ -48,8 +49,9 @@ void     (?i:void)
  /*
 {while}    return parser::make_WHILE();
 {for}      return parser::make_FOR();
-{in}       return parser::make_IN();
 */
+{in}       return parser::make_IN();
+{out}      return parser::make_OUT();
 {to}       return parser::make_TO();
 {by}       return parser::make_BY();
 {type}     return parser::make_TYPE();
@@ -80,10 +82,10 @@ void     (?i:void)
 "*"        return parser::make_MUL();
 "/"        return parser::make_DIV();
 "%"        return parser::make_MOD();
-"^"        return parser::make_POW();
+"**"       return parser::make_POW();
 "!"        return parser::make_NOT();
 "&&"       return parser::make_AND();
-"||"       return parser::make_NOT();
+"||"       return parser::make_OR();
 "="        return parser::make_ASSGN();
  /*
 "+="       return parser::make_ADDASSGN();

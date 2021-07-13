@@ -1,0 +1,8 @@
+Int inc (Int x) x + 1;
+
+type Elem = Float;
+
+Elem [inc(2)] a = [1, 2, 3.5];
+
+return a[2];
+#return a[1];

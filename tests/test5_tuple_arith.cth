@@ -1,0 +1,17 @@
+# The three following functions are equivalent:
+(Int, Int) f1 (Int a, Int b) (a - 1, b - 2);
+(Int, Int) f2 (Int a, Int b) (a, b) + -(1, 2);
+(Int, Int) f3 ((Int, Int) p) p + -(1, 2);
+
+(Int, Int) t = (2, 1);
+
+# Comment out any of the following:
+(Int a, Int b) = f1(2, 1);
+#(Int a, Int b) = f2(2, 1);
+#(Int a, Int b) = f3(2, 1);
+#(Int a, Int b) = f1(t);
+#(Int a, Int b) = f2(f1(t));
+#(Int a, Int b) = f2(f1(-t));
+
+#return a;
+return b;

@@ -1,0 +1,54 @@
+(Int, Int const) t = (1, 2);
+
+# This should be an error:
+#t = (2, 3);
+
+# Equivalent to (Int const, Int const) u = ...
+(Int, Int) const u = (1, 2);
+
+# This should be an error:
+#u = (2, 3);
+
+# This should be an error:
+# (Declaration of a const value with no immediate definition.)
+#Int const a;
+
+Int const b = 1;
+
+# This should be an error:
+#b = 2;
+
+Int c;
+
+# This is ok (copy to a non-const value):
+c = b;
+
+# This should be all errors:
+# (Buffer, in and out cannot be const by definition.)
+#buffer [3] const b;
+#Int in const b;
+#Int out const b;
+
+# This is ok:
+# (Functions are const implicitly.)
+Int (Int) const f = Int fn (Int x) x + 1;
+
+# TODO: This should be an error:
+# (Even implicitly const functions should be immediately defined.)
+Int (Int) g;
+
+# These are semantically equivalent:
+Int const [2] a1;
+Int       [2] a2;
+
+# These aren't:
+# (Because of the referential element type.)
+Int [2] const [2] a3;
+Int [2]       [2] a4;
+# TODO: For now, prohibit arrays of any other types than Bool, Int and Float. (Tuples should be ok.)
+
+# These are semantically different for any kind of element type:
+Int [2] const a5 = [1, 2]; # No definiton would be an error.
+Int [2]       a6;
+
+return c;

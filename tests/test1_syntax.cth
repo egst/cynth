@@ -1,0 +1,82 @@
+Int a = {
+    Int b = 5;
+    return b + 1;
+};
+
+Int f (Int x) x + 1;
+
+Int b = f(5);
+
+Int c = if (b == 5) 1 else 2;
+
+# Type deduction with no type declaration:
+# (The deduced type is not captured in any accessible type, it is simply ignored.)
+$ ff = Int fn (Int x) x * 2;
+
+# The following functions are equivalent:
+
+(Int, Int) g1 (Int a, Int b) (a + 1, b + 2);
+
+(Int, Int) g2 (Int a, Int b) (a, b) + (1, 2); # Comment.
+
+(Int, Int) g3 ((Int, Int) p) p + (1, 2);
+
+# Another comment.
+
+// These comments work too.
+
+#/* These don't yet. */
+
+# This is not a syntactic error, but it is a semantic one:
+# (Only names and tuples of names may appear on the lhs of an assignment.)
+
+(a, f(1)) = (1, 2);
+
+# This is how you define procedures:
+
+() doSomething () { # This one doesn't even take any parameters.
+    Bool result1 = doStuff();
+    Bool result2 = doOtherStuff();
+    when (result1)
+        doMoreStuff();
+    when (result2) {
+        doEvenMoreStuff();
+        andSomethingElse();
+    }; # Even `}` doesn't allow you to ommit `;`.
+    finishingUp();
+    return (); # The void expression `()` is implied here.
+    return;    # This `;` isn't mandatory here.
+}; # Even here the `;` is needed.
+
+# Note on C-like syntax:
+# Hopefully, any confusion with the mandatory `;` (concidering the usual approach of C-like syntax languages)
+# will be eliminated, once the automatic `;` insertion is implemented.
+# For even more familiarity with C-like syntax, I could add a syntactic alias:
+# void doSomething () {}
+# This would be a valid alias only for the void type, not void value nor void declaration. E.g.:
+# `doSomething void` wouldn't be a valid alias for `doSomething()` and
+# `void doSomething void {}` wouldn't be a valid alias for `() doSomething () {}`.
+
+# This is not possible, even syntactically:
+# (Void is a valid type, expression and even declaration, but it may only be used in specific contexts.)
+#() v = doSomething()
+
+doSomething(); # The `()` is actually a void expression.
+
+# You can specify the size explicitly:
+Int [3]        a = [1, 2, 3];
+# Or let it be deduced:
+Int [$]        b = [1, 2];
+Int []         c = [1, 2, 3];
+# Or even capture it in a variable:
+Int [Int size] d = [1, 2, 3, 4];
+
+# All type composition is postfix and left assosiative:
+
+Int x;
+Int const c;
+Int out o;
+Int [5] a;
+Int const [5] b;
+Int [5] const c;
+Int const [6] const d;

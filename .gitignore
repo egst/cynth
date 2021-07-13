@@ -2,6 +2,7 @@ tmp/
 dep/
 obj/
 dist/
+notes/
 **/*.swp
 **/*.swo
 **/*.swn

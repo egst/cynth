@@ -1,30 +1,32 @@
 #pragma once
 
-#include "ast/category_base.hpp"
+#include "config.hpp"
+#include "category_base.hpp"
+#include "asg/declarations.hpp"
 #include "ast/nodes/types.hpp"
-#include "util/config.hpp"
 
 namespace cynth::ast::category {
 
     namespace detail {
 
-        using type = util::variant <
-            ast::node::Auto,
-            ast::node::TypeName,
-            ast::node::FunctionType,
+        using type = variant <
             ast::node::ArrayType,
+            ast::node::Auto,
             ast::node::BufferType,
-            ast::node::TypeDecl,
             ast::node::ConstType,
-            ast::node::TupleType
+            ast::node::FunctionType,
+            ast::node::InType,
+            ast::node::OutType,
+            ast::node::TupleType,
+            ast::node::TypeDecl,
+            ast::node::TypeName
         >;
 
     }
 
-    struct Type: detail::category_base<Type, detail::type> {
-        using base = detail::category_base<Type, detail::type>;
+    struct Type: category_base<Type, detail::type> {
+        using base = category_base<Type, detail::type>;
         using base::base;
-        using base::operator=;
     };
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ast/category_base.hpp"
+#include "category_base.hpp"
 #include "ast/nodes/statements.hpp"
 #include "ast/categories/declaration.hpp"
 #include "ast/categories/expression.hpp"
@@ -14,24 +14,23 @@ namespace cynth::ast::category {
 
         using statement = util::extend <
             util::concat <
-                decltype(category::Declaration::node),
-                decltype(category::Expression::node)
+                category::Declaration::variant,
+                category::Expression::variant
             >,
             ast::node::Assignment,
             ast::node::Definition,
             ast::node::FunctionDef,
             ast::node::If,
             ast::node::Return,
-            ast::node::When,
-            ast::node::TypeDef
+            ast::node::TypeDef,
+            ast::node::When
         >;
 
     }
 
-    struct Statement: detail::category_base<Statement, detail::statement> {
-        using base = detail::category_base<Statement, detail::statement>;
+    struct Statement: category_base<Statement, detail::statement> {
+        using base = category_base<Statement, detail::statement>;
         using base::base;
-        using base::operator=;
     };
 
 }

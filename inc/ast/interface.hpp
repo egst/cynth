@@ -1,31 +1,100 @@
 #pragma once
 
-#include "ast/node_interface.hpp"
-#include "ast/node_component.hpp"
-#include "ast/category_interface.hpp"
-#include "util/lift.hpp"
+#include "interface_types.hpp"
+#include "lift.hpp"
+#include "context.hpp"
+#include "asg/values.hpp"
 
 #include <string>
-#include <array>
-#include <vector>
 #include <variant>
+#include <concepts>
+
+namespace cynth::ast::interface {
+
+    template <typename Node>
+    concept any = requires (Node node) {
+        { node.display()  } -> std::same_as<display_result>;
+    };
+
+    template <typename Node>
+    concept expression = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.evaluate(ctx) } -> std::same_as<evaluation_result>;
+    };
+
+    template <typename Node>
+    concept statement = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.execute(ctx) } -> std::same_as<execution_result>;
+    };
+
+    template <typename Node>
+    concept type = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.eval_type(ctx) } -> std::same_as<type_eval_result>;
+    };
+
+    template <typename Node>
+    concept array_elem = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.eval_array_elem(ctx) } -> std::same_as<evaluation_result>; // TODO: Decide on the result type.
+    };
+
+    template <typename Node>
+    concept declaration = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.eval_decl(ctx) } -> std::same_as<decl_eval_result>;
+    };
+
+}
 
 namespace cynth::ast {
 
-    // The generic AST functions operate on:
-    // * nodes:                 nodes define the core functionality themselves in their corresponding methods.
-    // * categories:            applying the function as a visitor.
-    // * components:            applying the function to the get() method result.
-    // * optional components:   returning an std::optional.
-    // * vectors of components: mapping the function (std::transform) and returning a new std::vector.
+    constexpr auto display = lift::any {
+        [] <interface::any Node> (Node const & node) {
+            return node.display();
+        }
+    };
 
-    // This header only includes the necessary headers for the generic interface.
-    // To actually use these functions on nodes and categories or components thereof, the appropriate headers must be also included manually.
-    // E.g. to be able to call ast::display on an expression category, both 'ast/interface.hpp' and 'ast/categories/expression.hpp' must be included.
-    // For simpler use, the 'ast.hpp' header provides all nodes and categories.
+    constexpr auto execute = [] (context & ctx) {
+        return lift::any{util::overload {
+            [&ctx] <interface::statement Node> (Node const & node) {
+                return node.execute(ctx);
+            },
+            [&ctx] <interface::expression Node> (Node const & node) -> execution_result requires (!interface::statement<Node>) {
+                auto result = util::unite_results(node.evaluate(ctx));
+                if (!result)
+                    return result.error();
+                return {};
+            }
+        }};
+    };
 
-    constexpr auto display = util::lift{[] <ast::node::interface Node> (Node const & node) -> std::string { return node.display(); }};
-    //constexpr auto evaluate;
-    //constexpr auto execute;
+    constexpr auto evaluate = [] (context & ctx) {
+        return lift::any {
+            [&ctx] <interface::expression Node> (Node const & node) {
+                return node.evaluate(ctx);
+            }
+        };
+    };
+
+    constexpr auto eval_type = [] (context & ctx) {
+        return lift::any {
+            [&ctx] <interface::type Node> (Node const & node) {
+                return node.eval_type(ctx);
+            }
+        };
+    };
+
+    constexpr auto eval_array_elem = [] (context & ctx) {
+        return lift::any {
+            [&ctx] <interface::array_elem Node> (Node const & node) {
+                return node.eval_array_elem(ctx);
+            }
+        };
+    };
+
+    constexpr auto eval_decl = [] (context & ctx) {
+        return lift::any {
+            [&ctx] <interface::declaration Node> (Node const & node) {
+                return node.eval_decl(ctx);
+            }
+        };
+    };
 
 }

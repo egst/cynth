@@ -1,6 +1,6 @@
 #include "util/string.hpp"
 
-#include "util/config.hpp"
+#include "config.hpp"
 #include "util/math.hpp"
 
 #include <cstddef>
@@ -20,7 +20,7 @@ namespace cynth {
         return str.substr(1, str.size() - 2);
     }
 
-    util::integral util::stoi (std::string const & str) {
+    integral util::stoi (std::string const & str) {
         auto pos = str.find_first_of("eE");
         if (pos == std::string::npos)
             return std::stoi(str);
