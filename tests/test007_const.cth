@@ -51,4 +51,46 @@ Int [2]       [2] a4;
 Int [2] const a5 = [1, 2]; # No definiton would be an error.
 Int [2]       a6;
 
+# Interface of these is semantically equivalent for the caller:
+() f1 (Int const x) {
+    # The only difference is inside the function.
+    # This is an error:
+    #x = 2;
+};
+() f2 (Int x) {
+    # This is ok:
+    x = 2;
+};
+
+# For referential types there is a difference for the caller as well...
+
+() f3 (Int [2] x) {
+    # This changes the internal reffernce only:
+    x = [1, 2];
+    # Any following modifications (assignment by elements) won't affect the caller's argument:
+    x[0] = 2;
+    x[] = [4, 5];
+};
+
+() f4 (Int [2] x) {
+    # The interfal reffernce points to the caller's argument,
+    # so any modification (assignment by elements) will affect it:
+    x[0] = 2;
+    x[] = [3, 4];
+};
+
+() f5 (Int [2] const x) {
+    # This would be an error:
+    #x[0] = 2;
+    #x[]  = [2, 3];
+    #x    = [1, 2];
+    # Note that constness prohibits both assignment by elements and reassignment of the internal reference.
+};
+
+Int [2] arr = [1, 2];
+
+f3(arr); # Could modify arr, but doesn't.
+f4(arr); # Does modify arr.
+f5(arr); # Can never modify arr.
+
 return c;

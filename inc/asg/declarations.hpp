@@ -18,4 +18,10 @@ namespace cynth::asg {
         std::string name;
     };
 
+    template <bool Complete>
+    struct range_decl {
+        component_vector <declaration<Complete>> declaration;
+        component        <value::any<true>>      range;
+    };
+
 }

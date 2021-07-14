@@ -226,7 +226,7 @@ namespace cynth::asg {
 
     namespace detail {
 
-        constexpr auto complete_type = util::overload {
+        constexpr auto make_type_complete = util::overload {
             [] <interface::type Node> (Node && node) -> complete_result {
                 return type::complete{std::forward<Node>(node)};
             },
@@ -235,28 +235,49 @@ namespace cynth::asg {
             },
             [] (type::unknown const &) -> complete_result {
                 return {result_error{"An unknown type ($ or type T) is not complete."}};
-            },
+            }
             /*[] <interface::incomplete_type Node> (Node const &) -> complete_result requires (!interface::completable_type<Node>) {
                 return {result_error{"Complete type expected."}};
             }*/
         };
 
+
+        constexpr auto make_decl_complete = util::overload {
+            [] <util::same_as_no_cvref<incomplete_decl> Decl> (Decl && decl) -> result<complete_decl> {
+                auto complete = util::unite_results(lift::category_component{detail::make_type_complete}(util::forward_like<Decl>(decl.type)));
+                if (!complete)
+                    return complete.error();
+                return complete_decl {
+                    .type = *std::move(complete),
+                    .name = decl.name
+                };
+            },
+            [] <util::same_as_no_cvref<complete_decl> Decl> (Decl && decl) -> result<complete_decl> {
+                return std::forward<Decl>(decl);
+            }
+        };
+
+        constexpr auto make_range_decl_complete = util::overload {
+            [] <util::same_as_no_cvref<incomplete_range_decl> Decl> (Decl && decl) -> result<complete_range_decl> {
+                auto complete = util::unite_results(lift::category_component{detail::make_decl_complete}(util::forward_like<Decl>(decl.declaration)));
+                if (!complete)
+                    return complete.error();
+                return complete_range_decl {
+                    .declaration = *std::move(complete),
+                    .range       = decl.range
+                };
+            },
+            [] <util::same_as_no_cvref<complete_range_decl> Decl> (Decl && decl) -> result<complete_range_decl> {
+                return std::forward<Decl>(decl);
+            }
+        };
+
     }
 
     constexpr auto complete = lift::any{util::overload {
-        detail::complete_type,
-        [] <util::same_as_no_cvref<incomplete_decl> Decl> (Decl && decl) -> result<complete_decl> {
-            auto complete_type = util::unite_results(lift::category_component{detail::complete_type}(util::forward_like<Decl>(decl.type)));
-            if (!complete_type)
-                return complete_type.error();
-            return complete_decl {
-                .type = *std::move(complete_type),
-                .name = decl.name
-            };
-        },
-        [] <util::same_as_no_cvref<complete_decl> Decl> (Decl && decl) -> result<complete_decl> {
-            return std::forward<Decl>(decl);
-        }
+        detail::make_type_complete,
+        detail::make_decl_complete,
+        detail::make_range_decl_complete
     }};
 
     // TODO: It would probably be better to write this out manually.

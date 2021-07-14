@@ -16,6 +16,7 @@ namespace cynth::ast {
     using type_eval_result       = tuple_vector<result<asg::type::incomplete>>;
     using array_elem_eval_result = result<tuple_vector<asg::value::complete>>; // TODO
     using decl_eval_result       = tuple_vector<result<asg::incomplete_decl>>;
+    using range_decl_eval_result = tuple_vector<result<asg::incomplete_range_decl>>;
 
     template <util::is<result> T>
     constexpr auto make_single_eval_result (T && value) {

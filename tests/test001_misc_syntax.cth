@@ -28,7 +28,8 @@ $ ff = Int fn (Int x) x * 2;
 #/* These don't yet. */
 
 # This is not a syntactic error, but it is a semantic one:
-# (Only names and tuples of names may appear on the lhs of an assignment.)
+# (Only names, subscripts and tuples thereof may appear on the lhs of an assignment.)
+# (Actually only "expr_post" is allowed here syntactically new because of ambiguities with some "expr_right" like the for loop.)
 
 (a, f(1)) = (1, 2);
 

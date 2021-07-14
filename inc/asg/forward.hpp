@@ -9,6 +9,11 @@ namespace cynth::asg {
 
     struct type_decl;
 
+    template <bool> struct range_decl;
+
+    using complete_range_decl   = range_decl<true>;
+    using incomplete_range_decl = range_decl<false>;
+
     namespace value {
 
         template <bool> struct any;

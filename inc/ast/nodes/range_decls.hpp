@@ -15,18 +15,16 @@ namespace cynth::ast::node {
         component<category::Declaration> declaration;
         component<category::Expression>  range;
 
-        display_result   display   ()          const;
-        /*decl_eval_result eval_decl (context &) const;
-        execution_result execute   (context &) const;*/
+        display_result   display         ()          const;
+        decl_eval_result eval_range_decl (context &) const;
     };
 
     /** (T e in a, ...) */
     struct TupleRangeDecl {
         component_vector<category::RangeDecl> declarations;
 
-        display_result   display   ()          const;
-        /*decl_eval_result eval_decl (context &) const;
-        execution_result execute   (context &) const;*/
+        display_result   display         ()          const;
+        decl_eval_result eval_range_decl (context &) const;
     };
 
 }

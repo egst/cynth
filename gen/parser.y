@@ -651,6 +651,9 @@ node_conversion:
 node_subscript:
     expr_post[container] OBRACK array_elem_list[location] CBRACK {
         $$ = {.container = $container, .location = $location};
+    } |
+    expr_post[container] OBRACK CBRACK {
+        $$ = {.container = $container, .location = {}};
     }
 
 node_expr_if:
