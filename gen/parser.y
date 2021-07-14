@@ -38,6 +38,8 @@
 %token IF
 %token ELSE
 %token WHEN
+%token FOR
+%token WHILE
 %token TYPE
 %token FN
 %token BUFFER
@@ -60,6 +62,7 @@
 %token CBRACE
 %token OBRACK
 %token CBRACK
+%token VOID
 %token ADD
 %token SUB
 %token MUL
@@ -90,6 +93,7 @@
 /* [categories] */
 %nterm <cynth::ast::category::Type>        cat_type
 %nterm <cynth::ast::category::Declaration> cat_declaration
+%nterm <cynth::ast::category::RangeDecl>   cat_range_decl
 %nterm <cynth::ast::category::ArrayElem>   cat_array_elem
 %nterm <cynth::ast::category::Expression>  cat_expression
 %nterm <cynth::ast::category::Statement>   cat_statement
@@ -107,6 +111,7 @@
 %nterm <cynth::ast::category::Expression>  expr_post
 %nterm <cynth::ast::category::Expression>  expr_atom
 %nterm <cynth::ast::category::Expression>  expr_right
+%nterm <cynth::ast::category::Expression>  expr_assgn_target
 
 /* [types] */
 %nterm <cynth::ast::category::Type>        paren_type
@@ -123,8 +128,10 @@
 
 /* [declarations] */
 %nterm <cynth::ast::category::Declaration> paren_decl
+%nterm <cynth::ast::category::RangeDecl>   paren_range_decl
 %nterm <cynth::ast::category::Declaration> void_decl
 %nterm <cynth::ast::node::Declaration>     node_declaration
+%nterm <cynth::ast::node::RangeDecl>       node_range_decl
 
 /* [array elements] */
 %nterm <cynth::ast::node::RangeTo>         node_range_to
@@ -133,6 +140,9 @@
 
 /* [expressions] */
 %nterm <cynth::ast::category::Expression>  paren_expr
+/*
+%nterm <cynth::ast::category::Expression>  paren_assgn_target
+*/
 %nterm <cynth::ast::category::Expression>  void
 %nterm <cynth::ast::node::Name>            node_name
 %nterm <cynth::ast::node::Block>           node_block
@@ -165,6 +175,7 @@
 %nterm <cynth::ast::node::Conversion>      node_conversion
 %nterm <cynth::ast::node::Subscript>       node_subscript
 %nterm <cynth::ast::node::ExprIf>          node_expr_if
+%nterm <cynth::ast::node::ExprFor>         node_expr_for
 
 /* [statements] */
 %nterm <cynth::ast::node::Definition>      node_definition
@@ -174,10 +185,13 @@
 %nterm <cynth::ast::node::Return>          node_return
 %nterm <cynth::ast::node::If>              node_if
 %nterm <cynth::ast::node::When>            node_when
+%nterm <cynth::ast::node::For>             node_for
+%nterm <cynth::ast::node::While>           node_while
 
 /* [temporary structures] */
 %nterm <cynth::component_vector<cynth::ast::category::Type>>        type_list
 %nterm <cynth::component_vector<cynth::ast::category::Declaration>> decl_list
+%nterm <cynth::component_vector<cynth::ast::category::RangeDecl>>   range_decl_list
 %nterm <cynth::component_vector<cynth::ast::category::ArrayElem>>   array_elem_list
 %nterm <cynth::component_vector<cynth::ast::category::Expression>>  expr_list
 %nterm <cynth::component_vector<cynth::ast::category::Statement>>   stmt_list
@@ -200,6 +214,10 @@ start:
 cat_declaration:
     node_declaration { $$ = $1; } |
     paren_decl       { $$ = $1; }
+
+cat_range_decl:
+    node_range_decl  { $$ = $1; } |
+    paren_range_decl { $$ = $1; }
 
 cat_array_elem:
     node_range_to    { $$ = $1; } |
@@ -237,6 +255,8 @@ pure:
     node_function_def { $$ = $1; } |
     node_return       { $$ = $1; } |
     node_if           { $$ = $1; } |
+    node_for          { $$ = $1; } |
+    node_while        { $$ = $1; } |
     node_when         { $$ = $1; }
 
 expr_or:
@@ -298,7 +318,11 @@ expr_atom:
 
 expr_right:
     node_expr_if  { $$ = $1; } |
+    node_expr_for { $$ = $1; } |
     node_function { $$ = $1; }
+
+expr_assgn_target:
+    expr_post { $$ = $1; }
 
 /* [types] */
 
@@ -315,6 +339,9 @@ paren_type:
 
 void_type:
     OPAREN CPAREN {
+        $$ = cynth::ast::node::TupleType{};
+    } |
+    VOID {
         $$ = cynth::ast::node::TupleType{};
     }
 
@@ -383,6 +410,17 @@ node_type_decl:
 
 /* [declarations] */
 
+paren_range_decl:
+    OPAREN cat_range_decl[single] CPAREN {
+        $$ = $single;
+    } |
+    OPAREN range_decl_list[list] CPAREN {
+        $$ = cynth::ast::node::TupleRangeDecl{$list};
+    } |
+    OPAREN range_decl_list[list] COMMA CPAREN {
+        $$ = cynth::ast::node::TupleRangeDecl{$list};
+    }
+
 paren_decl:
     OPAREN cat_declaration[single] CPAREN {
         $$ = $single;
@@ -402,6 +440,11 @@ void_decl:
 node_declaration:
     cat_type[type] node_name[name] {
         $$ = {.name = $name, .type = $type};
+    }
+
+node_range_decl:
+    cat_declaration[decl] IN cat_expression[range] {
+        $$ = {.declaration = $decl, .range = $range};
     }
 
 /* [array elements] */
@@ -615,6 +658,11 @@ node_expr_if:
         $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
     }
 
+node_expr_for:
+    FOR paren_range_decl[decl] cat_expression[body] {
+        $$ = {.declarations = $decl, .body = $body};
+    }
+
 /* [statements] */
 
 node_definition:
@@ -623,7 +671,7 @@ node_definition:
     }
 
 node_assignment:
-    cat_expression[target] ASSGN cat_expression[val] {
+    expr_assgn_target[target] ASSGN cat_expression[val] {
         $$ = {.target = $target, .value = $val};
     }
 
@@ -660,12 +708,25 @@ node_return:
 node_if:
     IF paren_expr[cond] pure[pos] ELSE pure[neg] {
         $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
+    } |
+    IF paren_expr[cond] pure[pos] SEMI ELSE pure[neg] {
+        $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
     }
 
 node_when:
     WHEN paren_expr[cond] cat_statement[pos] {
         $$ = {.condition = $cond, .branch = $pos};
     }
+
+node_for:
+    FOR paren_range_decl[decl] pure[body] {
+        $$ = {.declarations = $decl, .body = $body};
+    };
+
+node_while:
+    WHILE paren_expr[cond] cat_statement[body] {
+        $$ = {.condition = $cond, .body = $body};
+    };
 
 /* [temporary structures] */
 
@@ -709,9 +770,17 @@ decl_list:
         $$ = cynth::util::push_back($next, $rest);
     }
 
+range_decl_list:
+    cat_range_decl[first] COMMA cat_range_decl[second] {
+        $$ = {$first, $second};
+    } |
+    range_decl_list[rest] COMMA cat_range_decl[next] {
+        $$ = cynth::util::push_back($next, $rest);
+    }
+
 %%
 
 void yy::parser::error (std::string const & msg) {
     // TODO: There's a syntax error every time for some reason.
-    //std::cerr << "parser error: " << msg << '\n';
+    std::cerr << "parser error: " << msg << '\n';
 }

@@ -1,0 +1,26 @@
+Int [10] multiples = for (Int e in [0 to 10 by 2]) e;
+
+Int [10] powers = for (Int e in [0 to 10]) 2 ** e;
+
+Int [10] copy;
+
+for (Int e in multiples, Int i in [0 to 10]) {
+    copy[i] = e;
+};
+
+(Int, Int) [10] zipped = for (Int a in multiples, Int b in powers) (a, b);
+
+Int [10] added = for (Int a in multiples, Int b in powers) a + b;
+
+Int [10] multiplied = for ((Int a, Int b) in zipped) {
+    return a * b;
+};
+
+Int i = 10;
+while (i)
+    i = i - 1;
+
+i = 20;
+while (i) {
+    i = i - 2;
+}

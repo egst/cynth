@@ -8,6 +8,7 @@
 #include "ast/categories/expression.hpp"
 #include "ast/categories/statement.hpp"
 #include "ast/categories/type.hpp"
+#include "ast/categories/range_decl.hpp"
 #include "ast/interface.hpp"
 #include "ast/interface_types.hpp"
 #include "asg/values.hpp"
@@ -593,6 +594,37 @@ namespace cynth {
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
+    }
+
+    //// ExprFor ////
+
+    template <>
+    void component_deleter<ast::node::ExprFor>::operator () (ast::node::ExprFor * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ast::node::ExprFor * component_allocator<ast::node::ExprFor>::operator () (ast::node::ExprFor const & other) const {
+        return new ast::node::ExprFor{other};
+    }
+
+    template <>
+    ast::node::ExprFor * component_allocator<ast::node::ExprFor>::operator () (ast::node::ExprFor && other) const {
+        return new ast::node::ExprFor{std::move(other)};
+    }
+
+    std::string ast::node::ExprFor::display () const {
+        return
+            "for " + util::parenthesized(util::parenthesized(util::join(", ", ast::display(declarations)))) +
+            " "    + ast::display(body);
+    }
+
+    ast::evaluation_result ast::node::ExprFor::evaluate (context & ctx) const {
+        return ast::make_evaluation_result(result_error{"For expression evaluation not implemented yet."});
+    }
+
+    ast::execution_result ast::node::ExprFor::execute (context & ctx) const {
+        return ast::make_execution_result(result_error{"For expression execution not implemented yet."});
     }
 
     //// ExprIf ////

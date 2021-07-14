@@ -56,6 +56,13 @@ $ ff = Int fn (Int x) x * 2;
 # This would be a valid alias only for the void type, not void value nor void declaration. E.g.:
 # `doSomething void` wouldn't be a valid alias for `doSomething()` and
 # `void doSomething void {}` wouldn't be a valid alias for `() doSomething () {}`.
+# Update: I've decided to implement this:
+
+void doSomethingElse () {
+    return;
+};
+
+void () f = void fn () { return; };
 
 # This is not possible, even syntactically:
 # (Void is a valid type, expression and even declaration, but it may only be used in specific contexts.)

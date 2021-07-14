@@ -46,10 +46,8 @@ void     (?i:void)
 {if}       return parser::make_IF();
 {else}     return parser::make_ELSE();
 {when}     return parser::make_WHEN();
- /*
 {while}    return parser::make_WHILE();
 {for}      return parser::make_FOR();
-*/
 {in}       return parser::make_IN();
 {out}      return parser::make_OUT();
 {to}       return parser::make_TO();
@@ -60,9 +58,7 @@ void     (?i:void)
 {true}     return parser::make_TRUE();
 {false}    return parser::make_FALSE();
 {const}    return parser::make_CONST();
- /*
 {void}     return parser::make_VOID();
-*/
 
 {name}     return parser::make_NAME(yytext);
 {typeName} return parser::make_TYPENAME(yytext);

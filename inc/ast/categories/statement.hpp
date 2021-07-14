@@ -19,11 +19,13 @@ namespace cynth::ast::category {
             >,
             ast::node::Assignment,
             ast::node::Definition,
+            ast::node::For,
             ast::node::FunctionDef,
             ast::node::If,
             ast::node::Return,
             ast::node::TypeDef,
-            ast::node::When
+            ast::node::When,
+            ast::node::While
         >;
 
     }

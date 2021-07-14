@@ -39,7 +39,7 @@ EXT_CYNTH = .cth
 # (Select entry point implementation files to compile to a final executable.)
 # (Excluding the ENTRY directory and the EXT_IMPL extension.)
 #ENTRY_POINTS += cynth
-#ENTRY_POINTS += parser
+ENTRY_POINTS += parser
 ENTRY_POINTS += interpreter
 #ENTRY_POINTS += test
 

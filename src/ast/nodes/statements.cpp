@@ -3,6 +3,7 @@
 #include "result.hpp"
 #include "ast/nodes/expressions.hpp"
 #include "ast/categories/declaration.hpp"
+#include "ast/categories/range_decl.hpp"
 #include "ast/categories/expression.hpp"
 #include "ast/categories/statement.hpp"
 #include "ast/categories/type.hpp"
@@ -123,6 +124,33 @@ namespace cynth {
             return ast::make_execution_result(define_result.error());
 
         return {};
+    }
+
+    //// For ////
+
+    template <>
+    void component_deleter<ast::node::For>::operator () (ast::node::For * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ast::node::For * component_allocator<ast::node::For>::operator () (ast::node::For const & other) const {
+        return new ast::node::For{other};
+    }
+
+    template <>
+    ast::node::For * component_allocator<ast::node::For>::operator () (ast::node::For && other) const {
+        return new ast::node::For{std::move(other)};
+    }
+
+    std::string ast::node::For::display () const {
+        return
+            "for " + util::parenthesized(util::parenthesized(util::join(", ", ast::display(declarations)))) +
+            " "    + ast::display(body);
+    }
+
+    ast::execution_result ast::node::For::execute (context & ctx) const {
+        return ast::make_execution_result(result_error{"For statement execution not implemented yet."});
     }
 
     //// FunctionDef ////
@@ -269,6 +297,33 @@ namespace cynth {
             return ast::make_execution_result(define_result.error());
 
         return {};
+    }
+
+    //// While ////
+
+    template <>
+    void component_deleter<ast::node::While>::operator () (ast::node::While * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ast::node::While * component_allocator<ast::node::While>::operator () (ast::node::While const & other) const {
+        return new ast::node::While{other};
+    }
+
+    template <>
+    ast::node::While * component_allocator<ast::node::While>::operator () (ast::node::While && other) const {
+        return new ast::node::While{std::move(other)};
+    }
+
+    std::string ast::node::While::display () const {
+        return
+            "while " + util::parenthesized(ast::display(condition)) +
+            " "      + ast::display(body);
+    }
+
+    ast::execution_result ast::node::While::execute (context & ctx) const {
+        return ast::make_execution_result(result_error{"While statement execution not implemented yet."});
     }
 
     //// When ////

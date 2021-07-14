@@ -31,6 +31,15 @@ namespace cynth::ast::node {
         execution_result execute (context &) const;
     };
 
+    /** for (T e in a) x */
+    struct For {
+        component_vector <category::RangeDecl> declarations;
+        component        <category::Statement> body;
+
+        display_result   display ()          const;
+        execution_result execute (context &) const;
+    };
+
     /** Out f (In a) b */
     struct FunctionDef {
         component<category::Type>        output;
@@ -75,6 +84,15 @@ namespace cynth::ast::node {
     struct When {
         component <category::Expression> condition;
         component <category::Statement>  branch;
+
+        display_result   display ()          const;
+        execution_result execute (context &) const;
+    };
+
+    /** while (cond) a */
+    struct While {
+        component<category::Expression> condition;
+        component<category::Statement>  body;
 
         display_result   display ()          const;
         execution_result execute (context &) const;

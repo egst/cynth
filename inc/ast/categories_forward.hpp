@@ -7,6 +7,7 @@ namespace cynth::ast::category {
     struct Expression;
     struct Name;
     struct Pattern;
+    struct RangeDecl;
     struct Statement;
     struct Type;
 

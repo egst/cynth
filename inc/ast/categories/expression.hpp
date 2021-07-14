@@ -18,6 +18,7 @@ namespace cynth::ast::category {
             node::Conversion,
             node::Div,
             node::Eq,
+            node::ExprFor,
             node::ExprIf,
             node::Float,
             node::Function,

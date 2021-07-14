@@ -1,6 +1,7 @@
 #include "ast/categories/statement.hpp"
 
 #include "ast/categories/array_elem.hpp"
+#include "ast/categories/range_decl.hpp"
 #include "component.hpp"
 
 namespace cynth {

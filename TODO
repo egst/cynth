@@ -41,6 +41,8 @@
 * errors in statements
 * lambda capture (just copy the whole context for now)
 * make sure arrays have referential semantics.
+* composed assignment operators
+    += -= *= /= **= %= &&= ||=
 
 * cedupoc
 * pristuf

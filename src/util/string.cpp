@@ -11,9 +11,21 @@
 namespace cynth {
 
     std::string util::parenthesized (std::string const & str) {
-        return str[0] == '('
-            ? str
-            : "(" + str + ")";
+        if (str.front() != '(' || str.back() != ')')
+            return "(" + str + ")";
+
+        int state = 0;
+        for (std::size_t i = 1; i < str.size() - 1; ++i) {
+            char const & c = str[i];
+            if (c == '(')
+                ++state;
+            if (c == ')')
+                --state;
+            if (state < 0)
+                return "(" + str + ")";
+        }
+
+        return str;
     }
 
     std::string util::trim (std::string const & str) {

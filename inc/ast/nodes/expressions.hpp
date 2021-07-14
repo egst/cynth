@@ -93,6 +93,16 @@ namespace cynth::ast::node {
         evaluation_result evaluate (context &) const;
     };
 
+    /** for (T e in a) x */
+    struct ExprFor {
+        component_vector <category::RangeDecl>  declarations;
+        component        <category::Expression> body;
+
+        display_result    display  ()          const;
+        evaluation_result evaluate (context &) const;
+        execution_result  execute  (context &) const;
+    };
+
     /** if (cond) a else b */
     struct ExprIf {
         component<category::Expression> condition;
