@@ -33,13 +33,13 @@ namespace cynth {
         delete ptr;
     }
 
-    template <>
-    ast::node::Declaration * component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration const & other) const {
+    template <> ast::node::Declaration *
+    component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration const & other) const {
         return new ast::node::Declaration{other};
     }
 
-    template <>
-    ast::node::Declaration * component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration && other) const {
+    template <> ast::node::Declaration *
+    component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration && other) const {
         return new ast::node::Declaration{std::move(other)};
     }
 
@@ -70,13 +70,13 @@ namespace cynth {
         delete ptr;
     }
 
-    template <>
-    ast::node::TupleDecl * component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl const & other) const {
+    template <> ast::node::TupleDecl *
+    component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl const & other) const {
         return new ast::node::TupleDecl{other};
     }
 
-    template <>
-    ast::node::TupleDecl * component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl && other) const {
+    template <> ast::node::TupleDecl *
+    component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl && other) const {
         return new ast::node::TupleDecl{std::move(other)};
     }
 
@@ -85,7 +85,7 @@ namespace cynth {
     }
 
     ast::decl_eval_result ast::node::TupleDecl::eval_decl (context & ctx) const {
-        decl_eval_result result;
+        ast::decl_eval_result result;
         for (auto & value_tuple : ast::eval_decl(ctx)(declarations)) for (auto & value : value_tuple) {
             result.push_back(std::move(value));
         }

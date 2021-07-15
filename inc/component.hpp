@@ -126,10 +126,12 @@ namespace cynth {
                 return ptr;
             }
 
-            constexpr T &       operator *  ()       { return value(); }
-            constexpr T const & operator *  () const { return value(); }
-            constexpr T *       operator -> ()       { return get(); }
-            constexpr T const * operator -> () const { return get(); }
+            constexpr T &       operator *  () &       { return value(); }
+            constexpr T const & operator *  () const & { return value(); }
+            // TODO: Look more into move-related rules and stuff and decide whether this is the way it should be done, and whether I even need this:
+            constexpr T &&      operator *  () &&      { return std::move(value()); }
+            constexpr T *       operator -> ()         { return get(); }
+            constexpr T const * operator -> () const   { return get(); }
 
         private:
             constexpr Derived & derived () {

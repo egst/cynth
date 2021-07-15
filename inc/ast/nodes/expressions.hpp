@@ -95,8 +95,8 @@ namespace cynth::ast::node {
 
     /** for (T e in a) x */
     struct ExprFor {
-        component_vector <category::RangeDecl>  declarations;
-        component        <category::Expression> body;
+        component<category::RangeDecl>  declarations;
+        component<category::Expression> body;
 
         display_result    display  ()          const;
         evaluation_result evaluate (context &) const;

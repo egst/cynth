@@ -2,6 +2,8 @@ Int [3] const a = [0, 1, 2];
 
 Int [3] b = for (Int e in a) e * 2;
 
+return b;
+
 (Int, Int) [3] const c = for (Int e in a, Int f in b) (e, f);
 
 Int [3] const d = for ((Int e, Int f) in c) {

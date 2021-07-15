@@ -195,66 +195,6 @@ namespace cynth {
 
     // Arrays //
 
-    using array_vector        = asg::value::Array::vector; // component_vector<component_vector<value::comlete>>
-    //using simple_array_vector = tuple_vector<component_vector<asg::value::complete>>;
-    //using simple_array_vector = tuple_vector<tuple_vector<asg::value::complete>>;
-    using array_type          = tuple_vector<asg::type::complete>;
-
-    // TODO: This is a mess. Add more generalization tools to make this cleaner?
-    result<std::pair<array_vector, array_type>> array_elems (context & ctx, component_vector<ast::category::ArrayElem> const & elements) {
-        std::optional<array_type> result_type;
-        array_vector              result_values; // component_vector<component_vector<value::complete>>
-        result_values.reserve(elements.size());  // Reserve at least the lowest size estimate.
-
-        for (auto & element : elements) {
-            auto result = lift::category{util::overload {
-                [] (ast::node::RangeTo const &) -> cynth::result<void> {
-                    // TODO
-                    return result_error{"Range array elements are not supported yet."};
-                },
-                [] (ast::node::RangeToBy const &) -> cynth::result<void> {
-                    // TODO
-                    return result_error{"Range array elements are not supported yet."};
-                },
-                [] (ast::node::Spread const &) -> cynth::result<void> {
-                    // TODO
-                    return result_error{"Spread array elements are not supported yet."};
-                },
-                [&ctx, &result_type, &result_values] <ast::interface::expression T> (T const & e) -> cynth::result<void> {
-                    auto result = util::unite_results(ast::evaluate(ctx)(e)); // evaluation_result aka tuple_vector<result<value::complete>> -> result<tuple_vector<value::complete>>
-                    if (!result)
-                        return result.error();
-                    auto & value = *result;                // tuple_vector<value::complete> &
-                    auto   type  = asg::value_type(value); // tuple_vector<type::complete>
-                    // TODO: Overload asg::common to work with optional inputs.
-                    if (result_type) {
-                        auto common_results = asg::common(type, *result_type);
-                        if (!common_results)
-                            return common_results.error();
-                        result_type = result_to_optional(util::unite_results(*common_results));
-                    } else {
-                        result_type = std::optional{std::move(type)};
-                    }
-                    // TODO
-                    //result_type = std::optional{util::init<tuple_vector>(asg::type::complete{asg::type::Int{}})};
-                    //auto wrapped = component_vector<asg::value::complete>{std::move(value)};
-                    //result_values.push_back(std::move(wrapped));
-                    result_values.push_back(std::move(value));
-                    return {};
-                }
-            }}(element);
-            if (!result)
-                return {result.error()};
-        }
-
-        if (!result_type)
-            return {result_error{"No common type for an array."}};
-
-        return {{
-            std::move(result_values),
-            std::move(*result_type)
-        }};
-    }
 
     //// Add ////
 
@@ -403,7 +343,7 @@ namespace cynth {
 
     // TODO: Check result once I fix subscript.
     ast::evaluation_result ast::node::Array::evaluate (context & ctx) const {
-        auto result = array_elems(ctx, elements);
+        auto result = asg::array_elems(ctx, elements);
         if (!result)
             return ast::make_evaluation_result(result.error());
         auto [values, type] = *std::move(result);
@@ -615,16 +555,84 @@ namespace cynth {
 
     std::string ast::node::ExprFor::display () const {
         return
-            "for " + util::parenthesized(util::parenthesized(util::join(", ", ast::display(declarations)))) +
+            "for " + util::parenthesized(ast::display(declarations)) +
             " "    + ast::display(body);
     }
 
     ast::evaluation_result ast::node::ExprFor::evaluate (context & ctx) const {
-        return ast::make_evaluation_result(result_error{"For expression evaluation not implemented yet."});
+        auto decls_result = asg::for_decls(ctx, *declarations);
+        if (!decls_result)
+            return ast::make_evaluation_result(decls_result.error());
+        auto [size, iter_decls] = *std::move(decls_result);
+
+        asg::array_vector              result_values;
+        std::optional<asg::array_type> result_type;
+
+        result_values.reserve(size);
+
+        std::cout << "for: " << size << '\n';
+
+        for (integral i = 0; i < size; ++i) {
+            // Init inner scope:
+            auto iter_scope = make_child_context(ctx);
+
+            // Define iteration elements:
+            for (auto & [decl, value] : iter_decls)
+                asg::define(iter_scope, decl, value.value[i]);
+
+            // Evaluate the loop body:
+            auto value_result = util::unite_results(ast::evaluate(iter_scope)(body));
+            if (!value_result)
+                return ast::make_evaluation_result(value_result.error());
+
+            auto & value = *value_result;
+            auto   type  = asg::value_type(value);
+
+            if (result_type) {
+                auto common_results = asg::common(type, *result_type);
+                if (!common_results)
+                    return ast::make_evaluation_result(common_results.error());
+                result_type = result_to_optional(util::unite_results(*common_results));
+            } else {
+                result_type = std::optional{std::move(type)};
+            }
+
+            result_values.push_back(std::move(value));
+        }
+
+        if (!result_type)
+            return ast::make_evaluation_result(result_error{"No common type for an array in a for expression."});
+
+        return ast::make_evaluation_result(asg::value::Array {
+            .value = result_values,
+            .type  = *result_type
+        });
     }
 
     ast::execution_result ast::node::ExprFor::execute (context & ctx) const {
-        return ast::make_execution_result(result_error{"For expression execution not implemented yet."});
+        auto decls_result = asg::for_decls(ctx, *declarations);
+        if (!decls_result)
+            return ast::make_execution_result(decls_result.error());
+        auto [size, iter_decls] = *std::move(decls_result);
+
+        for (integral i = 0; i < size; ++i) {
+            // Init inner scope:
+            auto iter_scope = make_child_context(ctx);
+
+            // Define iteration elements:
+            for (auto & [decl, value] : iter_decls)
+                asg::define(iter_scope, decl, value.value[i]);
+
+            // Execute the loop body:
+            auto returned = ast::execute(iter_scope)(body);
+
+            if (returned)
+                return *returned;
+            if (returned.has_error())
+                return ast::make_execution_result(returned.error());
+        }
+
+        return {};
     }
 
     //// ExprIf ////
@@ -1204,11 +1212,9 @@ namespace cynth {
     // TODO: This implementation only allows the simple c-like subscript a[i] with a single index on a single (non-tuple) value.
     // TODO: What about subscript on the lhs of an assignment (a[i] = x)?
     ast::evaluation_result ast::node::Subscript::evaluate (context & ctx) const {
-        //return {};
-
         //ast::evaluate(container);
         //return asg::get<bool>(lift::single_evaluation{asg::convert(asg::type::Bool{})}(util::single(location)));
-        auto location_result = array_elems(ctx, location);
+        auto location_result = asg::array_elems(ctx, location);
         if (!location_result)
             return ast::make_evaluation_result(location_result.error());
         auto [locations, location_type] = *location_result;

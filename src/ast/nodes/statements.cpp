@@ -145,12 +145,34 @@ namespace cynth {
 
     std::string ast::node::For::display () const {
         return
-            "for " + util::parenthesized(util::parenthesized(util::join(", ", ast::display(declarations)))) +
+            "for " + util::parenthesized(ast::display(declarations)) +
             " "    + ast::display(body);
     }
 
     ast::execution_result ast::node::For::execute (context & ctx) const {
-        return ast::make_execution_result(result_error{"For statement execution not implemented yet."});
+        auto decls_result = asg::for_decls(ctx, *declarations);
+        if (!decls_result)
+            return ast::make_execution_result(decls_result.error());
+        auto [size, iter_decls] = *std::move(decls_result);
+
+        for (integral i = 0; i < size; ++i) {
+            // Init inner scope:
+            auto iter_scope = make_child_context(ctx);
+
+            // Define iteration elements:
+            for (auto & [decl, value] : iter_decls)
+                asg::define(iter_scope, decl, value.value[i]);
+
+            // Execute the loop body:
+            auto returned = ast::execute(iter_scope)(body);
+
+            if (returned)
+                return *returned;
+            if (returned.has_error())
+                return ast::make_execution_result(returned.error());
+        }
+
+        return {};
     }
 
     //// FunctionDef ////

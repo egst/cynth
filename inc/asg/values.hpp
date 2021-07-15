@@ -129,10 +129,14 @@ namespace cynth::asg::value {
     struct Array {
         using vector = component_vector<component_vector<value::complete>>;
 
+        get_result<std::vector<tuple_vector<value::any<true>>>> get () const;
+
         std::string display () const;
 
         vector                           value;
         component_vector<type::complete> type;
+
+        integral size () const;
 
         conversion_result convert (type::Array const &) const;
         conversion_result convert (type::Const const &) const;
@@ -143,6 +147,8 @@ namespace cynth::asg::value {
     struct Buffer {
         using sample_type = floating;
         using vector      = std::vector<floating>;
+
+        integral size () const;
 
         std::string display () const;
 

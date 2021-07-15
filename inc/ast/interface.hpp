@@ -41,6 +41,11 @@ namespace cynth::ast::interface {
         { node.eval_decl(ctx) } -> std::same_as<decl_eval_result>;
     };
 
+    template <typename Node>
+    concept range_decl = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.eval_range_decl(ctx) } -> std::same_as<range_decl_eval_result>;
+    };
+
 }
 
 namespace cynth::ast {
@@ -56,7 +61,8 @@ namespace cynth::ast {
             [&ctx] <interface::statement Node> (Node const & node) {
                 return node.execute(ctx);
             },
-            [&ctx] <interface::expression Node> (Node const & node) -> execution_result requires (!interface::statement<Node>) {
+            [&ctx] <interface::expression Node> (Node const & node) -> execution_result
+            requires (!interface::statement<Node>) {
                 auto result = util::unite_results(node.evaluate(ctx));
                 if (!result)
                     return result.error();
@@ -93,6 +99,14 @@ namespace cynth::ast {
         return lift::any {
             [&ctx] <interface::declaration Node> (Node const & node) {
                 return node.eval_decl(ctx);
+            }
+        };
+    };
+
+    constexpr auto eval_range_decl = [] (context & ctx) {
+        return lift::any {
+            [&ctx] <interface::range_decl Node> (Node const & node) {
+                return node.eval_range_decl(ctx);
             }
         };
     };

@@ -63,6 +63,16 @@ namespace cynth::ast {
         return util::init<tuple_vector>(result<asg::incomplete_decl>{std::forward<T>(value)});
     }
 
+    template <util::is<result> T>
+    constexpr auto make_range_decl_eval_result (T && value) {
+        return util::init<tuple_vector>(std::forward<T>(value));
+    }
+
+    template <util::is_not<result> T>
+    constexpr auto make_range_decl_eval_result (T && value) {
+        return util::init<tuple_vector>(result<asg::incomplete_range_decl>{std::forward<T>(value)});
+    }
+
     template <typename T> requires (!util::same_as_no_cvref<T, result_error>)
     constexpr auto make_execution_result (T && value) {
         return execution_result{util::init<tuple_vector>(std::forward<T>(value))};

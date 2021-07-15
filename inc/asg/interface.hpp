@@ -91,7 +91,10 @@ namespace cynth::asg {
     }
 
     constexpr auto display_tuple = [] <detail::displayable_tuple Tuple> (Tuple const & a) -> std::string {
-        return util::parenthesized(util::join(", ", display(a)));
+        auto result = display(a);
+        return result.size() == 1
+            ? result.front()
+            : util::parenthesized(util::join(", ", display(a)));
     };
 
     // In the following docblock comments, the construct any<T>
@@ -259,7 +262,7 @@ namespace cynth::asg {
 
         constexpr auto make_range_decl_complete = util::overload {
             [] <util::same_as_no_cvref<incomplete_range_decl> Decl> (Decl && decl) -> result<complete_range_decl> {
-                auto complete = util::unite_results(lift::category_component{detail::make_decl_complete}(util::forward_like<Decl>(decl.declaration)));
+                auto complete = util::unite_results(lift::component{detail::make_decl_complete}(util::forward_like<Decl>(decl.declaration)));
                 if (!complete)
                     return complete.error();
                 return complete_range_decl {

@@ -243,13 +243,25 @@ namespace cynth {
 
     //// Array ////
 
+    integral asg::value::Array::size () const {
+        return value.size();
+    }
+
+    asg::get_result<std::vector<tuple_vector<asg::value::complete>>> asg::value::Array::get () const {
+        std::vector<tuple_vector<asg::value::complete>> result;
+        result.reserve(value.size());
+        for (auto & elem : value) {
+            result.push_back(elem);
+        }
+        return result;
+    }
+
     std::string asg::value::Array::display () const {
         return
             "array<" +
             asg::display_tuple(type) +
-            ">(" +
-            util::parenthesized(util::join(", ", lift::component{asg::display_tuple}(value))) +
-            ")";
+            ">" +
+            util::parenthesized(util::join(", ", lift::component{asg::display_tuple}(value)));
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Array const & to) const {
@@ -270,6 +282,10 @@ namespace cynth {
     }
 
     //// Buffer ////
+
+    integral asg::value::Buffer::size () const {
+        return value.size();
+    }
 
     std::string asg::value::Buffer::display () const {
         return "buffer(...)";

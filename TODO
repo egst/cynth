@@ -34,8 +34,7 @@
 * how to implement fallback overloads in lift without explicit requires (!...)
 * for and while loop still missing
 * stop naming variables `result`, it's confusing when i need refer to the type result as `cynth::result`
-* empty array type
-    * ehm... do i actually need an empty statically sized array?
+* prohibit empty array type
 * test procedures (try using their result)
 * negative indices?
 * errors in statements
@@ -43,6 +42,9 @@
 * make sure arrays have referential semantics.
 * composed assignment operators
     += -= *= /= **= %= &&= ||=
+* inner scope of if/for/while/...
+* *std::move(x) or std::move(*x)?
+* how come, that i need to handle delete and new for incomplete component types manually, but it just somehow works for std::vector of incomplete types?
 
 * cedupoc
 * pristuf

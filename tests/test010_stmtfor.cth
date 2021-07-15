@@ -5,20 +5,36 @@ Int [3] const a = [1, 2, 3];
 Int [3] b;
 
 Int i = 0;
-for (Int e in a) {
+for (Int const e in a) {
     b[i] = e * 2;
     i = i + 1;
 };
+# Note that an iteration element (here `Int const e`)
+# is redeclared in every repetition in the inner scope of the loop,
+# so it may be declared as const with no issues.
 
 (Int, Int) [3] c;
 
 # Int i in idx can be replaced by Int i in [0 to 3], but by, to and ... are not implemented yet.
-for (Int e in a, Int f in b, Int i in idx)
+for (Int const e in a, Int const f in b, Int const i in idx)
     c[i] = (e, f);
+
+# TODO: Decide whether assignment to an iteration element should modify the iterated over array, e.g.:
+for (Int const e in a, Int const f in b, Int t in c)
+    t = (e, f);
 
 Int [3] d;
 
 for ((Int e, Int f) in c, Int i in idx)
     d[i] = e + f;
 
-return d[2];
+Bool all4 (Bool [4] values) {
+    for (Int value in values) when (!value)
+        return false;
+    return true;
+}
+
+Bool r = all4([true, false, true, true]);
+
+#return d[2];
+return r;

@@ -46,6 +46,7 @@ int main () {
     std::cout << "eval ok\n";
 
     auto value = *result;
+    /*
     std::cout << "return type: ";
     std::visit (
         util::overload {
@@ -70,7 +71,7 @@ int main () {
             [] (asg::value::Const const &) {
                 std::cout << "T const\n";
             },
-            [] (asg::value::Array const &) {
+            [] (asg::value::Array const & val) {
                 std::cout << "T [n]\n";
             },
             [] (asg::value::Buffer const &) {
@@ -85,10 +86,11 @@ int main () {
         },
         value.value
     );
+    */
 
-    return 0;
+    //return 0;
 
     // TODO: make this work
-    //std::cout << asg::display(value) << '\n';
+    std::cout << asg::display(value) << '\n';
 
 }

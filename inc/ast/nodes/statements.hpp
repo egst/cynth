@@ -33,8 +33,8 @@ namespace cynth::ast::node {
 
     /** for (T e in a) x */
     struct For {
-        component_vector <category::RangeDecl> declarations;
-        component        <category::Statement> body;
+        component<category::RangeDecl> declarations;
+        component<category::Statement> body;
 
         display_result   display ()          const;
         execution_result execute (context &) const;
