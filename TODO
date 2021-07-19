@@ -5,7 +5,7 @@
 * fix everything with empty tuples (void).
     * check for empty tuples everywhere except for the few allowed contexts.
     * uninitialized variables (declarations without definitions) are implemented as empty tuples (even though the type doesn't match)
-* separate util/general.hpp
+* separate util/general.hpp, and also maybe all the different kinds of results and components (this might speed up compilation time in some cases.)
 * don't specify asg:: and ast:: inside those namespaces.
 * specify util:: everywhere (even inside util).
 * specify interface::, node::, category::, type:: and value:: everywhere.
@@ -45,6 +45,13 @@
 * inner scope of if/for/while/...
 * *std::move(x) or std::move(*x)?
 * how come, that i need to handle delete and new for incomplete component types manually, but it just somehow works for std::vector of incomplete types?
+* remove the non-copyable option from categories (it was there only for tighter checks during initial development)
+* fix the segfaults with strings not wrapped in components.
+* implicit `return ()` in procedures.
+* buffers aren't non-const by definition... their elements are non-const, but aren't directly assignable anyways.
+    assignment to a buffer would mean a switch to a different generator, which is something that i still haven't thought through completely.
+* change in array constness
+* rename asg::value::(Array|Buffer|In|Out).value->value to something less generic and ambiguous
 
 * cedupoc
 * pristuf

@@ -4,6 +4,7 @@
 #include "asg/declarations.hpp"
 #include "asg/values.hpp"
 #include "asg/types.hpp"
+#include "asg/targets.hpp"
 #include "util/general.hpp"
 #include "util/container.hpp"
 
@@ -17,6 +18,7 @@ namespace cynth::ast {
     using array_elem_eval_result = result<tuple_vector<asg::value::complete>>; // TODO
     using decl_eval_result       = tuple_vector<result<asg::incomplete_decl>>;
     using range_decl_eval_result = tuple_vector<result<asg::incomplete_range_decl>>;
+    using target_eval_result     = result<tuple_vector<asg::any_target>>;
 
     template <util::is<result> T>
     constexpr auto make_single_eval_result (T && value) {
@@ -81,6 +83,16 @@ namespace cynth::ast {
     template <util::same_as_no_cvref<result_error> T>
     constexpr auto make_execution_result (T && value) {
         return execution_result{std::forward<T>(value)};
+    }
+
+    template <util::same_as_no_cvref<result_error> T>
+    constexpr auto make_target_eval_result (T && value) {
+        return target_eval_result{std::forward<T>(value)};
+    }
+
+    template <typename T> requires (!util::same_as_no_cvref<T, result_error>)
+    constexpr auto make_target_eval_result (T && value) {
+        return target_eval_result{util::init<tuple_vector>(std::forward<T>(value))};
     }
 
 }

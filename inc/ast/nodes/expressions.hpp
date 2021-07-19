@@ -207,8 +207,9 @@ namespace cynth::ast::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         component<std::string> name;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        display_result     display     ()          const;
+        evaluation_result  evaluate    (context &) const;
+        target_eval_result eval_target (context &) const;
     };
 
     /** a != b */
@@ -277,8 +278,9 @@ namespace cynth::ast::node {
         component        <category::Expression> container;
         component_vector <category::ArrayElem>  location;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        display_result     display     ()          const;
+        evaluation_result  evaluate    (context &) const;
+        target_eval_result eval_target (context &) const;
     };
 
     /** (a, ...) */
@@ -286,8 +288,9 @@ namespace cynth::ast::node {
         // TODO: Non-unary vector?
         component_vector<category::Expression> values;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        display_result     display     ()          const;
+        evaluation_result  evaluate    (context &) const;
+        target_eval_result eval_target (context &) const;
     };
 
 }

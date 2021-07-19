@@ -29,6 +29,7 @@ int main () {
     std::cout << util::pretty(ast::display(ast)) << '\n';
 
     context ctx;
+    // TODO: Initialize the referential values container.
 
     // Built-in types:
     ctx.define_type("Bool",   {asg::type::Bool{}});

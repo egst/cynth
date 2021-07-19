@@ -63,6 +63,11 @@ namespace cynth::asg::interface {
         { node.display() } -> std::same_as<std::string>;
     };
 
+    template <typename Node>
+    concept target = requires (Node node) {
+        { node.resolve_target() } -> std::same_as<target_resolution_result>;
+    };
+
 }
 
 namespace cynth::asg {
@@ -317,6 +322,12 @@ namespace cynth::asg {
                 result.push_back(util::forward_like<Decls>(type));
             }
             return result;
+        }
+    };
+
+    constexpr auto resolve_target = lift::any {
+        [] <interface::target Node> (Node const & node) {
+            return node.resolve_target();
         }
     };
 

@@ -2,7 +2,9 @@ Int [3] const idx = [0, 1, 2];
 
 Int [3] const a = [1, 2, 3];
 
-Int [3] b;
+# Note: Assignment by element to uninitialized arrays is not supported yet.
+#Int [3] b;
+Int [3] b = [0, 0, 0];
 
 Int i = 0;
 for (Int const e in a) {
@@ -13,28 +15,35 @@ for (Int const e in a) {
 # is redeclared in every repetition in the inner scope of the loop,
 # so it may be declared as const with no issues.
 
-(Int, Int) [3] c;
+# Note: Assignment by element to uninitialized arrays is not supported yet.
+#(Int, Int) [3] c;
+(Int, Int) [3] c = [(0, 0), (0, 0), (0, 0)];
 
 # Int i in idx can be replaced by Int i in [0 to 3], but by, to and ... are not implemented yet.
 for (Int const e in a, Int const f in b, Int const i in idx)
     c[i] = (e, f);
 
-# TODO: Decide whether assignment to an iteration element should modify the iterated over array, e.g.:
-for (Int const e in a, Int const f in b, Int t in c)
-    t = (e, f);
+# TODO: This shouldn't be an error, but no changes to c should happen:
+#for (Int const e in a, Int const f in b, Int t in c)
+#    t = (e, f);
 
-Int [3] d;
+# Note: Assignment by element to uninitialized arrays is not supported yet.
+#Int [3] d;
+Int [3] d = [0, 0, 0];
 
-for ((Int e, Int f) in c, Int i in idx)
+for ((Int e, Int f) in c, Int i in idx) {
     d[i] = e + f;
+};
 
 Bool all4 (Bool [4] values) {
     for (Int value in values) when (!value)
         return false;
     return true;
-}
+};
 
-Bool r = all4([true, false, true, true]);
+Bool r;
+#r = all4([true, true, true, true]);
+r = all4([true, false, true, true]);
 
-#return d[2];
-return r;
+return d;
+#return r;

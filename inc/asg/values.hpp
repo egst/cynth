@@ -87,30 +87,6 @@ namespace cynth::asg::value {
         using base::base;
     };
 
-    struct In {
-        component<value::complete> value;
-
-        std::string display () const;
-
-        conversion_result convert (type::Bool  const &) const;
-        conversion_result convert (type::Int   const &) const;
-        conversion_result convert (type::Float const &) const;
-        conversion_result convert (type::In    const &) const;
-        conversion_result convert (type::Const const &) const;
-
-        value_type_result value_type () const;
-    };
-
-    struct Out {
-        component<value::complete> value;
-
-        std::string display () const;
-
-        conversion_result convert (type::Out const &) const;
-
-        value_type_result value_type () const;
-    };
-
     /** Constant values will not be used in the first versions. */
     struct Const {
         component<value::complete> value;
@@ -126,17 +102,54 @@ namespace cynth::asg::value {
         value_type_result value_type () const;
     };
 
-    struct Array {
-        using vector = component_vector<component_vector<value::complete>>;
+    struct InValue {
+        component<value::complete> value;
+    };
 
-        get_result<std::vector<tuple_vector<value::any<true>>>> get () const;
+    struct In {
+        InValue * value;
 
         std::string display () const;
 
-        vector                           value;
-        component_vector<type::complete> type;
+        conversion_result convert (type::Bool  const &) const;
+        conversion_result convert (type::Int   const &) const;
+        conversion_result convert (type::Float const &) const;
+        conversion_result convert (type::In    const &) const;
+        conversion_result convert (type::Const const &) const;
 
-        integral size () const;
+        value_type_result value_type () const;
+    };
+
+    struct OutValue {
+        component<value::complete> value;
+    };
+
+    struct Out {
+        OutValue * value;
+
+        std::string display () const;
+
+        conversion_result convert (type::Out const &) const;
+
+        value_type_result value_type () const;
+    };
+
+    struct ArrayValue {
+        using vector = component_vector<tuple_vector<value::complete>>;
+
+        vector value;
+    };
+
+    struct Array {
+        using vector = ArrayValue::vector;
+
+        ArrayValue *                     value;
+        component_vector<type::complete> type;
+        integral                         size;
+
+        get_result<std::vector<tuple_vector<value::complete>>> get () const;
+
+        std::string display () const;
 
         conversion_result convert (type::Array const &) const;
         conversion_result convert (type::Const const &) const;
@@ -144,15 +157,22 @@ namespace cynth::asg::value {
         value_type_result value_type () const;
     };
 
-    struct Buffer {
+    struct BufferValue {
         using sample_type = floating;
         using vector      = std::vector<floating>;
 
-        integral size () const;
+        vector value;
+    };
+
+
+    struct Buffer {
+        using sample_type = floating;
+        using vector      = std::vector<sample_type>;
+
+        BufferValue * value;
+        integral      size;
 
         std::string display () const;
-
-        vector value;
 
         conversion_result convert (asg::type::Buffer const &) const;
 
@@ -212,6 +232,11 @@ namespace cynth::asg::value {
             >
         >;
 
+        using referential = variant <
+            value::ArrayValue
+            // ...
+        >;
+
     }
 
     template <bool Complete>
@@ -222,6 +247,11 @@ namespace cynth::asg::value {
 
     template struct any<true>;
     template struct any<false>;
+
+    struct referential: category_base<referential, detail::referential, true> {
+        using base = category_base<referential, detail::referential, true>;
+        using base::base;
+    };
 
     constexpr auto make_bool = [] (bool value) -> value::complete {
         return value::Bool{.value = value};

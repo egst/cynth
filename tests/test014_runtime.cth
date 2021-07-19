@@ -1,0 +1,54 @@
+# Example from the Vult Language:
+# (https://www.vult-dsp.com/vult-language)
+# (https://www.youtube.com/watch?v=UhoedyS1hNo)
+
+#fun filter (vin, p, h) {
+#  mem w1, w2;
+#  val dw1 = (200. * (vin - 2. * w1 - w2)) / p;
+#  val dw2 = (200. * w1) / p;
+#  val vout = w2;
+#  w1 = w1 + dw1 * h;
+#  w2 = w2 + dw2 * h;
+#  return vout;
+#}
+#
+#fun process (vin: real) {
+#  val p = exp(-5.0 * getKnob(1));
+#  val h = 1.0 / samplerate();
+#  val out = filter(vin, p, h);
+#  return out;
+#}
+
+# And an equivalent program written in Cynth:
+
+# Global configuration variables are pre-defined in the outer scope on demand when these directives are used:
+\global buffer-size buffSize
+\global sample-rate sRate
+# TODO: Handle changing buffer size or sample rate during run-time?
+
+# Module input:
+Float in knob1;
+buffer [buffSize] in input;
+# or: Float in input;
+
+# Module internals:
+Float () filter = {
+  Float p () -.5 ** knob1;
+  Float h () 1. / sRate;
+  Float i () input[0];
+  # or: Float i () input;
+
+  # TODO: Allow self-referencing.
+  buffer [1] w1 = Float fn ()
+    w1[0] + 200. *
+    (i() - 2. * w1[0] - w2[0]) /
+    p() * h();
+
+  buffer [1] w2 = Float fn ()
+      w2[0] + 200. * w1[0] / p() * h();
+
+  return Float fn () w2[0];
+}
+
+# Module output:
+buffer [buffSize] out main = filter;

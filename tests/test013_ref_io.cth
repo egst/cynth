@@ -1,0 +1,47 @@
+# Set up one dummy output channel:
+\out main
+
+# This file explains referential semantics of IO types with examples.
+
+# Input types are used to recieve information
+# about the current state of external input elements,
+# which might be GUI or physical MIDI controllers.
+Bool  in toggle;
+Int   in level;
+Float in knob;
+
+# Output types are used to monitor internal state
+# by displaying them in the GUI or maybe some physical indicators.
+Float out frequency;
+Bool  out clipping;
+
+# Input types are volatile, meaning their value might change
+# without explicit assignment in the user-written code.
+# They are implicitly const. Note, that constness does not exclude volatility.
+# I.e. input values cannot be directly assigned to, but their values may change externally.
+
+# Output types value may not be read directly.
+# Their value may be set directly by assignment,
+# but there is no guarantee, that the assigned value will
+# be set exactly at the moment of assignment.
+# So the current value of an output type is undefined inside the program's implementation.
+# They can never be const.
+# Note that (unlike arrays) output value's internal reference cannot be changed.
+
+Float readKnob () {
+    # Input values are captured by reference.
+    return knob;
+};
+
+() showFrequency (Float value) {
+    # Output values are captured by reference.
+    frequency = value;
+};
+
+# Reading and modifying the actual values only makes sense during run-time.
+buffer [1] main = Float fn () {
+    Float f = readKnob();
+    showFrequency(f);
+
+    return 0;
+}

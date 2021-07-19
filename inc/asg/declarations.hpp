@@ -21,7 +21,7 @@ namespace cynth::asg {
     template <bool Complete>
     struct range_decl {
         component_vector <declaration<Complete>> declaration;
-        component        <value::any<true>>      range;
+        component        <value::complete>       range;
     };
 
 }

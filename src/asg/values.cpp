@@ -164,19 +164,19 @@ namespace cynth {
     //// In ////
 
     std::string asg::value::In::display () const {
-        return "in(" + asg::display(*value) + ")";
+        return "in(" + asg::display(value->value) + ")";
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::Bool const & to) const {
-        return asg::convert(to)(value);
+        return asg::convert(to)(value->value);
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::Int const & to) const {
-        return asg::convert(to)(value);
+        return asg::convert(to)(value->value);
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::Float const & to) const {
-        return asg::convert(to)(value);
+        return asg::convert(to)(value->value);
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::In const &) const {
@@ -184,19 +184,19 @@ namespace cynth {
     }
 
     asg::conversion_result asg::value::In::convert (asg::type::Const const & to) const {
-        return make_const(asg::convert(value, to.type));
+        return make_const(asg::convert(value->value, to.type));
     }
 
     asg::value_type_result asg::value::In::value_type () const {
         return asg::type::In {
-            .type = asg::value_type(value)
+            .type = asg::value_type(value->value)
         };
     }
 
     //// Out ////
 
     std::string asg::value::Out::display () const {
-        return "out(" + asg::display(*value) + ")";
+        return "out(" + asg::display(value->value) + ")";
     }
 
     asg::conversion_result asg::value::Out::convert (asg::type::Out const &) const {
@@ -205,14 +205,14 @@ namespace cynth {
 
     asg::value_type_result asg::value::Out::value_type () const {
         return asg::type::Out {
-            .type = asg::value_type(value)
+            .type = asg::value_type(value->value)
         };
     }
 
     //// Const ////
 
     std::string asg::value::Const::display () const {
-        return "const(" + asg::display(*value) + ")";
+        return "const(" + asg::display(value) + ")";
     }
 
     asg::conversion_result asg::value::Const::convert (asg::type::Bool const & to) const {
@@ -243,14 +243,10 @@ namespace cynth {
 
     //// Array ////
 
-    integral asg::value::Array::size () const {
-        return value.size();
-    }
-
     asg::get_result<std::vector<tuple_vector<asg::value::complete>>> asg::value::Array::get () const {
         std::vector<tuple_vector<asg::value::complete>> result;
-        result.reserve(value.size());
-        for (auto & elem : value) {
+        result.reserve(value->value.size());
+        for (auto & elem : value->value) {
             result.push_back(elem);
         }
         return result;
@@ -261,7 +257,7 @@ namespace cynth {
             "array<" +
             asg::display_tuple(type) +
             ">" +
-            util::parenthesized(util::join(", ", lift::component{asg::display_tuple}(value)));
+            util::parenthesized(util::join(", ", lift::component{asg::display_tuple}(value->value)));
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Array const & to) const {
@@ -277,15 +273,11 @@ namespace cynth {
     asg::value_type_result asg::value::Array::value_type () const {
         return asg::type::Array {
             .type = type,
-            .size = static_cast<integral>(value.size()) // TODO: Some safety checks or enforce an invariant?
+            .size = static_cast<integral>(value->value.size()) // TODO: Some safety checks or enforce an invariant?
         };
     }
 
     //// Buffer ////
-
-    integral asg::value::Buffer::size () const {
-        return value.size();
-    }
 
     std::string asg::value::Buffer::display () const {
         return "buffer(...)";
@@ -297,7 +289,7 @@ namespace cynth {
 
     asg::value_type_result asg::value::Buffer::value_type () const {
         return asg::type::Buffer {
-            .size = static_cast<integral>(value.size()) // TODO: Some safety checks or enforce an invariant?
+            .size = static_cast<integral>(value->value.size()) // TODO: Some safety checks or enforce an invariant?
         };
     }
 

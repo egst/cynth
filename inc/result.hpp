@@ -57,7 +57,7 @@ namespace cynth {
                 return derived().get();
             }
 
-            constexpr operator bool () const {
+            constexpr explicit operator bool () const {
                 return derived().has_value();
             }
 
@@ -137,6 +137,60 @@ namespace cynth {
 
     //protected:
         std::variant<value_type, result_error> content;
+    };
+
+    template <typename T> requires (!std::same_as<T, result_error>)
+    struct reference_result: detail::result_base<reference_result<T>, T> {
+        using value_type = T;
+
+        constexpr reference_result (result_error     const & e): content{e}            {}
+        constexpr reference_result (result_error     &&      e): content{std::move(e)} {}
+        constexpr reference_result (value_type       &       v): content{&v}           {}
+        constexpr reference_result (reference_result const &) = default;
+        constexpr reference_result (reference_result &&)      = default;
+
+        constexpr bool has_value () const {
+            return content.index() == 0;
+        }
+
+        constexpr bool has_error () const {
+            return !has_value();
+        }
+
+        constexpr value_type const * get () const {
+            return has_value() ? std::get<value_type *>(content) : nullptr;
+        }
+
+        constexpr value_type * get () {
+            return has_value() ? std::get<value_type *>(content) : nullptr;
+        }
+
+        constexpr value_type const & value () const & {
+            return *std::get<value_type *>(content);
+        }
+
+        constexpr value_type & value () & {
+            return *std::get<value_type *>(content);
+        }
+
+        constexpr value_type && value () && {
+            return *std::get<value_type *>(std::move(content));
+        }
+
+        constexpr result_error const & error () const & {
+            return std::get<result_error>(content);
+        }
+
+        constexpr result_error & error () & {
+            return std::get<result_error>(content);
+        }
+
+        constexpr result_error && error () && {
+            return std::get<result_error>(std::move(content));
+        }
+
+    //protected:
+        std::variant<value_type *, result_error> content;
     };
 
     template <>

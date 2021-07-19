@@ -14,12 +14,18 @@ namespace cynth::asg {
     using complete_range_decl   = range_decl<true>;
     using incomplete_range_decl = range_decl<false>;
 
+    struct direct_target;
+    struct subscript_target;
+    struct any_target;
+
     namespace value {
 
         template <bool> struct any;
 
         using complete   = any<true>;
         using incomplete = any<false>;
+
+        struct referential;
 
     }
 

@@ -4,5 +4,10 @@ type Elem = Float;
 
 Elem [inc(2)] a = [1, 2, 3.5];
 
-return a[2];
+Float [3] b = a;
+
+b[0] = 2;
+
+return a;
+#return a[2];
 #return a[1];

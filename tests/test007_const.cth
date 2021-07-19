@@ -37,7 +37,13 @@ Int (Int) const f = Int fn (Int x) x + 1;
 # (Even implicitly const functions should be immediately defined.)
 Int (Int) g;
 
-# These are semantically equivalent:
+# !!!!
+# The following notes regarding arrays may currently be wrong.
+# There's been a change in const semantics for arrays.
+# See test012_const_arrays.cth
+# !!!!
+
+# These are semantically equivalent: [WRONG]
 Int const [2] a1;
 Int       [2] a2;
 
@@ -65,7 +71,7 @@ Int [2]       a6;
 # For referential types there is a difference for the caller as well...
 
 () f3 (Int [2] x) {
-    # This changes the internal reffernce only:
+    # This changes the internal refernce only:
     x = [1, 2];
     # Any following modifications (assignment by elements) won't affect the caller's argument:
     x[0] = 2;
@@ -73,7 +79,7 @@ Int [2]       a6;
 };
 
 () f4 (Int [2] x) {
-    # The interfal reffernce points to the caller's argument,
+    # The internal refernce points to the caller's argument,
     # so any modification (assignment by elements) will affect it:
     x[0] = 2;
     x[] = [3, 4];

@@ -128,7 +128,8 @@ namespace cynth {
 
             constexpr T &       operator *  () &       { return value(); }
             constexpr T const & operator *  () const & { return value(); }
-            // TODO: Look more into move-related rules and stuff and decide whether this is the way it should be done, and whether I even need this:
+            // TODO: Look more into move-related rules and stuff
+            // and decide whether this is the way it should be done, and whether I even need this:
             constexpr T &&      operator *  () &&      { return std::move(value()); }
             constexpr T *       operator -> ()         { return get(); }
             constexpr T const * operator -> () const   { return get(); }
@@ -203,8 +204,12 @@ namespace cynth {
 
         // Copy and move constructors and assignment operators must be inherited manually.
 
-        constexpr optional_component & operator = (optional_component &&      other) { return base::operator=(std::move(other)); };
-        constexpr optional_component & operator = (optional_component const & other) { return base::operator=(other); };
+        constexpr optional_component & operator = (optional_component && other) {
+            return base::operator=(std::move(other));
+        };
+        constexpr optional_component & operator = (optional_component const & other) {
+            return base::operator=(other);
+        };
 
         constexpr optional_component (optional_component &&      other): base{std::move(other)} {}
         constexpr optional_component (optional_component const & other): base{other} {}
@@ -216,7 +221,7 @@ namespace cynth {
 
         /** An optional component may not be implicitly converted to the undelying type.
             Instead it has a boolean conversion to signify the presence of a value. */
-        constexpr operator bool () const { return has_value(); }
+        constexpr explicit operator bool () const { return has_value(); }
 
         constexpr T value_or (T const & fallback) const {
             return has_value()
@@ -262,8 +267,14 @@ namespace cynth {
         //component_vector (component_vector &&      other);
         //component_vector (component_vector const & other);
 
-        constexpr component_vector & operator = (component_vector &&      other) { base::operator=(std::move(other)); return *this; }
-        constexpr component_vector & operator = (component_vector const & other) { base::operator=(other);            return *this; }
+        constexpr component_vector & operator = (component_vector && other) {
+            base::operator=(std::move(other));
+            return *this;
+        }
+        constexpr component_vector & operator = (component_vector const & other) {
+            base::operator=(other);
+            return *this;
+        }
         //component_vector & operator = (component_vector &&      other);
         //component_vector & operator = (component_vector const & other);
 

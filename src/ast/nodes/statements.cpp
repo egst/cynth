@@ -39,50 +39,35 @@ namespace cynth {
         return ast::display(target) + " = " + ast::display(value);
     }
 
-    // TODO: Assigning to array subscripts.
     ast::execution_result ast::node::Assignment::execute (context & ctx) const {
-        auto names_result = lift::category_component{asg::eval_name}(target);
-        if (!names_result)
-            return ast::make_execution_result(names_result.error());
-        auto names = *std::move(names_result);
+        auto targets_result = ast::eval_target(ctx)(target);
+        if (!targets_result)
+            return ast::make_execution_result(targets_result.error());
+        auto targets = *std::move(targets_result);
 
         // TODO: What about .size() == 0? And elsewhere as well...
-        if (names.size() > 1)
-            return ast::make_execution_result(result_error{"Assigning to tuples of names is not supported yet."});
+        if (targets.size() > 1)
+            return ast::make_execution_result(result_error{"Assigning to tuples is not supported yet."});
 
-        auto name = std::move(names)[0];
+        auto target = std::move(targets.front());
 
         auto values_result = util::unite_results(ast::evaluate(ctx)(value));
         if (!values_result)
             return ast::make_execution_result(values_result.error());
         auto values = *std::move(values_result);
 
-        auto value_result = ctx.find_value(name);
-        if (!value_result)
-            return ast::make_execution_result(result_error{"Name not found."});
+        auto target_ref_result = asg::resolve_target(target);
+        if (!target_ref_result)
+            return ast::make_execution_result(target_ref_result.error());
+        auto target_ref = *std::move(target_ref_result);
 
-        for (auto & type : value_result->type) {
-            auto const_check = lift::category{util::overload {
-                // TODO: arrays of const values (once assignment by elements is implemented).
-                [] (asg::type::Const const &) -> cynth::result<void> {
-                    return result_error{"Cannot assign to a const type."};
-                },
-                [] <typename Type> (Type &&) -> cynth::result<void> requires (!util::same_as_no_cvref<Type, asg::type::Const>) {
-                    return {};
-                }
-            }} (type);
-            if (!const_check)
-                return ast::make_execution_result(const_check.error());
-        }
-
-        auto converted_results = asg::convert(values, value_result->type);
+        auto converted_results = asg::convert(values, target_ref.type);
         if (!converted_results)
-            return ast::make_execution_result(converted_results.error());
+            return converted_results.error();
         auto converted_result = util::unite_results(*converted_results);
         if (!converted_result)
-            return ast::make_execution_result(converted_result.error());
-
-        value_result->value = *std::move(converted_result);
+            return converted_result.error();
+        target_ref.value = *std::move(converted_result);
 
         return {};
     }
@@ -161,7 +146,7 @@ namespace cynth {
 
             // Define iteration elements:
             for (auto & [decl, value] : iter_decls)
-                asg::define(iter_scope, decl, value.value[i]);
+                asg::define(iter_scope, decl, value.value->value[i]);
 
             // Execute the loop body:
             auto returned = ast::execute(iter_scope)(body);

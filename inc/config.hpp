@@ -37,6 +37,7 @@ namespace cynth {
     using floating = float;
     using integral = int;
 
+    // TODO: More levels of debug.
     constexpr bool debug = false;
 
 }

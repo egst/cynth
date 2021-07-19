@@ -5,6 +5,7 @@
 #include "context.hpp"
 #include "asg/declarations.hpp"
 #include "asg/values.hpp"
+#include "asg/targets.hpp"
 #include "asg/interface.hpp"
 #include "ast/categories/expression.hpp"
 #include "ast/categories/array_elem.hpp"
@@ -72,30 +73,12 @@ namespace cynth {
             if (!const_check)
                 return const_check.error();
 
-            auto define_result = ctx.define_value(decl.name, context::typed_value{.value = {}, .type = decl.type});
+            auto define_result = ctx.define_value(decl.name, typed_value{.value = {}, .type = decl.type});
             if (!define_result)
                 return define_result.error();
         }
 
         return {};
-    }
-
-    //template <>
-    result<tuple_vector<std::string>> asg::detail::eval_name_node (ast::node::Name const & node) {
-        return util::init<tuple_vector>(*node.name);
-    }
-
-    //template <>
-    result<tuple_vector<std::string>> asg::detail::eval_name_node (ast::node::Tuple const & node) {
-        tuple_vector<std::string> result;
-        auto names = lift::category_component{asg::eval_name}(node.values);
-        for (auto & name_result : names) {
-            if (!name_result)
-                return name_result.error();
-            for (auto name : *name_result)
-                result.push_back(name);
-        }
-        return result;
     }
 
     result<std::pair<integral, asg::range_vector>> asg::for_decls (context & ctx, ast::category::RangeDecl declarations) {
@@ -109,6 +92,7 @@ namespace cynth {
 
         iter_decls.reserve(decls.size());
 
+        // TODO: Clean this up...
         for (auto & range_decl : decls) {
             auto range_result = lift::category_component{util::overload {
                 [] (asg::value::Array && value) -> result<asg::value::Array> {
@@ -119,25 +103,22 @@ namespace cynth {
                         [] (asg::value::Array && value) -> result<asg::value::Array> {
                             return std::move(value);
                         },
-                        [] (auto && value) -> result<asg::value::Array> {
-                            return result_error{"Range in a for loop must be an array -- [Const] " + std::string{__PRETTY_FUNCTION__}};
+                        [] (auto &&) -> result<asg::value::Array> {
+                            return result_error{"Range in a for loop must be an array."};
                         }
                     }} (std::move(value.value));
                     // TODO: Check if there are any consequencess of loosing constness here.
                 },
-                [] (auto & value) -> result<asg::value::Array> {
-                    return result_error{"Range in a for loop must be an array -- [&] " + std::string{__PRETTY_FUNCTION__}};
-                },
-                [] (auto && value) -> result<asg::value::Array> {
-                    return result_error{"Range in a for loop must be an array -- [&&] " + std::string{__PRETTY_FUNCTION__}};
+                [] (auto &&) -> result<asg::value::Array> {
+                    return result_error{"Range in a for loop must be an array."};
                 }
             }} (std::move(range_decl.range));
             if (!range_result)
                 return {range_result.error()};
 
             size = size == 0
-                ? range_result->size()
-                : std::min(size, range_result->size());
+                ? range_result->size
+                : std::min(size, range_result->size);
             iter_decls.push_back(std::pair{
                 std::move(range_decl.declaration),
                 *std::move(range_result)

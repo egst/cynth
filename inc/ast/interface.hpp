@@ -46,6 +46,11 @@ namespace cynth::ast::interface {
         { node.eval_range_decl(ctx) } -> std::same_as<range_decl_eval_result>;
     };
 
+    template <typename Node>
+    concept target = interface::any<Node> && requires (Node node, context & ctx) {
+        { node.eval_target(ctx) } -> std::same_as<target_eval_result>;
+    };
+
 }
 
 namespace cynth::ast {
@@ -109,6 +114,17 @@ namespace cynth::ast {
                 return node.eval_range_decl(ctx);
             }
         };
+    };
+
+    constexpr auto eval_target = [] (context & ctx) {
+        return lift::any{util::overload {
+            [&ctx] <interface::any Node> (Node const & node) -> target_eval_result requires interface::target<Node> {
+                return node.eval_target(ctx);
+            },
+            [] <interface::any Node> (Node const &) -> target_eval_result requires (!interface::target<Node>) {
+                return result_error{"Assignment target may only be a name, a subscript or any tuple thereof."};
+            },
+        }};
     };
 
 }

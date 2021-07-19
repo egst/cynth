@@ -13,6 +13,7 @@
 #include "ast/interface_types.hpp"
 #include "asg/values.hpp"
 #include "asg/types.hpp"
+#include "asg/targets.hpp"
 #include "asg/util.hpp"
 #include "util/general.hpp"
 #include "util/container.hpp"
@@ -363,9 +364,14 @@ namespace cynth {
         if (!converted_result)
             return ast::make_evaluation_result(converted_result.error());
         auto converted = *std::move(converted_result);
+        auto stored = ctx.store_value(asg::value::ArrayValue {
+            .value = converted
+        });
+        if (!stored)
+            return ast::make_evaluation_result(stored.error());
 
         auto r = ast::make_evaluation_result(asg::value::complete{asg::value::Array {
-            .value = make_component_vector(lift::tuple_vector{make_component_vector}(std::move(converted))),
+            .value = stored.get(),
             .type  = component_vector<asg::type::complete>{std::move(type)}
         }});
 
@@ -570,15 +576,13 @@ namespace cynth {
 
         result_values.reserve(size);
 
-        std::cout << "for: " << size << '\n';
-
         for (integral i = 0; i < size; ++i) {
             // Init inner scope:
             auto iter_scope = make_child_context(ctx);
 
             // Define iteration elements:
             for (auto & [decl, value] : iter_decls)
-                asg::define(iter_scope, decl, value.value[i]);
+                asg::define(iter_scope, decl, value.value->value[i]);
 
             // Evaluate the loop body:
             auto value_result = util::unite_results(ast::evaluate(iter_scope)(body));
@@ -603,8 +607,14 @@ namespace cynth {
         if (!result_type)
             return ast::make_evaluation_result(result_error{"No common type for an array in a for expression."});
 
+        auto stored = ctx.store_value(asg::value::ArrayValue {
+            .value = result_values
+        });
+        if (!stored)
+            return ast::make_evaluation_result(stored.error());
+
         return ast::make_evaluation_result(asg::value::Array {
-            .value = result_values,
+            .value = stored.get(),
             .type  = *result_type
         });
     }
@@ -621,7 +631,7 @@ namespace cynth {
 
             // Define iteration elements:
             for (auto & [decl, value] : iter_decls)
-                asg::define(iter_scope, decl, value.value[i]);
+                asg::define(iter_scope, decl, value.value->value[i]);
 
             // Execute the loop body:
             auto returned = ast::execute(iter_scope)(body);
@@ -987,6 +997,15 @@ namespace cynth {
             : ast::make_evaluation_result(result_error{"Name not found."});
     }
 
+    ast::target_eval_result ast::node::Name::eval_target (context & ctx) const {
+        auto result = ctx.find_value(*name);
+        if (!result)
+            return ast::make_target_eval_result(result_error{"Target name not found."});
+        return ast::make_target_eval_result(asg::any_target{asg::direct_target {
+            .value = *result
+        }});
+    }
+
     //// Ne ////
 
     template <>
@@ -1220,10 +1239,14 @@ namespace cynth {
         auto [locations, location_type] = *location_result;
 
         // TODO: Check the location_type?
-        // Simplification: only the first location is taken:
+        // Simplification: only the first location is taken.
+        // (the util::single(locastions) part is the simplification.
+        // lift::result{util::single} corresponds to an intended behaviour, not a simplification.)
         //auto r = asg::convert(asg::type::Int{})(util::single(locations));
 
-        auto index_result = asg::get<integral>(asg::convert(asg::type::Int{})(lift::result{util::single}(util::single(locations))));
+        auto index_result = asg::get<integral> (
+            asg::convert(asg::type::Int{})(lift::result{util::single}(util::single(locations)))
+        );
         if (!index_result)
             return ast::make_evaluation_result(index_result.error());
         integral index = *index_result;
@@ -1232,21 +1255,44 @@ namespace cynth {
         using result_type = result<tuple_vector<asg::value::complete>>;
         auto result = lift::single_evaluation{util::overload {
             [index] (asg::value::Array const & a) -> result_type {
-                integral size = a.value.size();
+                integral size = a.size;
                 if (index >= size)
                     return {result_error{"Subscript index out of bounds."}};
                 if (index < 0)
                     return {result_error{"Negative subscripts not supported yet."}};
-                return {a.value[index]};
+                return {a.value->value[index]};
             },
             [] (auto const &) -> result_type {
                 return {result_error{"Cannot subscript a non-array value."}};
             }
-        }}(util::single(ast::evaluate(ctx)(container)));
+        }} (util::single(ast::evaluate(ctx)(container)));
         if (!result)
             return ast::make_evaluation_result(result.error());
 
         return lift::tuple_vector{make_result}(*result);
+    }
+
+    ast::target_eval_result ast::node::Subscript::eval_target (context & ctx) const {
+        // Only the first container is taken. (This is the intended behaviour, not a simplification.)
+        auto container_result = lift::result{util::single}(ast::eval_target(ctx)(container));
+        if (!container_result)
+            return ast::make_target_eval_result(container_result.error());
+
+        auto location_result = asg::array_elems(ctx, location);
+        if (!location_result)
+            return ast::make_target_eval_result(location_result.error());
+        auto [locations, location_type] = *std::move(location_result);
+
+        auto index_result = util::unite_results (
+            asg::convert(asg::type::Int{})(lift::component{util::single}(locations))
+        );
+        if (!index_result)
+            return ast::make_target_eval_result(index_result.error());
+
+        return ast::make_target_eval_result(asg::any_target{asg::subscript_target {
+            .container = *container_result,
+            .location  = *index_result
+        }});
     }
 
     //// Tuple ////
@@ -1271,8 +1317,19 @@ namespace cynth {
     }
 
     ast::evaluation_result ast::node::Tuple::evaluate (context & ctx) const {
-        evaluation_result result;
+        ast::evaluation_result result;
         for (auto & value_tuple : ast::evaluate(ctx)(values)) for (auto & value : value_tuple) {
+            result.push_back(std::move(value));
+        }
+        return result;
+    }
+
+    ast::target_eval_result ast::node::Tuple::eval_target (context & ctx) const {
+        tuple_vector<asg::any_target> result;
+        auto values_result = util::unite_results(ast::eval_target(ctx)(values));
+        if (!values_result)
+            return ast::make_target_eval_result(values_result.error());
+        for (auto & value_tuple : *values_result) for (auto & value : value_tuple) {
             result.push_back(std::move(value));
         }
         return result;
