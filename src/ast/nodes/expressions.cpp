@@ -372,7 +372,8 @@ namespace cynth {
 
         auto r = ast::make_evaluation_result(asg::value::complete{asg::value::Array {
             .value = stored.get(),
-            .type  = component_vector<asg::type::complete>{std::move(type)}
+            .type  = component_vector<asg::type::complete>{std::move(type)},
+            .size  = static_cast<integral>(stored->value.size())
         }});
 
         return r;
