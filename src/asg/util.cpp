@@ -177,6 +177,12 @@ namespace cynth {
                 return {result.error()};
         }
 
+        if (result_values.size() == 0)
+            return {{
+                {},
+                {}
+            }};
+
         if (!result_type)
             return {result_error{"No common type for an array."}};
 

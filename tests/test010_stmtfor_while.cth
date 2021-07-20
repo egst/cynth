@@ -45,5 +45,10 @@ Bool r;
 #r = all4([true, true, true, true]);
 r = all4([true, false, true, true]);
 
-return d;
+Int s = 1;
+while (s < 10)
+    s = s + s;
+
+return s;
+#return d;
 #return r;

@@ -262,16 +262,42 @@ namespace cynth {
         return "T [n]"; // TODO
     }
 
-    template <bool Complete>
-    asg::common_type_result asg::type::array_type<Complete>::common (asg::type::Array const & other) const requires Complete {
-        auto result = asg::same(type, other.type);
+    template <bool Complete> asg::common_type_result
+    asg::type::array_type<Complete>::common (asg::type::Array const & other) const requires Complete {
+        auto results = (lift::category_component{util::overload {
+            [] <typename T, typename U> (T const & a, U const & b) -> std::optional<asg::type::complete> {
+            //requires (std::same_as<T, U> || !std::same_as<T, asg::type::Const> && std::same_as<U, asg::type::Const>)
+                if (asg::same(a, b))
+                    return {a};
+                return {};
+            },
+            [] <typename T> (asg::type::Const const & a, T const & b) -> std::optional<asg::type::complete>
+            requires (!std::same_as<T, asg::type::Const>) {
+                if (asg::same(a, b))
+                    return {a};
+                if (asg::same(a, asg::type::Const{{b}}))
+                    return {asg::type::Const{{a}}};
+                return {};
+            },
+            [] <typename T> (T const & a, asg::type::Const const & b) -> std::optional<asg::type::complete>
+            requires (!std::same_as<T, asg::type::Const>) {
+                if (asg::same(a, b))
+                    return {a};
+                if (asg::same(asg::type::Const{{a}}, b))
+                    return {asg::type::Const{{a}}};
+                return {};
+            }
+        }} (type, other.type));
+        if (!results)
+            return results.error();
+        auto result = util::unite_optionals(*results);
         if (!result)
-            return result.error();
-        if (!util::all(*result))
             return result_error{"No common type for two arrays because of mismatched elements type."};
-        if (size != other.size)
-            return result_error{"No common type for two arrays because of different sizes."};
-        return {*this};
+        return {asg::type::Array {
+            .type = *result,
+            .size = std::min(size, other.size)
+        }};
+
     }
     template asg::common_type_result asg::type::array_type<true>::common (asg::type::Array const & other) const;
 

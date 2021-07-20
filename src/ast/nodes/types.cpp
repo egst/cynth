@@ -246,7 +246,7 @@ namespace cynth {
                 return result_error{"Array cannot be an in type."};
             },
             [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
-                return result_error{"Buffer cannot be an in type."};
+                return result_error{"Buffer in types are not supported yet."};
             },
             [] (asg::type::function_type<false> &&) -> result<asg::type::incomplete> {
                 return result_error{"Function cannot be an in type."};
@@ -297,6 +297,7 @@ namespace cynth {
                 return result_error{"Array out types are not supported yet."};
             },
             [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
+                // TODO
                 return result_error{"Buffer out types are not supported yet."};
             },
             [] (asg::type::function_type<false> &&) -> result<asg::type::incomplete> {

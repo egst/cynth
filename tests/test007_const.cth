@@ -75,14 +75,14 @@ Int [2]       a6;
     x = [1, 2];
     # Any following modifications (assignment by elements) won't affect the caller's argument:
     x[0] = 2;
-    x[] = [4, 5];
+    #x[] = [4, 5]; # TODO: a[] = b unsupported yet
 };
 
 () f4 (Int [2] x) {
     # The internal refernce points to the caller's argument,
     # so any modification (assignment by elements) will affect it:
     x[0] = 2;
-    x[] = [3, 4];
+    #x[] = [3, 4]; # TODO: a[] = b unsupported yet
 };
 
 () f5 (Int [2] const x) {

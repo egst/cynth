@@ -47,6 +47,7 @@ $ ff = Int fn (Int x) x * 2;
     finishingUp();
     return (); # The void expression `()` is implied here.
     return;    # This `;` isn't mandatory here.
+    # `return ()` is actually implicit at the end of every evaluated block.
 }; # Even here the `;` is needed.
 
 # Note on C-like syntax:
@@ -63,7 +64,7 @@ void doSomethingElse () {
     return;
 };
 
-void () f = void fn () { return; };
+void () f = void fn () {};
 
 # This is not possible, even syntactically:
 # (Void is a valid type, expression and even declaration, but it may only be used in specific contexts.)

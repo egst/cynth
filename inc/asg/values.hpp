@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "context_forward.hpp"
 #include "category_base.hpp"
+#include "view.hpp"
 #include "component.hpp"
 #include "result.hpp"
 #include "asg/forward.hpp"
@@ -146,6 +147,8 @@ namespace cynth::asg::value {
         ArrayValue *                     value;
         component_vector<type::complete> type;
         integral                         size;
+
+        view<ArrayValue::vector::iterator> trimmed_value () const;
 
         get_result<std::vector<tuple_vector<value::complete>>> get () const;
 

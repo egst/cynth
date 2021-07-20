@@ -127,6 +127,27 @@ namespace cynth::lift {
         };
 
         template <typename Derived, typename F>
+        struct view {
+            template <typename T>
+            using vector_type = cynth::tuple_vector<T>;
+
+            template <util::is<cynth::view> T>
+            constexpr auto operator () (T && target) const {
+                return on_vector<vector_type>(derived(), std::forward<T>(target));
+            }
+
+            template <util::is<cynth::view> T, util::is<cynth::view> U> requires (!util::same_template<T, U>)
+            constexpr auto operator () (T && first, U && second) const {
+                return on_vector<vector_type>(derived(), std::forward<T>(first), std::forward<U>(second));
+            }
+
+        private:
+            Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+        template <typename Derived, typename F>
         struct tuple_vector {
             template <util::is<cynth::tuple_vector> T>
             constexpr auto operator () (T && target) const {
@@ -323,6 +344,13 @@ namespace cynth::lift {
         using base = detail::lift<sized_range<F>, F, detail::sized_range>;
         constexpr sized_range (F const & f): base{f} {}
         constexpr sized_range (F && f): base{std::move(f)} {}
+    };
+
+    template <typename F>
+    struct view: detail::lift<view<F>, F, detail::view> {
+        using base = detail::lift<view<F>, F, detail::view>;
+        constexpr view (F const & f): base{f} {}
+        constexpr view (F && f): base{std::move(f)} {}
     };
 
     template <typename F>

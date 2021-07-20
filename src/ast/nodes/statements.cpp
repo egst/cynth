@@ -330,7 +330,20 @@ namespace cynth {
     }
 
     ast::execution_result ast::node::While::execute (context & ctx) const {
-        return ast::make_execution_result(result_error{"While statement execution not implemented yet."});
+        while (true) {
+            auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
+            if (!result)
+                return ast::make_execution_result(result.error());
+            if (*result) {
+                auto branch_scope = make_child_context(ctx);
+                auto returned = ast::execute(branch_scope)(body);
+                if (returned)
+                    return *returned;
+                if (returned.has_error())
+                    return ast::make_execution_result(returned.error());
+            } else
+                return {};
+        }
     }
 
     //// When ////
@@ -360,8 +373,10 @@ namespace cynth {
         auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
         if (!result)
             return ast::make_execution_result(result.error());
-        if (*result)
-            return ast::execute(ctx)(branch);
+        if (*result) {
+            auto branch_scope = make_child_context(ctx);
+            return ast::execute(branch_scope)(branch);
+        }
         return {};
     }
 

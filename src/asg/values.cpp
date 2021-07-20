@@ -1,6 +1,7 @@
 #include "asg/values.hpp"
 
 #include "config.hpp"
+#include "view.hpp"
 #include "component.hpp"
 #include "ast/categories/array_elem.hpp"
 #include "ast/categories/declaration.hpp"
@@ -243,10 +244,15 @@ namespace cynth {
 
     //// Array ////
 
+    view<asg::value::ArrayValue::vector::iterator> asg::value::Array::trimmed_value () const {
+        return view{value->value.begin(), static_cast<std::size_t>(size)};
+    }
+
     asg::get_result<std::vector<tuple_vector<asg::value::complete>>> asg::value::Array::get () const {
         std::vector<tuple_vector<asg::value::complete>> result;
-        result.reserve(value->value.size());
-        for (auto & elem : value->value) {
+        result.reserve(size);
+        auto t = trimmed_value();
+        for (auto & elem : trimmed_value()) {
             result.push_back(elem);
         }
         return result;
@@ -257,13 +263,18 @@ namespace cynth {
             "array<" +
             asg::display_tuple(type) +
             ">" +
-            util::parenthesized(util::join(", ", lift::component{asg::display_tuple}(value->value)));
+            util::parenthesized(util::join(", ", lift::view{asg::display_tuple}(trimmed_value())));
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Array const & to) const {
-        if (asg::same(to)(value_type()))
-            return {*this};
-        return result_error{"Invalid array conversion."};
+        auto common_result = asg::common(to)(value_type());
+        if (!common_result)
+            return common_result.error();
+        return {asg::value::Array {
+            .value = value,
+            .type  = type,
+            .size  = std::min(size, to.size)
+        }};
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Const const & to) const {
@@ -273,11 +284,12 @@ namespace cynth {
     asg::value_type_result asg::value::Array::value_type () const {
         return asg::type::Array {
             .type = type,
-            .size = static_cast<integral>(value->value.size()) // TODO: Some safety checks or enforce an invariant?
+            .size = size
         };
     }
 
     //// Buffer ////
+    // TODO: size
 
     std::string asg::value::Buffer::display () const {
         return "buffer(...)";

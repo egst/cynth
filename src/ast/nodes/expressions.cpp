@@ -342,7 +342,6 @@ namespace cynth {
         return "[" + util::join(", ", ast::display(elements)) + "]";
     }
 
-    // TODO: Check result once I fix subscript.
     ast::evaluation_result ast::node::Array::evaluate (context & ctx) const {
         auto result = asg::array_elems(ctx, elements);
         if (!result)
@@ -416,7 +415,8 @@ namespace cynth {
                 return ast::make_evaluation_result(returned.error());
         }
 
-        return ast::make_evaluation_result(result_error{"Evaluated block does not return."});
+        //return ast::make_evaluation_result(result_error{"Evaluated block does not return."});
+        return {}; // Return the void value.
     }
 
     ast::execution_result ast::node::Block::execute (context & ctx) const {
@@ -616,7 +616,8 @@ namespace cynth {
 
         return ast::make_evaluation_result(asg::value::Array {
             .value = stored.get(),
-            .type  = *result_type
+            .type  = *result_type,
+            .size  = static_cast<integral>(stored->value.size())
         });
     }
 
@@ -684,10 +685,13 @@ namespace cynth {
         auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
         if (!result)
             return ast::make_execution_result(result.error());
-        if (*result)
-            return ast::execute(ctx)(positive_branch);
-        else
-            return ast::execute(ctx)(negative_branch);
+        if (*result) {
+            auto branch_scope = make_child_context(ctx);
+            return ast::execute(branch_scope)(positive_branch);
+        } else {
+            auto branch_scope = make_child_context(ctx);
+            return ast::execute(branch_scope)(negative_branch);
+        }
     }
 
     //// Float ////
@@ -1284,6 +1288,13 @@ namespace cynth {
             return ast::make_target_eval_result(location_result.error());
         auto [locations, location_type] = *std::move(location_result);
 
+        if (locations.size() == 0)
+            return ast::make_target_eval_result(asg::any_target{asg::subscript_target {
+                .container = *container_result,
+                .location  = {}
+            }});
+
+        // Simplification: Only the first location is taken.
         auto index_result = util::unite_results (
             asg::convert(asg::type::Int{})(lift::component{util::single}(locations))
         );

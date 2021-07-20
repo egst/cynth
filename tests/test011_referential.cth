@@ -2,27 +2,27 @@ Int [3] a = [1, 2, 3];
 
 void f (Int [3] x) {
     x[0] = 11;
-    return; # TODO: This should be implicit.
 };
 # Note: `void` is an alias for `()` in type context (meaning void type, not void value, nor declaration).
 
 f(a);
 
-return a;
+#return a;
 
 ####
 
 Int [5] b = [1, 2, 3, 4, 5];
-Int [2] c;
+Int [2] c = [2, 3];
 
-() g (Int [3] x) {
-    # The c variable will represent a referential view over the first 2 elements of x.
-    c = x;
-}
-
-# The x parameter will represent a referential view over the first 3 elements of b.
-g(b);
+# The c variable will represent a referential view over the first 2 elements of b.
+c = b;
 
 c[1] = 22;
 
-return b;
+#return b;
+
+Int const [2] d = c;
+
+c[1] = 11;
+
+return c;
