@@ -10,14 +10,14 @@ namespace cynth::asg {
     struct direct_target {
         typed_value & value;
 
-        target_resolution_result resolve_target () const;
+        target_resolution_result resolve_target (bool) const;
     };
 
     struct subscript_target {
         component        <any_target>           container;
         component_vector <asg::value::complete> location;
 
-        target_resolution_result resolve_target () const;
+        target_resolution_result resolve_target (bool) const;
     };
 
     namespace detail {

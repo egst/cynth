@@ -1,6 +1,3 @@
-# Set up one dummy output channel:
-\out main
-
 # This file explains referential semantics of IO types with examples.
 
 # Input types are used to recieve information
@@ -39,9 +36,9 @@ Float readKnob () {
 };
 
 # Reading and modifying the actual values only makes sense during run-time.
-buffer [1] main = Float fn () {
-    Float f = readKnob();
-    showFrequency(f);
-
-    return 0;
-}
+#buffer [1] out main = Float fn () { # TODO: Not supported yet.
+#    Float f = readKnob();
+#    showFrequency(f);
+#
+#    return 0;
+#}

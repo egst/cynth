@@ -151,16 +151,22 @@ namespace cynth {
                 return {type};
             },
             [] (asg::type::in_type<false> &&) -> result<asg::type::incomplete> {
+                // Note: In types actually are implicitly const (= non-assignable).
                 return result_error{"In type cannot be const."};
             },
             [] (asg::type::out_type<false> &&) -> result<asg::type::incomplete> {
+                // Note: Out types must be non-const (= assignable).
                 return result_error{"Out type cannot be const."};
             },
             [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
+                // Note: For now, lets keep buffers implicitly const (= non-assignable),
+                // but this might change in the future.
                 return result_error{"Buffer type cannot be const."};
             },
             [] (asg::type::function_type<false> && type) -> result<asg::type::incomplete> {
-                return {type}; // Function type is implicitly const.
+                // Note: Function types actually are implicitly const (= non-assignable).
+                //return {type};
+                return result_error{"Function type cannot be const."};
             },
             [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {
                 return {asg::type::const_type<false> {
@@ -246,6 +252,7 @@ namespace cynth {
                 return result_error{"Array cannot be an in type."};
             },
             [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
+                // TODO
                 return result_error{"Buffer in types are not supported yet."};
             },
             [] (asg::type::function_type<false> &&) -> result<asg::type::incomplete> {

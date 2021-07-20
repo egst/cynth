@@ -37,7 +37,7 @@ int main () {
     ctx.define_type("Float",  {asg::type::Float{}});
     ctx.define_type("String", {asg::type::String{}});
 
-    auto result = util::single(ast::evaluate(ctx)(ast));
+    auto result = util::unite_results(ast::evaluate(ctx)(ast));
 
     if (!result) {
         std::cout << "eval error:" << result.error().message << '\n';
@@ -92,6 +92,6 @@ int main () {
     //return 0;
 
     // TODO: make this work
-    std::cout << asg::display(value) << '\n';
+    std::cout << asg::display_tuple(value) << '\n';
 
 }

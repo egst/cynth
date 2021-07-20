@@ -81,14 +81,11 @@ e[1] = 2;
 # The caller must provide non-const-valued arrays for x and y.
 # The internal reference of x and z may be changed inside the function,
 # which won't affect any of the caller's values.
-() f (Int [2] x, Int [2] const y, Int const [2] z, Int const [2] const w) {
-    # TODO: This should be implicit:
-    return;
-}
+() func (Int [2] x, Int [2] const y, Int const [2] z, Int const [2] const w) {};
 
 # An array may only be copied by assignment to individual elements.
 # The following is a shorthand for copying all elements:
-a[] = b;
+#a[] = b; # TODO: Unsupported yet.
 # All standard rules for assignment by elements apply and,
 # additionally, this is allowed only when there is enough of elements to copy from to fill the whole array.
 
@@ -108,12 +105,14 @@ Int [2] arr3 = arr1;
 #       ^
 #       create a new array variable referencing the first stored value ([1, 2])
 
-arr3[] = arr2;
+#arr3[] = arr2; # TODO: Unsupported yet.
 #   ^
 #   modify the first stored value to contain the same values as the second stored value ([2, 3])
 
-arr3[] = [3, 4];
+#arr3[] = [3, 4]; # TODO: Unsupported yet.
 #   ^    ^
 #   |    create and store a new array value (#3)
 #   modify the first stored value to contain the same values as the new third stored value ([3, 4])
 # The third stored value is now no longer referenced anywhere and may be deleted.
+
+return f;

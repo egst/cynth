@@ -64,8 +64,8 @@ namespace cynth::asg::interface {
     };
 
     template <typename Node>
-    concept target = requires (Node node) {
-        { node.resolve_target() } -> std::same_as<target_resolution_result>;
+    concept target = requires (Node node, bool c) {
+        { node.resolve_target(c) } -> std::same_as<target_resolution_result>;
     };
 
 }
@@ -327,7 +327,13 @@ namespace cynth::asg {
 
     constexpr auto resolve_target = lift::any {
         [] <interface::target Node> (Node const & node) {
-            return node.resolve_target();
+            return node.resolve_target(false);
+        }
+    };
+
+    constexpr auto resolve_const_target = lift::any {
+        [] <interface::target Node> (Node const & node) {
+            return node.resolve_target(true);
         }
     };
 

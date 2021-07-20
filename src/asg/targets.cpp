@@ -31,8 +31,8 @@ namespace cynth {
         }} (type_tuple));
     };
 
-    asg::target_resolution_result asg::direct_target::resolve_target () const {
-        if (!const_check(value.type))
+    asg::target_resolution_result asg::direct_target::resolve_target (bool allow_const) const {
+        if (!allow_const && !const_check(value.type))
             return result_error{"Cannot assign to a const value."};
         return typed_target_value {
             .value = value.value,
@@ -40,8 +40,28 @@ namespace cynth {
         };
     }
 
-    asg::target_resolution_result asg::subscript_target::resolve_target () const {
-        auto nested_result = asg::resolve_target(container);
+    using result_type = result<typed_target_value>;
+
+    constexpr auto on_non_const = [] (auto const & f) {
+        return lift::category{util::overload{
+            f,
+            [&f] (asg::value::Const const & val) -> result_type {
+                return lift::category_component{util::overload {
+                    f,
+                    [] (auto &&) -> result_type {
+                        return result_error{"Nested const. (TODO: This should never happen.)"};
+                    }
+                }} (val.value);
+            },
+            [] <typename T> (T &&) -> result_type requires (!util::same_as_no_cvref<T, asg::value::Const> && !util::same_as_no_cvref<T, asg::value::Array>) {
+                return result_error{"Cannot assign by element to a non-array value. -- " + std::string{__PRETTY_FUNCTION__}};
+            }
+        }};
+    };
+
+    asg::target_resolution_result asg::subscript_target::resolve_target (bool) const {
+        // TODO: What about nested arrays (Int const? [m] const? [n] const?) and constness?
+        auto nested_result = asg::resolve_const_target(container);
         if (!nested_result)
             return nested_result.error();
         auto nested = *std::move(nested_result);
@@ -66,9 +86,9 @@ namespace cynth {
             return index_result.error();
         integral index = *index_result;
 
-        using result_type = result<typed_target_value>;
-        auto target_result = lift::category{util::overload {
-            [index] (asg::value::Array & a) -> result_type {
+        auto target_result = on_non_const (
+            // TODO: How come this works with a const ref?
+            [index] (asg::value::Array const & a) -> result_type {
                 if (index >= a.size)
                     return result_error{"Assignment by element subscript index out of bounds."};
                 if (index < 0)
@@ -87,15 +107,8 @@ namespace cynth {
                 // I should either change the type abstractions around this to model the situation more tightly,
                 // or make sure, that the invariant (same array element type and types of individual elements)
                 // is enforced.
-            },
-            [] (asg::value::Const const &) -> result_type {
-                // Note: This should have been handled by the nested asg::resolve_target call.
-                return result_error{"Cannot assign by element to a const value. (TODO: This case should never happen.)"};
-            },
-            [] (auto const &) -> result_type {
-                return result_error{"Cannot assign by element to a non-array value."};
             }
-        }} (value);
+        ) (value);
 
         if (!target_result)
             return target_result.error();
