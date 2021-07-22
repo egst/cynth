@@ -1,38 +1,50 @@
 ## Valid buffer sizes ##
 
-# Error...
-type Empty = buffer [0];
+# Error: Buffer must have a positive size.
+#type Empty = buffer [0];
 
-# Error...
-type Negative = buffer [-1];
+# Error: Buffer must have a positive size.
+#type Negative = buffer [-1];
 
-# Error...
-buffer [0] b1;
+# Error: Buffer must have a positive size.
+#buffer [0] b1;
 
-# Error...
-buffer [-2] b2;
+# Error: Buffer must have a positive size.
+#buffer [-2] b2;
 
 ## Write-only out types ##
 
 Int out output;
 
-# Error...
-Int outputCopy = output;
+# Error: Cannot read an output value.
+#Int outputCopy = output;
 
-# Error...
-return output;
-
-# ...TODO: More checks?
+# For now, this works, but it probably shouldn't.
+# Note: This only works in the global (outermost) return, since it applies no conversions.
+#return output;
 
 ## Only global IO declarrations ##
 
-{
-    Int out o;
-    Int in  i;
-}
-
 () f () {
-    # Error...
+    # TODO: This should be an error (for now).
+    # No input, output, or buffer declarations should happen inside of functions.
     Int out o;
     Int in  i;
-}
+};
+
+# The following two cases are ok though.
+# The values are stored in the global (outermost) scope,
+# even though their corresponding variables are only accessible in a limited scope.
+
+Bool config = true;
+
+when (config) {
+    Int out o;
+    Int in  i;
+};
+
+Float (Int) module = {
+    Float in i;
+
+    return Float fn (Int x) x * i;
+};

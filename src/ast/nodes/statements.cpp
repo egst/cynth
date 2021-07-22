@@ -61,6 +61,10 @@ namespace cynth {
             return ast::make_execution_result(target_ref_result.error());
         auto target_ref = *std::move(target_ref_result);
 
+        if (values.size() > target_ref.type.size())
+            return result_error{"More values than targets in an assignment."};
+        if (values.size() < target_ref.type.size())
+            return result_error{"More targets than values in an assignment."};
         auto converted_results = asg::convert(values, target_ref.type);
         if (!converted_results)
             return converted_results.error();

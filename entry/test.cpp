@@ -1,16 +1,13 @@
-#include "ast/interface.hpp"
-#include "ast/categories.hpp"
-
 #include <iostream>
 
-using namespace cynth;
-
 int main () {
-    //ast::node::Block ast{.statements = component_vector<ast::category::Statement>{}};
+    int result = 0;
+    int i = 0;
 
-    ast::node::Int node{1};
+    while (i < 1000000) {
+        result = result + 1;
+        i = i + 1;
+    };
 
-    ast::category::Pattern ast = node;
-
-    std::cout << ast::display(ast) << '\n';
+    std::cout << result << '\n';
 }

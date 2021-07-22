@@ -176,6 +176,8 @@ namespace cynth::asg::type {
     template struct buffer_type<true>;
     template struct buffer_type<false>;
 
+    result<type::Buffer> make_buffer (integral);
+
     template <bool Complete>
     struct function_type {
         // Might return or accept a tuple.

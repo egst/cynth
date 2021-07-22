@@ -1,0 +1,9 @@
+Int result = 0;
+Int i = 0;
+
+while (i < 100000) {
+    result = result + 1;
+    i = i + 1;
+};
+
+return result;

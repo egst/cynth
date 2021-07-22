@@ -12,7 +12,7 @@ Int [2] outer = [1, 2];
 };
 
 # The value is still accessible through the outer variable here.
-return outer;
+#return outer;
 
 # The same happens inside of functions...
 
@@ -33,9 +33,9 @@ Int [2] f () {
     return outer;
 
     # Note that the return happens by value (copy). No referential value escapes any function.
-}
+};
 
-return f();
+#return f();
 
 # And even inside of nested functions...
 
@@ -55,9 +55,9 @@ Int [2] g () {
 
         # The value is still accessible through the outer variable here.
         return outer;
-    }
+    };
 
     return nested();
-}
+};
 
 return g();

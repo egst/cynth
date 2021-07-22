@@ -78,6 +78,17 @@ namespace cynth {
     }
 
     template <typename Value>
+    void context::init_storage () {
+        auto & stored = std::get<std::optional<refval_container<Value>>>(referential);
+        stored = refval_container<Value>{};
+    }
+
+    template void context::init_storage<asg::value::InValue>     ();
+    template void context::init_storage<asg::value::OutValue>    ();
+    template void context::init_storage<asg::value::ArrayValue>  ();
+    template void context::init_storage<asg::value::BufferValue> ();
+
+    template <typename Value>
     refval_container<Value> & context::stored_values () {
         auto & stored = std::get<std::optional<refval_container<Value>>>(referential);
         if (stored)

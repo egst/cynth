@@ -356,6 +356,14 @@ namespace cynth {
 
     //// Buffer ////
 
+    result<asg::type::Buffer> asg::type::make_buffer (integral size) {
+        if (size <= 0)
+            return result_error{"Buffer must have a positive size."};
+        return asg::type::Buffer {
+            .size = size
+        };
+    }
+
     template <>
     std::string asg::type::Buffer::display () const {
         return "buffer [n]"; // TODO
@@ -388,9 +396,11 @@ namespace cynth {
         if (!size_result)
             return size_result.error();
 
-        return {asg::type::Buffer {
-            .size = *size_result
-        }};
+        auto buffer_result = asg::type::make_buffer(*size_result);
+        if (!buffer_result)
+            return buffer_result.error();
+
+        return {*buffer_result};
     }
     template asg::complete_result asg::type::buffer_type<false>::complete () const;
 

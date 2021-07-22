@@ -65,7 +65,7 @@ namespace cynth::asg {
             },
             [] (asg::type::Float const &) -> result<void> {
                 return {};
-            },
+            }
         };
 
     };
@@ -81,5 +81,21 @@ namespace cynth::asg {
             }} (type.type);
         }
     }};
+
+    constexpr auto copy = [] (context & ctx) {
+        return lift::any{util::overload {
+            [&ctx] (asg::value::Array const & a) -> result<asg::value::complete> {
+                auto stored = ctx.store_value(*a.value);
+                if (!stored)
+                    return stored.error();
+                auto type_copy = a.type;
+                return value::make_array(stored.get(), std::move(type_copy), a.size);
+            },
+            [] <asg::interface::value T> (T && v) -> result<asg::value::complete>
+            requires (!util::same_as_no_cvref<T, asg::value::Array>) {
+                return asg::value::complete{std::forward<T>(v)};
+            }
+        }};
+    };
 
 }

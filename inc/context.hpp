@@ -35,6 +35,9 @@ namespace cynth {
         type_vector * find_type         (std::string const &);
 
         template <typename Value>
+        void init_storage ();
+
+        template <typename Value>
         refval_container<Value> & stored_values ();
 
         template <typename Value>

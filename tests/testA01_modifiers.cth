@@ -94,7 +94,7 @@ ConstFn f = Int fn (Int x) x;
 # Error: Output arrays are not supported (for now at least).
 #type OutArray = Int [2] out;
 
-# Error: Input arrays ar not supported (for now at least).
+# Error: Input arrays are not supported (for now at least).
 #type InArray = Int [2] in;
 
 type OutBuff = buffer [2] out;

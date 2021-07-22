@@ -24,7 +24,7 @@ namespace cynth {
 
         for (auto & decl : decls) {
             if (static_cast<std::size_t>(values.end() - value_begin) < decl.type.size())
-                return result_error{"Less values than types in a declaration."};
+                return result_error{"Less values than types in a definition."};
 
             tuple_vector<asg::value::complete> value;
             // TODO: Why none of these options work?
@@ -52,7 +52,7 @@ namespace cynth {
         }
 
         if (value_begin != values.end())
-            return result_error{"More values than types in a declaration."};
+            return result_error{"More values than types in a definition."};
 
         return {};
     }
@@ -276,6 +276,8 @@ namespace cynth {
                         return result.error();
                     auto & value = *result;                // tuple_vector<value::complete> &
                     auto   type  = asg::value_type(value); // tuple_vector<type::complete>
+                    if (type.size() == 0)
+                        return result_error{"Cannot use the void value as an array element."};
                     // TODO: Overload asg::common to work with optional inputs.
                     if (result_type) {
                         auto common_results = asg::common(type, *result_type);

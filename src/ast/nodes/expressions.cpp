@@ -53,17 +53,27 @@ namespace cynth {
     };
 
     constexpr auto bin_arith = [] <typename I, typename F> (I && i, F && f) {
-        return lift::evaluation{util::overload {
-            bin_arith_floats<true>(f),
-            [&i, &f] <util::temporary T, util::temporary U> (T && a, U && b) -> result<asg::value::complete> requires util::none<asg::value::Float, T, U> {
-                auto results = asg::decays(asg::type::Float{})(asg::value_type((a))) || asg::decays(asg::type::Float{})(asg::value_type((b)))
-                    ? bin_arith_floats <false>(std::forward<F>(f))(std::move(a), std::move(b))
-                    : bin_arith_ints   <false>(std::forward<I>(i))(std::move(a), std::move(b));
-                if (!results)
-                    return results.error();
-                return *results;
-            },
-        }};
+        return [&i, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<asg::value::complete>>> {
+            if (first.size() == 0)
+                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+            if (second.size() == 0)
+                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+            if (first.size() > second.size())
+                return ast::make_evaluation_result(result_error{"More values on the lhs of a binary operation."});
+            if (first.size() < second.size())
+                return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
+            return lift::evaluation{util::overload {
+                bin_arith_floats<true>(f),
+                [&i, &f] <util::temporary T, util::temporary U> (T && a, U && b) -> result<asg::value::complete> requires util::none<asg::value::Float, T, U> {
+                    auto results = asg::decays(asg::type::Float{})(asg::value_type((a))) || asg::decays(asg::type::Float{})(asg::value_type((b)))
+                        ? bin_arith_floats <false>(std::forward<F>(f))(std::move(a), std::move(b))
+                        : bin_arith_ints   <false>(std::forward<I>(i))(std::move(a), std::move(b));
+                    if (!results)
+                        return results.error();
+                    return *results;
+                },
+            }} (std::move(first), std::move(second));
+        };
     };
 
     template <bool Check>
@@ -89,14 +99,18 @@ namespace cynth {
     };
 
     constexpr auto un_arith = [] <typename I, typename F> (I && i, F && f) {
-        return lift::evaluation{util::overload {
-            un_arith_float<true>(f),
-            [&i, &f] <util::temporary T> (T && a) {
-                return asg::decays(asg::type::Float{})(asg::value_type(a))
-                    ? un_arith_float <false>(std::forward<F>(f))(std::move(a))
-                    : un_arith_int   <false>(std::forward<I>(i))(std::move(a));
-            },
-        }};
+        return [&i, &f] (util::temporary auto && arg) -> tuple_vector<result<asg::value::complete>> {
+            if (arg.size() == 0)
+                return ast::make_evaluation_result(result_error{"Cannot use the void value in a unary operation."});
+            return lift::evaluation{util::overload {
+                un_arith_float<true>(f),
+                [&i, &f] <util::temporary T> (T && a) {
+                    return asg::decays(asg::type::Float{})(asg::value_type(a))
+                        ? un_arith_float <false>(std::forward<F>(f))(std::move(a))
+                        : un_arith_int   <false>(std::forward<I>(i))(std::move(a));
+                },
+            }} (std::move(arg));
+        };
     };
 
     // Comparison operations //
@@ -162,23 +176,31 @@ namespace cynth {
     };
 
     constexpr auto compare = [] <typename F> (F && f) {
-        //constexpr auto same_types = compare_same_types(std::forward<F>(f));
-        //decltype(auto) same_types = std::forward<F>(f);
-        return lift::evaluation{util::overload {
-            [&f] <util::temporary T> (T && a, T && b) {
-                return compare_same_types(std::forward<F>(f))(std::move(a), std::move(b));
-            },
-            [&f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!util::same_as_no_cvref<T, U>) {
-                auto a_type    = asg::value_type(a);
-                auto b_type    = asg::value_type(b);
-                auto a_decayed = util::coalesce(asg::decay(a_type), std::move(a_type)); // TODO: The lazy trick (with ?:) doesn't work here.
-                auto b_decayed = util::coalesce(asg::decay(b_type), std::move(b_type));
-                return compare_same_types (
-                    std::forward<F>(f))(asg::convert_to(std::move(a))(std::move(a_decayed)),
-                    asg::convert_to(std::move(b))(std::move(b_decayed))
-                );
-            }
-        }};
+        return [&f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<asg::value::complete>>> {
+            if (first.size() == 0)
+                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+            if (second.size() == 0)
+                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+            if (first.size() > second.size())
+                return ast::make_evaluation_result(result_error{"More values on the lhs of a binary operation."});
+            if (first.size() < second.size())
+                return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
+            return lift::evaluation{util::overload {
+                [&f] <util::temporary T> (T && a, T && b) {
+                    return compare_same_types(std::forward<F>(f))(std::move(a), std::move(b));
+                },
+                [&f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!util::same_as_no_cvref<T, U>) {
+                    auto a_type    = asg::value_type(a);
+                    auto b_type    = asg::value_type(b);
+                    auto a_decayed = util::coalesce(asg::decay(a_type), std::move(a_type)); // TODO: The lazy trick (with ?:) doesn't work here.
+                    auto b_decayed = util::coalesce(asg::decay(b_type), std::move(b_type));
+                    return compare_same_types (
+                        std::forward<F>(f))(asg::convert_to(std::move(a))(std::move(a_decayed)),
+                        asg::convert_to(std::move(b))(std::move(b_decayed))
+                    );
+                }
+            }} (std::move(first), std::move(second));
+        };
     };
 
     constexpr auto add = bin_arith(util::add, util::add);
@@ -300,6 +322,10 @@ namespace cynth {
         // Init nested scope:
         //auto function_scope = ctx;
         auto function_scope = make_child_context(*definition.capture);
+        // Every function has its internal storage for array values:
+        // Note: No other referential values need local function storage for now.
+        // In, out and buffer types are only stored globally right now.
+        function_scope.init_storage<asg::value::ArrayValue>();
 
         // Parameters:
         /*auto params_result = util::unite_results(asg::complete(ast::eval_decl(function_scope)(definition.input)));
@@ -319,7 +345,7 @@ namespace cynth {
         //auto type = asg::complete(ast::eval_type(function_scope)(definition.output));
         auto type = std::move(definition.out_type);
 
-        auto results = asg::convert(std::move(body), std::move(type));
+        auto results = asg::copy(ctx)(asg::convert(std::move(body), std::move(type)));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -486,7 +512,17 @@ namespace cynth {
 
     // TODO: Check with all the types as soon as I fix them.
     ast::evaluation_result ast::node::Conversion::evaluate (context & ctx) const {
-        auto result = asg::convert(ast::evaluate(ctx)(argument), asg::complete(ast::eval_type(ctx)(type)));
+        auto from = ast::evaluate(ctx)(argument);
+        auto to   = asg::complete(ast::eval_type(ctx)(type));
+        if (to.size() == 0)
+            return ast::make_evaluation_result(result_error{"Cannot use the void type in an explicit conversion."});
+        if (from.size() == 0)
+            return ast::make_evaluation_result(result_error{"Cannot use the void value in an explicit conversion."});
+        if (to.size() > from.size())
+            return ast::make_evaluation_result(result_error{"Too little values in a conversion."});
+        if (to.size() < from.size())
+            return ast::make_evaluation_result(result_error{"Too many values in a conversion."});
+        auto result = asg::convert(from, to);
         if (!result)
             return ast::make_evaluation_result(result.error());
         return *result;
