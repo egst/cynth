@@ -158,6 +158,8 @@ namespace cynth::asg::type {
     template struct array_type<true>;
     template struct array_type<false>;
 
+    result<type::Array> make_array (component_vector<type::complete> &&, integral);
+
     template <bool Complete>
     struct buffer_type {
         detail::size_type<Complete> size;

@@ -1,0 +1,83 @@
+## Allowed array element types ##
+
+# Error: Nested (multidimensional) arrays are not supported yet.
+#type Matrix2x3 = Int [2] [3];
+
+# Error: Nested (multidimensional) arrays are not supported yet.
+#type ConstMatrix2x3 = Int [2] Const [3];
+
+# Error: Nested (multidimensional) arrays are not supported yet.
+#Int [2] [3] matrix;
+
+# Error: Nested (multidimensional) arrays are not supported yet. / Arrays of input values are not supported yet.
+#type NestedInputs = Int in [2] [3];
+
+# Error: Nested (multidimensional) arrays are not supported yet. / Arrays of input values are not supported yet.
+#type ConstNestedInputs = Int in [2] const [3];
+
+# Error: Arrays of buffers are not supported yet.
+#type Buffers = buffer [2] [3];
+
+# Error: Arrays of buffers are not supported yet.
+#buffer [2] [3] buffers;
+
+# Error: Arrays of input values are not supported yet.
+#type Inputs = Int in [2];
+
+# Error: Arrays of input values are not supported yet.
+#Int in [2] inputs;
+
+# Error: Arrays of output values are not supported yet.
+#type Outputs = Int out [2];
+
+# Error: Arrays of output values are not supported yet.
+#Int out [2] outputs;
+
+# Error: Arrays of functions are not supported yet.
+#type Functions = Int (Int) [2];
+
+# Error: Arrays of functions are not supported yet.
+#Int (Int) [2] outputs;
+
+## Valid array size ##
+
+# Error: Arrays cannot be empty.
+#type Empty = Int [0];
+
+# Error: Arrays cannot be empty.
+#Int [0] empty;
+
+# Error: Arrays cannot be empty.
+#[];
+
+# Error: Arrays cannot be empty.
+#Int [2]([]);
+
+# Error: Arrays cannot have negative size.
+#type Negative = Int [-1];
+
+## Array sizes mismatch ##
+
+Int [2] smaller = [1, 2, 3];
+
+# Error: Cannot convert an array to one with larger size.
+#Int [2] larger = [1];
+
+## Const-valued arrays ##
+
+Int const [2] a = [1, 2];
+
+# Error: Cannot assign to an element of a const-valued array.
+#a[1] = 3;
+
+# Error: Cannot lose value-constness of an array.
+#Int [2](a);
+
+Int [2] b;
+
+for (Int e in a, Int const i in [0, 1]) {
+    e = e + 2;
+    b[i] = e;
+};
+
+return b;

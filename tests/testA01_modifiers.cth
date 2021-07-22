@@ -1,0 +1,107 @@
+## Repeated modifiers ##
+
+type ConstInt = Int const const; # Should result in Int const.
+# Note: It's useful when const propagates into a tuple.
+type IntConstInt = (Int, ConstInt);
+type ConstIntPair = IntConstInt const; # Should result in (Int const, Int const).
+
+#return ConstInt(1);
+#return IntConstInt(1, 2);
+#return ConstIntPair(1, 2);
+
+type InInt = Int in in; # Should result in Int in.
+type IntInInt = (Int, Int in);
+type InIntPair = IntInInt in; # Should result in (Int in, Int in).
+
+InInt     input1;
+IntInInt  input2;
+InIntPair input3;
+
+#return input1;
+#return input2;
+#return input3;
+
+type OutInt = Int out out; # Should result in Int out.
+type IntOutInt = (Int, Int out);
+type OutIntPair = IntOutInt out; # Should result in (Int out, Int out).
+
+OutInt     output1;
+IntOutInt  output2;
+OutIntPair output3;
+
+# Note: Currently, the only check that forbids any read from any output type
+# is the fact that no conversions from the out types are possible.
+# Conversions happen in every operation (even if it's just the identity conversions) except for the return.
+# So technically, output values may be returned from a block, but the resulting block value cannot be used anywhere.
+# Return from the whole program applies no conversions to the returned value, so it is possible to return an out value.
+# This behaviour might change in future versions.
+
+#return output1;
+#return output2;
+#return output3;
+
+type ConstArrays = (Int [2], Int const [2], Int [2] const) const; # Should result in (Int [2] const, Int const [2] const, Int [2] const).
+
+#return ConstArrays([1, 2], [2, 3], [3, 4]);
+
+# In general:
+# `T x x` is equivalent to `T x` for any type `T` and any modifier `x`.
+# `(T, U) x` is equivalent to `(T x, U x)` for any two types `T` and `U` and any modifier `x`.
+
+# Note that tuples are always "flat", i.e. `(T, (U, V))` is equivalent to `(T, U, V)`.
+
+## Incompatible modifiers and types ##
+
+# Note: `T x y` is equivalent to `T y x` for any type `T` and any two modifiers `x` and `y`.
+# E.g. `Int in out` is equivalent to `Int out in`.
+
+# Error: A type cannot be both in and out.
+#type InOut = Int in out;
+
+# In types are already implicitly const.
+type InConst = Int const in;
+
+InConst input5;
+
+#return input5;
+
+# Input types must not be initialized even though they are implicitly const.
+# Note: This is an exception - other const values must always be initialized.
+Int in input6;
+
+# Error: Cannot initialize an input value.
+#Int in initInput = 1;
+
+# Note that semantically, constness does not mean "its value cannot change", but rather "cannot be assigned to".
+# This is important to note for input types (can be modified by external input), elements of buffers (can be modified indirectly through generators)
+# and elements of const-valued arrays (can be modified through another referential variable).
+# For other types, the "its value cannot change" is true as well.
+
+# Error: Out types cannot be const.
+#type OutConst = Int const out;
+
+# Buffers are already implicitly const (for now).
+type ConstBuffer = buffer [2] const;
+# TODO: Test this as soon as buffers are implemented.
+
+# Functions are already implicitly const.
+type ConstFn = Int (Int) const;
+
+ConstFn f = Int fn (Int x) x;
+
+#return f;
+
+# Error: Output arrays are not supported (for now at least).
+#type OutArray = Int [2] out;
+
+# Error: Input arrays ar not supported (for now at least).
+#type InArray = Int [2] in;
+
+type OutBuff = buffer [2] out;
+type InBuff  = buffer [2] in;
+
+# Error: Functions cannot be out.
+#type OutFn = Int (Int) out;
+
+# Error: Functions cannot be in.
+#type InFn = Int (Int) in;

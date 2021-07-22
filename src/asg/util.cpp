@@ -57,6 +57,109 @@ namespace cynth {
         return {};
     }
 
+    namespace detail {
+
+        template <typename T>
+        result<asg::value::complete> default_value (context &, T const &);
+
+        template <> result<asg::value::complete> default_value<asg::type::Bool>   (context & ctx, asg::type::Bool   const &);
+        template <> result<asg::value::complete> default_value<asg::type::Int>    (context & ctx, asg::type::Int    const &);
+        template <> result<asg::value::complete> default_value<asg::type::Float>  (context & ctx, asg::type::Float  const &);
+        template <> result<asg::value::complete> default_value<asg::type::Const>  (context & ctx, asg::type::Const  const &);
+        template <> result<asg::value::complete> default_value<asg::type::In>     (context & ctx, asg::type::In     const &);
+        template <> result<asg::value::complete> default_value<asg::type::Out>    (context & ctx, asg::type::Out    const &);
+        template <> result<asg::value::complete> default_value<asg::type::Array>  (context & ctx, asg::type::Array  const &);
+        template <> result<asg::value::complete> default_value<asg::type::Buffer> (context & ctx, asg::type::Buffer const &);
+
+        template <> result<asg::value::complete> default_value<asg::type::String>   (context & ctx, asg::type::String   const &);
+        template <> result<asg::value::complete> default_value<asg::type::Function> (context & ctx, asg::type::Function const &);
+
+    }
+
+    constexpr auto default_value = [] (context & ctx) {
+        return [&ctx] (auto const & type) {
+            return detail::default_value(ctx, type);
+        };
+    };
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Bool> (context &, asg::type::Bool const &) {
+        return asg::value::make_bool(false);
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Int> (context &, asg::type::Int const &) {
+        return asg::value::make_int(0);
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Float> (context &, asg::type::Float const &) {
+        return asg::value::make_float(0);
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Const> (context & ctx, asg::type::Const const & constant) {
+        //return result_error{"No default value for a const type."};
+        auto value = lift::category_component{cynth::default_value(ctx)}(constant.type);
+        if (!value)
+            return value.error();
+        return asg::value::complete{asg::value::Const{*value}};
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::In> (context & ctx, asg::type::In const & input) {
+        auto value = lift::category_component{cynth::default_value(ctx)}(input.type);
+        if (!value)
+            return value.error();
+        auto stored = ctx.store_value(asg::value::InValue {
+            .value = *value
+        });
+        return asg::value::complete{asg::value::In{stored.get()}};
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Out> (context & ctx, asg::type::Out const & input) {
+        auto value = lift::category_component{cynth::default_value(ctx)}(input.type);
+        if (!value)
+            return value.error();
+        auto stored = ctx.store_value(asg::value::OutValue {
+            .value = *value
+        });
+        return asg::value::complete{asg::value::Out{stored.get()}};
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Array> (context & ctx, asg::type::Array const & array) {
+        auto value = util::unite_results(lift::category_component{cynth::default_value(ctx)}(array.type));
+        if (!value)
+            return value.error();
+        tuple_vector<tuple_vector<asg::value::complete>> values(array.size, *value);
+        auto stored = ctx.store_value(asg::value::ArrayValue {
+            .value = values
+        });
+        auto type_copy = array.type;
+        return asg::value::make_array(stored.get(), std::move(type_copy), array.size);
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Buffer> (context & ctx, asg::type::Buffer const & buffer) {
+        asg::value::Buffer::vector values(buffer.size, 0);
+        auto stored = ctx.store_value(asg::value::BufferValue {
+            .value = values
+        });
+        return asg::value::make_buffer(stored.get(), buffer.size);
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::String> (context &, asg::type::String const &) {
+        return result_error{"Default string values are not supported yet."};
+    }
+
+    template <>
+    result<asg::value::complete> detail::default_value<asg::type::Function> (context &, asg::type::Function const &) {
+        return result_error{"No default value for a function."};
+    }
+
     result<void> asg::declare (
         context & ctx,
         tuple_vector<asg::complete_decl> const & decls
@@ -66,14 +169,31 @@ namespace cynth {
                 [] (asg::type::Const const &) -> cynth::result<void> {
                     return result_error{"Cannot declare a const value with no definition."};
                 },
-                [] <typename Type> (Type &&) -> cynth::result<void> requires (!util::same_as_no_cvref<Type, asg::type::Const>) {
+                // Note: Buffers and functions are implicitly const.
+                // Input values are also implicitly const, but input values specifically can never be defined, only declared.
+                [] (asg::type::Buffer const &) -> cynth::result<void> {
+                    return result_error{"Cannot declare a buffer with no generator definition."};
+                },
+                [] (asg::type::Function const &) -> cynth::result<void> {
+                    return result_error{"Cannot declare a function with no definition."};
+                },
+                [] <typename Type> (Type &&) -> cynth::result<void>
+                requires
+                    (!util::same_as_no_cvref<Type, asg::type::Const>) &&
+                    (!util::same_as_no_cvref<Type, asg::type::Buffer>) &&
+                    (!util::same_as_no_cvref<Type, asg::type::Function>)
+                {
                     return {};
                 }
             }} (decl.type));
             if (!const_check)
                 return const_check.error();
 
-            auto define_result = ctx.define_value(decl.name, typed_value{.value = {}, .type = decl.type});
+            auto init_result = util::unite_results(lift::category_component{default_value(ctx)}(decl.type));
+            if (!init_result)
+                return init_result.error();
+
+            auto define_result = ctx.define_value(decl.name, typed_value{.value = *std::move(init_result), .type = decl.type});
             if (!define_result)
                 return define_result.error();
         }

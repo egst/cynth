@@ -1,10 +1,9 @@
+* fix the syntax error
+* sort out test files refering to no longer valid rules.
 * include clean-up (careful with asg/declarations)
 * check places where return std::move could mess with copy elision
 * in functions, prefer explicit return type with generic initializer return over auto return type with explicit initializer return
     i.e. `-> result` and `return {value}` instead of `-> auto` and `return result{value}`
-* fix everything with empty tuples (void).
-    * check for empty tuples everywhere except for the few allowed contexts.
-    * uninitialized variables (declarations without definitions) are implemented as empty tuples (even though the type doesn't match)
 * separate util/general.hpp, and also maybe all the different kinds of results and components (this might speed up compilation time in some cases.)
 * don't specify asg:: and ast:: inside those namespaces.
 * specify util:: everywhere (even inside util).
@@ -22,36 +21,28 @@
     * or i could use char instead of bool (using cynth::boolean = char) - std::vector<char> is no special case
 * rename util::string, util::container
 * solve the makefile includes problem
-* don't forget about the clang sanitizer
-* the whole program is an evaluated block with implicit braces and implicit `return true` at the end.
-    TODO - the `return true` part
+* don't forget about the clang sanitizer and other debug options in the makefile
 * use `*std::get_if<T>(variant)` instead of `std::get<T>(variant)` to avoid checking.
     or maybe even that doesn't avoid a check?
 * fix util::compose or remove its use everywhere.
 * TODO: Decide about implicit conversions.
 * in lift for two vectors, iterate over the size of the smallest one to avoid out of bounds access.
     * returning an error now, when trying to iterate over differently sized vectors.
+    * TODO: This introduces more mess with result<vector<result<...>>> and similar constructs.
 * how to implement fallback overloads in lift without explicit requires (!...)
-* for and while loop still missing
 * stop naming variables `result`, it's confusing when i need refer to the type result as `cynth::result`
-* prohibit empty array type
-* test procedures (try using their result)
 * negative indices?
-* errors in statements
 * lambda capture (just copy the whole context for now)
-* make sure arrays have referential semantics.
 * composed assignment operators
     += -= *= /= **= %= &&= ||=
-* inner scope of if/for/while/...
 * *std::move(x) or std::move(*x)?
 * how come, that i need to handle delete and new for incomplete component types manually, but it just somehow works for std::vector of incomplete types?
 * remove the non-copyable option from categories (it was there only for tighter checks during initial development)
 * fix the segfaults with strings not wrapped in components.
-* implicit `return ()` in procedures.
 * buffers aren't non-const by definition... their elements are non-const, but aren't directly assignable anyways.
     assignment to a buffer would mean a switch to a different generator, which is something that i still haven't thought through completely.
-* change in array constness
 * rename asg::value::(Array|Buffer|In|Out).value->value to something less generic and ambiguous
+* automated tests
 
 * cedupoc
 * pristuf

@@ -1,0 +1,63 @@
+Int [2] outer = [1, 2];
+
+{
+    Int [2] inner = [2, 3];
+
+    # outer now references the value that was referenced by inner.
+    outer = inner;
+
+    # inner now goes out of its scope and won't be accessible anymore.
+    # However, the value it was referencing must stay alive to be referenced by the outer variable.
+    # In this case, its lifetime is extended to the whole outmost (global) scope.
+};
+
+# The value is still accessible through the outer variable here.
+return outer;
+
+# The same happens inside of functions...
+
+Int [2] f () {
+    Int [2] outer = [1, 2];
+
+    {
+        Int [2] inner = [2, 3];
+
+        # outer now references the value that was referenced by inner.
+        outer = inner;
+
+        # Lifetime of the referenced value must again be extended.
+        # In this case, its lifetime is extended to the current function's scope.
+    };
+
+    # The value is still accessible through the outer variable here.
+    return outer;
+
+    # Note that the return happens by value (copy). No referential value escapes any function.
+}
+
+return f();
+
+# And even inside of nested functions...
+
+Int [2] g () {
+    Int [2] nested () {
+        Int [2] outer = [1, 2];
+
+        {
+            Int [2] inner = [2, 3];
+
+            # outer now references the value that was referenced by inner.
+            outer = inner;
+
+            # Lifetime of the referenced value must again be extended.
+            # In this case, its lifetime is extended to the current function's (Int [2] nested ()) scope.
+        };
+
+        # The value is still accessible through the outer variable here.
+        return outer;
+    }
+
+    return nested();
+}
+
+return g();

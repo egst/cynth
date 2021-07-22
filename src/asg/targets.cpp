@@ -25,7 +25,22 @@ namespace cynth {
             [] (asg::type::Const const &) {
                 return false;
             },
-            [] <typename Type> (Type &&) requires (!util::same_as_no_cvref<Type, asg::type::Const>) {
+            [] (asg::type::In const &) {
+                return false;
+            },
+            [] (asg::type::Function const &) {
+                return false;
+            },
+            [] (asg::type::Buffer const &) {
+                return false;
+            },
+            [] <typename Type> (Type &&)
+            requires
+                (!util::same_as_no_cvref<Type, asg::type::Const>)    &&
+                (!util::same_as_no_cvref<Type, asg::type::In>)       &&
+                (!util::same_as_no_cvref<Type, asg::type::Function>) &&
+                (!util::same_as_no_cvref<Type, asg::type::Buffer>)
+            {
                 return true;
             }
         }} (type_tuple));
@@ -48,7 +63,7 @@ namespace cynth {
             [&f] (asg::value::Const const & val) -> result_type {
                 return lift::category_component{util::overload {
                     f,
-                    [] (auto &&) -> result_type {
+                    [] (auto &&) -> result_type { // TODO: This makes no sense.
                         return result_error{"Nested const. (TODO: This should never happen.)"};
                     }
                 }} (val.value);
@@ -94,12 +109,13 @@ namespace cynth {
                 if (index < 0)
                     return result_error{"Negative indices not supported yet for assignment by elements."};
                 auto & ref = a.value->value[index];
-                auto type = asg::value_type(ref);
+                //auto type = asg::value_type(ref);
+                tuple_vector<type::complete> type = a.type;
                 if (!const_check(type))
                     return result_error{"Cannot assign by element to an array of const values."};
                 return typed_target_value {
                     .value = ref,
-                    .type  = type
+                    .type  = std::move(type)
                 };
                 // TODO: the element's value_type should be the same
                 // as the nested type in the value_type of the whole array,

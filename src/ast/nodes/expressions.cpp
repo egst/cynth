@@ -135,6 +135,10 @@ namespace cynth {
                 // TODO
                 return result<asg::value::complete>{result_error{"Array comparison not supported yet."}};
             },
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Buffer> {
+                // TODO
+                return result<asg::value::complete>{result_error{"Cannot compare buffers"}};
+            },
             [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::String> {
                 // TODO
                 return result<asg::value::complete>{result_error{"Strings are not supported yet."}};
@@ -369,13 +373,14 @@ namespace cynth {
         if (!stored)
             return ast::make_evaluation_result(stored.error());
 
-        auto r = ast::make_evaluation_result(asg::value::complete{asg::value::Array {
-            .value = stored.get(),
-            .type  = component_vector<asg::type::complete>{std::move(type)},
-            .size  = static_cast<integral>(stored->value.size())
-        }});
-
-        return r;
+        auto array_result = asg::value::make_array (
+            stored.get(),
+            make_component_vector(std::move(type)),
+            static_cast<integral>(stored->value.size())
+        );
+        if (!array_result)
+            return ast::make_evaluation_result(array_result.error());
+        return ast::make_evaluation_result(*array_result);
     }
 
     //// Block ////
@@ -614,11 +619,14 @@ namespace cynth {
         if (!stored)
             return ast::make_evaluation_result(stored.error());
 
-        return ast::make_evaluation_result(asg::value::Array {
-            .value = stored.get(),
-            .type  = *result_type,
-            .size  = static_cast<integral>(stored->value.size())
-        });
+        auto result = asg::value::make_array (
+            stored.get(),
+            *std::move(result_type),
+            static_cast<integral>(stored->value.size())
+        );
+        if (!result)
+            return ast::make_evaluation_result(result.error());
+        return ast::make_evaluation_result(*result);
     }
 
     ast::execution_result ast::node::ExprFor::execute (context & ctx) const {
@@ -1265,7 +1273,10 @@ namespace cynth {
                     return {result_error{"Subscript index out of bounds."}};
                 if (index < 0)
                     return {result_error{"Negative subscripts not supported yet."}};
-                return {a.value->value[index]};
+                auto results = asg::convert(a.value->value[index], a.type);
+                if (!results)
+                    return results.error();
+                return util::unite_results(*results);
             },
             [] (auto const &) -> result_type {
                 return {result_error{"Cannot subscript a non-array value."}};

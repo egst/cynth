@@ -8,6 +8,7 @@
 #include "ast/categories/expression.hpp"
 #include "asg/interface.hpp"
 #include "asg/types.hpp"
+#include "asg/util.hpp"
 #include "util/operations.hpp"
 #include "util/string.hpp"
 
@@ -232,7 +233,7 @@ namespace cynth {
         return make_const(asg::convert(value, to.type));
     }
 
-    asg::conversion_result asg::value::Const::convert (asg::type::Function const & to) const {
+    asg::conversion_result asg::value::Const::convert (asg::type::Array const & to) const {
         return asg::convert(to)(value);
     }
 
@@ -244,6 +245,24 @@ namespace cynth {
 
     //// Array ////
 
+    // TODO: const & type overload
+    result<asg::value::complete> asg::value::make_array (
+        asg::value::ArrayValue * value,
+        component_vector<type::complete> && type,
+        integral size
+    ) {
+        if (size <= 0)
+            return result_error{"Array must have a positive size."};
+        auto elem_type_check = util::unite_results(asg::array_elem_type_check(type));
+        if (!elem_type_check)
+            return elem_type_check.error();
+        return asg::value::complete{asg::value::Array {
+            .value = value,
+            .type  = std::move(type),
+            .size  = size
+        }};
+    }
+
     view<asg::value::ArrayValue::vector::iterator> asg::value::Array::trimmed_value () const {
         return view{value->value.begin(), static_cast<std::size_t>(size)};
     }
@@ -251,7 +270,6 @@ namespace cynth {
     asg::get_result<std::vector<tuple_vector<asg::value::complete>>> asg::value::Array::get () const {
         std::vector<tuple_vector<asg::value::complete>> result;
         result.reserve(size);
-        auto t = trimmed_value();
         for (auto & elem : trimmed_value()) {
             result.push_back(elem);
         }
@@ -267,14 +285,35 @@ namespace cynth {
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Array const & to) const {
-        auto common_result = asg::common(to)(value_type());
-        if (!common_result)
-            return common_result.error();
-        return {asg::value::Array {
-            .value = value,
-            .type  = type,
-            .size  = std::min(size, to.size)
-        }};
+        if (size < to.size)
+            return result_error{"Cannot convert an array to one with larger size."};
+        auto compatible_result = (lift::category_component{util::overload {
+            [] <typename T, typename U> (T const & a, U const & b) -> bool {
+            //requires (std::same_as<T, U> || !std::same_as<T, asg::type::Const> && std::same_as<U, asg::type::Const>)
+                return asg::same(a, b);
+            },
+            [] <typename T> (asg::type::Const const &, T const &) -> bool
+            requires (!std::same_as<T, asg::type::Const>) {
+                return false;
+            },
+            [] <typename T> (T const & a, asg::type::Const const & b) -> bool
+            requires (!std::same_as<T, asg::type::Const>) {
+                return (asg::same(a, b) || asg::same(asg::type::Const{{a}}, b));
+            }
+        }} (type, to.type));
+        if (!compatible_result)
+            return compatible_result.error();
+        if (!util::all(*compatible_result))
+            return result_error{"Incompatible array value types."};
+        auto type_copy = to.type;
+        auto result = asg::value::make_array (
+            value,
+            std::move(type_copy),
+            std::min(size, to.size)
+        );
+        if (!result)
+            return result.error();
+        return {*result};
     }
 
     asg::conversion_result asg::value::Array::convert (asg::type::Const const & to) const {
@@ -282,6 +321,7 @@ namespace cynth {
     }
 
     asg::value_type_result asg::value::Array::value_type () const {
+        // TODO: Check the element type here? (i.e. use the value::make_array constructor?)
         return asg::type::Array {
             .type = type,
             .size = size
@@ -289,19 +329,31 @@ namespace cynth {
     }
 
     //// Buffer ////
-    // TODO: size
+
+    // TODO: const & type overload
+    result<asg::value::complete> asg::value::make_buffer (
+        asg::value::BufferValue * value,
+        integral size
+    ) {
+        if (size <= 0)
+            return result_error{"Buffer must have a positive size."};
+        return asg::value::complete{asg::value::Buffer {
+            .value = value,
+            .size  = size
+        }};
+    }
 
     std::string asg::value::Buffer::display () const {
         return "buffer(...)";
     }
 
     asg::conversion_result asg::value::Buffer::convert (asg::type::Buffer const &) const {
-        return result_error{"Array type conversions are not supported yet."};
+        return result_error{"Buffer type conversions are not supported yet."};
     }
 
     asg::value_type_result asg::value::Buffer::value_type () const {
         return asg::type::Buffer {
-            .size = static_cast<integral>(value->value.size()) // TODO: Some safety checks or enforce an invariant?
+            .size = static_cast<integral>(size) // TODO: Some safety checks or enforce an invariant?
         };
     }
 

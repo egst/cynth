@@ -2,6 +2,7 @@
 
 #include "asg/interface.hpp"
 #include "asg/declarations.hpp"
+#include "asg/util.hpp"
 #include "component.hpp"
 #include "util/general.hpp"
 #include "util/container.hpp"
@@ -257,6 +258,18 @@ namespace cynth {
 
     //// Array ////
 
+    result<asg::type::Array> asg::type::make_array (component_vector<type::complete> && type, integral size) {
+        if (size <= 0)
+            return result_error{"Array must have a positive size."};
+        auto elem_type_check = util::unite_results(asg::array_elem_type_check(type));
+        if (!elem_type_check)
+            return elem_type_check.error();
+        return asg::type::Array {
+            .type = std::move(type),
+            .size = size
+        };
+    }
+
     template <>
     std::string asg::type::Array::display () const {
         return "T [n]"; // TODO
@@ -293,11 +306,13 @@ namespace cynth {
         auto result = util::unite_optionals(*results);
         if (!result)
             return result_error{"No common type for two arrays because of mismatched elements type."};
-        return {asg::type::Array {
-            .type = *result,
-            .size = std::min(size, other.size)
-        }};
-
+        auto array_result = asg::type::make_array(
+            make_component_vector(*result),
+            std::min(size, other.size)
+        );
+        if (!array_result)
+            return array_result.error();
+        return {*array_result};
     }
     template asg::common_type_result asg::type::array_type<true>::common (asg::type::Array const & other) const;
 
@@ -329,10 +344,13 @@ namespace cynth {
         if (!size_result)
             return size_result.error();
 
-        return {asg::type::Array {
-            .type = *type_result,
-            .size = *size_result
-        }};
+        auto array_result = asg::type::make_array(
+            make_component_vector(*type_result),
+            *size_result
+        );
+        if (!array_result)
+            return array_result.error();
+        return {*array_result};
     }
     template asg::complete_result asg::type::array_type<false>::complete () const;
 
@@ -380,7 +398,7 @@ namespace cynth {
 
     template <>
     std::string asg::type::Function::display () const {
-        return "Out (In)"; // TODO
+        return "Output (Input)"; // TODO
     }
 
     template <bool Complete>

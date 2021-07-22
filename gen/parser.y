@@ -785,5 +785,5 @@ range_decl_list:
 
 void yy::parser::error (std::string const & msg) {
     // TODO: There's a syntax error every time for some reason.
-    std::cerr << "parser error: " << msg << '\n';
+    //std::cerr << "parser error: " << msg << '\n';
 }

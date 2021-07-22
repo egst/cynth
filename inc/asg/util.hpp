@@ -36,4 +36,50 @@ namespace cynth::asg {
         component_vector<ast::category::ArrayElem> const &
     );
 
+    namespace detail {
+
+        constexpr auto array_elem_shallow_type_check = util::overload {
+            [] (asg::type::In const &) -> result<void> {
+                return result_error{"Arrays of input values are not supported yet."};
+            },
+            [] (asg::type::Out const &) -> result<void> {
+                return result_error{"Arrays of output values are not supported yet."};
+            },
+            [] (asg::type::Array const &) -> result<void> {
+                return result_error{"Nested (multidimensional) arrays are not supported yet."};
+            },
+            [] (asg::type::Buffer const &) -> result<void> {
+                return result_error{"Arrays of buffers are not supported yet."};
+            },
+            [] (asg::type::Function const &) -> result<void> {
+                return result_error{"Arrays of functions are not supported yet."};
+            },
+            [] (asg::type::String const &) -> result<void> {
+                return result_error{"Arrays of strings are not supported yet."};
+            },
+            [] (asg::type::Bool const &) -> result<void> {
+                return {};
+            },
+            [] (asg::type::Int const &) -> result<void> {
+                return {};
+            },
+            [] (asg::type::Float const &) -> result<void> {
+                return {};
+            },
+        };
+
+    };
+
+    constexpr auto array_elem_type_check = lift::any{util::overload {
+        detail::array_elem_shallow_type_check,
+        [] (asg::type::Const const & type) -> result<void> {
+            return lift::category_component{util::overload {
+                detail::array_elem_shallow_type_check,
+                [] (asg::type::Const const &) -> result<void> {
+                    return result_error{"Nested const array value type. (TODO: This case shouldn't happen.)"};
+                }
+            }} (type.type);
+        }
+    }};
+
 }

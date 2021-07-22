@@ -26,10 +26,10 @@ int main () {
     parser parse{ast};
 
     parse();
+
     std::cout << util::pretty(ast::display(ast)) << '\n';
 
     context ctx;
-    // TODO: Initialize the referential values container.
 
     // Built-in types:
     ctx.define_type("Bool",   {asg::type::Bool{}});
@@ -44,54 +44,10 @@ int main () {
         return 0;
     }
 
-    std::cout << "eval ok\n";
-
     auto value = *result;
-    /*
-    std::cout << "return type: ";
-    std::visit (
-        util::overload {
-            [] (asg::value::Bool const & val) {
-                std::cout << "Bool\n";
-                handle_return<bool>(val);
-            },
-            [] (asg::value::Int const & val) {
-                std::cout << "Int\n";
-                handle_return<integral>(val);
-            },
-            [] (asg::value::Float const & val) {
-                std::cout << "Float\n";
-                handle_return<floating>(val);
-            },
-            [] (asg::value::In const &) {
-                std::cout << "T in\n";
-            },
-            [] (asg::value::Out const &) {
-                std::cout << "T out\n";
-            },
-            [] (asg::value::Const const &) {
-                std::cout << "T const\n";
-            },
-            [] (asg::value::Array const & val) {
-                std::cout << "T [n]\n";
-            },
-            [] (asg::value::Buffer const &) {
-                std::cout << "buffer [n]\n";
-            },
-            [] (asg::value::Function const &) {
-                std::cout << "T (U)\n";
-            },
-            [] (auto const &) {
-                std::cout << "?";
-            }
-        },
-        value.value
-    );
-    */
+    auto type  = asg::value_type(value);
 
-    //return 0;
-
-    // TODO: make this work
-    std::cout << asg::display_tuple(value) << '\n';
+    std::cout << "type:  " << asg::display_tuple(type)  << '\n';
+    std::cout << "value: " << asg::display_tuple(value) << '\n';
 
 }

@@ -23,6 +23,12 @@ Int c;
 # This is ok (copy to a non-const value):
 c = b;
 
+# !!!!
+# The following notes regarding arrays and buffers may currently be wrong.
+# There's been a change in const semantics for arrays and buffers.
+# See test012_const_arrays.cth and testA01_modifiers.cth
+# !!!!
+
 # This should be all errors:
 # (Buffer, in and out cannot be const by definition.)
 #buffer [3] const b;
@@ -36,12 +42,6 @@ Int (Int) const f = Int fn (Int x) x + 1;
 # TODO: This should be an error:
 # (Even implicitly const functions should be immediately defined.)
 Int (Int) g;
-
-# !!!!
-# The following notes regarding arrays may currently be wrong.
-# There's been a change in const semantics for arrays.
-# See test012_const_arrays.cth
-# !!!!
 
 # These are semantically equivalent: [WRONG]
 Int const [2] a1;

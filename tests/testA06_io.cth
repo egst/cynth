@@ -1,0 +1,38 @@
+## Valid buffer sizes ##
+
+# Error...
+type Empty = buffer [0];
+
+# Error...
+type Negative = buffer [-1];
+
+# Error...
+buffer [0] b1;
+
+# Error...
+buffer [-2] b2;
+
+## Write-only out types ##
+
+Int out output;
+
+# Error...
+Int outputCopy = output;
+
+# Error...
+return output;
+
+# ...TODO: More checks?
+
+## Only global IO declarrations ##
+
+{
+    Int out o;
+    Int in  i;
+}
+
+() f () {
+    # Error...
+    Int out o;
+    Int in  i;
+}

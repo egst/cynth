@@ -1,0 +1,89 @@
+## const simple values ##
+
+# Error: Const values must be immediately defined upon declaration (= initialized).
+#Int const uninit;
+
+Int const simple = 1;
+
+# Error: Cannot assign to a const value.
+#simple = 2;
+
+## const arrays ##
+
+# Error: Const array must be initialized.
+#Int [2] const uninitConstArray;
+
+Int [2] const constArray = [1, 2];
+
+# Error: Cannot assign to a const array.
+#constArray = [2, 3];
+
+constArray[0] = 2;
+
+## const-valued arrays ##
+
+Int const [2] constvalArray;
+
+constvalArray = [2, 3];
+
+# Error: Cannot assign to elements of a const-valued array.
+#constvalArray[0] = 3;
+
+Int const [2] const constvalConstArray = constvalArray;
+
+#return constvalArray;
+#return constvalConstArray;
+
+# Error: Cannot convert const-valued array to non-const-valued array.
+#Int [2] const(constvalArray);
+
+# Error: Cannot convert const-valued array to non-const-valued array.
+#Int [2](constvalArray);
+
+Int const [2] const(constArray);
+
+Int [2] const(constArray);
+
+Int const [2](constArray);
+
+## implicitly const types ##
+
+# Buffers, functions and in types are implicitly const.
+# Buffers and functions must be initialized.
+# However, it is impossible to assign or define (initialize) an input value,
+# so it is the only const type that cannot and must not be initialized.
+
+Int in input;
+
+# Error: Cannot assign to an input value.
+#input = 1;
+
+# Note: This is an exception - other const values must always be initialized.
+# Error: Cannot initialize an input value.
+#Int in otherInput = 2;
+
+# Error: Functions must be initialized.
+#Int (Int) uninitFunc;
+
+Int (Int) func = Int fn (Int x) x;
+
+# Error: Cannot assign to a function.
+#func = Int fn (Int x) x + y;
+
+# Note: This might change in future versions.
+# Error: Buffers must be initialized.
+#buffer [64] uninitBuff;
+
+# Note that buffers are semantically similar to arrays of floats.
+# In that sense, a buffer may be described as `Float const [n] const`,
+# meaning that the buffer must be initialized with a generator
+# that cannot be reassigned (this may change in the future versions),
+# and that its elements cannot be directly assigned to (e.g. `buff[i] = val`).
+
+#buffer [64] buff = Float fn () 1;
+# TODO: Test this as soon as buffers are implemented.
+
+# Note: This might change in the future versions.
+# Error: Cannot assign to a buffer.
+#buff = Float fn () 2;
+# TODO: Test this as soon as buffers are implemented.

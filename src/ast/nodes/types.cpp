@@ -36,7 +36,6 @@ namespace cynth {
         return ast::display(type) + " [" + ast::display(size).value_or("$") + "]";
     }
 
-    // vector<result<type::incomplete>>
     ast::type_eval_result ast::node::ArrayType::eval_type (context & ctx) const {
         auto type_result = util::unite_results(ast::eval_type(ctx)(type));
         if (!type_result)
@@ -147,26 +146,28 @@ namespace cynth {
         auto types_result = ast::eval_type(ctx)(type);
 
         return lift::evaluation{util::overload {
-            [] (asg::type::const_type<false> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::const_type<Complete> && type) -> result<asg::type::incomplete> {
                 return {type};
             },
-            [] (asg::type::in_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::in_type<Complete> && type) -> result<asg::type::incomplete> {
                 // Note: In types actually are implicitly const (= non-assignable).
-                return result_error{"In type cannot be const."};
+                //return result_error{"In type is already implicitly const."};
+                return {std::move(type)};
             },
-            [] (asg::type::out_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::out_type<Complete> &&) -> result<asg::type::incomplete> {
                 // Note: Out types must be non-const (= assignable).
                 return result_error{"Out type cannot be const."};
             },
-            [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::buffer_type<Complete> && type) -> result<asg::type::incomplete> {
                 // Note: For now, lets keep buffers implicitly const (= non-assignable),
                 // but this might change in the future.
-                return result_error{"Buffer type cannot be const."};
+                //return result_error{"Buffer type is already implicitly const."};
+                return {std::move(type)};
             },
-            [] (asg::type::function_type<false> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::function_type<Complete> && type) -> result<asg::type::incomplete> {
                 // Note: Function types actually are implicitly const (= non-assignable).
-                //return {type};
-                return result_error{"Function type cannot be const."};
+                //return result_error{"Function type is already implicitly const."};
+                return {std::move(type)};
             },
             [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {
                 return {asg::type::const_type<false> {
@@ -239,23 +240,22 @@ namespace cynth {
         auto types_result = ast::eval_type(ctx)(type);
 
         return lift::evaluation{util::overload {
-            [] (asg::type::in_type<false> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::in_type<Complete> && type) -> result<asg::type::incomplete> {
                 return {type};
             },
-            [] (asg::type::out_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::out_type<Complete> &&) -> result<asg::type::incomplete> {
                 return result_error{"Cannot combine in and out type modifiers."};
             },
-            [] (asg::type::const_type<false> &&) -> result<asg::type::incomplete> {
-                return result_error{"In type cannot be const."};
+            [] <bool Complete> (asg::type::const_type<Complete> && type) -> result<asg::type::incomplete> {
+                //return result_error{"In type is already implicitly const."};
+                return {asg::type::in_type<false> {
+                    .type = asg::type::incomplete{*std::move(type.type)}
+                }};
             },
-            [] (asg::type::array_type<false> &&) -> result<asg::type::incomplete> {
-                return result_error{"Array cannot be an in type."};
+            [] <bool Complete> (asg::type::array_type<Complete> &&) -> result<asg::type::incomplete> {
+                return result_error{"Array in types are not suppported yet."};
             },
-            [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
-                // TODO
-                return result_error{"Buffer in types are not supported yet."};
-            },
-            [] (asg::type::function_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::function_type<Complete> &&) -> result<asg::type::incomplete> {
                 return result_error{"Function cannot be an in type."};
             },
             [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {
@@ -291,23 +291,19 @@ namespace cynth {
         auto types_result = ast::eval_type(ctx)(type);
 
         return lift::evaluation{util::overload {
-            [] (asg::type::out_type<false> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::out_type<Complete> && type) -> result<asg::type::incomplete> {
                 return {type};
             },
-            [] (asg::type::in_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::in_type<Complete> &&) -> result<asg::type::incomplete> {
                 return result_error{"Cannot combine in and out type modifiers."};
             },
-            [] (asg::type::const_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::const_type<Complete> &&) -> result<asg::type::incomplete> {
                 return result_error{"Out type cannot be const."};
             },
-            [] (asg::type::array_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::array_type<Complete> &&) -> result<asg::type::incomplete> {
                 return result_error{"Array out types are not supported yet."};
             },
-            [] (asg::type::buffer_type<false> &&) -> result<asg::type::incomplete> {
-                // TODO
-                return result_error{"Buffer out types are not supported yet."};
-            },
-            [] (asg::type::function_type<false> &&) -> result<asg::type::incomplete> {
+            [] <bool Complete> (asg::type::function_type<Complete> &&) -> result<asg::type::incomplete> {
                 return result_error{"Function cannot be an out type."};
             },
             [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {

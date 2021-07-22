@@ -94,11 +94,11 @@ namespace cynth::asg::value {
 
         std::string display () const;
 
-        conversion_result convert (type::Bool     const &) const;
-        conversion_result convert (type::Int      const &) const;
-        conversion_result convert (type::Float    const &) const;
-        conversion_result convert (type::Const    const &) const;
-        conversion_result convert (type::Function const &) const;
+        conversion_result convert (type::Bool  const &) const;
+        conversion_result convert (type::Int   const &) const;
+        conversion_result convert (type::Float const &) const;
+        conversion_result convert (type::Const const &) const;
+        conversion_result convert (type::Array const &) const;
 
         value_type_result value_type () const;
     };
@@ -222,6 +222,7 @@ namespace cynth::asg::value {
             value::Out,
             value::Const,
             value::Array,
+            value::Buffer,
             value::Function
         >;
 
@@ -236,8 +237,10 @@ namespace cynth::asg::value {
         >;
 
         using referential = variant <
-            value::ArrayValue
-            // ...
+            value::InValue,
+            value::OutValue,
+            value::ArrayValue,
+            value::BufferValue
         >;
 
     }
@@ -251,6 +254,7 @@ namespace cynth::asg::value {
     template struct any<true>;
     template struct any<false>;
 
+    // TODO: Unused.
     struct referential: category_base<referential, detail::referential, true> {
         using base = category_base<referential, detail::referential, true>;
         using base::base;
@@ -271,5 +275,9 @@ namespace cynth::asg::value {
     constexpr auto make_string = [] (string value) -> value::complete {
         return value::String{.value = value};
     };
+
+    result<value::complete> make_array (value::ArrayValue *, component_vector<type::complete> &&, integral);
+
+    result<value::complete> make_buffer (value::BufferValue *, integral);
 
 }

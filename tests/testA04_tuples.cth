@@ -1,0 +1,138 @@
+## tuple elements count mismatch ##
+
+# Error: Too many values in a definition.
+(Int, Int) pair = (1, 2, 3);
+
+(Int, Int) anotherPair;
+
+# Error: Too many values in an assignment.
+anotherPair = (1, 2, 3);
+
+# Note: The tuple on the lhs of an assignment is also flattened out no matter how many targets are specified.
+# For now, only one target on the lhs is implemented though.
+
+Int integer;
+
+# Error: Multiple targets not supported for an assignment yet.
+(anotherPair, integer) = (1, 2, 3);
+
+# Error: Too many values on the rhs of a binary operation.
+(1, 2) + (1, 2, 3);
+
+# Note: && and || should preserve the short-circuit behaviour in some way even for multiple-valued arguments.
+# Until I decide on these semantics, only the behaviour for one value on both sides is implemented though.
+
+# Error: Binary logical operations on multiple values are not supported yet.
+(true, false) && (false, true);
+
+# Error: Too many values on the rhs of a binary (comparison) operation.
+(1, 2) == (1, 2, 3);
+
+# Error: Too many values in a conversion.
+(Int, Int)(1, 2, 3);
+
+# Error: A single value is expected in a when statement condition.
+# Note: The same goes for the while statement and the if..else expression/statement.
+when (true, false) {};
+
+# Error: A single value is expected in a subscript location.
+[1, 2][(1, 2)];
+
+# Just to make sure, that the check above is implemented only for subscript, not for the array literal construction.
+[(1, 2), (2, 3)];
+
+## void literals ##
+
+# Note: This section addresses the use of `()` (or `void`) as an explicit literal (constructor) for the void type, value, or declaration.
+
+# Note: The void type, value and declaration are only allowed in specific contexts:
+# * function return type - `() (Input)` and `() fn (Input param) body`
+# * explicit function return value - `return ()`
+# * function call with no arguments - `f()`
+# * function definition with no parameters - `Output fn () body`
+# There is also a syntactic alias `void` for the void type. (`void (Input)`, `void fn (Input param) body`)
+
+# Error: The void type is not allowed in this context.
+type TheVoidType = ();
+
+# Error: The void type is not allowed in this context.
+type AlsoTheVoidType = void;
+
+# Error: The void type is not allowed in this context.
+() theVoidValue;
+
+# Error: The void value is not allowed in this context.
+() + 1;
+
+# Error: Neither the void value nor the void declaration is allowed in this context.
+();
+
+# Note: The above mentioned invalid uses of the void are also ambiguous,
+# so the error messages might be confusing or misleading, if a possible intention isn't recognized.
+
+# This definition contains the void type, declaration and value.
+() procedure () {
+    return ();
+    # Note that even without this explicit return, it would still be implied
+    # when no return statement or the shorthand `return;` statement is used.
+};
+
+() anotherProcedure () {
+    return;
+};
+
+() yetAnotherProcedure () {};
+
+# For a more C-like syntax, the `void` alias may be used.
+void voidFn () {};
+void () anotherVoidFn = void fn () {};
+
+# A function call actually contains a void expression.
+procedure();
+
+## void values ##
+
+# Note: This section addresses situations in which the void type, value, or declaration may appear
+# as a result of either the literal construction or other operations that technically result in the void.
+
+# Error: Too little values in a definition. / The void value used in a definition.
+Int i = procedure();
+
+Int j;
+
+# Error: Too little values in an assignment. / The void value used in an assignment.
+j = procedure();
+
+# Error: Too many values in the rhs of a binary operation. / The void value used in the rhs of a binary operation.
+procedure() + 1;
+
+# Error: Too little values in the rhs of a binary (logical) operation. / The void value used in the rhs of a binary (logical) operation.
+true && procedure();
+
+# Error: Too little values in the rhs of a binary (comparison) operation. / The void value used in the rhs of a binary (comparison) operation.
+1 == procedure();
+
+# Error: The void value used in a unary operation.
++procedure();
+
+# Error: Too little values in a conversion. / The void value used in a conversion.
+Int(procedure());
+
+# Error: The void value passed into a function.
+procedure(procedure());
+
+# Error: The void value used in a subscript location.
+[1, 2][procedure()];
+
+# Error: The void value used as an array element.
+[procedure(), procedure()];
+
+# Error: The void value used as a function body.
+() fn () ();
+
+# Error: A single value is expected in a when statement condition. / The void value used in a when statement conditon.
+# Note: The same goes for the while statement and the if..else expression/statement.
+when (true, false) {};
+
+# Let's keep this valid for now. The result should be (1, true).
+(1, procedure(), true);
