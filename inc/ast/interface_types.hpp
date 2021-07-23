@@ -19,6 +19,7 @@ namespace cynth::ast {
     using decl_eval_result       = tuple_vector<result<asg::incomplete_decl>>;
     using range_decl_eval_result = tuple_vector<result<asg::incomplete_range_decl>>;
     using target_eval_result     = result<tuple_vector<asg::any_target>>;
+    using translation_result     = result<std::string>;
 
     template <util::is<result> T>
     constexpr auto make_single_eval_result (T && value) {

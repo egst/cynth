@@ -22,6 +22,8 @@
 
 #include <string>
 
+using namespace std::string_literals;
+
 namespace cynth {
 
     //// Implementation helpers ////
@@ -249,6 +251,16 @@ namespace cynth {
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
+    }
+
+    ast::translation_result ast::node::Add::translate (context & ctx) const {
+        auto left_result = ast::translate(ctx)(left_argument);
+        if (!left_result)
+            return left_result.error();
+        auto right_result = ast::translate(ctx)(right_argument);
+        if (!right_result)
+            return right_result.error();
+        return "a + b"s;
     }
 
     //// And ////

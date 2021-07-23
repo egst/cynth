@@ -16,8 +16,9 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        display_result     display   ()          const;
+        evaluation_result  evaluate  (context &) const;
+        translation_result translate (context &) const;
     };
 
     /** a && b */

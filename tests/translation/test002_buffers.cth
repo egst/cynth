@@ -1,0 +1,11 @@
+Float f (Int x) {
+    return Float(x % 100) / 100;
+};
+
+buffer [4] buff = Float (Int t) {
+    return f(t);
+};
+
+buffer [32] out main = Float () {
+    return (buff[0] + buff[-1] + buff[-2] + buff[-3]) / 4;
+};

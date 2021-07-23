@@ -51,9 +51,25 @@ namespace cynth::ast::interface {
         { node.eval_target(ctx) } -> std::same_as<target_eval_result>;
     };
 
+    template <typename Node>
+    concept translatable = requires (Node node, context & ctx) {
+        { node.translate(ctx) } -> std::same_as<translation_result>;
+    };
+
 }
 
 namespace cynth::ast {
+
+    constexpr auto translate = [] (context & ctx) {
+        return lift::any{util::overload {
+            [&ctx] <interface::translatable Node> (Node const & node) -> translation_result {
+                return node.translate(ctx);
+            },
+            [] <interface::any Node> (Node const & node) -> translation_result requires (!interface::translatable<Node>) {
+                return result_error{"This node is not directly translatable."};
+            }
+        }};
+    };
 
     constexpr auto display = lift::any {
         [] <interface::any Node> (Node const & node) {
