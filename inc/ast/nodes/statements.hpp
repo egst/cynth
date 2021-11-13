@@ -1,13 +1,20 @@
 #pragma once
 
+#include "component.hpp"
 #include "ast/interface_types.hpp"
 #include "ast/categories_forward.hpp"
 #include "ast/nodes/expressions.hpp"
 #include "ast/nodes/types.hpp"
-#include "component.hpp"
-#include "context.hpp"
+#include "sem/context.hpp"
+#include "sem/translation_context.hpp"
 
 #include <string>
+
+// Note: Macros are always undefined at the end of the file.
+#define STMT_DECL \
+    display_result     display   ()                           const; \
+    execution_result   execute   (sem::context &)             const; \
+    translation_result translate (sem::translation_context &) const
 
 namespace cynth::ast::node {
 
@@ -18,8 +25,7 @@ namespace cynth::ast::node {
         component<category::Expression> target;
         component<category::Expression> value;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** T a = b */
@@ -27,8 +33,7 @@ namespace cynth::ast::node {
         component<category::Declaration> target;
         component<category::Expression>  value;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** for (T e in a) x */
@@ -36,8 +41,7 @@ namespace cynth::ast::node {
         component<category::RangeDecl> declarations;
         component<category::Statement> body;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** Out f (In a) b */
@@ -47,8 +51,7 @@ namespace cynth::ast::node {
         component<node::Name>            name;
         component<category::Expression>  body;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** if (cond) a else b */
@@ -57,8 +60,7 @@ namespace cynth::ast::node {
         component<category::Statement>  positive_branch;
         component<category::Statement>  negative_branch;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** return a
@@ -67,8 +69,7 @@ namespace cynth::ast::node {
     struct Return {
         component<category::Expression> value;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** type T = U */
@@ -76,8 +77,7 @@ namespace cynth::ast::node {
         component<node::TypeName> target;
         component<category::Type> type;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** when (cond) a */
@@ -85,8 +85,7 @@ namespace cynth::ast::node {
         component <category::Expression> condition;
         component <category::Statement>  branch;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
     /** while (cond) a */
@@ -94,8 +93,9 @@ namespace cynth::ast::node {
         component<category::Expression> condition;
         component<category::Statement>  body;
 
-        display_result   display ()          const;
-        execution_result execute (context &) const;
+        STMT_DECL;
     };
 
 }
+
+#undef STMT_DECL

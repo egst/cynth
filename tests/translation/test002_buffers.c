@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+// TODO: cynth_add, cynth_div, etc...
 static inline int cynth_imod (int i, int n) {
     int const k = i % n;
     return k + n & -(k < 0);
@@ -38,10 +39,14 @@ static inline float cynth_u_f (int u_x) {
     return ((float) (
         ((float) (
             ((int) (
-                u_x
-            )) % // TODO: cynth_imod
-            ((int) (
-                100
+                cynth_imod (
+                    ((int) (
+                        u_x
+                    )),
+                    ((int) (
+                        100
+                    ))
+                )
             ))
         )) /
         ((float) (
@@ -58,7 +63,7 @@ static inline float cynth_uu_0 (int u_t) {
     );
 }
 
-float cynth_uu_1 (void) {
+static inline float cynth_uu_1 (void) {
     return ((float) (
         ((float) (
             ((float) (

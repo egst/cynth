@@ -1,0 +1,182 @@
+# Const, in, out - propagation and repeating
+
+# Const propagates into tuples and repeated consts are ignored.
+# The following should result in (Int const, Int const).
+type T = (Int, Int const) const;
+
+# The same goes for in and out.
+type U = (Int, Int in) in;
+type V = (Int, Int out) out;
+
+# In and out modifiers cannot be combined.
+//type E1 = Int in out; # ERROR
+//type E2 = Int out in; # ERROR
+
+# Constness of in and out types is implicit.
+# In some cases it cannot be explicitly applied,
+# in others it is ignored due to bening there implicitly already.
+//type E = Int const out; # ERROR
+type F = Int out const;
+type G = Int const in;
+type H = Int in const;
+
+# Const values (except for the IO types) must always be initialized.
+Int const k = 1;
+//Int const l; # ERROR
+Int out const o;
+Int in const i;
+
+# Note: IO types are explained in detail below after arrays.
+
+# Arrays - referential semantics and constness
+
+# Arrays are referential types.
+# An array may be const and/or const-valued.
+# A const array has an immutable reference,
+# while a const-valued array has immutable values.
+
+# The following two declarations each allocate a new array internally.
+Int [2] const ca = [1, 2];
+Int const [2] cva = [1, 2];
+
+# The following creates a new variable referencing an existing value.
+# No new allocations take place.
+Int const [2] const c = cva;
+
+# The following replaces the internal reference of this variable.
+# The previous value remains intact and may still be accessible through the `c` variable.
+# A new array is allocated internally.
+cva = [1, 2];
+
+# These variables are declared as a const arrays
+# so it is an error to reassign its reference:
+//ca = [1, 2]; # ERROR
+//c = [1, 2]; # ERROR
+
+# Implementation note:
+# The allocations happen on the stack with function scope lifetime.
+# Every operation involving a new array allocation is inspected
+# during compile time and sufficient space on the stack is reserved.
+# TODO: Check if this is really possible in every currently legal case.
+
+# Note: For demonstration purposes,
+# instead of declaring a new variable (e.g. `Int const a = b`),
+# it is often sufficient to simply convert the value (e.g. `Int const(b)`).
+
+# Adding const is always ok. Removing const is only ok when copying.
+# I.e. removing const is not ok on values contained in referential types.
+
+# The following copies the first value of the array and converts it into a non-const value.
+Int(cva[0]);
+
+# Note: Array value access might be referential if the array contains a referential type.
+# E.g. nested arrays or arrays of buffers or IO variables.
+# In the current version however, arrays may only contain the basic scalar types.
+# Also note, that even referential types are actually passed by value.
+# It's their contained/referenced value that is passed by reference.
+
+# The following removes const from the reference
+# (not from its contained value), which is also copied.
+Int const [2](c);
+
+# The following removes const from a referenced value.
+# This would have allowed indirect modification of originally const values.
+//Int [2](cva); # ERROR
+
+# The array subscript has 3 meanings in different contexts:
+# An array type size specifier in types.
+# An array value access in expressions.
+# An array value assignment target on the LHS of the assignment statement.
+
+# The `ca` variable is a const array, but its values remain mutable,
+# unlike the `cva` array, which is const-valued.
+ca[0] = 1;
+//cva[0] = 1; # ERROR
+
+# Implementation note:
+# Some of the following subscript generalizations might not be implemented yet.
+
+# The concept of assigning to a specific array value by an index is generalized
+# into something similar to the dereferencing assingment in C (`*a = x`).
+# The following modifies the referenced value instead of the reference itself.
+ca[] = [1, 2];
+//cva[0] = [1, 2]; # ERROR
+
+# More generalizations are planned, but their implementation is not a priority right now.
+// a[0, 3] = [1, 2];
+// a[0 to 3] = [1, 2, 3];
+// a[0 to 6 by 2] = [1, 2, 3];
+// [0 to 3] # [0, 1, 2]
+// [0 to 6 by 2] # [0, 2, 3]
+// [0, 1, 3 to 6] # [0, 1, 3, 4, 5]
+
+# In, out - referential semantics
+
+# Input variables may be described as const single valued unindexed arrays.
+# The same applies for output variables with the addition of const-valuedness.
+# E.g.:
+# `Int in` is similar to `Int const [1] const`
+# `Int out` is similar to `Int [1] const`
+# Applying additional constness explicitly is either an error (`T const out`)
+# or ignored (`T out const` and all others).
+
+# In spite of the constness, these variables don't need to be initialized.
+# For an uninitialized IO variable, a new zero value is allocated internally.
+Int in i1;
+Int out o1;
+
+# No new value is allocated for IO variables initialized to reference existing values.
+Int in i2 = i1;
+Int out o2 = o1;
+
+# The in values are meant to be read.
+# They have an implicit conversion to the underlying type for that purpose.
+Int(i1);
+
+# The out values are meant to be written.
+# The array value assingment with no indices is reused for this purpose.
+o1[] = 2;
+
+# Assigning to the out variable directly (e.g. `o1 = ...`)
+# would mean reassigning the reference (like with arrays),
+# which is impossible because of the implicit constness.
+# Assigning to in variable's value is also impossible because of the implicit value-constness.
+//o1 = o2; # ERROR
+//o1 = 2; # ERROR
+//i1 = 2; # ERROR
+//i1 = i2; # ERROR
+//i1[] = 2; # ERROR
+
+# The subscript on IO types only works as an assingment target with no indices.
+# It doesn't work as a subscript expression
+# and no arrays involving IO types can be constructed
+# (in the current version at least).
+//o1[0] = 2; # ERROR
+//i1[0]; # ERROR
+//Int [2] out; # ERROR
+//Int in [2]; # ERROR
+
+# IO types may only contain the basic scalar types (Bool, Int, and Float) and buffers.
+buffer [4] out ob;
+buffer [4] in ib;
+
+# IO buffers behave just like the other IO types.
+buffer [4] out ob2 = ob;
+buffer [4](ib);
+
+# Both out types and buffers are implicitly const,
+# so neither of the following will work.
+//ob = Float fn () 0; # ERROR
+//ob[] = Float fn () 0; # ERROR
+
+# Initialization could work if the buffer type was convertible to an out type.
+# Here the function is converted into a buffer (while allocating a new buffer globally as a side-effect)
+# and that buffer is converted into an out buffer (again being allocated globally).
+# Finally, the new out buffer is initialized to reference the new one.
+# TODO: Make the implicit conversion mechanics capable of doing this.
+buffer [4] out ob3 = Float fn () 0;
+
+# TODO: Impicit conversions to the underlying type should
+# work in a way that allows e.g. the subscript operation
+# on an input buffer without an explicit conversion.
+ib[0];

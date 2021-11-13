@@ -17,15 +17,15 @@ namespace cynth::ast::category {
                 category::Declaration::variant,
                 category::Expression::variant
             >,
-            ast::node::Assignment,
-            ast::node::Definition,
-            ast::node::For,
-            ast::node::FunctionDef,
-            ast::node::If,
-            ast::node::Return,
-            ast::node::TypeDef,
-            ast::node::When,
-            ast::node::While
+            node::Assignment,
+            node::Definition,
+            node::For,
+            node::FunctionDef,
+            node::If,
+            node::Return,
+            node::TypeDef,
+            node::When,
+            node::While
         >;
 
     }

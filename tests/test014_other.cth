@@ -1,0 +1,17 @@
+#Int f (Int x) x + 1;
+#Int in a;
+#return f(a);
+
+#Int out o;
+#o = 5;
+#return o;
+
+#Int [2] a = [1, 2];
+#a[0] = 0;
+#return a;
+
+Int out o;
+Int i = 1;
+
+o[] = 1;
+(o[], i) = (1, 2);

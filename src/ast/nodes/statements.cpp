@@ -1,6 +1,8 @@
 #include "ast/nodes/statements.hpp"
 
+#include "sem/forward.hpp"
 #include "result.hpp"
+#include "common_interface.hpp"
 #include "ast/nodes/expressions.hpp"
 #include "ast/categories/declaration.hpp"
 #include "ast/categories/range_decl.hpp"
@@ -8,8 +10,8 @@
 #include "ast/categories/statement.hpp"
 #include "ast/categories/type.hpp"
 #include "ast/interface.hpp"
-#include "asg/interface.hpp"
-#include "asg/util.hpp"
+#include "sem/interface.hpp"
+#include "sem/util.hpp"
 #include "util/general.hpp"
 #include "util/string.hpp"
 #include "util/container.hpp"
@@ -35,11 +37,11 @@ namespace cynth {
         return new ast::node::Assignment{std::move(other)};
     }
 
-    std::string ast::node::Assignment::display () const {
-        return ast::display(target) + " = " + ast::display(value);
+    display_result ast::node::Assignment::display () const {
+        return cynth::display(target) + " = " + cynth::display(value);
     }
 
-    ast::execution_result ast::node::Assignment::execute (context & ctx) const {
+    ast::execution_result ast::node::Assignment::execute (sem::context & ctx) const {
         auto targets_result = ast::eval_target(ctx)(target);
         if (!targets_result)
             return ast::make_execution_result(targets_result.error());
@@ -56,7 +58,7 @@ namespace cynth {
             return ast::make_execution_result(values_result.error());
         auto values = *std::move(values_result);
 
-        auto target_ref_result = asg::resolve_target(target);
+        auto target_ref_result = sem::resolve_target(target);
         if (!target_ref_result)
             return ast::make_execution_result(target_ref_result.error());
         auto target_ref = *std::move(target_ref_result);
@@ -65,13 +67,15 @@ namespace cynth {
             return result_error{"More values than targets in an assignment."};
         if (values.size() < target_ref.type.size())
             return result_error{"More targets than values in an assignment."};
-        auto converted_results = asg::convert(values, target_ref.type);
+        auto converted_results = sem::convert(ctx)(values, target_ref.type);
         if (!converted_results)
             return converted_results.error();
         auto converted_result = util::unite_results(*converted_results);
         if (!converted_result)
             return converted_result.error();
-        target_ref.value = *std::move(converted_result);
+        auto assign_result = target_ref.assign(*std::move(converted_result));
+        if (!assign_result)
+            return assign_result.error();
 
         return {};
     }
@@ -93,12 +97,12 @@ namespace cynth {
         return new ast::node::Definition{std::move(other)};
     }
 
-    std::string ast::node::Definition::display () const {
-        return ast::display(target) + " = " + ast::display(value);
+    display_result ast::node::Definition::display () const {
+        return cynth::display(target) + " = " + cynth::display(value);
     }
 
-    ast::execution_result ast::node::Definition::execute (context & ctx) const {
-        auto decls_result = util::unite_results(asg::complete(ast::eval_decl(ctx)(target)));
+    ast::execution_result ast::node::Definition::execute (sem::context & ctx) const {
+        auto decls_result = util::unite_results(sem::complete(ctx)(ast::eval_decl(ctx)(target)));
         if (!decls_result)
             return ast::make_execution_result(decls_result.error());
         auto decls = *std::move(decls_result);
@@ -108,11 +112,29 @@ namespace cynth {
             return ast::make_execution_result(values_result.error());
         auto values = *std::move(values_result);
 
-        auto define_result = asg::define(ctx, decls, values);
+        auto define_result = ctx.define_value(decls, values);
         if (!define_result)
             return ast::make_execution_result(define_result.error());
 
         return {};
+    }
+
+    ast::translation_result ast::node::Definition::translate (sem::translation_context & ctx) const {
+        return {};
+
+        auto decls_result = util::unite_results(sem::complete(ctx.compconst_context)(eval_decl(ctx.compconst_context)(target)));
+        if (!decls_result)
+            return ast::make_translation_result(decls_result.error());
+        auto decls = *std::move(decls_result);
+
+        auto values_result = util::unite_results(ast::translate(ctx)(value));
+        if (!values_result)
+            return ast::make_translation_result(values_result.error());
+        auto values = *std::move(values_result);
+
+        ctx.define(decls, values);
+
+        // TODO...
     }
 
     //// For ////
@@ -132,14 +154,14 @@ namespace cynth {
         return new ast::node::For{std::move(other)};
     }
 
-    std::string ast::node::For::display () const {
+    display_result ast::node::For::display () const {
         return
-            "for " + util::parenthesized(ast::display(declarations)) +
-            " "    + ast::display(body);
+            "for " + util::parenthesized(cynth::display(declarations)) +
+            " "    + cynth::display(body);
     }
 
-    ast::execution_result ast::node::For::execute (context & ctx) const {
-        auto decls_result = asg::for_decls(ctx, *declarations);
+    ast::execution_result ast::node::For::execute (sem::context & ctx) const {
+        auto decls_result = sem::for_decls(ctx, *declarations);
         if (!decls_result)
             return ast::make_execution_result(decls_result.error());
         auto [size, iter_decls] = *std::move(decls_result);
@@ -150,7 +172,7 @@ namespace cynth {
 
             // Define iteration elements:
             for (auto & [decl, value] : iter_decls)
-                asg::define(iter_scope, decl, value.value->value[i]);
+                iter_scope.define_value(decl, value.value->value[i]);
 
             // Execute the loop body:
             auto returned = ast::execute(iter_scope)(body);
@@ -181,31 +203,40 @@ namespace cynth {
         return new ast::node::FunctionDef{std::move(other)};
     }
 
-    std::string ast::node::FunctionDef::display () const {
-        return ast::display(output) + " " + ast::display(name) + " " + util::parenthesized(ast::display(input)) + " " + ast::display(body);
+    display_result ast::node::FunctionDef::display () const {
+        return cynth::display(output) + " " + cynth::display(name) + " " + util::parenthesized(cynth::display(input)) + " " + cynth::display(body);
     }
 
-    ast::execution_result ast::node::FunctionDef::execute (context & ctx) const {
-        auto output_result = util::unite_results(asg::complete(ast::eval_type(ctx)(output)));
+    ast::execution_result ast::node::FunctionDef::execute (sem::context & ctx) const {
+        auto output_result = util::unite_results(sem::complete(ctx)(ast::eval_type(ctx)(output)));
         if (!output_result)
             return ast::make_execution_result(output_result.error());
         auto output = *std::move(output_result);
 
-        auto input_result = util::unite_results(asg::complete(ast::eval_decl(ctx)(input)));
+        auto input_result = util::unite_results(sem::complete(ctx)(ast::eval_decl(ctx)(input)));
         if (!input_result)
             return ast::make_execution_result(input_result.error());
         auto input = *std::move(input_result);
 
-        auto value = util::init<tuple_vector>(asg::value::complete{asg::value::Function {
+        auto stored = ctx.store_value(sem::value::FunctionValue {
             .out_type   = make_component_vector(output),
             .parameters = make_component_vector(input),
             .body       = body,
             .capture    = ctx // TODO
+        });
+        if (!stored)
+            return ast::make_execution_result(stored.error());
+
+        auto value = util::init<tuple_vector>(sem::value::complete{sem::value::Function {
+            .value = stored.get()
         }});
 
+        // TODO
+#if 0
         auto define_result = ctx.define_value(*name->name, value);
         if (!define_result)
             return ast::make_execution_result(define_result.error());
+#endif
 
         return {};
     }
@@ -227,15 +258,15 @@ namespace cynth {
         return new ast::node::If{std::move(other)};
     }
 
-    std::string ast::node::If::display () const {
+    display_result ast::node::If::display () const {
         return
-            "if "    + util::parenthesized(ast::display(condition)) +
-            " "      + ast::display(positive_branch) +
-            " else " + ast::display(negative_branch);
+            "if "    + util::parenthesized(cynth::display(condition)) +
+            " "      + cynth::display(positive_branch) +
+            " else " + cynth::display(negative_branch);
     }
 
-    ast::execution_result ast::node::If::execute (context & ctx) const {
-        auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
+    ast::execution_result ast::node::If::execute (sem::context & ctx) const {
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
         if (!result)
             return ast::make_execution_result(result.error());
         if (*result)
@@ -261,11 +292,11 @@ namespace cynth {
         return new ast::node::Return{std::move(other)};
     }
 
-    std::string ast::node::Return::display () const {
-        return "return " + ast::display(value);
+    display_result ast::node::Return::display () const {
+        return "return " + cynth::display(value);
     }
 
-    ast::execution_result ast::node::Return::execute (context & ctx) const {
+    ast::execution_result ast::node::Return::execute (sem::context & ctx) const {
         auto value_result = util::unite_results(ast::evaluate(ctx)(value));
         if (!value_result)
             return ast::make_execution_result(value_result.error());
@@ -291,14 +322,14 @@ namespace cynth {
         return new ast::node::TypeDef{std::move(other)};
     }
 
-    std::string ast::node::TypeDef::display () const {
-        return "type " + ast::display(target) + " = " + ast::display(type);
+    display_result ast::node::TypeDef::display () const {
+        return "type " + cynth::display(target) + " = " + cynth::display(type);
     }
 
-    ast::execution_result ast::node::TypeDef::execute (context & ctx) const {
+    ast::execution_result ast::node::TypeDef::execute (sem::context & ctx) const {
         std::string name = *target->name;
 
-        auto type_result = util::unite_results(asg::complete(ast::eval_type(ctx)(type)));
+        auto type_result = util::unite_results(sem::complete(ctx)(ast::eval_type(ctx)(type)));
         if (!type_result)
             return ast::make_execution_result(type_result.error());
         auto type = *std::move(type_result);
@@ -327,15 +358,15 @@ namespace cynth {
         return new ast::node::While{std::move(other)};
     }
 
-    std::string ast::node::While::display () const {
+    display_result ast::node::While::display () const {
         return
-            "while " + util::parenthesized(ast::display(condition)) +
-            " "      + ast::display(body);
+            "while " + util::parenthesized(cynth::display(condition)) +
+            " "      + cynth::display(body);
     }
 
-    ast::execution_result ast::node::While::execute (context & ctx) const {
+    ast::execution_result ast::node::While::execute (sem::context & ctx) const {
         while (true) {
-            auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
+            auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
             if (!result)
                 return ast::make_execution_result(result.error());
             if (*result) {
@@ -367,14 +398,14 @@ namespace cynth {
         return new ast::node::When{std::move(other)};
     }
 
-    std::string ast::node::When::display () const {
+    display_result ast::node::When::display () const {
         return
-            "when " + util::parenthesized(ast::display(condition)) +
-            " "     + ast::display(branch);
+            "when " + util::parenthesized(cynth::display(condition)) +
+            " "     + cynth::display(branch);
     }
 
-    ast::execution_result ast::node::When::execute (context & ctx) const {
-        auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
+    ast::execution_result ast::node::When::execute (sem::context & ctx) const {
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
         if (!result)
             return ast::make_execution_result(result.error());
         if (*result) {

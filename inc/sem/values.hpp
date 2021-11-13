@@ -1,13 +1,14 @@
 #pragma once
 
 #include "config.hpp"
-#include "context_forward.hpp"
 #include "category_base.hpp"
 #include "view.hpp"
 #include "component.hpp"
 #include "result.hpp"
-#include "asg/forward.hpp"
-#include "asg/interface_types.hpp"
+#include "common_interface_types.hpp"
+#include "sem/context_forward.hpp"
+#include "sem/forward.hpp"
+#include "sem/interface_types.hpp"
 #include "ast/categories_forward.hpp"
 #include "util/general.hpp"
 
@@ -15,61 +16,58 @@
 #include <vector>
 #include <type_traits>
 
-namespace cynth::asg::value {
+// Note: Macros are always undefined at the end of the file.
+#define VALUE_DECL \
+    display_result    display    () const; \
+    value_type_result value_type () const
+
+namespace cynth::sem::value {
 
     struct Bool {
         bool value;
 
-        std::string display () const;
-
         get_result<bool> get () const;
 
-        conversion_result convert (type::Bool  const &) const;
-        conversion_result convert (type::Int   const &) const;
-        conversion_result convert (type::Float const &) const;
-        conversion_result convert (type::Const const &) const; // TODO
+        conversion_result convert (context &, type::Bool  const &) const;
+        conversion_result convert (context &, type::Int   const &) const;
+        conversion_result convert (context &, type::Float const &) const;
+        conversion_result convert (context &, type::Const const &) const; // TODO
 
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
     struct Int {
         integral value;
 
-        std::string display () const;
-
         get_result<integral> get () const;
 
-        conversion_result convert (type::Bool  const &) const;
-        conversion_result convert (type::Int   const &) const;
-        conversion_result convert (type::Float const &) const;
-        conversion_result convert (type::Const const &) const; // TODO
+        conversion_result convert (context &, type::Bool  const &) const;
+        conversion_result convert (context &, type::Int   const &) const;
+        conversion_result convert (context &, type::Float const &) const;
+        conversion_result convert (context &, type::Const const &) const; // TODO
 
-        value_type_result value_type ()             const;
+        VALUE_DECL;
     };
 
     struct Float {
         floating value;
 
-        std::string display () const;
-
         get_result<floating> get () const;
 
-        conversion_result convert (type::Bool  const &) const;
-        conversion_result convert (type::Int   const &) const;
-        conversion_result convert (type::Float const &) const;
-        conversion_result convert (type::Const const &) const; // TODO
+        conversion_result convert (context &, type::Bool  const &) const;
+        conversion_result convert (context &, type::Int   const &) const;
+        conversion_result convert (context &, type::Float const &) const;
+        conversion_result convert (context &, type::Const const &) const; // TODO
 
-        value_type_result value_type ()             const;
+        VALUE_DECL;
     };
 
     struct String {
         string value;
 
-        std::string display () const;
-
         get_result<string> get () const;
 
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
     namespace detail {
@@ -92,15 +90,13 @@ namespace cynth::asg::value {
     struct Const {
         component<value::complete> value;
 
-        std::string display () const;
+        conversion_result convert (context &, type::Bool  const &) const;
+        conversion_result convert (context &, type::Int   const &) const;
+        conversion_result convert (context &, type::Float const &) const;
+        conversion_result convert (context &, type::Const const &) const;
+        conversion_result convert (context &, type::Array const &) const;
 
-        conversion_result convert (type::Bool  const &) const;
-        conversion_result convert (type::Int   const &) const;
-        conversion_result convert (type::Float const &) const;
-        conversion_result convert (type::Const const &) const;
-        conversion_result convert (type::Array const &) const;
-
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
     struct InValue {
@@ -108,17 +104,28 @@ namespace cynth::asg::value {
     };
 
     struct In {
-        InValue * value;
+        InValue *                 value;
+        component<type::complete> type;
 
-        std::string display () const;
+        // TODO: In types should have a specified type
+        // for the same purposes as out types and arrays:
+        // Int in a;
+        // Float in b = a; # a referential read view over a with a different type
+        // Float c = a;    # reading implicitly converted values
+        // Float out d;
+        // Int out e = d;  # a referential write view over d with a different type
+        // e[] = 2;        # writing implicitly converted values
+        // Float [3] f;
+        // Int [2] g = f;  # a referential view over f with a different type and size
 
-        conversion_result convert (type::Bool  const &) const;
-        conversion_result convert (type::Int   const &) const;
-        conversion_result convert (type::Float const &) const;
-        conversion_result convert (type::In    const &) const;
-        conversion_result convert (type::Const const &) const;
+        conversion_result convert (context &, type::Bool   const &) const;
+        conversion_result convert (context &, type::Int    const &) const;
+        conversion_result convert (context &, type::Float  const &) const;
+        conversion_result convert (context &, type::In     const &) const;
+        conversion_result convert (context &, type::Const  const &) const;
+        conversion_result convert (context &, type::Buffer const &) const;
 
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
     struct OutValue {
@@ -126,13 +133,12 @@ namespace cynth::asg::value {
     };
 
     struct Out {
-        OutValue * value;
+        OutValue *                value;
+        component<type::complete> type;
 
-        std::string display () const;
+        conversion_result convert (context &, type::Out const &) const;
 
-        conversion_result convert (type::Out const &) const;
-
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
     struct ArrayValue {
@@ -152,21 +158,21 @@ namespace cynth::asg::value {
 
         get_result<std::vector<tuple_vector<value::complete>>> get () const;
 
-        std::string display () const;
+        conversion_result convert (context &, type::Array const &) const;
+        conversion_result convert (context &, type::Const const &) const;
 
-        conversion_result convert (type::Array const &) const;
-        conversion_result convert (type::Const const &) const;
-
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
+
+    struct FunctionValue;
 
     struct BufferValue {
         using sample_type = floating;
         using vector      = std::vector<floating>;
 
-        vector value;
+        vector          value;
+        FunctionValue * generator;
     };
-
 
     struct Buffer {
         using sample_type = floating;
@@ -175,30 +181,30 @@ namespace cynth::asg::value {
         BufferValue * value;
         integral      size;
 
-        std::string display () const;
+        conversion_result convert (context &, type::Buffer const &) const;
 
-        conversion_result convert (asg::type::Buffer const &) const;
-
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
-    struct Function {
+    struct FunctionValue {
         component_vector <type::complete>            out_type;
         component_vector <complete_decl>             parameters;
         component        <ast::category::Expression> body;
         component        <context>                   capture;
+    };
 
-        std::string display () const;
+    struct Function {
+        FunctionValue * value;
 
         get_result<Function> get () const;
 
-        conversion_result convert (asg::type::Function const &) const;
-        conversion_result convert (asg::type::Buffer   const &) const;
+        conversion_result convert (context &, type::Function const &) const;
+        conversion_result convert (context &, type::Buffer   const &) const;
 
-        value_type_result value_type () const;
+        VALUE_DECL;
     };
 
-    /** Function templates will not be used in the first versions. */
+    /** Function templates will not be implemented in the first versions. */
     struct FunctionTemplate {
         // TODO
     };
@@ -236,13 +242,6 @@ namespace cynth::asg::value {
             >
         >;
 
-        using referential = variant <
-            value::InValue,
-            value::OutValue,
-            value::ArrayValue,
-            value::BufferValue
-        >;
-
     }
 
     template <bool Complete>
@@ -253,12 +252,6 @@ namespace cynth::asg::value {
 
     template struct any<true>;
     template struct any<false>;
-
-    // TODO: Unused.
-    struct referential: category_base<referential, detail::referential, true> {
-        using base = category_base<referential, detail::referential, true>;
-        using base::base;
-    };
 
     constexpr auto make_bool = [] (bool value) -> value::complete {
         return value::Bool{.value = value};
@@ -281,3 +274,5 @@ namespace cynth::asg::value {
     result<value::complete> make_buffer (value::BufferValue *, integral);
 
 }
+
+#undef VALUE_DECL

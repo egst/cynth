@@ -9,24 +9,16 @@
 #include "util/operations.hpp"
 
 using namespace cynth;
-using namespace yy;
-
-template <typename T, typename U>
-void handle_return (U const & value) {
-    auto result = sem::get<T>(value);
-    if (result)
-        std::cout << "return ok: " << *result << '\n';
-    else
-        std::cout << "return error: " << result.error().message << '\n';
-}
 
 int main () {
     ast::node::Block ast;
-    parser parse{ast};
 
+    yy::parser parse{ast};
     parse();
 
-    std::cout << util::pretty(display(ast)) << '\n';
+    std::cout <<
+        "INPUT:\n" <<
+        util::pretty(display(ast)) << '\n';
 
     sem::context ctx;
 
@@ -36,7 +28,7 @@ int main () {
     ctx.define_type("Float",  {sem::type::Float{}});
     ctx.define_type("String", {sem::type::String{}});
 
-    auto result = util::unite_results(ast::evaluate(ctx)(ast));
+    auto result = util::unite_results(ast.evaluate<false>(ctx));
 
     if (!result) {
         std::cout << "eval error:" << result.error().message << '\n';
@@ -46,7 +38,21 @@ int main () {
     auto value = *result;
     auto type  = sem::value_type(value);
 
-    std::cout << "type:  " << display_tuple(type)  << '\n';
-    std::cout << "value: " << display_tuple(value) << '\n';
+    std::cout <<
+        "RETURNED:\n"
+        "type:  " << display_tuple(type)  << '\n' <<
+        "value: " << display_tuple(value) << '\n';
 
+    std::cout << "CONTEXT:\n";
+
+    // TODO
+    /*for (auto && [name, val] : ctx.values)
+        std::cout << display_tuple(val.value) << '\n';*/
+
+    std::cout << "STORED:\n";
+
+    for (auto && val : ctx.stored_values<sem::value::BufferValue>())
+        std::cout << "buff..." << '\n';
+
+    sem::translation_context tctx;
 }

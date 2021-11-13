@@ -22,11 +22,11 @@ namespace cynth {
         return new ast::node::RangeTo{std::move(other)};
     }
 
-    std::string ast::node::RangeTo::display () const {
-        return ast::display(from) + " to " + ast::display(to);
+    display_result ast::node::RangeTo::display () const {
+        return cynth::display(from) + " to " + cynth::display(to);
     }
 
-    ast::array_elem_eval_result ast::node::RangeTo::eval_array_elem (context &) const {
+    ast::array_elem_eval_result ast::node::RangeTo::eval_array_elem (sem::context &) const {
         return ast::make_array_elem_eval_result(result_error{"Range array elements are not supported yet."});
     }
 
@@ -45,11 +45,11 @@ namespace cynth {
         return new ast::node::RangeToBy{std::move(other)};
     }
 
-    std::string ast::node::RangeToBy::display () const {
-        return ast::display(from) + " to " + ast::display(to) + " by " + ast::display(by);
+    display_result ast::node::RangeToBy::display () const {
+        return cynth::display(from) + " to " + cynth::display(to) + " by " + cynth::display(by);
     }
 
-    ast::array_elem_eval_result ast::node::RangeToBy::eval_array_elem (context &) const {
+    ast::array_elem_eval_result ast::node::RangeToBy::eval_array_elem (sem::context &) const {
         return ast::make_array_elem_eval_result(result_error{"Range array elements are not supported yet."});
     }
 
@@ -68,11 +68,11 @@ namespace cynth {
         return new ast::node::Spread{std::move(other)};
     }
 
-    std::string ast::node::Spread::display () const {
-        return "..." + ast::display(container);
+    display_result ast::node::Spread::display () const {
+        return "..." + cynth::display(container);
     }
 
-    ast::array_elem_eval_result ast::node::Spread::eval_array_elem (context &) const {
+    ast::array_elem_eval_result ast::node::Spread::eval_array_elem (sem::context &) const {
         return ast::make_array_elem_eval_result(result_error{"Range array elements are not supported yet."});
     }
 

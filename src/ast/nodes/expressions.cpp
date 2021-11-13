@@ -1,8 +1,8 @@
 #include "ast/nodes/expressions.hpp"
 
+#include "component.hpp"
 #include "config.hpp"
 #include "lift.hpp"
-#include "context.hpp"
 #include "ast/categories/array_elem.hpp"
 #include "ast/categories/declaration.hpp"
 #include "ast/categories/expression.hpp"
@@ -11,10 +11,11 @@
 #include "ast/categories/range_decl.hpp"
 #include "ast/interface.hpp"
 #include "ast/interface_types.hpp"
-#include "asg/values.hpp"
-#include "asg/types.hpp"
-#include "asg/targets.hpp"
-#include "asg/util.hpp"
+#include "sem/context.hpp"
+#include "sem/values.hpp"
+#include "sem/types.hpp"
+#include "sem/targets.hpp"
+#include "sem/util.hpp"
 #include "util/general.hpp"
 #include "util/container.hpp"
 #include "util/string.hpp"
@@ -31,31 +32,31 @@ namespace cynth {
     // Arithmetic operations //
 
     template <bool Check>
-    constexpr auto bin_arith_floats = [] <typename F> (F && f) {
-        return [&f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::some<asg::value::Float, T, U>) {
-            return lift::result{asg::value::make_float} (
+    constexpr auto bin_arith_floats = [] <typename F> (sem::context & ctx, F && f) {
+        return [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::some<sem::value::Float, T, U>) {
+            return lift::result{sem::value::make_float} (
                 lift::result{std::forward<F>(f)} (
-                    asg::get<floating>(asg::convert(asg::type::Float{})(std::move(a))),
-                    asg::get<floating>(asg::convert(asg::type::Float{})(std::move(b)))
+                    sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(a))),
+                    sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(b)))
                 )
             );
         };
     };
 
     template <bool Check>
-    constexpr auto bin_arith_ints = [] <typename F> (F && f) {
-        return [&f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::none<asg::value::Float, T, U>) {
-            return lift::result{asg::value::make_int} (
+    constexpr auto bin_arith_ints = [] <typename F> (sem::context & ctx, F && f) {
+        return [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::none<sem::value::Float, T, U>) {
+            return lift::result{sem::value::make_int} (
                 lift::result{std::forward<F>(f)} (
-                    asg::get<integral>(asg::convert(asg::type::Int{})(std::move(a))),
-                    asg::get<integral>(asg::convert(asg::type::Int{})(std::move(b)))
+                    sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(a))),
+                    sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(b)))
                 )
             );
         };
     };
 
-    constexpr auto bin_arith = [] <typename I, typename F> (I && i, F && f) {
-        return [&i, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<asg::value::complete>>> {
+    constexpr auto bin_arith = [] <typename I, typename F> (sem::context & ctx, I && i, F && f) {
+        return [&ctx, &i, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<sem::value::complete>>> {
             if (first.size() == 0)
                 return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
             if (second.size() == 0)
@@ -65,11 +66,11 @@ namespace cynth {
             if (first.size() < second.size())
                 return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
             return lift::evaluation{util::overload {
-                bin_arith_floats<true>(f),
-                [&i, &f] <util::temporary T, util::temporary U> (T && a, U && b) -> result<asg::value::complete> requires util::none<asg::value::Float, T, U> {
-                    auto results = asg::decays(asg::type::Float{})(asg::value_type((a))) || asg::decays(asg::type::Float{})(asg::value_type((b)))
-                        ? bin_arith_floats <false>(std::forward<F>(f))(std::move(a), std::move(b))
-                        : bin_arith_ints   <false>(std::forward<I>(i))(std::move(a), std::move(b));
+                bin_arith_floats<true>(ctx, f),
+                [&ctx, &i, &f] <util::temporary T, util::temporary U> (T && a, U && b) -> result<sem::value::complete> requires util::none<sem::value::Float, T, U> {
+                    auto results = sem::decays(sem::type::Float{})(sem::value_type((a))) || sem::decays(sem::type::Float{})(sem::value_type((b)))
+                        ? bin_arith_floats <false>(ctx, std::forward<F>(f))(std::move(a), std::move(b))
+                        : bin_arith_ints   <false>(ctx, std::forward<I>(i))(std::move(a), std::move(b));
                     if (!results)
                         return results.error();
                     return *results;
@@ -79,37 +80,37 @@ namespace cynth {
     };
 
     template <bool Check>
-    constexpr auto un_arith_float = [] <typename F> (F && f) {
-        return [&f] <util::temporary T> (T && a) requires (!Check || util::same_as_no_cvref<asg::value::Float, T>) {
-            return lift::result{asg::value::make_float} (
+    constexpr auto un_arith_float = [] <typename F> (sem::context & ctx, F && f) {
+        return [&ctx, &f] <util::temporary T> (T && a) requires (!Check || util::same_as_no_cvref<sem::value::Float, T>) {
+            return lift::result{sem::value::make_float} (
                 lift::result{std::forward<F>(f)} (
-                    asg::get<floating>(asg::convert(asg::type::Float{})(std::move(a)))
+                    sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(a)))
                 )
             );
         };
     };
 
     template <bool Check>
-    constexpr auto un_arith_int = [] <typename F> (F && f) {
-        return [&f] <util::temporary T> (T && a) requires (!Check || !util::same_as_no_cvref<asg::value::Float, T>) {
-            return lift::result{asg::value::make_int} (
+    constexpr auto un_arith_int = [] <typename F> (sem::context & ctx, F && f) {
+        return [&ctx, &f] <util::temporary T> (T && a) requires (!Check || !util::same_as_no_cvref<sem::value::Float, T>) {
+            return lift::result{sem::value::make_int} (
                 lift::result{std::forward<F>(f)} (
-                    asg::get<integral>(asg::convert(asg::type::Int{})(std::move(a)))
+                    sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(a)))
                 )
             );
         };
     };
 
-    constexpr auto un_arith = [] <typename I, typename F> (I && i, F && f) {
-        return [&i, &f] (util::temporary auto && arg) -> tuple_vector<result<asg::value::complete>> {
+    constexpr auto un_arith = [] <typename I, typename F> (sem::context & ctx, I && i, F && f) {
+        return [&ctx, &i, &f] (util::temporary auto && arg) -> tuple_vector<result<sem::value::complete>> {
             if (arg.size() == 0)
                 return ast::make_evaluation_result(result_error{"Cannot use the void value in a unary operation."});
             return lift::evaluation{util::overload {
-                un_arith_float<true>(f),
-                [&i, &f] <util::temporary T> (T && a) {
-                    return asg::decays(asg::type::Float{})(asg::value_type(a))
-                        ? un_arith_float <false>(std::forward<F>(f))(std::move(a))
-                        : un_arith_int   <false>(std::forward<I>(i))(std::move(a));
+                un_arith_float<true>(ctx, f),
+                [&ctx, &i, &f] <util::temporary T> (T && a) {
+                    return sem::decays(sem::type::Float{})(sem::value_type(a))
+                        ? un_arith_float <false>(ctx, std::forward<F>(f))(std::move(a))
+                        : un_arith_int   <false>(ctx, std::forward<I>(i))(std::move(a));
                 },
             }} (std::move(arg));
         };
@@ -120,65 +121,65 @@ namespace cynth {
     constexpr auto compare_same_types = [] <typename F> (F && f) {
         return lift::any_asymetric{util::overload {
             // TODO: Decaying types (T const, T in, T out -> T)
-            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, asg::value::Bool> {
-                return lift::result{asg::value::make_bool} (
+            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Bool> {
+                return lift::result{sem::value::make_bool} (
                     lift::result{std::forward<F>(f)} (
-                        asg::get<bool>(std::move(a)),
-                        asg::get<bool>(std::move(b))
+                        sem::get<bool>(std::move(a)),
+                        sem::get<bool>(std::move(b))
                     )
                 );
             },
-            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, asg::value::Int> {
-                return lift::result{asg::value::make_bool} (
+            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Int> {
+                return lift::result{sem::value::make_bool} (
                     lift::result{std::forward<F>(f)} (
-                        asg::get<integral>(std::move(a)),
-                        asg::get<integral>(std::move(b))
+                        sem::get<integral>(std::move(a)),
+                        sem::get<integral>(std::move(b))
                     )
                 );
             },
-            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, asg::value::Float> {
-                return lift::result{asg::value::make_bool} (
+            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Float> {
+                return lift::result{sem::value::make_bool} (
                     lift::result{std::forward<F>(f)} (
-                        asg::get<floating>(std::move(a)),
-                        asg::get<floating>(std::move(b))
+                        sem::get<floating>(std::move(a)),
+                        sem::get<floating>(std::move(b))
                     )
                 );
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Function> {
-                return result<asg::value::complete>{result_error{"Cannot compare functions."}};
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Function> {
+                return result<sem::value::complete>{result_error{"Cannot compare functions."}};
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Array> {
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Array> {
                 // TODO
-                return result<asg::value::complete>{result_error{"Array comparison not supported yet."}};
+                return result<sem::value::complete>{result_error{"Array comparison not supported yet."}};
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Buffer> {
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Buffer> {
                 // TODO
-                return result<asg::value::complete>{result_error{"Cannot compare buffers"}};
+                return result<sem::value::complete>{result_error{"Cannot compare buffers"}};
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::String> {
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::String> {
                 // TODO
-                return result<asg::value::complete>{result_error{"Strings are not supported yet."}};
+                return result<sem::value::complete>{result_error{"Strings are not supported yet."}};
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::In> {
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::In> {
                 // This shouldn't happen unless this overload set is used incorectly.
-                return result<asg::value::complete>{result_error{}};
+                return result<sem::value::complete>{result_error{}};
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Out> {
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Out> {
                 // This shouldn't happen unless this overload set is used incorectly.
-                return result<asg::value::complete>{result_error{}};
+                return result<sem::value::complete>{result_error{}};
             },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, asg::value::Const> {
+            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Const> {
                 // This shouldn't happen unless this overload set is used incorectly.
-                return result<asg::value::complete>{result_error{}};
+                return result<sem::value::complete>{result_error{}};
             },
-            [] <util::temporary T, util::temporary U> (T &&, U &&) requires asg::interface::value<T> && asg::interface::value<U> && (!util::same_as_no_cvref<T, U>) {
-                return result<asg::value::complete>{result_error{"Cannot compare incompatible types."}};
+            [] <util::temporary T, util::temporary U> (T &&, U &&) requires sem::interface::value<T> && sem::interface::value<U> && (!util::same_as_no_cvref<T, U>) {
+                return result<sem::value::complete>{result_error{"Cannot compare incompatible types."}};
             }
         }};
     };
 
-    constexpr auto compare = [] <typename F> (F && f) {
-        return [&f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<asg::value::complete>>> {
+    constexpr auto compare = [] <typename F> (sem::context & ctx, F && f) {
+        return [&ctx, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<sem::value::complete>>> {
             if (first.size() == 0)
                 return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
             if (second.size() == 0)
@@ -191,36 +192,36 @@ namespace cynth {
                 [&f] <util::temporary T> (T && a, T && b) {
                     return compare_same_types(std::forward<F>(f))(std::move(a), std::move(b));
                 },
-                [&f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!util::same_as_no_cvref<T, U>) {
-                    auto a_type    = asg::value_type(a);
-                    auto b_type    = asg::value_type(b);
-                    auto a_decayed = util::coalesce(asg::decay(a_type), std::move(a_type)); // TODO: The lazy trick (with ?:) doesn't work here.
-                    auto b_decayed = util::coalesce(asg::decay(b_type), std::move(b_type));
+                [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!util::same_as_no_cvref<T, U>) {
+                    auto a_type    = sem::value_type(a);
+                    auto b_type    = sem::value_type(b);
+                    auto a_decayed = util::coalesce(sem::decay(a_type), std::move(a_type)); // TODO: The lazy trick (with ?:) doesn't work here.
+                    auto b_decayed = util::coalesce(sem::decay(b_type), std::move(b_type));
                     return compare_same_types (
-                        std::forward<F>(f))(asg::convert_to(std::move(a))(std::move(a_decayed)),
-                        asg::convert_to(std::move(b))(std::move(b_decayed))
+                        std::forward<F>(f))(sem::convert_to(ctx)(std::move(a))(std::move(a_decayed)),
+                        sem::convert_to(ctx)(std::move(b))(std::move(b_decayed))
                     );
                 }
             }} (std::move(first), std::move(second));
         };
     };
 
-    constexpr auto add = bin_arith(util::add, util::add);
-    constexpr auto sub = bin_arith(util::sub, util::sub);
-    constexpr auto mul = bin_arith(util::mul, util::mul);
-    constexpr auto div = bin_arith(util::div, util::div);
-    constexpr auto pow = bin_arith(util::pow, util::pow);
-    constexpr auto mod = bin_arith(util::mod, util::fmod);
+    constexpr auto add = [] (sem::context & ctx) { return bin_arith(ctx, util::add, util::add);  };
+    constexpr auto sub = [] (sem::context & ctx) { return bin_arith(ctx, util::sub, util::sub);  };
+    constexpr auto mul = [] (sem::context & ctx) { return bin_arith(ctx, util::mul, util::mul);  };
+    constexpr auto div = [] (sem::context & ctx) { return bin_arith(ctx, util::div, util::div);  };
+    constexpr auto pow = [] (sem::context & ctx) { return bin_arith(ctx, util::pow, util::pow);  };
+    constexpr auto mod = [] (sem::context & ctx) { return bin_arith(ctx, util::mod, util::fmod); };
 
-    constexpr auto plus  = un_arith(util::plus,  util::plus);
-    constexpr auto minus = un_arith(util::minus, util::minus);
+    constexpr auto plus  = [] (sem::context & ctx) { return un_arith(ctx, util::plus,  util::plus);  };
+    constexpr auto minus = [] (sem::context & ctx) { return un_arith(ctx, util::minus, util::minus); };
 
-    constexpr auto eq = compare(util::eq);
-    constexpr auto ne = compare(util::ne);
-    constexpr auto gt = compare(util::gt);
-    constexpr auto lt = compare(util::lt);
-    constexpr auto ge = compare(util::ge);
-    constexpr auto le = compare(util::le);
+    constexpr auto eq = [] (sem::context & ctx) { return compare(ctx, util::eq); };
+    constexpr auto ne = [] (sem::context & ctx) { return compare(ctx, util::ne); };
+    constexpr auto gt = [] (sem::context & ctx) { return compare(ctx, util::gt); };
+    constexpr auto lt = [] (sem::context & ctx) { return compare(ctx, util::lt); };
+    constexpr auto ge = [] (sem::context & ctx) { return compare(ctx, util::ge); };
+    constexpr auto le = [] (sem::context & ctx) { return compare(ctx, util::le); };
 
     // Arrays //
 
@@ -242,25 +243,15 @@ namespace cynth {
         return new ast::node::Add{std::move(other)};
     }
 
-    ast::display_result ast::node::Add::display () const {
-        return "(" + ast::display(left_argument) + " + " + ast::display(right_argument) + ")";
+    display_result ast::node::Add::display () const {
+        return "(" + cynth::display(left_argument) + " + " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Add::evaluate (context & ctx) const {
-        auto results = add(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Add::evaluate (sem::context & ctx) const {
+        auto results = add(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
-    }
-
-    ast::translation_result ast::node::Add::translate (context & ctx) const {
-        auto left_result = ast::translate(ctx)(left_argument);
-        if (!left_result)
-            return left_result.error();
-        auto right_result = ast::translate(ctx)(right_argument);
-        if (!right_result)
-            return right_result.error();
-        return "a + b"s;
     }
 
     //// And ////
@@ -280,19 +271,19 @@ namespace cynth {
         return new ast::node::And{std::move(other)};
     }
 
-    std::string ast::node::And::display () const {
-        return "(" + ast::display(left_argument) + " && " + ast::display(right_argument) + ")";
+    display_result ast::node::And::display () const {
+        return "(" + cynth::display(left_argument) + " && " + cynth::display(right_argument) + ")";
     }
 
     // TODO: This implementation doesn't work on tuples.
-    ast::evaluation_result ast::node::And::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::And::evaluate (sem::context & ctx) const {
         auto llhs = lazy{[this, &ctx] {
-            return asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(left_argument))));
+            return sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(left_argument))));
         }};
         auto lrhs = lazy{[this, &ctx] {
-            return asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(right_argument))));
+            return sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(right_argument))));
         }};
-        return ast::make_evaluation_result(lift::result{asg::value::make_bool}(util::land(llhs, lrhs)));
+        return ast::make_evaluation_result(lift::result{sem::value::make_bool}(util::land(llhs, lrhs)));
     }
 
     //// Application ////
@@ -312,14 +303,13 @@ namespace cynth {
         return new ast::node::Application{std::move(other)};
     }
 
-    std::string ast::node::Application::display () const {
-        return ast::display(function) + util::parenthesized(ast::display(arguments));
+    display_result ast::node::Application::display () const {
+        return cynth::display(function) + util::parenthesized(cynth::display(arguments));
     }
 
-    // TODO: Segmentation fault.
-    ast::evaluation_result ast::node::Application::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Application::evaluate (sem::context & ctx) const {
         // Definition:
-        auto definition_result = asg::get<asg::value::Function>(util::single(ast::evaluate(ctx)(function)));
+        auto definition_result = sem::get<sem::value::Function>(util::single(ast::evaluate(ctx)(function)));
         // TODO: Check if evaluated to a function?
         if (!definition_result)
             return ast::make_evaluation_result(definition_result.error());
@@ -333,31 +323,31 @@ namespace cynth {
 
         // Init nested scope:
         //auto function_scope = ctx;
-        auto function_scope = make_child_context(*definition.capture);
+        auto function_scope = make_child_context(*definition.value->capture);
         // Every function has its internal storage for array values:
         // Note: No other referential values need local function storage for now.
         // In, out and buffer types are only stored globally right now.
-        function_scope.init_storage<asg::value::ArrayValue>();
+        function_scope.init_storage<sem::value::ArrayValue>();
 
         // Parameters:
-        /*auto params_result = util::unite_results(asg::complete(ast::eval_decl(function_scope)(definition.input)));
+        /*auto params_result = util::unite_results(sem::complete(ast::eval_decl(function_scope)(definition.input)));
         if (!params_result)
             return ast::make_evaluation_result(params_result.error());
         auto params = *std::move(params_result);*/
-        auto params = std::move(definition.parameters);
+        auto params = std::move(definition.value->parameters);
 
-        auto paramdef_result = asg::define(function_scope, params, args);
+        auto paramdef_result = function_scope.define_value(params, args);
         if (!paramdef_result)
             return ast::make_evaluation_result(paramdef_result.error());
 
-        auto body_result = util::unite_results(ast::evaluate(function_scope)(definition.body));
+        auto body_result = util::unite_results(ast::evaluate(function_scope)(definition.value->body));
         if (!body_result)
             return ast::make_evaluation_result(body_result.error());
         auto body = *std::move(body_result);
-        //auto type = asg::complete(ast::eval_type(function_scope)(definition.output));
-        auto type = std::move(definition.out_type);
+        //auto type = sem::complete(ast::eval_type(function_scope)(definition.output));
+        auto type = std::move(definition.value->out_type);
 
-        auto results = asg::copy(ctx)(asg::convert(std::move(body), std::move(type)));
+        auto results = sem::copy(ctx)(sem::convert(ctx)(std::move(body), std::move(type)));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -380,12 +370,12 @@ namespace cynth {
         return new ast::node::Array{std::move(other)};
     }
 
-    std::string ast::node::Array::display () const {
-        return "[" + util::join(", ", ast::display(elements)) + "]";
+    display_result ast::node::Array::display () const {
+        return "[" + util::join(", ", cynth::display(elements)) + "]";
     }
 
-    ast::evaluation_result ast::node::Array::evaluate (context & ctx) const {
-        auto result = asg::array_elems(ctx, elements);
+    ast::evaluation_result ast::node::Array::evaluate (sem::context & ctx) const {
+        auto result = sem::array_elems(ctx, elements);
         if (!result)
             return ast::make_evaluation_result(result.error());
         auto [values, type] = *std::move(result);
@@ -395,8 +385,8 @@ namespace cynth {
         // So until it's fixed in clang, the workaround is to do a capture with an initializer: [&type = type]
 
         auto converted_result = util::unite_results(lift::component{
-            [&type = type] <typename T> (T && value) -> cynth::result<tuple_vector<asg::value::complete>> {
-                auto result = asg::convert(std::forward<T>(value), type);
+            [&ctx, &type = type] <typename T> (T && value) -> cynth::result<tuple_vector<sem::value::complete>> {
+                auto result = sem::convert(ctx)(std::forward<T>(value), type);
                 if (!result)
                     return result.error();
                 return util::unite_results(*result);
@@ -405,13 +395,13 @@ namespace cynth {
         if (!converted_result)
             return ast::make_evaluation_result(converted_result.error());
         auto converted = *std::move(converted_result);
-        auto stored = ctx.store_value(asg::value::ArrayValue {
+        auto stored = ctx.store_value(sem::value::ArrayValue {
             .value = converted
         });
         if (!stored)
             return ast::make_evaluation_result(stored.error());
 
-        auto array_result = asg::value::make_array (
+        auto array_result = sem::value::make_array (
             stored.get(),
             make_component_vector(std::move(type)),
             static_cast<integral>(stored->value.size())
@@ -438,31 +428,42 @@ namespace cynth {
         return new ast::node::Block{std::move(other)};
     }
 
-    std::string ast::node::Block::display () const {
+    display_result ast::node::Block::display () const {
         return statements.empty()
             ? "{}"
-            : "{\n" + util::join(";\n", ast::display(statements)) + "\n}";
+            : "{\n" + util::join(";\n", cynth::display(statements)) + "\n}";
     }
 
-    // TODO: Is there really a need for separate evaluate and execute implementation?
-    // It seems like it should naturally be the same thing (except for the mandatory return in evaluation).
+    template <bool Scope>
+    ast::evaluation_result ast::node::Block::evaluate (sem::context & ctx) const {
+        constexpr auto eval = [] (
+            sem::context & ctx,
+            component_vector<category::Statement> const & statements
+        ) -> ast::evaluation_result {
+            for (auto & statement : statements) {
+                auto returned = ast::execute(ctx)(statement);
+                if (returned)
+                    return lift::tuple_vector{make_result}(*returned);
+                if (returned.has_error())
+                    return ast::make_evaluation_result(returned.error());
+            }
 
-    ast::evaluation_result ast::node::Block::evaluate (context & ctx) const {
-        auto block_scope = make_child_context(ctx);
+            //return ast::make_evaluation_result(result_error{"Evaluated block does not return."});
+            return {}; // Return the void value.
+        };
 
-        for (auto & statement : statements) {
-            auto returned = ast::execute(block_scope)(statement);
-            if (returned)
-                return lift::tuple_vector{make_result}(*returned);
-            if (returned.has_error())
-                return ast::make_evaluation_result(returned.error());
-        }
+        if constexpr (Scope) {
+            auto block_scope = make_child_context(ctx);
+            return eval(block_scope, statements);
 
-        //return ast::make_evaluation_result(result_error{"Evaluated block does not return."});
-        return {}; // Return the void value.
+        } else
+            return eval(ctx, statements);
     }
 
-    ast::execution_result ast::node::Block::execute (context & ctx) const {
+    template ast::evaluation_result ast::node::Block::evaluate <true>  (sem::context &) const;
+    template ast::evaluation_result ast::node::Block::evaluate <false> (sem::context &) const;
+
+    ast::execution_result ast::node::Block::execute (sem::context & ctx) const {
         auto block_scope = make_child_context(ctx);
 
         for (auto & statement : statements) {
@@ -493,12 +494,12 @@ namespace cynth {
         return new ast::node::Bool{std::move(other)};
     }
 
-    std::string ast::node::Bool::display () const {
+    display_result ast::node::Bool::display () const {
         return value ? "true" : "false";
     }
 
-    ast::evaluation_result ast::node::Bool::evaluate (context &) const {
-        return ast::make_evaluation_result(asg::value::make_bool(value));
+    ast::evaluation_result ast::node::Bool::evaluate (sem::context &) const {
+        return ast::make_evaluation_result(sem::value::make_bool(value));
     }
 
     //// Conversion ////
@@ -518,14 +519,13 @@ namespace cynth {
         return new ast::node::Conversion{std::move(other)};
     }
 
-    std::string ast::node::Conversion::display () const {
-        return ast::display(type) + util::parenthesized(ast::display(argument));
+    display_result ast::node::Conversion::display () const {
+        return cynth::display(type) + util::parenthesized(cynth::display(argument));
     }
 
-    // TODO: Check with all the types as soon as I fix them.
-    ast::evaluation_result ast::node::Conversion::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Conversion::evaluate (sem::context & ctx) const {
         auto from = ast::evaluate(ctx)(argument);
-        auto to   = asg::complete(ast::eval_type(ctx)(type));
+        auto to   = sem::complete(ctx)(ast::eval_type(ctx)(type));
         if (to.size() == 0)
             return ast::make_evaluation_result(result_error{"Cannot use the void type in an explicit conversion."});
         if (from.size() == 0)
@@ -534,7 +534,7 @@ namespace cynth {
             return ast::make_evaluation_result(result_error{"Too little values in a conversion."});
         if (to.size() < from.size())
             return ast::make_evaluation_result(result_error{"Too many values in a conversion."});
-        auto result = asg::convert(from, to);
+        auto result = sem::convert(ctx)(from, to);
         if (!result)
             return ast::make_evaluation_result(result.error());
         return *result;
@@ -557,12 +557,12 @@ namespace cynth {
         return new ast::node::Div{std::move(other)};
     }
 
-    std::string ast::node::Div::display () const {
-        return "(" + ast::display(left_argument) + " / " + ast::display(right_argument) + ")";
+    display_result ast::node::Div::display () const {
+        return "(" + cynth::display(left_argument) + " / " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Div::evaluate (context & ctx) const {
-        auto results = div(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Div::evaluate (sem::context & ctx) const {
+        auto results = div(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -585,12 +585,12 @@ namespace cynth {
         return new ast::node::Eq{std::move(other)};
     }
 
-    std::string ast::node::Eq::display () const {
-        return "(" + ast::display(left_argument) + " == " + ast::display(right_argument) + ")";
+    display_result ast::node::Eq::display () const {
+        return "(" + cynth::display(left_argument) + " == " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Eq::evaluate (context & ctx) const {
-        auto results = eq(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Eq::evaluate (sem::context & ctx) const {
+        auto results = eq(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -613,20 +613,20 @@ namespace cynth {
         return new ast::node::ExprFor{std::move(other)};
     }
 
-    std::string ast::node::ExprFor::display () const {
+    display_result ast::node::ExprFor::display () const {
         return
-            "for " + util::parenthesized(ast::display(declarations)) +
-            " "    + ast::display(body);
+            "for " + util::parenthesized(cynth::display(declarations)) +
+            " "    + cynth::display(body);
     }
 
-    ast::evaluation_result ast::node::ExprFor::evaluate (context & ctx) const {
-        auto decls_result = asg::for_decls(ctx, *declarations);
+    ast::evaluation_result ast::node::ExprFor::evaluate (sem::context & ctx) const {
+        auto decls_result = sem::for_decls(ctx, *declarations);
         if (!decls_result)
             return ast::make_evaluation_result(decls_result.error());
         auto [size, iter_decls] = *std::move(decls_result);
 
-        asg::array_vector              result_values;
-        std::optional<asg::array_type> result_type;
+        sem::array_vector              result_values;
+        std::optional<sem::array_type> result_type;
 
         result_values.reserve(size);
 
@@ -636,7 +636,7 @@ namespace cynth {
 
             // Define iteration elements:
             for (auto & [decl, value] : iter_decls)
-                asg::define(iter_scope, decl, value.value->value[i]);
+                iter_scope.define_value(decl, value.value->value[i]);
 
             // Evaluate the loop body:
             auto value_result = util::unite_results(ast::evaluate(iter_scope)(body));
@@ -644,10 +644,10 @@ namespace cynth {
                 return ast::make_evaluation_result(value_result.error());
 
             auto & value = *value_result;
-            auto   type  = asg::value_type(value);
+            auto   type  = sem::value_type(value);
 
             if (result_type) {
-                auto common_results = asg::common(type, *result_type);
+                auto common_results = sem::common(type, *result_type);
                 if (!common_results)
                     return ast::make_evaluation_result(common_results.error());
                 result_type = result_to_optional(util::unite_results(*common_results));
@@ -661,13 +661,13 @@ namespace cynth {
         if (!result_type)
             return ast::make_evaluation_result(result_error{"No common type for an array in a for expression."});
 
-        auto stored = ctx.store_value(asg::value::ArrayValue {
+        auto stored = ctx.store_value(sem::value::ArrayValue {
             .value = result_values
         });
         if (!stored)
             return ast::make_evaluation_result(stored.error());
 
-        auto result = asg::value::make_array (
+        auto result = sem::value::make_array (
             stored.get(),
             *std::move(result_type),
             static_cast<integral>(stored->value.size())
@@ -677,8 +677,8 @@ namespace cynth {
         return ast::make_evaluation_result(*result);
     }
 
-    ast::execution_result ast::node::ExprFor::execute (context & ctx) const {
-        auto decls_result = asg::for_decls(ctx, *declarations);
+    ast::execution_result ast::node::ExprFor::execute (sem::context & ctx) const {
+        auto decls_result = sem::for_decls(ctx, *declarations);
         if (!decls_result)
             return ast::make_execution_result(decls_result.error());
         auto [size, iter_decls] = *std::move(decls_result);
@@ -689,7 +689,7 @@ namespace cynth {
 
             // Define iteration elements:
             for (auto & [decl, value] : iter_decls)
-                asg::define(iter_scope, decl, value.value->value[i]);
+                iter_scope.define_value(decl, value.value->value[i]);
 
             // Execute the loop body:
             auto returned = ast::execute(iter_scope)(body);
@@ -720,15 +720,15 @@ namespace cynth {
         return new ast::node::ExprIf{std::move(other)};
     }
 
-    std::string ast::node::ExprIf::display () const {
+    display_result ast::node::ExprIf::display () const {
         return
-            "if "    + util::parenthesized(ast::display(condition)) +
-            " "      + ast::display(positive_branch) +
-            " else " + ast::display(negative_branch);
+            "if "    + util::parenthesized(cynth::display(condition)) +
+            " "      + cynth::display(positive_branch) +
+            " else " + cynth::display(negative_branch);
     }
 
-    ast::evaluation_result ast::node::ExprIf::evaluate (context & ctx) const {
-        auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
+    ast::evaluation_result ast::node::ExprIf::evaluate (sem::context & ctx) const {
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
         if (!result)
             return ast::make_evaluation_result(result.error());
         if (*result)
@@ -737,8 +737,8 @@ namespace cynth {
             return ast::evaluate(ctx)(negative_branch);
     }
 
-    ast::execution_result ast::node::ExprIf::execute (context & ctx) const {
-        auto result = asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
+    ast::execution_result ast::node::ExprIf::execute (sem::context & ctx) const {
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(condition))));
         if (!result)
             return ast::make_execution_result(result.error());
         if (*result) {
@@ -767,12 +767,12 @@ namespace cynth {
         return new ast::node::Float{std::move(other)};
     }
 
-    std::string ast::node::Float::display () const {
+    display_result ast::node::Float::display () const {
         return std::to_string(value);
     }
 
-    ast::evaluation_result ast::node::Float::evaluate (context &) const {
-        return ast::make_evaluation_result(asg::value::make_float(value));
+    ast::evaluation_result ast::node::Float::evaluate (sem::context &) const {
+        return ast::make_evaluation_result(sem::value::make_float(value));
     }
 
     //// Function ////
@@ -792,23 +792,29 @@ namespace cynth {
         return new ast::node::Function{std::move(other)};
     }
 
-    std::string ast::node::Function::display () const {
-        return ast::display(output) + " fn " + util::parenthesized(ast::display(input)) + " " + ast::display(body);
+    display_result ast::node::Function::display () const {
+        return cynth::display(output) + " fn " + util::parenthesized(cynth::display(input)) + " " + cynth::display(body);
     }
 
-    // TODO: Test as soon as I fix function application.
-    ast::evaluation_result ast::node::Function::evaluate (context & ctx) const {
-        auto out_type = util::unite_results(asg::complete(ast::eval_type(ctx)(output)));
+    ast::evaluation_result ast::node::Function::evaluate (sem::context & ctx) const {
+        auto out_type = util::unite_results(sem::complete(ctx)(ast::eval_type(ctx)(output)));
         if (!out_type)
             return ast::make_evaluation_result(out_type.error());
-        auto parameters = util::unite_results(asg::complete(ast::eval_decl(ctx)(input)));
+        auto parameters = util::unite_results(sem::complete(ctx)(ast::eval_decl(ctx)(input)));
         if (!parameters)
             return ast::make_evaluation_result(parameters.error());
-        return ast::make_evaluation_result(asg::value::complete{asg::value::Function {
-            .out_type   = component_vector<asg::type::complete> {*std::move(out_type)},
-            .parameters = component_vector<asg::complete_decl>  {*std::move(parameters)},
+
+        auto stored = ctx.store_value(sem::value::FunctionValue {
+            .out_type   = component_vector<sem::type::complete> {*std::move(out_type)},
+            .parameters = component_vector<sem::complete_decl>  {*std::move(parameters)},
             .body       = body,
-            .capture    = ctx // TODO: copy-on-write references
+            .capture    = ctx // TODO
+        });
+        if (!stored)
+            return ast::make_evaluation_result(stored.error());
+
+        return ast::make_evaluation_result(sem::value::complete{sem::value::Function {
+            .value = stored.get()
         }});
     }
 
@@ -829,12 +835,12 @@ namespace cynth {
         return new ast::node::Ge{std::move(other)};
     }
 
-    std::string ast::node::Ge::display () const {
-        return "(" + ast::display(left_argument) + " >= " + ast::display(right_argument) + ")";
+    display_result ast::node::Ge::display () const {
+        return "(" + cynth::display(left_argument) + " >= " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Ge::evaluate (context & ctx) const {
-        auto results = ge(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Ge::evaluate (sem::context & ctx) const {
+        auto results = ge(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -857,12 +863,12 @@ namespace cynth {
         return new ast::node::Gt{std::move(other)};
     }
 
-    std::string ast::node::Gt::display () const {
-        return "(" + ast::display(left_argument) + " > " + ast::display(right_argument) + ")";
+    display_result ast::node::Gt::display () const {
+        return "(" + cynth::display(left_argument) + " > " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Gt::evaluate (context & ctx) const {
-        auto results = gt(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Gt::evaluate (sem::context & ctx) const {
+        auto results = gt(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -885,12 +891,12 @@ namespace cynth {
         return new ast::node::Int{std::move(other)};
     }
 
-    std::string ast::node::Int::display () const {
+    display_result ast::node::Int::display () const {
         return std::to_string(value);
     }
 
-    ast::evaluation_result ast::node::Int::evaluate (context &) const {
-        return ast::make_evaluation_result(asg::value::make_int(value));
+    ast::evaluation_result ast::node::Int::evaluate (sem::context &) const {
+        return ast::make_evaluation_result(sem::value::make_int(value));
     }
 
     //// Le ////
@@ -910,12 +916,12 @@ namespace cynth {
         return new ast::node::Le{std::move(other)};
     }
 
-    std::string ast::node::Le::display () const {
-        return "(" + ast::display(left_argument) + " <= " + ast::display(right_argument) + ")";
+    display_result ast::node::Le::display () const {
+        return "(" + cynth::display(left_argument) + " <= " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Le::evaluate (context & ctx) const {
-        auto results = le(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Le::evaluate (sem::context & ctx) const {
+        auto results = le(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -938,12 +944,12 @@ namespace cynth {
         return new ast::node::Lt{std::move(other)};
     }
 
-    std::string ast::node::Lt::display () const {
-        return "(" + ast::display(left_argument) + " < " + ast::display(right_argument) + ")";
+    display_result ast::node::Lt::display () const {
+        return "(" + cynth::display(left_argument) + " < " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Lt::evaluate (context & ctx) const {
-        auto results = lt(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Lt::evaluate (sem::context & ctx) const {
+        auto results = lt(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -966,12 +972,12 @@ namespace cynth {
         return new ast::node::Minus{std::move(other)};
     }
 
-    std::string ast::node::Minus::display () const {
-        return "-" + ast::display(argument);
+    display_result ast::node::Minus::display () const {
+        return "-" + cynth::display(argument);
     }
 
-    ast::evaluation_result ast::node::Minus::evaluate (context & ctx) const {
-        return minus(ast::evaluate(ctx)(argument));
+    ast::evaluation_result ast::node::Minus::evaluate (sem::context & ctx) const {
+        return minus(ctx)(ast::evaluate(ctx)(argument));
     }
 
     //// Mod ////
@@ -991,12 +997,12 @@ namespace cynth {
         return new ast::node::Mod{std::move(other)};
     }
 
-    std::string ast::node::Mod::display () const {
-        return "(" + ast::display(left_argument) + " % " + ast::display(right_argument) + ")";
+    display_result ast::node::Mod::display () const {
+        return "(" + cynth::display(left_argument) + " % " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Mod::evaluate (context & ctx) const {
-        auto results = mod(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Mod::evaluate (sem::context & ctx) const {
+        auto results = mod(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -1019,12 +1025,12 @@ namespace cynth {
         return new ast::node::Mul{std::move(other)};
     }
 
-    std::string ast::node::Mul::display () const {
-        return "(" + ast::display(left_argument) + " * " + ast::display(right_argument) + ")";
+    display_result ast::node::Mul::display () const {
+        return "(" + cynth::display(left_argument) + " * " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Mul::evaluate (context & ctx) const {
-        auto results = mul(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Mul::evaluate (sem::context & ctx) const {
+        auto results = mul(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -1047,22 +1053,25 @@ namespace cynth {
         return new ast::node::Name{std::move(other)};
     }
 
-    std::string ast::node::Name::display () const {
+    display_result ast::node::Name::display () const {
         return *name;
     }
 
-    ast::evaluation_result ast::node::Name::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Name::evaluate (sem::context & ctx) const {
+        return ast::make_evaluation_result(result_error{"TODO"});
+        /*
         auto value = ctx.find_value(*name);
         return value
             ? lift::tuple_vector{make_result}(value->value)
             : ast::make_evaluation_result(result_error{"Name not found."});
+        */
     }
 
-    ast::target_eval_result ast::node::Name::eval_target (context & ctx) const {
+    ast::target_eval_result ast::node::Name::eval_target (sem::context & ctx) const {
         auto result = ctx.find_value(*name);
         if (!result)
             return ast::make_target_eval_result(result_error{"Target name not found."});
-        return ast::make_target_eval_result(asg::any_target{asg::direct_target {
+        return ast::make_target_eval_result(sem::any_target{sem::direct_target {
             .value = *result
         }});
     }
@@ -1084,12 +1093,12 @@ namespace cynth {
         return new ast::node::Ne{std::move(other)};
     }
 
-    std::string ast::node::Ne::display () const {
-        return "(" + ast::display(left_argument) + " != " + ast::display(right_argument) + ")";
+    display_result ast::node::Ne::display () const {
+        return "(" + cynth::display(left_argument) + " != " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Ne::evaluate (context & ctx) const {
-        auto results = ne(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Ne::evaluate (sem::context & ctx) const {
+        auto results = ne(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -1112,16 +1121,16 @@ namespace cynth {
         return new ast::node::Not{std::move(other)};
     }
 
-    std::string ast::node::Not::display () const {
-        return "!" + ast::display(argument);
+    display_result ast::node::Not::display () const {
+        return "!" + cynth::display(argument);
     }
 
-    ast::evaluation_result ast::node::Not::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Not::evaluate (sem::context & ctx) const {
         return lift::evaluation {
-            [] <util::temporary T> (T && a) {
-                return lift::result{asg::value::make_bool} (
+            [&ctx] <util::temporary T> (T && a) {
+                return lift::result{sem::value::make_bool} (
                     lift::result{util::lnot} (
-                        asg::get<bool>(asg::convert(asg::type::Bool{})(std::move(a)))
+                        sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(std::move(a)))
                     )
                 );
             },
@@ -1145,19 +1154,19 @@ namespace cynth {
         return new ast::node::Or{std::move(other)};
     }
 
-    std::string ast::node::Or::display () const {
-        return "(" + ast::display(left_argument) + " || " + ast::display(right_argument) + ")";
+    display_result ast::node::Or::display () const {
+        return "(" + cynth::display(left_argument) + " || " + cynth::display(right_argument) + ")";
     }
 
     // TODO: This implementation doesn't work on tuples.
-    ast::evaluation_result ast::node::Or::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Or::evaluate (sem::context & ctx) const {
         auto llhs = lazy{[this, &ctx] {
-            return asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(left_argument))));
+            return sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(left_argument))));
         }};
         auto lrhs = lazy{[this, &ctx] {
-            return asg::get<bool>(asg::convert(asg::type::Bool{})(util::single(ast::evaluate(ctx)(right_argument))));
+            return sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(ast::evaluate(ctx)(right_argument))));
         }};
-        return util::init<tuple_vector>(lift::result{asg::value::make_bool}(util::lor(llhs, lrhs)));
+        return util::init<tuple_vector>(lift::result{sem::value::make_bool}(util::lor(llhs, lrhs)));
     }
 
     //// Plus ////
@@ -1177,12 +1186,12 @@ namespace cynth {
         return new ast::node::Plus{std::move(other)};
     }
 
-    std::string ast::node::Plus::display () const {
-        return "+" + ast::display(argument);
+    display_result ast::node::Plus::display () const {
+        return "+" + cynth::display(argument);
     }
 
-    ast::evaluation_result ast::node::Plus::evaluate (context & ctx) const {
-        return plus(ast::evaluate(ctx)(argument));
+    ast::evaluation_result ast::node::Plus::evaluate (sem::context & ctx) const {
+        return plus(ctx)(ast::evaluate(ctx)(argument));
     }
 
     //// Pow ////
@@ -1202,12 +1211,12 @@ namespace cynth {
         return new ast::node::Pow{std::move(other)};
     }
 
-    std::string ast::node::Pow::display () const {
-        return "(" + ast::display(left_argument) + " ** " + ast::display(right_argument) + ")";
+    display_result ast::node::Pow::display () const {
+        return "(" + cynth::display(left_argument) + " ** " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Pow::evaluate (context & ctx) const {
-        auto results = pow(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Pow::evaluate (sem::context & ctx) const {
+        auto results = pow(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -1230,12 +1239,12 @@ namespace cynth {
         return new ast::node::String{std::move(other)};
     }
 
-    std::string ast::node::String::display () const {
+    display_result ast::node::String::display () const {
         //return "\"" + value + "\"";
         return "\"" + *value + "\"";
     }
 
-    ast::evaluation_result ast::node::String::evaluate (context &) const {
+    ast::evaluation_result ast::node::String::evaluate (sem::context &) const {
         return ast::make_evaluation_result(result_error{"Strings are not supported yet."});
     }
 
@@ -1256,12 +1265,12 @@ namespace cynth {
         return new ast::node::Sub{std::move(other)};
     }
 
-    std::string ast::node::Sub::display () const {
-        return "(" + ast::display(left_argument) + " - " + ast::display(right_argument) + ")";
+    display_result ast::node::Sub::display () const {
+        return "(" + cynth::display(left_argument) + " - " + cynth::display(right_argument) + ")";
     }
 
-    ast::evaluation_result ast::node::Sub::evaluate (context & ctx) const {
-        auto results = sub(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
+    ast::evaluation_result ast::node::Sub::evaluate (sem::context & ctx) const {
+        auto results = sub(ctx)(ast::evaluate(ctx)(left_argument), ast::evaluate(ctx)(right_argument));
         if (!results)
             return ast::make_evaluation_result(results.error());
         return *results;
@@ -1284,17 +1293,15 @@ namespace cynth {
         return new ast::node::Subscript{std::move(other)};
     }
 
-    std::string ast::node::Subscript::display () const {
-        return ast::display(container) + " [" + util::join(", ", ast::display(location)) + "]";
+    display_result ast::node::Subscript::display () const {
+        return cynth::display(container) + " [" + util::join(", ", cynth::display(location)) + "]";
     }
 
-    // TODO: error: Single item expected.
     // TODO: This implementation only allows the simple c-like subscript a[i] with a single index on a single (non-tuple) value.
-    // TODO: What about subscript on the lhs of an assignment (a[i] = x)?
-    ast::evaluation_result ast::node::Subscript::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Subscript::evaluate (sem::context & ctx) const {
         //ast::evaluate(container);
-        //return asg::get<bool>(lift::single_evaluation{asg::convert(asg::type::Bool{})}(util::single(location)));
-        auto location_result = asg::array_elems(ctx, location);
+        //return sem::get<bool>(lift::single_evaluation{sem::convert(sem::type::Bool{})}(util::single(location)));
+        auto location_result = sem::array_elems(ctx, location);
         if (!location_result)
             return ast::make_evaluation_result(location_result.error());
         auto [locations, location_type] = *location_result;
@@ -1303,25 +1310,25 @@ namespace cynth {
         // Simplification: only the first location is taken.
         // (the util::single(locastions) part is the simplification.
         // lift::result{util::single} corresponds to an intended behaviour, not a simplification.)
-        //auto r = asg::convert(asg::type::Int{})(util::single(locations));
+        //auto r = sem::convert(sem::type::Int{})(util::single(locations));
 
-        auto index_result = asg::get<integral> (
-            asg::convert(asg::type::Int{})(lift::result{util::single}(util::single(locations)))
+        auto index_result = sem::get<integral> (
+            sem::convert(ctx)(sem::type::Int{})(lift::result{util::single}(util::single(locations)))
         );
         if (!index_result)
             return ast::make_evaluation_result(index_result.error());
         integral index = *index_result;
 
         // Simplification: only the first container is taken:
-        using result_type = result<tuple_vector<asg::value::complete>>;
+        using result_type = result<tuple_vector<sem::value::complete>>;
         auto result = lift::single_evaluation{util::overload {
-            [index] (asg::value::Array const & a) -> result_type {
+            [&ctx, index] (sem::value::Array const & a) -> result_type {
                 integral size = a.size;
                 if (index >= size)
                     return {result_error{"Subscript index out of bounds."}};
                 if (index < 0)
                     return {result_error{"Negative subscripts not supported yet."}};
-                auto results = asg::convert(a.value->value[index], a.type);
+                auto results = sem::convert(ctx)(a.value->value[index], a.type);
                 if (!results)
                     return results.error();
                 return util::unite_results(*results);
@@ -1336,31 +1343,31 @@ namespace cynth {
         return lift::tuple_vector{make_result}(*result);
     }
 
-    ast::target_eval_result ast::node::Subscript::eval_target (context & ctx) const {
+    ast::target_eval_result ast::node::Subscript::eval_target (sem::context & ctx) const {
         // Only the first container is taken. (This is the intended behaviour, not a simplification.)
         auto container_result = lift::result{util::single}(ast::eval_target(ctx)(container));
         if (!container_result)
             return ast::make_target_eval_result(container_result.error());
 
-        auto location_result = asg::array_elems(ctx, location);
+        auto location_result = sem::array_elems(ctx, location);
         if (!location_result)
             return ast::make_target_eval_result(location_result.error());
         auto [locations, location_type] = *std::move(location_result);
 
         if (locations.size() == 0)
-            return ast::make_target_eval_result(asg::any_target{asg::subscript_target {
+            return ast::make_target_eval_result(sem::any_target{sem::subscript_target {
                 .container = *container_result,
                 .location  = {}
             }});
 
         // Simplification: Only the first location is taken.
         auto index_result = util::unite_results (
-            asg::convert(asg::type::Int{})(lift::component{util::single}(locations))
+            sem::convert(ctx)(sem::type::Int{})(lift::component{util::single}(locations))
         );
         if (!index_result)
             return ast::make_target_eval_result(index_result.error());
 
-        return ast::make_target_eval_result(asg::any_target{asg::subscript_target {
+        return ast::make_target_eval_result(sem::any_target{sem::subscript_target {
             .container = *container_result,
             .location  = *index_result
         }});
@@ -1383,11 +1390,11 @@ namespace cynth {
         return new ast::node::Tuple{std::move(other)};
     }
 
-    std::string ast::node::Tuple::display () const {
-        return "(" + util::join(", ", ast::display(values)) + ")";
+    display_result ast::node::Tuple::display () const {
+        return "(" + util::join(", ", cynth::display(values)) + ")";
     }
 
-    ast::evaluation_result ast::node::Tuple::evaluate (context & ctx) const {
+    ast::evaluation_result ast::node::Tuple::evaluate (sem::context & ctx) const {
         ast::evaluation_result result;
         for (auto & value_tuple : ast::evaluate(ctx)(values)) for (auto & value : value_tuple) {
             result.push_back(std::move(value));
@@ -1395,8 +1402,8 @@ namespace cynth {
         return result;
     }
 
-    ast::target_eval_result ast::node::Tuple::eval_target (context & ctx) const {
-        tuple_vector<asg::any_target> result;
+    ast::target_eval_result ast::node::Tuple::eval_target (sem::context & ctx) const {
+        tuple_vector<sem::any_target> result;
         auto values_result = util::unite_results(ast::eval_target(ctx)(values));
         if (!values_result)
             return ast::make_target_eval_result(values_result.error());

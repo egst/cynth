@@ -1,9 +1,9 @@
 #pragma once
 
-#include "asg/forward.hpp"
+#include "sem/forward.hpp"
 #include "component.hpp"
 
-namespace cynth::asg {
+namespace cynth::sem {
 
     template <bool Complete>
     struct declaration {

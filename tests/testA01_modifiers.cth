@@ -29,13 +29,6 @@ OutInt     output1;
 IntOutInt  output2;
 OutIntPair output3;
 
-# Note: Currently, the only check that forbids any read from any output type
-# is the fact that no conversions from the out types are possible.
-# Conversions happen in every operation (even if it's just the identity conversions) except for the return.
-# So technically, output values may be returned from a block, but the resulting block value cannot be used anywhere.
-# Return from the whole program applies no conversions to the returned value, so it is possible to return an out value.
-# This behaviour might change in future versions.
-
 #return output1;
 #return output2;
 #return output3;
@@ -65,11 +58,22 @@ InConst input5;
 
 #return input5;
 
-# Input types must not be initialized even though they are implicitly const.
-# Note: This is an exception - other const values must always be initialized.
+# Input types don't need to be initialized even though they are implicitly const.
+# Uninitialized input variables allocate a new input value,
+# while initialized variables only reference a value of another input variable.
 Int in input6;
+Int in input7 = input6;
 
-# Error: Cannot initialize an input value.
+# Error: Input types are implicitly constant.
+input6 = input7;
+
+# Note: The `a[] = x` syntax is reused for the equivalent of `*a = c` in C.
+# This unites the concept of the special IO referential types with single valued arrays.
+# I.e. `Int in` is essentially `Int const [1] const` with a single unindexed value.
+# Error: Input type implicitly contains a constant type.
+input6[] = 2;
+
+# Error: An input value can only be initialized with another input value.
 #Int in initInput = 1;
 
 # Note that semantically, constness does not mean "its value cannot change", but rather "cannot be assigned to".

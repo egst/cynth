@@ -1,5 +1,6 @@
 #pragma once
 
+#include "result.hpp"
 #include "util/general.hpp"
 
 #include <variant>

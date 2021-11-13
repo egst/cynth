@@ -10,6 +10,7 @@ INC       = inc/
 SRC       = src/
 DEP_SRC   = dep/src/
 DEP_ENTRY = dep/
+DEP_LINK  = dep/link/
 BIN_SRC   = obj/src/
 BIN_ENTRY = obj/
 BIN_DIST  = dist/
@@ -40,8 +41,9 @@ EXT_CYNTH = .cth
 # (Excluding the ENTRY directory and the EXT_IMPL extension.)
 #ENTRY_POINTS += cynth
 #ENTRY_POINTS += parser
-ENTRY_POINTS += interpreter
-#ENTRY_POINTS += test
+#ENTRY_POINTS += interpreter
+#ENTRY_POINTS += compiler
+ENTRY_POINTS += test
 
 # Compiler:
 # (Tested with GCC 10, Clang 10 and 11.)
@@ -123,10 +125,17 @@ COMPILE_OBJ = mkdir -p $(dir $@); $(COMPILER) $(ALL_OPTIONS) -c -o $@ $<
 LINK = mkdir -p $(dir $@); $(COMPILER) $(LINK_OPTIONS) -o $@ $^
 
 # Generate dependencies:
-#GEN_DEPS       = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MG -MT $1 -MF $@ $<
-GEN_DEPS       = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MT $1 -MF $@ $<
-GEN_SRC_DEPS   = $(call GEN_DEPS,$(<:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ)))
-GEN_ENTRY_DEPS = $(call GEN_DEPS,$(<:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ)))
+#GEN_DEPS             = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MG -MT $1 -MF $@ $<
+GEN_DEPS             = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MT $1 -MF $@ $<
+GEN_INDIR_DEPS       = cat $@ | sed 's/$(subst /,\/,$1)/$(subst /,\/,$@)/' >> $@
+GEN_SRC_DEPS         = $(call GEN_DEPS,$(<:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ)))
+GEN_ENTRY_DEPS       = $(call GEN_DEPS,$(<:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ)))
+GEN_INDIR_SRC_DEPS   = $(call GEN_INDIR_DEPS,$(@:$(DEP_SRC)%$(EXT_DEP)=$(BIN_SRC)%$(EXT_OBJ)))
+GEN_INDIR_ENTRY_DEPS = $(call GEN_INDIR_DEPS,$(@:$(DEP_ENTRY)%$(EXT_DEP)=$(BIN_ENTRY)%$(EXT_OBJ)))
+
+GEN_LINK_DEPS = TODO...
+# echo "dist/target:$(echo $SRC_FILES | tr ' ' '\n' | sort | comm -12 - <(cat dep/test.mk | tr ' ' '\n' | grep '.hpp$' | sed 's/\.hpp$/\.cpp/' | sed 's/^inc/src/' | sort) | tr '\n' ' ')" | fold -s -w80
+# dist/target: entry/target.cpp src/dep1.cpp src/dep2.cpp ...
 
 # Generate lexer:
 GEN_LEXER = $(FLEX) $(LEX_OPTIONS) -o $(SRC)$(IMPL_LEXER)$(EXT_IMPL) $(GEN)lexer.l
@@ -154,18 +163,25 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	$(GEN_PARSER)
 	$(call INFO,Tweaking the generated parser a bit...)
 	sed -i 's/yylhs.value.emplace< cynth::ast::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
-#	$(call INFO,Moving the generater parser header file to the correct location...)
+#	$(call INFO,Moving the generated parser header file to the correct location...)
 #	mv $(SRC)$(IMPL_PARSER)$(EXT_HEAD) $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 
 # Source files dependencies:
 $(DEP_SRC)%$(EXT_DEP): $(SRC)%$(EXT_IMPL)
 	$(call INFO,Updating \"$(call FILE_NAME,$<)\" source dependencies...)
 	$(GEN_SRC_DEPS)
+	$(GEN_INDIR_SRC_DEPS)
 
 # Entry-point files dependencies:
 $(DEP_ENTRY)%$(EXT_DEP): $(ENTRY)%$(EXT_IMPL)
 	$(call INFO,Updating \"$(call FILE_NAME,$<)\" entry dependencies...)
 	$(GEN_ENTRY_DEPS)
+	$(GEN_INDIR_ENTRY_DEPS)
+
+# Entry-point files linkage dependencies (source files):
+$(DEP_LINK)%$(EXT_DEP): $(ENTRY)%$(EXT_IMPL)
+	$(call INFO,Updating \"$(call FILE_NAME,$<)\" entry linkage dependencies...)
+	$(GEN_LINK_DEPS)
 
 # Compiling source files:
 $(BIN_SRC)%$(EXT_OBJ): $(SRC)%$(EXT_IMPL)
@@ -181,6 +197,7 @@ $(BIN_ENTRY)%$(EXT_OBJ): $(ENTRY)%$(EXT_IMPL)
 # Linking executable files:
 $(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
 	$(call INFO,Linking \"$(call FILE_NAME,$<)\" executable file...)
+	$(call INFO,Sources: $(SRC_FILES))
 	$(LINK)
 
 # Removing executable files:

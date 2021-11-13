@@ -3,11 +3,25 @@
 #include "ast/interface_types.hpp"
 #include "ast/categories_forward.hpp"
 #include "component.hpp"
-#include "asg/values.hpp"
-#include "asg/declarations.hpp"
-#include "context.hpp"
+#include "sem/values.hpp"
+#include "sem/declarations.hpp"
+#include "sem/context.hpp"
+#include "sem/translation_context.hpp"
 
 #include <string>
+
+// Note: Macros are always undefined at the end of the file.
+#define EXPR_DECL \
+    display_result     display     ()                           const; \
+    evaluation_result  evaluate    (sem::context &)             const; \
+    translation_result translate   (sem::translation_context &) const
+#define NOEVAL_DECL \
+    display_result     display     ()                           const; \
+    translation_result translate   (sem::translation_context &) const
+#define EXEC_DECL \
+    execution_result   execute     (sem::context &)             const
+#define TARGET_DECL \
+    target_eval_result eval_target (sem::context &)             const
 
 namespace cynth::ast::node {
 
@@ -16,9 +30,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result     display   ()          const;
-        evaluation_result  evaluate  (context &) const;
-        translation_result translate (context &) const;
+        EXPR_DECL;
     };
 
     /** a && b */
@@ -26,8 +38,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** f(in) */
@@ -35,25 +46,24 @@ namespace cynth::ast::node {
         component<category::Expression> function;
         component<category::Expression> arguments;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** [a, ...] */
     struct Array {
         component_vector<category::ArrayElem> elements;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** { stmt; ... } */
     struct Block {
         component_vector<category::Statement> statements;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
-        execution_result  execute  (context &) const;
+        template <bool = true> evaluation_result evaluate (sem::context &) const;
+
+        NOEVAL_DECL;
+        EXEC_DECL;
     };
 
     /**
@@ -63,8 +73,7 @@ namespace cynth::ast::node {
     struct Bool {
         bool value;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** T(a) */
@@ -72,8 +81,7 @@ namespace cynth::ast::node {
         component<category::Type>       type;
         component<category::Expression> argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a / b */
@@ -81,8 +89,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a == b */
@@ -90,8 +97,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** for (T e in a) x */
@@ -99,9 +105,8 @@ namespace cynth::ast::node {
         component<category::RangeDecl>  declarations;
         component<category::Expression> body;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
-        execution_result  execute  (context &) const;
+        EXPR_DECL;
+        EXEC_DECL;
     };
 
     /** if (cond) a else b */
@@ -110,17 +115,15 @@ namespace cynth::ast::node {
         component<category::Expression> positive_branch;
         component<category::Expression> negative_branch;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
-        execution_result  execute  (context &) const;
+        EXPR_DECL;
+        EXEC_DECL;
     };
 
     /** 12.34e-56 */
     struct Float {
         floating value;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** Out fn (In a) */
@@ -129,8 +132,7 @@ namespace cynth::ast::node {
         component<category::Declaration> input;
         component<category::Expression>  body;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a >= b */
@@ -138,8 +140,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a > b */
@@ -147,16 +148,14 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** 12e-34 */
     struct Int {
         integral value;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a <= b */
@@ -164,8 +163,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a < b */
@@ -173,16 +171,14 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a - b */
     struct Minus {
         component<category::Expression> argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a % b */
@@ -190,8 +186,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a * b */
@@ -199,8 +194,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a */
@@ -208,9 +202,8 @@ namespace cynth::ast::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         component<std::string> name;
 
-        display_result     display     ()          const;
-        evaluation_result  evaluate    (context &) const;
-        target_eval_result eval_target (context &) const;
+        EXPR_DECL;
+        TARGET_DECL;
     };
 
     /** a != b */
@@ -218,16 +211,14 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** !a */
     struct Not {
         component<category::Expression> argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a || b */
@@ -235,16 +226,14 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a + b */
     struct Plus {
         component<category::Expression> argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a ** b */
@@ -252,8 +241,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** "abc" */
@@ -261,8 +249,7 @@ namespace cynth::ast::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         component<std::string> value;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a - b */
@@ -270,8 +257,7 @@ namespace cynth::ast::node {
         component<category::Expression> left_argument;
         component<category::Expression> right_argument;
 
-        display_result    display  ()          const;
-        evaluation_result evaluate (context &) const;
+        EXPR_DECL;
     };
 
     /** a[b] */
@@ -279,9 +265,8 @@ namespace cynth::ast::node {
         component        <category::Expression> container;
         component_vector <category::ArrayElem>  location;
 
-        display_result     display     ()          const;
-        evaluation_result  evaluate    (context &) const;
-        target_eval_result eval_target (context &) const;
+        EXPR_DECL;
+        TARGET_DECL;
     };
 
     /** (a, ...) */
@@ -289,9 +274,12 @@ namespace cynth::ast::node {
         // TODO: Non-unary vector?
         component_vector<category::Expression> values;
 
-        display_result     display     ()          const;
-        evaluation_result  evaluate    (context &) const;
-        target_eval_result eval_target (context &) const;
+        EXPR_DECL;
+        TARGET_DECL;
     };
 
 }
+
+#undef EXPR_DECL
+#undef EXEC_DECL
+#undef TARGET_DECL

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "asg/declarations.hpp"
+#include "sem/declarations.hpp"
 #include "category_base.hpp"
 #include "ast/categories/declaration.hpp"
 #include "ast/categories/expression.hpp"

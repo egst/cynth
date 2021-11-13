@@ -1,11 +1,11 @@
 * fix the syntax error
 * sort out test files refering to no longer valid rules.
-* include clean-up (careful with asg/declarations)
+* include clean-up (careful with sem/declarations)
 * check places where return std::move could mess with copy elision
 * in functions, prefer explicit return type with generic initializer return over auto return type with explicit initializer return
     i.e. `-> result` and `return {value}` instead of `-> auto` and `return result{value}`
 * separate util/general.hpp, and also maybe all the different kinds of results and components (this might speed up compilation time in some cases.)
-* don't specify asg:: and ast:: inside those namespaces.
+* don't specify sem:: and ast:: inside those namespaces.
 * specify util:: everywhere (even inside util).
 * specify interface::, node::, category::, type:: and value:: everywhere.
 * f {\n...\n} ()
@@ -41,8 +41,21 @@
 * fix the segfaults with strings not wrapped in components.
 * buffers aren't non-const by definition... their elements are non-const, but aren't directly assignable anyways.
     assignment to a buffer would mean a switch to a different generator, which is something that i still haven't thought through completely.
-* rename asg::value::(Array|Buffer|In|Out).value->value to something less generic and ambiguous
+* rename sem::value::(Array|Buffer|In|Out).value->value to something less generic and ambiguous
 * automated tests
-
-* cedupoc
-* pristuf
+* iterate over buffers in reverse
+* buffer variable should only contain reference to the buffer value and its size
+    (which is the size of a view over the buffer, like with arrays),
+    while the buffer value should contain the actual values and the generator function.
+    this way, the buffers may be passed by references that might refer to a smaller buffer.
+* reading input variables should be impossible at compile time.
+    passing referential input variables should be possible though.
+* lift<variant> instead of lift::variant + lift<tuple, variant> instead of lift::tuple{lift::variant{}} (or the other way around)
+* ast:: and sem:: make less sense with all the stuff currently in there.
+    ast:: contains abstract syntax tree nodes with some basic interface operating on them and yielding mostly values from sem::.
+    sem:: contains abstract semantic graph nodes also with some interface operating on them but also other things.
+    A more suiting name would be syn:: and sem:: (instead of ast:: and sem::).
+    sem:: (sem::) should somehow be separated into interpretation and translation parts.
+    context (and translation_context) can then be moved into sem:: as well.
+* value::complete, type::complete is just confusing. change to complete_value to math other things like typed_value.
+* detail namespaces begin to collide. specify them locally as `detail::lift`, `detail::iterator` etc.

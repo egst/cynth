@@ -39,6 +39,14 @@
 # Error: Arrays of functions are not supported yet.
 #Int (Int) [2] outputs;
 
+## Index type ##
+
+# Should convert to int:
+#return [1, 2, 3][2.1];
+
+# Error: No conversion available.
+#return [1, 2, 3][[1]];
+
 ## Valid array size ##
 
 # Error: Arrays cannot be empty.

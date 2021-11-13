@@ -1,11 +1,16 @@
 #pragma once
 
+#include "component.hpp"
 #include "ast/interface_types.hpp"
 #include "ast/categories_forward.hpp"
-#include "component.hpp"
-#include "context.hpp"
+#include "sem/context.hpp"
 
 #include <string>
+
+// Note: Macros are always undefined at the end of the file.
+#define ARRAY_DECL \
+    display_result         display         ()               const; \
+    array_elem_eval_result eval_array_elem (sem::context &) const
 
 namespace cynth::ast::node {
 
@@ -14,8 +19,7 @@ namespace cynth::ast::node {
         component<category::Expression> from;
         component<category::Expression> to;
 
-        display_result         display         ()          const;
-        array_elem_eval_result eval_array_elem (context &) const;
+        ARRAY_DECL;
     };
 
     /** a to b by c */
@@ -24,16 +28,16 @@ namespace cynth::ast::node {
         component<category::Expression> to;
         component<category::Expression> by;
 
-        display_result         display         ()          const;
-        array_elem_eval_result eval_array_elem (context &) const;
+        ARRAY_DECL;
     };
 
     /** ...a */
     struct Spread {
         component<category::Expression> container;
 
-        display_result         display         ()          const;
-        array_elem_eval_result eval_array_elem (context &) const;
+        ARRAY_DECL;
     };
 
 }
+
+#undef ARRAY_DECL

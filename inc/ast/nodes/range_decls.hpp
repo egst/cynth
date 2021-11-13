@@ -1,12 +1,16 @@
 #pragma once
 
-#include "ast/interface_types.hpp"
-//#include "ast/nodes/expressions.hpp"
-#include "ast/categories_forward.hpp"
 #include "component.hpp"
-#include "context.hpp"
+#include "ast/interface_types.hpp"
+#include "ast/categories_forward.hpp"
+#include "sem/context.hpp"
 
 #include <string>
+
+// Note: Macros are always undefined at the end of the file.
+#define RANGE_DECL \
+    display_result         display         ()               const; \
+    range_decl_eval_result eval_range_decl (sem::context &) const
 
 namespace cynth::ast::node {
 
@@ -15,16 +19,16 @@ namespace cynth::ast::node {
         component<category::Declaration> declaration;
         component<category::Expression>  range;
 
-        display_result         display         ()          const;
-        range_decl_eval_result eval_range_decl (context &) const;
+        RANGE_DECL;
     };
 
     /** (T e in a, ...) */
     struct TupleRangeDecl {
         component_vector<category::RangeDecl> declarations;
 
-        display_result         display         ()          const;
-        range_decl_eval_result eval_range_decl (context &) const;
+        RANGE_DECL;
     };
 
 }
+
+#undef RANGE_DECL

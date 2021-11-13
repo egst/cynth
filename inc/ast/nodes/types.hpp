@@ -1,11 +1,16 @@
 #pragma once
 
+#include "component.hpp"
 #include "ast/interface_types.hpp"
 #include "ast/categories_forward.hpp"
-#include "component.hpp"
-#include "context.hpp"
+#include "sem/context.hpp"
 
 #include <string>
+
+// Note: Macros are always undefined at the end of the file.
+#define TYPE_DECL \
+    display_result   display   ()               const; \
+    type_eval_result eval_type (sem::context &) const
 
 namespace cynth::ast::node {
 
@@ -17,32 +22,28 @@ namespace cynth::ast::node {
         component          <category::Type>    type;
         optional_component <category::Pattern> size;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** $ */
     struct Auto {
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** buffer [a] */
     // TODO: Maybe allow pattern size here too?
-    // Incomplete asg buffer type is declared, so right now it's possible semantically, but not syntactically.
+    // Incomplete sem buffer type is declared, so right now it's possible semantically, but not syntactically.
     struct BufferType {
         component<category::Expression> size;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** T const */
     struct ConstType {
         component<category::Type> type;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** Out (In) */
@@ -50,24 +51,21 @@ namespace cynth::ast::node {
         component<category::Type> output;
         component<category::Type> input;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** T in */
     struct InType {
         component<category::Type> type;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** T out */
     struct OutType {
         component<category::Type> type;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** (T, ...) */
@@ -75,8 +73,7 @@ namespace cynth::ast::node {
         // TODO: Non-unary vector?
         component_vector<category::Type> types;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** T */
@@ -84,16 +81,16 @@ namespace cynth::ast::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         component<std::string> name;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
     /** type T */
     struct TypeDecl {
-        component<ast::node::TypeName> name;
+        component<node::TypeName> name;
 
-        display_result   display   ()          const;
-        type_eval_result eval_type (context &) const;
+        TYPE_DECL;
     };
 
 }
+
+#undef TYPE_DECL

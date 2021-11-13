@@ -4,6 +4,7 @@
 
 #include <variant>
 #include <vector>
+#include <optional>
 
 #include <iostream>
 
@@ -33,6 +34,12 @@ namespace cynth {
     // Strings will be rarely used in the language - only for labeling and commenting on some components in the resulting GUI,
     // so some optimization for such simple static non-modifiable strings could be used here.
     using string = std::string;
+
+    template <typename T>
+    using vector = std::vector<T>;
+
+    template <typename T>
+    using optional = std::optional<T>;
 
     using floating = float;
     using integral = int;

@@ -3,16 +3,17 @@
 #include "config.hpp"
 #include "category_base.hpp"
 #include "component.hpp"
-#include "asg/forward.hpp"
-#include "asg/interface_types.hpp"
+#include "common_interface_types.hpp"
+#include "sem/forward.hpp"
+#include "sem/interface_types.hpp"
 #include "util/general.hpp"
 
 #include <type_traits>
 
-namespace cynth::asg::type {
+namespace cynth::sem::type {
 
     struct Bool {
-        std::string display () const;
+        display_result display () const;
 
         common_type_result common (type::Bool  const &) const;
         common_type_result common (type::Int   const &) const;
@@ -24,7 +25,7 @@ namespace cynth::asg::type {
     };
 
     struct Int {
-        std::string display () const;
+        display_result display () const;
 
         // implicit common (Bool)
         common_type_result common (type::Int   const &) const;
@@ -36,7 +37,7 @@ namespace cynth::asg::type {
     };
 
     struct Float {
-        std::string display () const;
+        display_result display () const;
 
         // implicit common (Bool)
         // implicit common (Int)
@@ -49,7 +50,7 @@ namespace cynth::asg::type {
 
     /** Strings will not be used in the first versions. */
     struct String {
-        std::string display () const;
+        display_result display () const;
 
         common_type_result common (type::String const &) const;
 
@@ -77,7 +78,7 @@ namespace cynth::asg::type {
     struct in_type {
         component<type::any<Complete>> type;
 
-        std::string display () const;
+        display_result display () const;
 
         decay_result decay () const requires Complete;
 
@@ -87,7 +88,7 @@ namespace cynth::asg::type {
 
         bool same (type::In const &) const requires Complete;
 
-        complete_result complete () const requires (!Complete);
+        complete_result complete (context &) const requires (!Complete);
     };
 
     template struct in_type<true>;
@@ -97,13 +98,13 @@ namespace cynth::asg::type {
     struct out_type {
         component<type::any<Complete>> type;
 
-        std::string display () const;
+        display_result display () const;
 
         decay_result decay () const requires Complete;
 
         bool same (type::Out const &) const requires Complete;
 
-        complete_result complete () const requires (!Complete);
+        complete_result complete (context &) const requires (!Complete);
     };
 
     template struct out_type<true>;
@@ -113,7 +114,7 @@ namespace cynth::asg::type {
     struct const_type {
         component<type::any<Complete>> type;
 
-        std::string display () const;
+        display_result display () const;
 
         decay_result decay () const requires Complete;
 
@@ -124,7 +125,7 @@ namespace cynth::asg::type {
 
         bool same (type::Const const &) const requires Complete;
 
-        complete_result complete () const requires (!Complete);
+        complete_result complete (context &) const requires (!Complete);
     };
 
     template struct const_type<true>;
@@ -146,13 +147,13 @@ namespace cynth::asg::type {
         component_vector<type::any<Complete>> type;
         detail::size_type<Complete>           size;
 
-        std::string display () const;
+        display_result display () const;
 
         common_type_result common (type::Array const &) const requires Complete;
 
         bool same (type::Array const &) const requires Complete;
 
-        complete_result complete () const requires (!Complete);
+        complete_result complete (context &) const requires (!Complete);
     };
 
     template struct array_type<true>;
@@ -164,13 +165,13 @@ namespace cynth::asg::type {
     struct buffer_type {
         detail::size_type<Complete> size;
 
-        std::string display () const;
+        display_result display () const;
 
         common_type_result common (type::Buffer const &) const requires Complete;
 
         bool same (type::Buffer const &) const requires Complete;
 
-        complete_result complete () const requires (!Complete);
+        complete_result complete (context &) const requires (!Complete);
     };
 
     template struct buffer_type<true>;
@@ -184,13 +185,13 @@ namespace cynth::asg::type {
         component_vector<type::any<Complete>> out;
         component_vector<type::any<Complete>> in;
 
-        std::string display () const;
+        display_result display () const;
 
         common_type_result common (type::Function const &) const requires Complete;
 
         bool same (type::Function const &) const requires Complete;
 
-        complete_result complete () const requires (!Complete);
+        complete_result complete (context &) const requires (!Complete);
     };
 
     template struct function_type<true>;

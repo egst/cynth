@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cynth::asg {
+namespace cynth::sem {
 
     template <bool> struct declaration;
 
@@ -25,9 +25,11 @@ namespace cynth::asg {
         using complete   = any<true>;
         using incomplete = any<false>;
 
-        struct referential;
+        //struct referential;
 
     }
+
+    using complete_value = value::complete;
 
     namespace type {
 
@@ -57,5 +59,7 @@ namespace cynth::asg {
         using FunctionTemplate = function_type <false>;
 
     }
+
+    using complete_type = type::complete;
 
 }

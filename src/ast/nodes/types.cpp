@@ -1,10 +1,11 @@
 #include "ast/nodes/types.hpp"
 
+#include "common_interface.hpp"
 #include "ast/categories/expression.hpp"
 #include "ast/categories/pattern.hpp"
 #include "ast/categories/type.hpp"
 #include "ast/interface.hpp"
-#include "asg/interface.hpp"
+#include "sem/interface.hpp"
 #include "util/general.hpp"
 #include "util/container.hpp"
 #include "util/string.hpp"
@@ -30,34 +31,34 @@ namespace cynth {
         return new ast::node::ArrayType{std::move(other)};
     }
 
-    std::string ast::node::ArrayType::display () const {
-        //return ast::display(type) + " [" + util::coalesce(ast::display(size) ?: "") + "]";
-        //return ast::display(type) + " [" + util::coalesce(ast::display(size), "") + "]";
-        return ast::display(type) + " [" + ast::display(size).value_or("$") + "]";
+    display_result ast::node::ArrayType::display () const {
+        //return cynth::display(type) + " [" + util::coalesce(cynth::display(size) ?: "") + "]";
+        //return cynth::display(type) + " [" + util::coalesce(cynth::display(size), "") + "]";
+        return cynth::display(type) + " [" + cynth::display(size).value_or("$") + "]";
     }
 
-    ast::type_eval_result ast::node::ArrayType::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::ArrayType::eval_type (sem::context & ctx) const {
         auto type_result = util::unite_results(ast::eval_type(ctx)(type));
         if (!type_result)
             return ast::make_type_eval_result(type_result.error());
         auto type = *std::move(type_result);
 
         auto size_result = lift::category_component{util::overload {
-            [&ctx] <ast::interface::expression Expr> (Expr && e) -> result<asg::value::incomplete> {
-                auto result = asg::convert(asg::type::Int{})(util::single(ast::evaluate(ctx)(e)));
+            [&ctx] <ast::interface::expression Expr> (Expr && e) -> result<sem::value::incomplete> {
+                auto result = sem::convert(ctx)(sem::type::Int{})(util::single(ast::evaluate(ctx)(e)));
                 if (!result)
                     return result.error();
-                return asg::value::incomplete{*std::move(result)};
+                return sem::value::incomplete{*std::move(result)};
             },
-            [] <ast::interface::declaration Decl> (Decl &&) -> result<asg::value::incomplete> {
+            [] <ast::interface::declaration Decl> (Decl &&) -> result<sem::value::incomplete> {
                 return result_error{"Capturing array size deduction is not supported yet."};
             },
         }} (size);
-        asg::value::incomplete size = (size_result && *size_result)
+        sem::value::incomplete size = (size_result && *size_result)
             ? **size_result
-            : asg::value::unknown{};
+            : sem::value::unknown{};
 
-        return ast::make_type_eval_result(asg::type::array_type<false> {
+        return ast::make_type_eval_result(sem::type::array_type<false> {
             .type = make_component_vector (std::move(type)),
             .size = make_component        (std::move(size))
         });
@@ -80,12 +81,12 @@ namespace cynth {
         return new ast::node::Auto{std::move(other)};
     }
 
-    std::string ast::node::Auto::display () const {
+    display_result ast::node::Auto::display () const {
         return "$";
     }
 
-    ast::type_eval_result ast::node::Auto::eval_type (context &) const {
-        return ast::make_type_eval_result(asg::type::unknown{});
+    ast::type_eval_result ast::node::Auto::eval_type (sem::context &) const {
+        return ast::make_type_eval_result(sem::type::unknown{});
     }
 
     //// BufferType ////
@@ -105,18 +106,18 @@ namespace cynth {
         return new ast::node::BufferType{std::move(other)};
     }
 
-    std::string ast::node::BufferType::display () const {
-        return "buffer [" + ast::display(size) + "]";
+    display_result ast::node::BufferType::display () const {
+        return "buffer [" + cynth::display(size) + "]";
     }
 
-    ast::type_eval_result ast::node::BufferType::eval_type (context & ctx) const {
-        auto size_result = asg::convert(asg::type::Int{})(util::single(ast::evaluate(ctx)(size)));
+    ast::type_eval_result ast::node::BufferType::eval_type (sem::context & ctx) const {
+        auto size_result = sem::convert(ctx)(sem::type::Int{})(util::single(ast::evaluate(ctx)(size)));
         if (!size_result)
             return ast::make_type_eval_result(size_result.error());
-        auto size = asg::value::incomplete{*std::move(size_result)};
+        auto size = sem::value::incomplete{*std::move(size_result)};
         // TODO: Decide whether a pattern should be allowed here.
 
-        return ast::make_type_eval_result(asg::type::buffer_type<false> {
+        return ast::make_type_eval_result(sem::type::buffer_type<false> {
             .size = make_component(std::move(size))
         });
     }
@@ -138,40 +139,36 @@ namespace cynth {
         return new ast::node::ConstType{std::move(other)};
     }
 
-    std::string ast::node::ConstType::display () const {
-        return ast::display(type) + " const";
+    display_result ast::node::ConstType::display () const {
+        return cynth::display(type) + " const";
     }
 
-    ast::type_eval_result ast::node::ConstType::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::ConstType::eval_type (sem::context & ctx) const {
         auto types_result = ast::eval_type(ctx)(type);
 
         return lift::evaluation{util::overload {
-            [] <bool Complete> (asg::type::const_type<Complete> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (sem::type::const_type<Complete> && type) -> result<sem::type::incomplete> {
                 return {type};
             },
-            [] <bool Complete> (asg::type::in_type<Complete> && type) -> result<asg::type::incomplete> {
-                // Note: In types actually are implicitly const (= non-assignable).
-                //return result_error{"In type is already implicitly const."};
+            [] <bool Complete> (sem::type::in_type<Complete> && type) -> result<sem::type::incomplete> {
+                // Note: Input types are implicitly const.
                 return {std::move(type)};
             },
-            [] <bool Complete> (asg::type::out_type<Complete> &&) -> result<asg::type::incomplete> {
-                // Note: Out types must be non-const (= assignable).
-                return result_error{"Out type cannot be const."};
-            },
-            [] <bool Complete> (asg::type::buffer_type<Complete> && type) -> result<asg::type::incomplete> {
-                // Note: For now, lets keep buffers implicitly const (= non-assignable),
-                // but this might change in the future.
-                //return result_error{"Buffer type is already implicitly const."};
+            [] <bool Complete> (sem::type::out_type<Complete> && type) -> result<sem::type::incomplete> {
+                // Note: Output types are implicitly const.
                 return {std::move(type)};
             },
-            [] <bool Complete> (asg::type::function_type<Complete> && type) -> result<asg::type::incomplete> {
-                // Note: Function types actually are implicitly const (= non-assignable).
-                //return result_error{"Function type is already implicitly const."};
+            [] <bool Complete> (sem::type::buffer_type<Complete> && type) -> result<sem::type::incomplete> {
+                // Note: Buffers are implicitly const.
                 return {std::move(type)};
             },
-            [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {
-                return {asg::type::const_type<false> {
-                    .type = make_component(asg::type::incomplete{std::move(type)})
+            [] <bool Complete> (sem::type::function_type<Complete> && type) -> result<sem::type::incomplete> {
+                // Note: Function types are implicitly const.
+                return {std::move(type)};
+            },
+            [] <util::temporary Type> (Type && type) -> result<sem::type::incomplete> {
+                return {sem::type::const_type<false> {
+                    .type = make_component(sem::type::incomplete{std::move(type)})
                 }};
             }
         }} (std::move(types_result));
@@ -194,11 +191,11 @@ namespace cynth {
         return new ast::node::FunctionType{std::move(other)};
     }
 
-    std::string ast::node::FunctionType::display () const {
-        return ast::display(output) + " " + util::parenthesized(ast::display(input));
+    display_result ast::node::FunctionType::display () const {
+        return cynth::display(output) + " " + util::parenthesized(cynth::display(input));
     }
 
-    ast::type_eval_result ast::node::FunctionType::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::FunctionType::eval_type (sem::context & ctx) const {
         auto out_result = util::unite_results(ast::eval_type(ctx)(output));
         if (!out_result)
             return ast::make_type_eval_result(out_result.error());
@@ -209,7 +206,7 @@ namespace cynth {
             return ast::make_type_eval_result(in_result.error());
         auto in = *std::move(in_result);
 
-        return ast::make_type_eval_result(asg::type::function_type<false> {
+        return ast::make_type_eval_result(sem::type::function_type<false> {
             .out = make_component_vector(std::move(out)),
             .in  = make_component_vector(std::move(in))
         });
@@ -232,35 +229,35 @@ namespace cynth {
         return new ast::node::InType{std::move(other)};
     }
 
-    std::string ast::node::InType::display () const {
-        return ast::display(type) + " in";
+    display_result ast::node::InType::display () const {
+        return cynth::display(type) + " in";
     }
 
-    ast::type_eval_result ast::node::InType::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::InType::eval_type (sem::context & ctx) const {
         auto types_result = ast::eval_type(ctx)(type);
 
         return lift::evaluation{util::overload {
-            [] <bool Complete> (asg::type::in_type<Complete> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (sem::type::in_type<Complete> && type) -> result<sem::type::incomplete> {
                 return {type};
             },
-            [] <bool Complete> (asg::type::out_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Cannot combine in and out type modifiers."};
+            [] <bool Complete> (sem::type::out_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Input type cannot contain a nested output type."};
             },
-            [] <bool Complete> (asg::type::const_type<Complete> && type) -> result<asg::type::incomplete> {
-                //return result_error{"In type is already implicitly const."};
-                return {asg::type::in_type<false> {
-                    .type = asg::type::incomplete{*std::move(type.type)}
+            [] <bool Complete> (sem::type::const_type<Complete> && type) -> result<sem::type::incomplete> {
+                // Note: Input type implicitly contains a const type already.
+                return {sem::type::in_type<false> {
+                    .type = sem::type::incomplete{*std::move(type.type)}
                 }};
             },
-            [] <bool Complete> (asg::type::array_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Array in types are not suppported yet."};
+            [] <bool Complete> (sem::type::array_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Array input types are not suppported yet."};
             },
-            [] <bool Complete> (asg::type::function_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Function cannot be an in type."};
+            [] <bool Complete> (sem::type::function_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Function cannot be an input type."};
             },
-            [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {
-                return {asg::type::in_type<false> {
-                    .type = make_component(asg::type::incomplete{std::move(type)})
+            [] <util::temporary Type> (Type && type) -> result<sem::type::incomplete> {
+                return {sem::type::in_type<false> {
+                    .type = make_component(sem::type::incomplete{std::move(type)})
                 }};
             }
         }} (std::move(types_result));
@@ -283,32 +280,32 @@ namespace cynth {
         return new ast::node::OutType{std::move(other)};
     }
 
-    std::string ast::node::OutType::display () const {
-        return ast::display(type) + " out";
+    display_result ast::node::OutType::display () const {
+        return cynth::display(type) + " out";
     }
 
-    ast::type_eval_result ast::node::OutType::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::OutType::eval_type (sem::context & ctx) const {
         auto types_result = ast::eval_type(ctx)(type);
 
         return lift::evaluation{util::overload {
-            [] <bool Complete> (asg::type::out_type<Complete> && type) -> result<asg::type::incomplete> {
+            [] <bool Complete> (sem::type::out_type<Complete> && type) -> result<sem::type::incomplete> {
                 return {type};
             },
-            [] <bool Complete> (asg::type::in_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Cannot combine in and out type modifiers."};
+            [] <bool Complete> (sem::type::in_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Output type cannot contain a nested input type."};
             },
-            [] <bool Complete> (asg::type::const_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Out type cannot be const."};
+            [] <bool Complete> (sem::type::const_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Output type cannot contain a const value."};
             },
-            [] <bool Complete> (asg::type::array_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Array out types are not supported yet."};
+            [] <bool Complete> (sem::type::array_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Array output types are not supported yet."};
             },
-            [] <bool Complete> (asg::type::function_type<Complete> &&) -> result<asg::type::incomplete> {
-                return result_error{"Function cannot be an out type."};
+            [] <bool Complete> (sem::type::function_type<Complete> &&) -> result<sem::type::incomplete> {
+                return result_error{"Function cannot be an output type."};
             },
-            [] <util::temporary Type> (Type && type) -> result<asg::type::incomplete> {
-                return {asg::type::out_type<false> {
-                    .type = make_component(asg::type::incomplete{std::move(type)})
+            [] <util::temporary Type> (Type && type) -> result<sem::type::incomplete> {
+                return {sem::type::out_type<false> {
+                    .type = make_component(sem::type::incomplete{std::move(type)})
                 }};
             }
         }} (std::move(types_result));
@@ -331,11 +328,11 @@ namespace cynth {
         return new ast::node::TupleType{std::move(other)};
     }
 
-    std::string ast::node::TupleType::display () const {
-        return "(" + util::join(", ", ast::display(types)) + ")";
+    display_result ast::node::TupleType::display () const {
+        return "(" + util::join(", ", cynth::display(types)) + ")";
     }
 
-    ast::type_eval_result ast::node::TupleType::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::TupleType::eval_type (sem::context & ctx) const {
         type_eval_result result;
         for (auto & value_tuple : ast::eval_type(ctx)(types)) for (auto & value : value_tuple) {
             result.push_back(std::move(value));
@@ -360,11 +357,11 @@ namespace cynth {
         return new ast::node::TypeDecl{std::move(other)};
     }
 
-    std::string ast::node::TypeDecl::display () const {
-        return "type " + ast::display(name);
+    display_result ast::node::TypeDecl::display () const {
+        return "type " + cynth::display(name);
     }
 
-    ast::type_eval_result ast::node::TypeDecl::eval_type (context &) const {
+    ast::type_eval_result ast::node::TypeDecl::eval_type (sem::context &) const {
         return ast::make_type_eval_result(result_error{"Capturing type deduction is not supported yet."});
     }
 
@@ -385,14 +382,14 @@ namespace cynth {
         return new ast::node::TypeName{std::move(other)};
     }
 
-    std::string ast::node::TypeName::display () const {
+    display_result ast::node::TypeName::display () const {
         return *name;
     }
 
-    ast::type_eval_result ast::node::TypeName::eval_type (context & ctx) const {
+    ast::type_eval_result ast::node::TypeName::eval_type (sem::context & ctx) const {
         auto value = ctx.find_type(*name);
         return value
-            ? asg::incomplete(lift::tuple_vector{make_result}(*value))
+            ? sem::incomplete(lift::tuple_vector{make_result}(*value))
             : ast::make_type_eval_result(result_error{"Type name not found."});
     }
 

@@ -2,7 +2,7 @@
 
 #include "config.hpp"
 #include "category_base.hpp"
-#include "asg/declarations.hpp"
+#include "sem/declarations.hpp"
 #include "ast/nodes/types.hpp"
 
 namespace cynth::ast::category {
@@ -10,16 +10,16 @@ namespace cynth::ast::category {
     namespace detail {
 
         using type = variant <
-            ast::node::ArrayType,
-            ast::node::Auto,
-            ast::node::BufferType,
-            ast::node::ConstType,
-            ast::node::FunctionType,
-            ast::node::InType,
-            ast::node::OutType,
-            ast::node::TupleType,
-            ast::node::TypeDecl,
-            ast::node::TypeName
+            node::ArrayType,
+            node::Auto,
+            node::BufferType,
+            node::ConstType,
+            node::FunctionType,
+            node::InType,
+            node::OutType,
+            node::TupleType,
+            node::TypeDecl,
+            node::TypeName
         >;
 
     }

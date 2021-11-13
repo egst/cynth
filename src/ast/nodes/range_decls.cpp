@@ -6,10 +6,10 @@
 #include "ast/categories/expression.hpp"
 #include "ast/categories/range_decl.hpp"
 #include "ast/interface.hpp"
-#include "asg/interface.hpp"
-#include "asg/declarations.hpp"
+#include "sem/interface.hpp"
+#include "sem/declarations.hpp"
 
-#include "asg/util.hpp"
+#include "sem/util.hpp"
 #include "util/string.hpp"
 #include "util/container.hpp"
 
@@ -17,13 +17,13 @@
 
 namespace cynth {
 
-    ast::execution_result decl_execute (auto const & node, context & ctx) {
-        auto decls_result = util::unite_results(asg::complete(ast::eval_decl(ctx)(node)));
+    ast::execution_result decl_execute (auto const & node, sem::context & ctx) {
+        auto decls_result = util::unite_results(sem::complete(ast::eval_decl(ctx)(node)));
         if (!decls_result)
             return ast::make_execution_result(decls_result.error());
         auto decls = *std::move(decls_result);
 
-        auto decl_result = asg::declare(ctx, decls);
+        auto decl_result = ctx.declare(decls);
         if (!decl_result)
             return ast::make_execution_result(decl_result.error());
 
@@ -47,18 +47,18 @@ namespace cynth {
         return new ast::node::RangeDecl{std::move(other)};
     }
 
-    std::string ast::node::RangeDecl::display () const {
-        return ast::display(declaration) + " in " + ast::display(range);
+    display_result ast::node::RangeDecl::display () const {
+        return cynth::display(declaration) + " in " + cynth::display(range);
     }
 
-    ast::range_decl_eval_result ast::node::RangeDecl::eval_range_decl (context & ctx) const {
+    ast::range_decl_eval_result ast::node::RangeDecl::eval_range_decl (sem::context & ctx) const {
         auto decl_result = util::unite_results(ast::eval_decl(ctx)(declaration));
         if (!decl_result)
             return ast::make_range_decl_eval_result(decl_result.error());
         auto range_result = util::single(ast::evaluate(ctx)(range));
         if (!range_result)
             return ast::make_range_decl_eval_result(decl_result.error());
-        return ast::make_range_decl_eval_result(asg::incomplete_range_decl {
+        return ast::make_range_decl_eval_result(sem::incomplete_range_decl {
             .declaration = *decl_result,
             .range       = *range_result
         });
@@ -81,11 +81,11 @@ namespace cynth {
         return new ast::node::TupleRangeDecl{std::move(other)};
     }
 
-    std::string ast::node::TupleRangeDecl::display () const {
-        return "(" + util::join(", ", ast::display(declarations)) + ")";
+    display_result ast::node::TupleRangeDecl::display () const {
+        return "(" + util::join(", ", cynth::display(declarations)) + ")";
     }
 
-    ast::range_decl_eval_result ast::node::TupleRangeDecl::eval_range_decl (context & ctx) const {
+    ast::range_decl_eval_result ast::node::TupleRangeDecl::eval_range_decl (sem::context & ctx) const {
         ast::range_decl_eval_result result;
         for (auto & value_tuple : ast::eval_range_decl(ctx)(declarations)) for (auto & value : value_tuple) {
             result.push_back(std::move(value));

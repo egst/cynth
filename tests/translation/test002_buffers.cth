@@ -2,10 +2,11 @@ Float f (Int x) {
     return Float(x % 100) / 100;
 };
 
-buffer [4] buff = Float (Int t) {
+buffer [4] buff = Float fn (Int t) {
     return f(t);
 };
 
-buffer [32] out main = Float () {
+# TODO: Make this an out buffer.
+buffer [32] main = Float fn () {
     return (buff[0] + buff[-1] + buff[-2] + buff[-3]) / 4;
 };

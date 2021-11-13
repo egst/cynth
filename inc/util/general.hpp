@@ -14,6 +14,12 @@
 
 namespace cynth::util {
 
+    template <typename T>
+    std::vector<T> concat_vectors (std::vector<T> && a, std::vector<T> && b) {
+        a.insert(a.end(), b.begin(), b.end());
+        return std::move(a);
+    }
+
     /**
      *  This is only a debug tool.
      *  Place `util::inspect<Type>{}` or `util::inspect<decltype(value)>{}`
@@ -163,7 +169,7 @@ namespace cynth::util {
      *  Initialize a container from a single element.
      *  It's usually not easy to do with all the constructor overloads in STL containers.
      */
-    template <template <typename> typename Container, typename T>
+    template <template <typename...> typename Container, typename T>
     constexpr auto init (T && first) {
         Container<std::remove_cvref_t<T>> result;
         // TODO
@@ -269,7 +275,8 @@ namespace cynth::util {
 
     /** A standard range. */
     template <typename T>
-    concept range = requires (T range) { *range.begin(); *range.end(); ++range.begin(); };
+    concept range = requires (T range) { *range.begin(); *range.end(); /*++range.begin();*/ };
+    // TODO: ++range.begin() is sometimes invalid. (Probably because it's assigning to an rvalue.)
     /** A standard range with the .size() method. */
     template <typename T>
     concept sized_range = range<T> && requires (T range) { range.size(); };
@@ -580,18 +587,18 @@ namespace cynth::util {
     constexpr T & as_nonconst (T const & value) {
         return const_cast<T &>(value);
     }
-    template <typename T>
+    /*template <typename T>
     constexpr T * as_nonconst (T const * value) noexcept {
         return const_cast<T *>(value);
-    }
+    }*/
     /*template <typename T>
     constexpr T & as_nonconst (T & value) noexcept {
         return value;
     }*/
-    template <typename T>
+    /*template <typename T>
     constexpr T * as_nonconst (T * value) noexcept {
         return value;
-    }
+    }*/
     template <typename T>
     void as_nonconst (T const &&) = delete;
 

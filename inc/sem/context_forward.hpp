@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cynth {
+namespace cynth::sem {
 
     struct context;
 
