@@ -1,6 +1,7 @@
 #include "sem/translation_context.hpp"
 
 #include "result.hpp"
+#include "lift2.hpp"
 #include "component.hpp"
 #include "sem/context.hpp"
 #include "sem/interface.hpp"
@@ -17,18 +18,31 @@ namespace cynth::sem {
         return id++;
     }
 
+    /**
+     *  ----decl---   --tuple--
+     *  (T, U, V) a = (1, x, y)
+     */
     result<void> translation_context::define (
         complete_decl             const & decl,
-        tuple_vector<typed_value> const & tuple
+        tuple_vector<typed_value> const & tuple_val
     ) {
-        auto converted_result = convert(decl.type, tuple);
+        /*
+         *  compconst['a'] = {{T, 1}, {U, ?}, {V, ?}}
+         *
+         *  decls[] = {
+         *      'cth_t_U cth_ue2_a = x;'
+         *      'cth_t_V cth_ue2_a = y;'
+         *  }
+         */
+
+        auto converted_result = convert(decl.type, tuple_val);
         if (!converted_result)
             return converted_result.error();
         auto converted = *converted_result;
 
         compconst_context.define_value(decl.name, converted);
 
-        for (auto const & [type, value] : util::zip{decl.type, converted}) {
+        for (auto const & [i, type, value] : util::enumerate(decl.type, converted)) {
 
             if (value.value)
                 continue; // Skip compconst values.
@@ -36,36 +50,57 @@ namespace cynth::sem {
             if (!value.expression)
                 return result_error{"This value cannot be translated."};
 
-            //INSPECT(type);
+            //INSPECT(type); // complete_type
 
-            // cynth_t_{type} = 
+            // {transl_type(type)} cth_ue{i} = 
+            // Possible C types:
+            // Simple:      (`bool` | `int` | `float`)
+            // ConstSimple: <Simple> `const`
+            // Array:       (<Simple> | <ConstSimple> ) `*`
+            // Const:       (<Simple> | <Array>) `const`
+            // In:          <Simple>  # in global scope only
+            // Out:         <Simple>  # in global scope only
+            // Function:    `cth_c_foo_123` # named context struct passed around at runtime +
+            //                              # function name inserted at compile time
+
+            sem::transl_type(type);
+
+            lift2<target::category>(
+                [] (auto && type) {
+                    
+                }
+            )(type);
 
         }
 
         return {};
     }
 
+    /**
+     *  -----decls-----   --tuple--
+     *  ((T, U) a, V b) = (1, x, y)
+     */
     result<void> translation_context::define (
         tuple_vector<complete_decl> const & decls,
-        tuple_vector<typed_value>   const & values
+        tuple_vector<typed_value>   const & tuple_val
     ) {
-        auto value_begin = values.begin();
+        auto value_begin = tuple_val.begin();
 
         for (auto & decl : decls) {
-            if (static_cast<std::size_t>(values.end() - value_begin) < decl.type.size())
+            if (static_cast<std::size_t>(tuple_val.end() - value_begin) < decl.type.size())
                 return result_error{"Less values than types in a definition."};
 
             // TODO: Why don't any of these work?
-            //tuple.assign(value_begin, value_begin + decl.type.size());
-            //tuple.reserve(decl.type.size());
-            //std::copy(value_begin, value_begin + decl.type.size(), std::back_inserter(tuple));
+            //tuple_part.assign(value_begin, value_begin + decl.type.size());
+            //tuple_part.reserve(decl.type.size());
+            //std::copy(value_begin, value_begin + decl.type.size(), std::back_inserter(tuple_part));
             // For now, pushing elements one by one:
-            tuple_vector<typed_value> tuple;
-            for (auto it = value_begin; it != value_begin + decl.type.size(); ++it) tuple.push_back(*it);
+            tuple_vector<typed_value> tuple_part;
+            for (auto it = value_begin; it != value_begin + decl.type.size(); ++it) tuple_part.push_back(*it);
 
             value_begin += decl.type.size();
 
-            define(decl, tuple);
+            define(decl, tuple_part);
 
             //converted ~ vector<typed_value> ~ vector<struct{complete_type, optional<complete_value>, optional<string>}>
             //decl      ~ declaration         ~ struct{string, vector<complete_type>}
@@ -97,7 +132,7 @@ namespace cynth::sem {
             */
         }
 
-        if (value_begin != values.end())
+        if (value_begin != tuple_val.end())
             return result_error{"More values than types in a definition."};
 
         return {};

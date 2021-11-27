@@ -7,7 +7,7 @@
 
 // Note: Macros are always undefined at the end of the file.
 #define TARGET_DECL \
-    target_resolution_result resolve_target (bool) const
+    target_res_result resolve_target (bool) const
 
 namespace cynth::sem {
 

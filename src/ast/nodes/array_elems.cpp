@@ -36,12 +36,16 @@ namespace cynth {
     }
 
     template <>
-    ast::node::RangeToBy * component_allocator<ast::node::RangeToBy>::operator () (ast::node::RangeToBy const & other) const {
+    ast::node::RangeToBy * component_allocator<ast::node::RangeToBy>::operator () (
+        ast::node::RangeToBy const & other
+    ) const {
         return new ast::node::RangeToBy{other};
     }
 
     template <>
-    ast::node::RangeToBy * component_allocator<ast::node::RangeToBy>::operator () (ast::node::RangeToBy && other) const {
+    ast::node::RangeToBy * component_allocator<ast::node::RangeToBy>::operator () (
+        ast::node::RangeToBy && other
+    ) const {
         return new ast::node::RangeToBy{std::move(other)};
     }
 

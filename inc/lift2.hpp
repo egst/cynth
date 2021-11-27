@@ -11,11 +11,6 @@
 #include "util/container.hpp"
 #include "util/tiny_vector.hpp"
 
-// TODO: These are not needed (probably):
-#include "sem/values.hpp"
-#include "sem/types.hpp"
-#include "sem/declarations.hpp"
-
 #include <optional>
 #include <vector>
 #include <type_traits>
@@ -110,7 +105,7 @@ namespace cynth {
             using vector_type = cynth::tuple_vector<T>;
 
             template <util::sized_range T>
-            consteval auto operator () (T && target) const {
+            constexpr auto operator () (T && target) const {
                 return on_vector<vector_type>(derived(), std::forward<T>(target));
             }
 
@@ -312,6 +307,30 @@ namespace cynth {
         };
 
         template <typename Derived, typename F>
+        struct optional {
+            /** Operate on any number of optionals. */
+            template <util::is<cynth::optional>... Ts>
+            constexpr decltype(auto) operator () (Ts &&... target) const {
+                return derived().invoke(*std::forward<Ts>(target)...);
+            }
+
+            /** Operate on a single optional. Returns an optional. */
+            template <util::is<cynth::optional> T>
+            constexpr auto operator () (T && target) const {
+                using Result = decltype(derived().invoke(*std::forward<T>(target)));
+                if (target)
+                    return std::optional<Result>{derived().invoke(*std::forward<T>(target))};
+                else
+                    return std::optional<Result>{};
+            }
+
+        private:
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+        template <typename Derived, typename F>
         struct direct {
             template <typename... Ts> requires /*util::callable<F, Ts...>*/ std::invocable<F, Ts...>
             constexpr decltype(auto) operator () (Ts &&... args) const {
@@ -373,9 +392,11 @@ namespace cynth {
         template <typename...> struct any_asymetric {};
         template <typename...> struct direct {};
         template <typename...> struct tuple_vector {};
+        template <typename...> struct vector {};
         template <typename...> struct sized_range {};
         template <typename...> struct view {};
         template <typename...> struct variant {};
+        template <typename...> struct optional {};
         template <typename...> struct category {};
         template <typename...> struct component {};
         template <typename...> struct result {};
@@ -392,10 +413,14 @@ namespace cynth {
         template <> struct specialization_map<target::tuple_vector>:      specialization_map_base<tuple_vector> {};
         template <> struct specialization_map<cynth::tuple_vector>:       specialization_map_base<tuple_vector> {};
         template <> struct specialization_map<target::sized_range>:       specialization_map_base<sized_range>  {};
+        template <> struct specialization_map<target::vector>:            specialization_map_base<sized_range>  {};
+        template <> struct specialization_map<cynth::vector>:             specialization_map_base<sized_range>  {};
         template <> struct specialization_map<target::view>:              specialization_map_base<view>         {};
         template <> struct specialization_map<cynth::view>:               specialization_map_base<view>         {};
+        template <> struct specialization_map<target::optional>:          specialization_map_base<optional>     {};
+        template <> struct specialization_map<cynth::optional>:           specialization_map_base<optional>     {};
         template <> struct specialization_map<target::variant>:           specialization_map_base<variant>      {};
-        template <> struct specialization_map<std::variant>:              specialization_map_base<variant>      {};
+        template <> struct specialization_map<cynth::variant>:            specialization_map_base<variant>      {};
         template <> struct specialization_map<target::category>:          specialization_map_base<category>     {};
         template <> struct specialization_map<target::component>:         specialization_map_base<component>    {};
         template <> struct specialization_map<cynth::component>:          specialization_map_base<component>    {};
@@ -405,34 +430,38 @@ namespace cynth {
         template <> struct specialization_map<cynth::result>:             specialization_map_base<result>       {};
         // TODO: Do I really want lift over component, optional_component and component_vector to do the same thing?
 
-        template <typename, template <typename...> typename... Rest> struct lift;
+    }
 
-        // Nested target:
-        template <typename F, template <typename...> typename First, template <typename...> typename... Rest>
-        struct lift<F, First, Rest...>: detail::lift::base<lift<F, First, Rest...>, lift<F, Rest...>, First> {
-            using base = detail::lift::base<lift<F, First, Rest...>, lift<F, Rest...>, First>;
+    template <typename, template <typename...> typename... Rest> struct lift_type;
 
-            constexpr lift (F const & f): base{lift<F, Rest...>{f}}            {}
-            constexpr lift (F &&      f): base{lift<F, Rest...>{std::move(f)}} {}
-        };
+    // Nested target:
+    template <typename F, template <typename...> typename First, template <typename...> typename... Rest>
+    struct lift_type<F, First, Rest...>: detail::lift::base<lift_type<F, First, Rest...>, lift_type<F, Rest...>, First> {
+        using base = detail::lift::base<lift_type<F, First, Rest...>, lift_type<F, Rest...>, First>;
 
-        // Single target:
-        template <typename F, template <typename...> typename T>
-        struct lift<F, T>: detail::lift::base<lift<F, T>, F, T> {
-            using base = detail::lift::base<lift<F, T>, F, T>;
+        constexpr lift_type (F const & f): base{lift_type<F, Rest...>{f}}            {}
+        constexpr lift_type (F &&      f): base{lift_type<F, Rest...>{std::move(f)}} {}
+    };
 
-            constexpr lift (F const & f): base{f}            {}
-            constexpr lift (F &&      f): base{std::move(f)} {}
-        };
+    // Single target:
+    template <typename F, template <typename...> typename T>
+    struct lift_type<F, T>: detail::lift::base<lift_type<F, T>, F, T> {
+        using base = detail::lift::base<lift_type<F, T>, F, T>;
 
-        // Direct target:
-        template <typename F>
-        struct lift<F>: detail::lift::base<lift<F, target::direct>, F, target::direct> {
-            using base = detail::lift::base<lift<F, target::direct>, F, target::direct>;
+        constexpr lift_type (F const & f): base{f}            {}
+        constexpr lift_type (F &&      f): base{std::move(f)} {}
+    };
 
-            constexpr lift (F const & f): base{f}            {}
-            constexpr lift (F &&      f): base{std::move(f)} {}
-        };
+    // Direct target:
+    template <typename F>
+    struct lift_type<F>: detail::lift::base<lift_type<F, target::direct>, F, target::direct> {
+        using base = detail::lift::base<lift_type<F, target::direct>, F, target::direct>;
+
+        constexpr lift_type (F const & f): base{f}            {}
+        constexpr lift_type (F &&      f): base{std::move(f)} {}
+    };
+
+    namespace detail::lift {
 
         template <typename T, typename F>
         using any_base = detail::lift::base <
@@ -447,84 +476,83 @@ namespace cynth {
             target::direct
         >;
 
-        /** Lift a callable to operate on containers and other composite values. */
-        template <typename F>
-        struct lift<F, target::any_once>: any_base<lift<F, target::any_once>, F> {
-            using base = any_base<lift<F, target::any_once>, F>;
-
-            constexpr lift (F const & f): base{f}            {}
-            constexpr lift (F &&      f): base{std::move(f)} {}
-        };
-
-        /** Lift a callable to operate on containers and other composite values recursively until a direct call is possible. */
-        template <typename F>
-        struct lift<F, target::any>: any_base<lift<F, target::any>, F> {
-            using base = any_base<lift<F, target::any>, F>;
-
-            constexpr lift (F const & f): base{f}            {}
-            constexpr lift (F &&      f): base{std::move(f)} {}
-
-            using detail::lift::sized_range  <lift<F, target::any>, F>::operator();
-            using detail::lift::tuple_vector <lift<F, target::any>, F>::operator();
-            using detail::lift::variant      <lift<F, target::any>, F>::operator();
-            using detail::lift::result       <lift<F, target::any>, F>::operator();
-            using detail::lift::component    <lift<F, target::any>, F>::operator();
-            using detail::lift::category     <lift<F, target::any>, F>::operator();
-            using detail::lift::direct       <lift<F, target::any>, F>::operator();
-
-            template <typename... Ts>
-            constexpr auto function () const {
-                return [this] (Ts &&... args) {
-                    return operator()(std::forward<Ts>(args)...);
-                };
-            }
-        };
-
-        /**
-         *  Provides two overloads:
-         *  f(w{a}, w{b})
-         *  f(b)(w{a})
-         *  where w is any abstraction that is supported by lift::any.
-         */
-        template <typename F>
-        struct lift<F, target::any_asymetric> {
-            F fun;
-
-            constexpr lift (F const & fun): fun{fun}            {}
-            constexpr lift (F &&      fun): fun{std::move(fun)} {}
-
-            template <typename T, typename U>
-            constexpr decltype(auto) operator () (T && a, U && b) const {
-                return lift<F, target::any>{fun}(std::forward<T>(a), std::forward<U>(b));
-            }
-
-            template <typename U>
-            constexpr auto operator () (U && b) const {
-                return lift<F, target::any>{
-                    [this, &b] <typename T> (T && a) /*-> decltype(auto)*/ requires std::invocable<F, T, U> {
-                        return fun(std::forward<T>(a), std::forward<U>(b));
-                    }
-                };
-            }
-        };
-
     }
 
-    // Just an experiment:
-    template <template <typename...> typename... Ts>
-    struct lift_ {
-        template <typename F>
-        struct type: detail::lift::lift<F, Ts...> {
-            using base = detail::lift::lift<F, Ts...>;
-            using base::base;
-        };
-        template <typename F>
-        type(F const &) -> type<F>;
+    /** Lift a callable to operate on containers and other composite values. */
+    template <typename F>
+    struct lift_type<F, target::any_once>: detail::lift::any_base<lift_type<F, target::any_once>, F> {
+        using base = detail::lift::any_base<lift_type<F, target::any_once>, F>;
+
+        constexpr lift_type (F const & f): base{f}            {}
+        constexpr lift_type (F &&      f): base{std::move(f)} {}
     };
 
+    /** Lift a callable to operate on containers and other composite values recursively until a direct call is possible. */
+    template <typename F>
+    struct lift_type<F, target::any>: detail::lift::any_base<lift_type<F, target::any>, F> {
+        using base = detail::lift::any_base<lift_type<F, target::any>, F>;
+
+        constexpr lift_type (F const & f): base{f}            {}
+        constexpr lift_type (F &&      f): base{std::move(f)} {}
+
+        using detail::lift::sized_range  <lift_type<F, target::any>, F>::operator();
+        using detail::lift::tuple_vector <lift_type<F, target::any>, F>::operator();
+        using detail::lift::variant      <lift_type<F, target::any>, F>::operator();
+        using detail::lift::result       <lift_type<F, target::any>, F>::operator();
+        using detail::lift::component    <lift_type<F, target::any>, F>::operator();
+        using detail::lift::category     <lift_type<F, target::any>, F>::operator();
+        using detail::lift::direct       <lift_type<F, target::any>, F>::operator();
+
+        template <typename... Ts>
+        constexpr auto function () const {
+            return [this] (Ts &&... args) {
+                return operator()(std::forward<Ts>(args)...);
+            };
+        }
+    };
+
+    /**
+     *  Provides two overloads:
+     *  f(w{a}, w{b})
+     *  f(b)(w{a})
+     *  where w is any abstraction that is supported by lift<target::any_once>.
+     */
+    template <typename F>
+    struct lift_type<F, target::any_asymetric> {
+        F fun;
+
+        constexpr lift_type (F const & fun): fun{fun}            {}
+        constexpr lift_type (F &&      fun): fun{std::move(fun)} {}
+
+        template <typename T, typename U>
+        constexpr decltype(auto) operator () (T && a, U && b) const {
+            return lift_type<F, target::any>{fun}(std::forward<T>(a), std::forward<U>(b));
+        }
+
+        template <typename U>
+        constexpr auto operator () (U && b) const {
+            return lift_type<F, target::any>{
+                [this, &b] <typename T> (T && a) /*-> decltype(auto)*/ requires std::invocable<F, T, U> {
+                    return fun(std::forward<T>(a), std::forward<U>(b));
+                }
+            };
+        }
+    };
+
+    // Just an experiment:
+    template <typename F, template <typename...> typename... Ts>
+    struct lift_: lift_type<F, Ts...> {
+        using base = lift_type<F, Ts...>;
+
+        template <typename... Fs>
+        constexpr lift_ (Fs &&... fs):
+            base{fs...} {}
+    };
+
+    // TODO: Rename to lift as soon as I get rid of the old lift implementation.
     template <template <typename...> typename... Ts, typename... Fs>
-    constexpr auto lift (Fs &&... fs) {
-        return detail::lift::lift<util::overload<Fs...>, Ts...>{util::overload{std::forward<Fs>(fs)...}};
+    constexpr lift_type<util::overloaded<Fs...>, Ts...> lift2 (Fs &&... fs) {
+        return {util::overload2(std::forward<Fs>(fs)...)};
     }
 
 }

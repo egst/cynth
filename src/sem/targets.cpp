@@ -51,7 +51,7 @@ namespace cynth {
         }} (type_tuple));
     };
 
-    sem::target_resolution_result sem::direct_target::resolve_target (bool allow_const) const {
+    sem::target_res_result sem::direct_target::resolve_target (bool allow_const) const {
         return result_error{"TODO"};
         /*
         if (!allow_const && !const_check(value.type))
@@ -82,7 +82,7 @@ namespace cynth {
         }};
     };
 
-    sem::target_resolution_result sem::subscript_target::resolve_target (bool) const {
+    sem::target_res_result sem::subscript_target::resolve_target (bool) const {
         // TODO: What about nested arrays (Int const? [m] const? [n] const?) and constness?
         auto nested_result = sem::resolve_const_target(container);
         if (!nested_result)

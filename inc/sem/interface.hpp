@@ -61,7 +61,7 @@ namespace cynth::sem::interface {
 
     template <typename Node>
     concept target = requires (Node node, bool c) {
-        { node.resolve_target(c) } -> std::same_as<target_resolution_result>;
+        { node.resolve_target(c) } -> std::same_as<target_res_result>;
     };
 
     /*
@@ -71,9 +71,22 @@ namespace cynth::sem::interface {
     };
     */
 
+    template <typename Node>
+    concept translatable_type = requires (Node node) {
+        { node.transl_type() } -> std::same_as<type_transl_result>;
+    };
+
 }
 
 namespace cynth::sem {
+
+    // In the following docblock comments, the construct any<T>
+    // means any abstraction, that is supported by lift::any.
+    // f (any<T>, any<T>) means that to completely unwrap any one of them,
+    // a series of the same lift::* operations must be applied.
+    // E.g. f(std::variant<int, float>, std::variant<int, bool>) is ok,
+    // but f(std::vector<int>, std::variant<int>) is not.
+    // TODO: Remove the lift wrappers. Put them explicitly where needed at the call site.
 
     /*
     constexpr auto translate = lift::any {
@@ -83,12 +96,16 @@ namespace cynth::sem {
     };
     */
 
-    // In the following docblock comments, the construct any<T>
-    // means any abstraction, that is supported by lift::any.
-    // f (any<T>, any<T>) means that to completely unwrap any one of them,
-    // a series of the same lift::* operations must be applied.
-    // E.g. f(std::variant<int, float>, std::variant<int, bool>) is ok,
-    // but f(std::vector<int>, std::variant<int>) is not.
+    constexpr auto transl_type = util::overload{
+        [] <typename Node> (Node const & node) -> type_transl_result
+        requires (interface::translatable_type<Node>) {
+            return node.transl_type();
+        },
+        [] <typename Node> (Node const & node) -> type_transl_result
+        requires (!interface::translatable_type<Node>) {
+            return result_error{"This type cannot be directly translated."};
+        }
+    };
 
     /**
      *  value_type (any<interface::value> value) -> complete_type

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "config.hpp"
+#include "sem/numeric_types.hpp"
 
 #include <cmath>
 
-namespace cynth::util {
+namespace cynth::sem {
 
     constexpr auto plus  = [] <typename T> (T a)      { return +a;     };
     constexpr auto minus = [] <typename T> (T a)      { return -a;     };

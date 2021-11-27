@@ -6,21 +6,21 @@
 namespace cynth::sem {
 
     template <bool Complete>
-    struct declaration {
+    struct Declaration {
         component_vector<type::any<Complete>> type;
         std::string                           name;
     };
 
-    template struct declaration<true>;
-    template struct declaration<false>;
+    template struct Declaration<true>;
+    template struct Declaration<false>;
 
-    struct type_decl {
+    struct TypeDecl {
         std::string name;
     };
 
     template <bool Complete>
-    struct range_decl {
-        component_vector <declaration<Complete>> declaration;
+    struct RangeDecl {
+        component_vector <Declaration<Complete>> declaration;
         component        <value::complete>       range;
     };
 

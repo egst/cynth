@@ -7,19 +7,19 @@
 #include <concepts>
 #include <utility>
 
-namespace cynth {
+namespace Cynth {
 
     // Note: Most categories are kept non-copyable mostly just to make sure, that the copy/move semantics distinction works as expected.
-    template <typename Derived, typename Variant, bool Copyable = true>
-    struct category_base {
-        using variant = Variant;
-        variant value;
+    template <typename Derived, typename Var, bool Copyable = true>
+    struct CategoryBase {
+        using Variant = Var;
+        Variant value;
 
-        category_base () = delete;
+        CategoryBase () = delete;
         //category_base (category_base const &) = delete;
 
-        template <util::variant_member<variant> T> requires (util::temporary<T> || Copyable)
-        constexpr category_base (T && other):
+        template <Util::variant_member<variant> T> requires (util::temporary<T> || Copyable)
+        constexpr CategoryBase (T && other):
             value{std::forward<T>(other)} {
             util::dout << "category{node}\n";
         }
@@ -48,13 +48,13 @@ namespace cynth {
     namespace detail {
 
         template <typename T>
-        concept categorial =
+        concept categorial_impl =
             std::derived_from<T, category_base<T, typename T::variant, true>> ||
             std::derived_from<T, category_base<T, typename T::variant, false>>;
 
     }
 
     template <typename T>
-    concept categorial = detail::categorial<std::remove_cvref_t<T>>;
+    concept categorial = detail::categorial_impl<std::remove_cvref_t<T>>;
 
 }

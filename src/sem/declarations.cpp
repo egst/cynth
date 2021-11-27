@@ -3,7 +3,6 @@
 #include "sem/types.hpp"
 #include "component.hpp"
 
-
 namespace cynth {
 
     template <>

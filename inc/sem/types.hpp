@@ -10,11 +10,14 @@
 
 #include <type_traits>
 
+// Note: Macros are always undefined at the end of the file.
+#define TYPE_DECL \
+    display_result     display     () const; \
+    type_transl_result transl_type () const
+
 namespace cynth::sem::type {
 
     struct Bool {
-        display_result display () const;
-
         common_type_result common (type::Bool  const &) const;
         common_type_result common (type::Int   const &) const;
         common_type_result common (type::Float const &) const;
@@ -22,11 +25,11 @@ namespace cynth::sem::type {
         common_type_result common (type::Const const &) const;
 
         bool same (type::Bool const &) const;
+
+        TYPE_DECL;
     };
 
     struct Int {
-        display_result display () const;
-
         // implicit common (Bool)
         common_type_result common (type::Int   const &) const;
         common_type_result common (type::Float const &) const;
@@ -34,11 +37,11 @@ namespace cynth::sem::type {
         common_type_result common (type::Const const &) const;
 
         bool same (type::Int const &) const;
+
+        TYPE_DECL;
     };
 
     struct Float {
-        display_result display () const;
-
         // implicit common (Bool)
         // implicit common (Int)
         common_type_result common (type::Float const &) const;
@@ -46,15 +49,17 @@ namespace cynth::sem::type {
         common_type_result common (type::Const const &) const;
 
         bool same (type::Float const &) const;
+
+        TYPE_DECL;
     };
 
     /** Strings will not be used in the first versions. */
     struct String {
-        display_result display () const;
-
         common_type_result common (type::String const &) const;
 
         bool same (type::String const &) const;
+
+        TYPE_DECL;
     };
 
     namespace detail {
@@ -78,8 +83,6 @@ namespace cynth::sem::type {
     struct in_type {
         component<type::any<Complete>> type;
 
-        display_result display () const;
-
         decay_result decay () const requires Complete;
 
         // implicit common (Bool)
@@ -89,6 +92,8 @@ namespace cynth::sem::type {
         bool same (type::In const &) const requires Complete;
 
         complete_result complete (context &) const requires (!Complete);
+
+        TYPE_DECL;
     };
 
     template struct in_type<true>;
@@ -98,13 +103,13 @@ namespace cynth::sem::type {
     struct out_type {
         component<type::any<Complete>> type;
 
-        display_result display () const;
-
         decay_result decay () const requires Complete;
 
         bool same (type::Out const &) const requires Complete;
 
         complete_result complete (context &) const requires (!Complete);
+
+        TYPE_DECL;
     };
 
     template struct out_type<true>;
@@ -113,8 +118,6 @@ namespace cynth::sem::type {
     template <bool Complete>
     struct const_type {
         component<type::any<Complete>> type;
-
-        display_result display () const;
 
         decay_result decay () const requires Complete;
 
@@ -126,6 +129,8 @@ namespace cynth::sem::type {
         bool same (type::Const const &) const requires Complete;
 
         complete_result complete (context &) const requires (!Complete);
+
+        TYPE_DECL;
     };
 
     template struct const_type<true>;
@@ -147,13 +152,13 @@ namespace cynth::sem::type {
         component_vector<type::any<Complete>> type;
         detail::size_type<Complete>           size;
 
-        display_result display () const;
-
         common_type_result common (type::Array const &) const requires Complete;
 
         bool same (type::Array const &) const requires Complete;
 
         complete_result complete (context &) const requires (!Complete);
+
+        TYPE_DECL;
     };
 
     template struct array_type<true>;
@@ -163,15 +168,17 @@ namespace cynth::sem::type {
 
     template <bool Complete>
     struct buffer_type {
-        detail::size_type<Complete> size;
+        constexpr static char const * sample_type = "float";
 
-        display_result display () const;
+        detail::size_type<Complete> size;
 
         common_type_result common (type::Buffer const &) const requires Complete;
 
         bool same (type::Buffer const &) const requires Complete;
 
         complete_result complete (context &) const requires (!Complete);
+
+        TYPE_DECL;
     };
 
     template struct buffer_type<true>;
@@ -185,13 +192,13 @@ namespace cynth::sem::type {
         component_vector<type::any<Complete>> out;
         component_vector<type::any<Complete>> in;
 
-        display_result display () const;
-
         common_type_result common (type::Function const &) const requires Complete;
 
         bool same (type::Function const &) const requires Complete;
 
         complete_result complete (context &) const requires (!Complete);
+
+        TYPE_DECL;
     };
 
     template struct function_type<true>;
@@ -243,3 +250,5 @@ namespace cynth::sem::type {
     template struct any<false>;
 
 }
+
+#undef TYPE_DECL

@@ -1,68 +1,66 @@
 #pragma once
 
-#include <optional>
-#include <variant>
-#include <string_view>
-#include <concepts>
-#include <string>
+#include "util/general.hpp"
+#include "basic_config.hpp"
 
-namespace cynth {
+#include <concepts>
+
+namespace Cynth {
 
     /*
-    struct generic_error {
-        std::string message;
+    struct GenericError {
+        String message;
 
-        generic_error ():               message{""} {}
-        generic_error (char const * m): message{m}  {}
-        generic_error (std::string m):  message{m}  {}
-        generic_error (generic_error const &) = default;
-        generic_error (generic_error &&)      = default;
+        GenericError ():               message{""} {}
+        GenericError (char const * m): message{m}  {}
+        GenericError (String       m):  message{m}  {}
+        GenericError (GenericError const &) = default;
+        GenericError (GenericError &&)      = default;
     };
     */
 
-    struct result_error {
-        //std::string_view message;
-        std::string message;
+    struct ResultError {
+        String message;
 
-        result_error ():               message{""} {}
-        //result_error (char const * m): message{m}  {}
-        result_error (std::string  m): message{m}  {}
-        result_error (result_error const &) = default;
-        result_error (result_error &&)      = default;
+        ResultError ():               message{""} {}
+        //ResultError (char const * m): message{m}  {}
+        ResultError (String       m): message{m}  {}
+        ResultError (ResultError const &) = default;
+        ResultError (ResultError &&)      = default;
     };
     // TODO: Instead of simple string error messages, introduce a typed system of errors with specific values.
 
-    namespace detail {
+    namespace Detail::Result {
 
-        template <typename Derived, typename T = result_error>
-        struct result_base {
-            constexpr T const & operator * () const & requires (!std::same_as<T, result_error>) {
+        template <typename Derived, typename T = ResultError>
+        struct ResultBase {
+            constexpr T const & operator * () const & requires (!Util::same<T, ResultError>) {
                 return derived().value();
             }
 
-            constexpr T & operator * () & requires (!std::same_as<T, result_error>) {
+            constexpr T & operator * () & requires (!Util::same<T, ResultError>) {
                 return derived().value();
             }
 
-            constexpr T && operator * () && requires (!std::same_as<T, result_error>) {
+            constexpr T && operator * () && requires (!Util::same<T, ResultError>) {
                 //return derived().value();
                 return static_cast<Derived &&>(*std::move(this)).value();
             }
 
-            constexpr T const * operator -> () const requires (!std::same_as<T, result_error>) {
+            constexpr T const * operator -> () const requires (!Util::same<T, ResultError>) {
                 return derived().get();
             }
 
-            constexpr T * operator -> () requires (!std::same_as<T, result_error>) {
+            constexpr T * operator -> () requires (!Util::same<T, ResultError>) {
                 return derived().get();
             }
 
             constexpr explicit operator bool () const {
-                return derived().has_value();
+                return derived().hasValue();
             }
 
-            constexpr T value_or (T const & fallback) const requires (!std::same_as<T, result_error>) {
-                return derived().has_value()
+            constexpr T valueOr (T const & fallback) const requires (!Util::same<T, ResultError>) {
+                return derived().hasValue()
                     ? derived().value()
                     : fallback;
             }
@@ -84,166 +82,166 @@ namespace cynth {
 
     }
 
-    template <typename T> requires (!std::same_as<T, result_error>)
-    struct result: detail::result_base<result<T>, T> {
-        using value_type = T;
+    template <typename T> requires (!Util::same<T, ResultError>)
+    struct Result: Detail::Result::ResultBase<Result<T>, T> {
+        using Value = T;
 
-        constexpr result (result_error const & e): content{e}            {}
-        constexpr result (result_error &&      e): content{std::move(e)} {}
-        constexpr result (value_type   const & v): content{v}            {}
-        constexpr result (value_type   &&      v): content{std::move(v)} {}
-        constexpr result (result       const &) = default;
-        constexpr result (result       &&)      = default;
+        constexpr Result (ResultError const & e): content{e}            {}
+        constexpr Result (ResultError &&      e): content{std::move(e)} {}
+        constexpr Result (Value       const & v): content{v}            {}
+        constexpr Result (Value       &&      v): content{std::move(v)} {}
+        constexpr Result (Result      const &) = default;
+        constexpr Result (Result      &&)      = default;
 
-        constexpr bool has_value () const {
+        constexpr bool hasValue () const {
             return content.index() == 0;
         }
 
-        constexpr bool has_error () const {
-            return !has_value();
+        constexpr bool hasError () const {
+            return !hasValue();
         }
 
-        constexpr value_type const * get () const {
-            return has_value() ? &value() : nullptr;
+        constexpr Value const * get () const {
+            return hasValue() ? &value() : nullptr;
         }
 
-        constexpr value_type * get () {
-            return has_value() ? &value() : nullptr;
+        constexpr Value * get () {
+            return hasValue() ? &value() : nullptr;
         }
 
-        constexpr value_type const & value () const & {
-            return std::get<value_type>(content);
+        constexpr Value const & value () const & {
+            return std::get<Value>(content);
         }
 
-        constexpr value_type & value () & {
-            return std::get<value_type>(content);
+        constexpr Value & value () & {
+            return std::get<Value>(content);
         }
 
-        constexpr value_type && value () && {
-            return std::get<value_type>(std::move(content));
+        constexpr Value && value () && {
+            return std::get<Value>(std::move(content));
         }
 
-        constexpr result_error const & error () const & {
-            return std::get<result_error>(content);
+        constexpr ResultError const & error () const & {
+            return std::get<ResultError>(content);
         }
 
-        constexpr result_error & error () & {
-            return std::get<result_error>(content);
+        constexpr ResultError & error () & {
+            return std::get<ResultError>(content);
         }
 
-        constexpr result_error && error () && {
-            return std::get<result_error>(std::move(content));
+        constexpr ResultError && error () && {
+            return std::get<ResultError>(std::move(content));
         }
 
     //protected:
-        std::variant<value_type, result_error> content;
+        std::variant<Value, ResultError> content;
     };
 
-    template <typename T> requires (!std::same_as<T, result_error>)
-    struct reference_result: detail::result_base<reference_result<T>, T> {
-        using value_type = T;
+    template <typename T> requires (!Util::same<T, ResultError>)
+    struct ReferenceResult: Detail::Result::ResultBase<ReferenceResult<T>, T> {
+        using Value = T;
 
-        constexpr reference_result (result_error     const & e): content{e}            {}
-        constexpr reference_result (result_error     &&      e): content{std::move(e)} {}
-        constexpr reference_result (value_type       &       v): content{&v}           {}
-        constexpr reference_result (reference_result const &) = default;
-        constexpr reference_result (reference_result &&)      = default;
+        constexpr ReferenceResult (ResultError     const & e): content{e}            {}
+        constexpr ReferenceResult (ResultError     &&      e): content{std::move(e)} {}
+        constexpr ReferenceResult (Value           &       v): content{&v}           {}
+        constexpr ReferenceResult (ReferenceResult const &) = default;
+        constexpr ReferenceResult (ReferenceResult &&)      = default;
 
-        constexpr bool has_value () const {
+        constexpr bool hasValue () const {
             return content.index() == 0;
         }
 
-        constexpr bool has_error () const {
-            return !has_value();
+        constexpr bool hasError () const {
+            return !hasValue();
         }
 
-        constexpr value_type const * get () const {
-            return has_value() ? std::get<value_type *>(content) : nullptr;
+        constexpr Value const * get () const {
+            return hasValue() ? std::get<Value *>(content) : nullptr;
         }
 
-        constexpr value_type * get () {
-            return has_value() ? std::get<value_type *>(content) : nullptr;
+        constexpr Value * get () {
+            return hasValue() ? std::get<Value *>(content) : nullptr;
         }
 
-        constexpr value_type const & value () const & {
-            return *std::get<value_type *>(content);
+        constexpr Value const & value () const & {
+            return *std::get<Value *>(content);
         }
 
-        constexpr value_type & value () & {
-            return *std::get<value_type *>(content);
+        constexpr Value & value () & {
+            return *std::get<Value *>(content);
         }
 
-        constexpr value_type && value () && {
-            return *std::get<value_type *>(std::move(content));
+        constexpr Value && value () && {
+            return *std::get<Value *>(std::move(content));
         }
 
-        constexpr result_error const & error () const & {
-            return std::get<result_error>(content);
+        constexpr ResultError const & error () const & {
+            return std::get<ResultError>(content);
         }
 
-        constexpr result_error & error () & {
-            return std::get<result_error>(content);
+        constexpr ResultError & error () & {
+            return std::get<ResultError>(content);
         }
 
-        constexpr result_error && error () && {
-            return std::get<result_error>(std::move(content));
+        constexpr ResultError && error () && {
+            return std::get<ResultError>(std::move(content));
         }
 
     //protected:
-        std::variant<value_type *, result_error> content;
+        std::variant<Value *, ResultError> content;
     };
 
     template <>
-    struct result<void>: detail::result_base<result<void>> {
-        using value_type = void;
+    struct Result<void>: Detail::Result::ResultBase<Result<void>> {
+        using Value = void;
 
-        constexpr result () {}
-        constexpr result (result_error const & e): content{e}            {}
-        constexpr result (result_error &&      e): content{std::move(e)} {}
-        constexpr result (result       const &) = default;
-        constexpr result (result       &&)      = default;
+        constexpr Result () {}
+        constexpr Result (ResultError const & e): content{e}            {}
+        constexpr Result (ResultError &&      e): content{std::move(e)} {}
+        constexpr Result (Result      const &) = default;
+        constexpr Result (Result      &&)      = default;
 
-        constexpr bool has_value () const {
+        constexpr bool hasValue () const {
             return !content.has_value();
         }
 
-        constexpr bool has_error () const {
-            return !has_value();
+        constexpr bool hasError () const {
+            return !hasValue();
         }
 
-        constexpr result_error const & error () const & {
+        constexpr ResultError const & error () const & {
             return *content;
         }
 
-        constexpr result_error & error () & {
+        constexpr ResultError & error () & {
             return *content;
         }
 
-        constexpr result_error && error () && {
+        constexpr ResultError && error () && {
             return *std::move(content);
         }
 
     //protected:
-        std::optional<result_error> content;
+        std::optional<ResultError> content;
     };
 
-    template <typename T> requires (!std::same_as<T, result_error>)
-    struct optional_result: detail::result_base<optional_result<T>, T> {
-        using value_type = T;
+    template <typename T> requires (!Util::same<T, ResultError>)
+    struct OptionalResult: Detail::Result::ResultBase<OptionalResult<T>, T> {
+        using Value = T;
 
-        constexpr optional_result () {}
-        constexpr optional_result (result_error    const & e): content{e}            {}
-        constexpr optional_result (result_error    &&      e): content{std::move(e)} {}
-        constexpr optional_result (value_type      const & v): content{v}            {}
-        constexpr optional_result (value_type      &&      v): content{std::move(v)} {}
-        constexpr optional_result (optional_result const &) = default;
-        constexpr optional_result (optional_result &&)      = default;
+        constexpr OptionalResult () {}
+        constexpr OptionalResult (ResultError    const & e): content{e}            {}
+        constexpr OptionalResult (ResultError    &&      e): content{std::move(e)} {}
+        constexpr OptionalResult (Value          const & v): content{v}            {}
+        constexpr OptionalResult (Value          &&      v): content{std::move(v)} {}
+        constexpr OptionalResult (OptionalResult const &) = default;
+        constexpr OptionalResult (OptionalResult &&)      = default;
 
-        constexpr bool has_value () const {
+        constexpr bool hasValue () const {
             return content.has_value() && (content->index() == 0);
         }
 
-        constexpr bool has_error () const {
+        constexpr bool hasError () const {
             return content.has_value() && (content->index() == 1);
         }
 
@@ -251,47 +249,47 @@ namespace cynth {
             return !content.has_value();
         }
 
-        constexpr value_type const & value () const & {
-            return std::get<value_type>(*content);
+        constexpr Value const & value () const & {
+            return std::get<Value>(*content);
         }
 
-        constexpr value_type & value () & {
-            return std::get<value_type>(*content);
+        constexpr Value & value () & {
+            return std::get<Value>(*content);
         }
 
-        constexpr value_type && value () && {
-            return std::get<value_type>(*std::move(content));
+        constexpr Value && value () && {
+            return std::get<Value>(*std::move(content));
         }
 
-        constexpr result_error const & error () const & {
-            return std::get<result_error>(*content);
+        constexpr ResultError const & error () const & {
+            return std::get<ResultError>(*content);
         }
 
-        constexpr result_error & error () & {
-            return std::get<result_error>(*content);
+        constexpr ResultError & error () & {
+            return std::get<ResultError>(*content);
         }
 
-        constexpr result_error && error () && {
-            return std::get<result_error>(*std::move(content));
+        constexpr ResultError && error () && {
+            return std::get<ResultError>(*std::move(content));
         }
 
     //protected:
-        std::optional<std::variant<value_type, result_error>> content;
+        std::optional<std::variant<Value, ResultError>> content;
     };
 
-    constexpr auto make_result = [] <typename T> (T && value) {
-        return result{std::forward<T>(value)};
+    constexpr auto makeResult = [] <typename T> (T && value) {
+        return Result{std::forward<T>(value)};
     };
 
-    constexpr auto make_optional_result = [] <typename T> (T && value) {
-        return optional_result{std::forward<T>(value)};
+    constexpr auto makeOptionalResult = [] <typename T> (T && value) {
+        return OptionalResult{std::forward<T>(value)};
     };
 
-    constexpr auto result_to_optional = [] <typename T> (T && r) {
-        using value_type = typename T::value_type;
-        return r.has_value()
-            ? std::optional<value_type>{*r}
-            : std::optional<value_type>{};
+    constexpr auto resultToOptional = [] <typename T> (T && r) {
+        using Value = typename T::Value;
+        return r.hasValue()
+            ? std::optional<Value>{*r}
+            : std::optional<Value>{};
     };
 
 }

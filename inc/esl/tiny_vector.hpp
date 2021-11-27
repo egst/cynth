@@ -1,19 +1,19 @@
 #pragma once
 
-#include "util/general.hpp"
-#include "util/iterator.hpp"
+#include "esl/concepts.hpp"
+#include "esl/type_manip.hpp"
+#include "esl/iterator.hpp"
+#include "esl/lift.hpp"
 
 #include <cstddef>
-#include <array>
+#include <optional>
 #include <vector>
 #include <initializer_list>
-#include <concepts>
 #include <utility>
 #include <algorithm>
 #include <type_traits>
-#include <iterator>
 
-namespace cynth::util {
+namespace esl {
 
     // Missing features:
     // * reverse iteration (rbegin, rend, reverse_iterator, etc.)
@@ -21,24 +21,24 @@ namespace cynth::util {
     // * insert
     // * erase
 
-    namespace detail {
+    namespace detail::tiny_vector {
 
         template <typename T> using fixed_type   = std::optional <T>;
         template <typename T> using dynamic_type = std::vector   <T>;
 
         // Note: I can't use raw pointers here, because of the possible std::vector<bool> optimization.
-        template <typename T, bool Constant>
-        using tiny_container_iterator = std::conditional_t <
-            Constant,
+        template <typename T, bool constant>
+        using TinyContainerIterator = std::conditional_t <
+            constant,
             typename dynamic_type<T>::const_iterator,
             typename dynamic_type<T>::iterator
         >;
 
-        template <bool Constant, typename T>
-        struct tiny_iterator: util::iterator<tiny_iterator<Constant, T>> {
-            using value_type = std::conditional_t<Constant, std::add_const_t<T>, T>;
-            using fixed_type = std::conditional_t<Constant, std::add_const_t<std::optional<T>>, std::optional<T>>;
-            using iterator   = tiny_container_iterator<T, Constant>;
+        template <bool constant, typename T>
+        struct tiny_iterator: esl::iterator<tiny_iterator<constant, T>> {
+            using value_type    = std::conditional_t<constant, std::add_const_t<T>, T>;
+            using fixed_type    = std::conditional_t<constant, std::add_const_t<std::optional<T>>, std::optional<T>>;
+            using iterator = TinyContainerIterator<T, constant>;
             // TODO: I thing it shouldn't actually matter whether it is const or not,
             // because non-const iterator should be a sentinel of a const iterator.
 
@@ -83,11 +83,11 @@ namespace cynth::util {
         using const_reference = value_type const &;
         using pointer         = value_type *;
         using const_pointer   = value_type const *;
-        using iterator        = detail::tiny_iterator<false, value_type>;
-        using const_iterator  = detail::tiny_iterator<true,  value_type>;
+        using iterator        = detail::tiny_vector::tiny_iterator<false, value_type>;
+        using const_iterator  = detail::tiny_vector::tiny_iterator<true,  value_type>;
 
-        using fixed_type   = detail::fixed_type   <T>;
-        using dynamic_type = detail::dynamic_type <T>;
+        using fixed_type   = detail::tiny_vector::fixed_type   <T>;
+        using dynamic_type = detail::tiny_vector::dynamic_type <T>;
 
         constexpr tiny_vector ()                          = default;
         constexpr tiny_vector (tiny_vector const & other) = default;
@@ -121,7 +121,7 @@ namespace cynth::util {
             return rest.empty();
         }
 
-        std::size_t size () const {
+        size_type size () const {
             //return first ? rest.size() : 0;
             return first.has_value() + rest.size();
         }
@@ -155,12 +155,12 @@ namespace cynth::util {
         }
 
         iterator begin () {
-            //return util::as_nonconst(std::as_const(*this).begin());
+            //return esl::as_nonconst(std::as_const(*this).begin());
             return make_iterator(0);
         }
 
         iterator end () {
-            //return util::as_nonconst(std::as_const(*this).end());
+            //return esl::as_nonconst(std::as_const(*this).end());
             return make_iterator(size());
         }
 
@@ -173,11 +173,11 @@ namespace cynth::util {
         }
 
         constexpr reference front () {
-            return util::as_nonconst(std::as_const(*this).front());
+            return esl::as_nonconst(std::as_const(*this).front());
         }
 
         constexpr reference back () {
-            return util::as_nonconst(std::as_const(*this).back());
+            return esl::as_nonconst(std::as_const(*this).back());
         }
 
         constexpr const_reference operator [] (size_type offset) const {
@@ -185,7 +185,7 @@ namespace cynth::util {
         }
 
         constexpr reference operator [] (size_type offset) {
-            return util::as_nonconst(std::as_const(*this).operator[](offset));
+            return esl::as_nonconst(std::as_const(*this).operator[](offset));
         }
 
         constexpr void resize (size_type size) {
@@ -230,6 +230,7 @@ namespace cynth::util {
         constexpr void shrink_to_fit () {
             rest.shrink_to_fit();
         }
+
         constexpr void reserve (size_type capacity) {
             rest.reserve(capacity > 1 ? capacity - 1 : 0);
         }
@@ -247,10 +248,10 @@ namespace cynth::util {
         }
 
         constexpr void push_back (value_type const & value) {
-            _push_back<value_type const &>(value);
+            push_back_helper<value_type const &>(value);
         }
         constexpr void push_back (value_type && value) {
-            _push_back<value_type &&>(std::move(value));
+            push_back_helper<value_type &&>(std::move(value));
         }
 
         constexpr void pop_back () {
@@ -267,7 +268,7 @@ namespace cynth::util {
 
     private:
         template <typename U>
-        constexpr void _push_back (U && value) {
+        constexpr void push_back_helper (U && value) {
             if (first)
                 rest.push_back(std::forward<U>(value));
             else
@@ -276,17 +277,43 @@ namespace cynth::util {
                 //first = std::make_optional<U>(std::forward<U>(value));
         }
 
-        const_iterator make_iterator (std::size_t position) const {
+        const_iterator make_iterator (size_type position) const {
             return {first, rest.begin(), position};
         }
 
-        iterator make_iterator (std::size_t position) {
-            //return util::as_nonconst(std::as_const(*this).make_iterator(position));
+        iterator make_iterator (size_type position) {
+            //return esl::as_nonconst(std::as_const(*this).make_iterator(position));
             return {first, rest.begin(), position};
         }
 
         fixed_type   first;
         dynamic_type rest;
     };
+
+    namespace detail::tiny_vector {
+
+        template <typename Derived, typename F>
+        struct lift_impl {
+            template <esl::same_template<esl::tiny_vector> T>
+            constexpr auto operator () (T && target) const {
+                return esl::lift_on_range<esl::tiny_vector>(derived(), std::forward<T>(target));
+            }
+
+            template <esl::same_template<esl::tiny_vector> T, esl::same_template<esl::tiny_vector> U>
+            constexpr auto operator () (T && first, U && second) const {
+                return esl::lift_on_range<esl::tiny_vector>(derived(), std::forward<T>(first), std::forward<U>(second));
+            }
+
+        private:
+
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+    }
+
+    template <> struct lift_specialization_map<esl::tiny_vector>:
+        lift_implementation<detail::tiny_vector::lift_impl> {};
 
 }

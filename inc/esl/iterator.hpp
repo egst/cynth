@@ -1,13 +1,25 @@
 #pragma once
 
+#include "esl/concepts.hpp"
+
 #include <type_traits>
 #include <concepts>
 #include <utility>
 #include <memory>
+#include <iterator>
 
-namespace cynth::util {
+namespace esl {
 
-    namespace detail {
+    /** std::make_move_iterator or keep the same iterator - similar to std::forward<T>. */
+    template <typename T, typename I>
+    constexpr auto make_forwarding_iterator (I && i) {
+        if constexpr (esl::temporary<T>)
+            return std::make_move_iterator(i);
+        else
+            return i;
+    }
+
+    namespace detail::iterator {
 
         template <typename Ref>
         struct arrow_proxy {
@@ -45,7 +57,7 @@ namespace cynth::util {
         };
 
         template <typename I>
-        using difference_type = std::conditional_t <
+        using difference_type = std::conditional_t<
             distance<I>,
             decltype(std::declval<I>().distance(std::declval<I>())),
             std::ptrdiff_t
@@ -65,7 +77,7 @@ namespace cynth::util {
         };
 
         template <typename I>
-        using value_type = std::conditional_t <
+        using value_type = std::conditional_t<
             custom_value_type<I>,
             typename I::value_type,
             std::remove_cvref_t<decltype(std::declval<I>().dereference())>
@@ -81,16 +93,16 @@ namespace cynth::util {
         concept bidirectional = forward<I> && decrement<I>;
 
         template <typename I>
-        concept random_access = input<I> && distance<I> && advance<I>; // Equals, increment and decrement are not necessary.
+        concept random_access = input<I> && distance<I> && advance<I>; // equals, increment and decrement are not necessary.
 
         template <input I>
-        using category = std::conditional_t <
+        using category = std::conditional_t<
             random_access<I>,
             std::random_access_iterator_tag,
-            std::conditional_t <
+            std::conditional_t<
                 bidirectional<I>,
                 std::bidirectional_iterator_tag,
-                std::conditional_t <
+                std::conditional_t<
                     forward<I>,
                     std::forward_iterator_tag,
                     std::input_iterator_tag
@@ -114,34 +126,33 @@ namespace cynth::util {
         * For a random access iterator:
             difference_type distance (I const &) const
             void advance (difference_type)
-            Equals, increment and decrement are not necessary.
+            equals, increment and decrement are not necessary.
     **/
-    //template <detail::input Derived>
     template <typename Derived>
     struct iterator {
 
-        decltype(auto) operator * () const /*requires detail::input<Derived>*/ {
+        decltype(auto) operator * () const {
             return derived().dereference();
         }
 
-        auto operator -> () const /*requires detail::input<Derived>*/ {
+        auto operator -> () const {
             decltype(auto) ref = **this;
             if constexpr (std::is_reference_v<decltype(ref)>) {
                 return std::addressof(ref);
             } else {
-                return detail::arrow_proxy{std::move(ref)};
+                return detail::iterator::arrow_proxy{std::move(ref)};
             }
         }
 
-        friend bool operator == (Derived const & first, Derived const & second) /*requires detail::forward<Derived>*/ {
-            if constexpr (detail::forward<Derived>)
+        friend bool operator == (Derived const & first, Derived const & second) {
+            if constexpr (detail::iterator::forward<Derived>)
                 return first.equals(second);
             else
                 return first.distance(second) == 0;
         };
 
-        Derived & operator ++ () /*requires detail::forward<Derived>*/ {
-            if constexpr (detail::random_access<Derived>) {
+        Derived & operator ++ () {
+            if constexpr (detail::iterator::random_access<Derived>) {
                 derived().advance(1);
             } else {
                 derived().increment();
@@ -149,14 +160,14 @@ namespace cynth::util {
             return derived();
         }
 
-        Derived operator ++ (int) /*requires detail::forward<Derived>*/ {
+        Derived operator ++ (int) {
             auto copy = derived();
             ++*this;
             return copy;
         }
 
-        Derived & operator -- () /*requires detail::bidirectional<Derived>*/ {
-            if constexpr (detail::random_access<Derived>) {
+        Derived & operator -- () {
+            if constexpr (detail::iterator::random_access<Derived>) {
                 derived().advance(-1);
             } else {
                 derived().decrement();
@@ -164,46 +175,46 @@ namespace cynth::util {
             return derived();
         }
 
-        Derived operator -- (int) /*requires detail::bidirectional<Derived>*/ {
+        Derived operator -- (int) {
             auto copy = derived();
             --*this;
             return copy;
         }
 
-        friend auto operator <=> (Derived const & first, Derived const & second) /*requires detail::random_access<Derived>*/ {
+        friend auto operator <=> (Derived const & first, Derived const & second) {
             return (first - second) <=> 0;
         }
 
-        Derived & operator += (detail::difference_type_param<Derived> auto offset) /*requires detail::random_access<Derived>*/ {
+        Derived & operator += (detail::iterator::difference_type_param<Derived> auto offset) {
             derived().advance(offset);
             return derived();
         }
 
-        Derived & operator -= (detail::difference_type_param<Derived> auto offset) /*requires detail::random_access<Derived>*/ {
+        Derived & operator -= (detail::iterator::difference_type_param<Derived> auto offset) {
             return *this += -offset;
         }
 
-        friend Derived operator + (Derived iter, detail::difference_type_param<Derived> auto offset) /*requires detail::random_access<Derived>*/ {
+        friend Derived operator + (Derived iter, detail::iterator::difference_type_param<Derived> auto offset) {
             return iter += offset;
         }
 
-        friend Derived operator + (detail::difference_type_param<Derived> auto offset, Derived iter) /*requires detail::random_access<Derived>*/ {
+        friend Derived operator + (detail::iterator::difference_type_param<Derived> auto offset, Derived iter) {
             return iter += offset;
         }
 
-        friend Derived operator - (Derived iter, detail::difference_type_param<Derived> auto offset) /*requires detail::random_access<Derived>*/ {
+        friend Derived operator - (Derived iter, detail::iterator::difference_type_param<Derived> auto offset) {
             return iter -= offset;
         }
 
-        friend Derived operator - (detail::difference_type_param<Derived> auto offset, Derived iter) /*requires detail::random_access<Derived>*/ {
+        friend Derived operator - (detail::iterator::difference_type_param<Derived> auto offset, Derived iter) {
             return iter -= offset;
         }
 
-        decltype(auto) operator [] (detail::difference_type_param<Derived> auto offset) const /*requires detail::random_access<Derived>*/ {
+        decltype(auto) operator [] (detail::iterator::difference_type_param<Derived> auto offset) const {
             return *(*this + offset);
         }
 
-        auto operator - (Derived other) const /*requires detail::random_access<Derived>*/ {
+        auto operator - (Derived other) const {
             return derived().distance(other);
         }
 
@@ -219,14 +230,14 @@ namespace cynth::util {
 
 }
 
-template <cynth::util::detail::input I> requires std::derived_from<I, cynth::util::iterator<I>>
+template <esl::detail::iterator::input I> requires (std::derived_from<I, esl::iterator<I>>)
 struct std::iterator_traits<I> {
 
     using reference         = decltype(*std::declval<I>());
     using pointer           = decltype(std::declval<I>().operator->());
-    using difference_type   = cynth::util::detail::difference_type<I>;
-    using value_type        = cynth::util::detail::value_type<I>;
-    using iterator_category = cynth::util::detail::category<I>;
+    using difference_type   = esl::detail::iterator::difference_type<I>;
+    using value_type        = esl::detail::iterator::value_type<I>;
+    using iterator_category = esl::detail::iterator::category<I>;
     using iterator_concept  = iterator_category;
 
 };

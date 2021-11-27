@@ -1,80 +1,6 @@
-#### MODIFIABLE CONFIG ####
+#### USER CONFIG ####
 
-# C++ standard:
-# (At least c++20.)
-STD = c++20
-
-# Directory names:
-# (Including the trailing slash. Leave empty for the project root directory. Add leading slash for absolute paths.)
-INC       = inc/
-SRC       = src/
-DEP_SRC   = dep/src/
-DEP_ENTRY = dep/
-DEP_LINK  = dep/link/
-BIN_SRC   = obj/src/
-BIN_ENTRY = obj/
-BIN_DIST  = dist/
-GEN       = gen/
-TESTS     = tests/
-ENTRY     = entry/
-#ENTRY    =
-
-# Generated files location:
-# (Excluding the SRC/INC directory and the EXT_IMPL/EXT_HEAD extension.)
-IMPL_LEXER  = lexer
-IMPL_PARSER = parser
-HEAD_PARSER = parser
-
-# File extensions:
-# (Including the leading dot. Leave empty for extensionless files.)
-EXT_IMPL  = .cpp
-EXT_HEAD  = .hpp
-EXT_DEP   = .mk
-#EXT_DEP  = .d
-EXT_OBJ   = .o
-EXT_EXE   =
-#EXT_EXE  = .exe
-EXT_CYNTH = .cth
-
-# Entry points:
-# (Select entry point implementation files to compile to a final executable.)
-# (Excluding the ENTRY directory and the EXT_IMPL extension.)
-#ENTRY_POINTS += cynth
-#ENTRY_POINTS += parser
-#ENTRY_POINTS += interpreter
-#ENTRY_POINTS += compiler
-ENTRY_POINTS += test
-
-# Compiler:
-# (Tested with GCC 10, Clang 10 and 11.)
-#COMPILER = g++-10
-#COMPILER = clang++-10
-COMPILER = clang++-11
-
-# GCC (g++), Flex and Bison executable names/locations:
-# (GCC must be installed even when compiling with Clang. It is used for dependencies generation.)
-GCC   = g++
-FLEX  = flex
-BISON = bison
-
-# Additional compiler options:
-# (Do not set the -std, -I and -O options here.)
-ADDITIONAL_OPTIONS  = -static -Wall -Wextra -Wno-missing-braces -pedantic -fdiagnostics-color=always
-ADDITIONAL_OPTIONS += -ftemplate-backtrace-limit=0
-#ADDITIONAL_OPTIONS += -fsanitize=undefined
-ADDITIONAL_OPTIONS += -fvisibility-inlines-hidden
-
-# More additional options:
-# * linkage (with the chosen compiler)
-# * dependency generation (with GCC)
-# * flex lexer
-# * bison parser
-LINK_OPTIONS   = -fdiagnostics-color=always
-#LINK_OPTIONS  += -fsanitize=undefined
-LINK_OPTIONS  += -fvisibility-inlines-hidden
-DEP_OPTIONS    =
-FLEX_OPTIONS   =
-BISON_OPTIONS  = -Wcounterexamples
+include config.mk
 
 #### HELPER FUNCTIONS ####
 
@@ -124,18 +50,38 @@ COMPILE_OBJ = mkdir -p $(dir $@); $(COMPILER) $(ALL_OPTIONS) -c -o $@ $<
 # Link object files into an executable file:
 LINK = mkdir -p $(dir $@); $(COMPILER) $(LINK_OPTIONS) -o $@ $^
 
-# Generate dependencies:
+# Generate basic dependencies (header files change -> recompile object files):
 #GEN_DEPS             = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MG -MT $1 -MF $@ $<
-GEN_DEPS             = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MT $1 -MF $@ $<
+GEN_DEPS             = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MT '$1 $2' -MF $@ $<
+GEN_SRC_DEPS         = $(call GEN_DEPS,$(<:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ)),$(<:$(SRC)%$(EXT_IMPL)=$(DEP_SRC)%$(EXT_DEP)))
+GEN_ENTRY_DEPS       = $(call GEN_DEPS,$(<:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ)),$(<:$(ENTRY)%$(EXT_IMPL)=$(DEP_ENTRY)%$(EXT_DEP)))
+
+# Generate indirect dependencies (header files change -> update depencencies again):
+# Note: Not used anymore. Instead, the .mk file is added as a second dependant in the gcc comand directly.
 GEN_INDIR_DEPS       = cat $@ | sed 's/$(subst /,\/,$1)/$(subst /,\/,$@)/' >> $@
-GEN_SRC_DEPS         = $(call GEN_DEPS,$(<:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ)))
-GEN_ENTRY_DEPS       = $(call GEN_DEPS,$(<:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ)))
 GEN_INDIR_SRC_DEPS   = $(call GEN_INDIR_DEPS,$(@:$(DEP_SRC)%$(EXT_DEP)=$(BIN_SRC)%$(EXT_OBJ)))
 GEN_INDIR_ENTRY_DEPS = $(call GEN_INDIR_DEPS,$(@:$(DEP_ENTRY)%$(EXT_DEP)=$(BIN_ENTRY)%$(EXT_OBJ)))
 
-GEN_LINK_DEPS = TODO...
-# echo "dist/target:$(echo $SRC_FILES | tr ' ' '\n' | sort | comm -12 - <(cat dep/test.mk | tr ' ' '\n' | grep '.hpp$' | sed 's/\.hpp$/\.cpp/' | sed 's/^inc/src/' | sort) | tr '\n' ' ')" | fold -s -w80
-# dist/target: entry/target.cpp src/dep1.cpp src/dep2.cpp ...
+# Generate linkage dependencies (object files change -> relink executable files):
+# Note: This could be very useful, but I can't come up with a solution that wouldn't involve some sort of manual
+# dependency graph search. So for now all the .cpp files are linked together for every entry point.
+define IMPL_DEPS
+comm -12 <( \
+    echo "$(SRC_FILES)" | tr ' ' '\n' | sed '/^$$/d' | sort \
+) <( \
+    cat dep/test.mk | tr ' ' '\n' | sort | uniq | grep '$(EXT_HEAD)$$' | sed 's/\$(EXT_HEAD)$$/\$(EXT_IMPL)/' | sed 's/^inc/src/' | sort \
+)
+endef
+define GEN_LINK_DEPS
+echo $$'$(@:$(DEP_ENTRY)%$(EXT_DEP)=$(BIN_DIST)%$(EXT_EXE)):\n$(@:$(DEP_ENTRY)%$(EXT_DEP)=$(BIN_ENTRY)%$(EXT_OBJ))\n'"$$( \
+    $(IMPL_DEPS) \
+)" | sed 's/\$(EXT_IMPL)$$/\$(EXT_OBJ)/' | sed 's/^$(subst /,\/,$(SRC))/$(subst /,\/,$(BIN_SRC))/' | \
+tr '\n' ' ' | fold -s -w80 | sed '$$!s/$$/\\/' | sed '2,$$s/^/ /' | sed 's/ $$//' >> $@
+endef
+define DEEPER_DEPS
+echo "$$($(IMPL_DEPS))" | sed 's/\$(EXT_IMPL)$$/\$(EXT_DEP)/' | sed 's/^$(subst /,\/,$(SRC))/$(subst /,\/,$(DEP_SRC))/' | \
+xargs -I{} -d'\n' cat {}
+endef
 
 # Generate lexer:
 GEN_LEXER = $(FLEX) $(LEX_OPTIONS) -o $(SRC)$(IMPL_LEXER)$(EXT_IMPL) $(GEN)lexer.l
@@ -145,12 +91,15 @@ GEN_PARSER = $(BISON) $(BISON_OPTIONS) --defines=$(INC)$(HEAD_PARSER)$(EXT_HEAD)
 
 #### TARGETS ####
 
-.PHONY: all clean clean-dist clean-bin clean-dep clean-gen
+.PHONY: all clean test clean-dist clean-bin clean-dep clean-gen
 
 all: $(GEN_FILES) $(DEP_SRC_FILES) $(DEP_ENTRY_FILES) $(BIN_SRC_FILES) $(BIN_ENTRY_FILES) $(BIN_DIST_FILES)
 
 clean: clean-dist clean-bin clean-dep
 #clean-gen
+
+test:
+	$(DEEPER_DEPS)
 
 # Generating lexer files:
 $(SRC)$(IMPL_LEXER)$(EXT_IMPL): $(GEN)lexer.l
@@ -170,18 +119,11 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 $(DEP_SRC)%$(EXT_DEP): $(SRC)%$(EXT_IMPL)
 	$(call INFO,Updating \"$(call FILE_NAME,$<)\" source dependencies...)
 	$(GEN_SRC_DEPS)
-	$(GEN_INDIR_SRC_DEPS)
 
 # Entry-point files dependencies:
 $(DEP_ENTRY)%$(EXT_DEP): $(ENTRY)%$(EXT_IMPL)
 	$(call INFO,Updating \"$(call FILE_NAME,$<)\" entry dependencies...)
 	$(GEN_ENTRY_DEPS)
-	$(GEN_INDIR_ENTRY_DEPS)
-
-# Entry-point files linkage dependencies (source files):
-$(DEP_LINK)%$(EXT_DEP): $(ENTRY)%$(EXT_IMPL)
-	$(call INFO,Updating \"$(call FILE_NAME,$<)\" entry linkage dependencies...)
-	$(GEN_LINK_DEPS)
 
 # Compiling source files:
 $(BIN_SRC)%$(EXT_OBJ): $(SRC)%$(EXT_IMPL)
@@ -193,11 +135,11 @@ $(BIN_ENTRY)%$(EXT_OBJ): $(ENTRY)%$(EXT_IMPL)
 	$(call INFO,Compiling \"$(call FILE_NAME,$<)\" entry object file...)
 	$(COMPILE_OBJ)
 
-# TODO: All source object files are linked together regardless of whether the corresponding header is included or not.
+# TODO: Remove the `$(SRC_FILES)` once I figure out a way to filter out the implementation dependencies.
 # Linking executable files:
-$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
+#$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
+$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ)
 	$(call INFO,Linking \"$(call FILE_NAME,$<)\" executable file...)
-	$(call INFO,Sources: $(SRC_FILES))
 	$(LINK)
 
 # Removing executable files:

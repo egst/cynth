@@ -1,24 +1,24 @@
 #pragma once
 
-namespace cynth::sem {
+namespace Cynth::Sem {
 
-    template <bool> struct declaration;
+    template <bool> struct Declaration;
 
-    using complete_decl   = declaration<true>;
-    using incomplete_decl = declaration<false>;
+    using CompleteDecl   = Declaration<true>;
+    using IncompleteDecl = Declaration<false>;
 
-    struct type_decl;
+    struct TypeDecl;
 
-    template <bool> struct range_decl;
+    template <bool> struct RangeDecl;
 
-    using complete_range_decl   = range_decl<true>;
-    using incomplete_range_decl = range_decl<false>;
+    using CompleteRangedecl   = RangeDecl<true>;
+    using IncompleteRangeDecl = RangeDecl<false>;
 
-    struct direct_target;
-    struct subscript_target;
-    struct any_target;
+    struct DirectTarget;
+    struct SubscriptTarget;
+    struct AnyTarget;
 
-    namespace value {
+    namespace Value {
 
         template <bool> struct any;
 
@@ -29,7 +29,7 @@ namespace cynth::sem {
 
     }
 
-    using complete_value = value::complete;
+    using CompleteValue = value::complete;
 
     namespace type {
 

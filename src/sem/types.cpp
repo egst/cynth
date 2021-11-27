@@ -1,7 +1,9 @@
 #include "sem/types.hpp"
 
-#include "common_interface.hpp"
+#include "config.hpp"
+#include "lift2.hpp"
 #include "component.hpp"
+#include "common_interface.hpp"
 #include "sem/interface.hpp"
 #include "sem/declarations.hpp"
 #include "sem/util.hpp"
@@ -63,7 +65,12 @@ namespace cynth {
     //// Bool ////
 
     display_result sem::type::Bool::display () const {
-        return "Bool"; // TODO
+        return "Bool";
+    }
+
+    /** `cth_t_Bool` */
+    sem::type_transl_result sem::type::Bool::transl_type () const {
+        return string{} + global_prefix + "_" + type_prefix + "_Bool";
     }
 
     sem::common_type_result sem::type::Bool::common (sem::type::Bool const &) const {
@@ -96,6 +103,11 @@ namespace cynth {
         return "Int";
     }
 
+    /** `cth_t_Int` */
+    sem::type_transl_result sem::type::Int::transl_type () const {
+        return string{} + global_prefix + "_" + type_prefix + "_Int";
+    }
+
     sem::common_type_result sem::type::Int::common (sem::type::Int const &) const {
         return {sem::type::Int{}};
     }
@@ -122,6 +134,11 @@ namespace cynth {
         return "Float";
     }
 
+    /** `cth_t_Float` */
+    sem::type_transl_result sem::type::Float::transl_type () const {
+        return string{} + global_prefix + "_" + type_prefix + "_Float";
+    }
+
     sem::common_type_result sem::type::Float::common (sem::type::Float const &) const {
         return {sem::type::Float{}};
     }
@@ -144,6 +161,11 @@ namespace cynth {
         return "String";
     }
 
+    /** `cth_t_String` */
+    sem::type_transl_result sem::type::String::transl_type () const {
+        return string{} + global_prefix + "_" + type_prefix + "_String";
+    }
+
     sem::common_type_result sem::type::String::common (sem::type::String const &) const {
         return {sem::type::String{}};
     }
@@ -159,9 +181,11 @@ namespace cynth {
         return "T in"; // TODO
     }
 
-    // Note: In the following implementations, the trivial constraints `requires true` and `requires (!false)`
-    // are necessary because of the original declarations `requires Complete` and `requires (!Complete)`.
-    // (Complete is explicitly specified here as either true or false.)
+    /** `T` */
+    template <>
+    sem::type_transl_result sem::type::In::transl_type () const {
+        return lift2<component, target::category>(sem::transl_type)(type);
+    }
 
     template <bool Complete>
     sem::decay_result sem::type::in_type<Complete>::decay () const requires Complete {
@@ -193,6 +217,12 @@ namespace cynth {
         return "T out"; // TODO
     }
 
+    /** `T` */
+    template <>
+    sem::type_transl_result sem::type::Out::transl_type () const {
+        return lift2<component, target::category>(sem::transl_type)(type);
+    }
+
     template <bool Complete>
     sem::decay_result sem::type::out_type<Complete>::decay () const requires Complete {
         return *type;
@@ -221,6 +251,15 @@ namespace cynth {
     template <>
     display_result sem::type::Const::display () const {
         return "T const"; // TODO
+    }
+
+    /** `T const` */
+    template <>
+    sem::type_transl_result sem::type::Const::transl_type () const {
+        auto result = lift2<component, target::category>(sem::transl_type)(type);
+        if (!result)
+            return result.error();
+        return *result + " const";
     }
 
     template <bool Complete>
@@ -276,9 +315,18 @@ namespace cynth {
         return "T [n]"; // TODO
     }
 
+    /** `T *` */
+    template <>
+    sem::type_transl_result sem::type::Array::transl_type () const {
+        auto transl_result = lift2<result, target::category>(sem::transl_type)(util::single(type));
+        if (!transl_result)
+            return transl_result.error();
+        return *transl_result + " *";
+    }
+
     template <bool Complete> sem::common_type_result
     sem::type::array_type<Complete>::common (sem::type::Array const & other) const requires Complete {
-        auto results = (lift::category_component{util::overload {
+        auto results = (lift2<component, target::category>(
             [] <typename T, typename U> (T const & a, U const & b) -> std::optional<sem::type::complete> {
             //requires (std::same_as<T, U> || !std::same_as<T, sem::type::Const> && std::same_as<U, sem::type::Const>)
                 if (sem::same(a, b))
@@ -301,7 +349,7 @@ namespace cynth {
                     return {sem::type::Const{{a}}};
                 return {};
             }
-        }} (type, other.type));
+        )(type, other.type));
         if (!results)
             return results.error();
         auto result = util::unite_optionals(*results);
@@ -334,14 +382,14 @@ namespace cynth {
         if (!type_result)
             return type_result.error();
 
-        auto size_result = lift::category_component{util::overload {
+        auto size_result = lift2<component, target::category>(
             [] (value::unknown const &) -> result<int> {
                 return result_error{"Unknown array size."};
             },
             [&ctx] <sem::interface::value Value> (Value const & value) -> result<int> {
                 return sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(value));
             }
-        }} (size);
+        )(size);
         if (!size_result)
             return size_result.error();
 
@@ -365,6 +413,13 @@ namespace cynth {
         };
     }
 
+    /** `float *` */
+    template <>
+    sem::type_transl_result sem::type::Buffer::transl_type () const {
+        // This assumes that type::Float always returns a non-error value.
+        return *sem::type::Float{}.transl_type() + " *";
+    }
+
     template <>
     display_result sem::type::Buffer::display () const {
         return "buffer [n]"; // TODO
@@ -386,14 +441,14 @@ namespace cynth {
 
     template <bool Complete>
     sem::complete_result sem::type::buffer_type<Complete>::complete (context & ctx) const requires (!Complete) {
-        auto size_result = lift::category_component{util::overload {
+        auto size_result = lift2<component, target::category>(
             [] (value::unknown const &) -> result<integral> {
                 return result_error{"Unknown array size."};
             },
             [&ctx] <sem::interface::value Value> (Value const & value) -> result<integral> {
                 return sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(value));
             }
-        }} (size);
+        )(size);
         if (!size_result)
             return size_result.error();
 
@@ -410,6 +465,11 @@ namespace cynth {
     template <>
     display_result sem::type::Function::display () const {
         return "Output (Input)"; // TODO
+    }
+
+    template <>
+    sem::type_transl_result sem::type::Function::transl_type () const {
+        return result_error{"Function types are not directly translatable."};
     }
 
     template <bool Complete>

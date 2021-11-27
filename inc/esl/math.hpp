@@ -2,12 +2,12 @@
 
 #include <cstddef>
 
-namespace cynth::util {
+namespace esl {
 
     namespace detail {
 
-        template <typename t>
-        constexpr t powers_of_10 [3 * 3] = {
+        template <typename T>
+        constexpr T powers_of_10 [3 * 3] = {
             1, 10, 100,
             1'000, 10'000, 100'000,
             1'000'000, 10'000'000, 100'000'000/*,
@@ -19,7 +19,7 @@ namespace cynth::util {
     }
 
     /** Integer exponentiation of 10. */
-    template <typename t>
-    constexpr t pow10 (std::size_t const p) noexcept { return detail::powers_of_10<t>[p]; }
+    template <typename T>
+    constexpr T pow10 (std::size_t const p) noexcept { return detail::powers_of_10<T>[p]; }
 
 }
