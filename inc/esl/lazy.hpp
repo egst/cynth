@@ -1,13 +1,11 @@
 #pragma once
 
-#include "result.hpp"
-#include "util/general.hpp"
+#include "esl/concepts.hpp"
+#include "esl/result.hpp"
 
-#include <variant>
-#include <string>
-#include <concepts>
+#include <utility>
 
-namespace cynth {
+namespace esl {
 
     template <typename F>
     struct lazy {
@@ -31,20 +29,20 @@ namespace cynth {
     /** Short circuit logical and for scalar types. */
     template <typename T, typename U>
     requires
-        util::scalar<typename lazy<T>::value_type> &&
-        util::scalar<typename lazy<U>::value_type>
+        esl::scalar<typename lazy<T>::value_type> &&
+        esl::scalar<typename lazy<U>::value_type>
     bool operator && (lazy<T> const & first, lazy<U> const & second) {
         return first.eval() && second.eval();
     }
 
-    /** Short circuit logical and overload for scalar cynth::result. */
+    /** Short circuit logical and overload for scalar esl::result. */
     template <typename T, typename U>
     requires
-        util::is     <typename lazy<T>::value_type, result> &&
-        util::is     <typename lazy<U>::value_type, result> &&
-        util::scalar <typename lazy<T>::value_type::value_type> &&
-        util::scalar <typename lazy<U>::value_type::value_type>
-    result<bool> operator && (lazy<T> const & first, lazy<U> const & second) {
+        esl::same_template <typename lazy<T>::value_type, esl::result> &&
+        esl::same_template <typename lazy<U>::value_type, esl::result> &&
+        esl::scalar        <typename lazy<T>::value_type::value_type> &&
+        esl::scalar        <typename lazy<U>::value_type::value_type>
+    esl::result<bool> operator && (lazy<T> const & first, lazy<U> const & second) {
         auto first_result = first.eval();
         if (!first_result)
             return {first_result.error()};
@@ -61,20 +59,20 @@ namespace cynth {
     /** Short circuit logical or for scalar types. */
     template <typename T, typename U>
     requires
-        util::scalar<typename lazy<T>::value_type> &&
-        util::scalar<typename lazy<U>::value_type>
+        esl::scalar<typename lazy<T>::value_type> &&
+        esl::scalar<typename lazy<U>::value_type>
     bool operator || (lazy<T> const & first, lazy<U> const & second) {
         return first.eval() || second.eval();
     }
 
-    /** Short circuit logical or overload for cynth::result. */
+    /** Short circuit logical or overload for esl::result. */
     template <typename T, typename U>
     requires
-        util::is     <typename lazy<T>::value_type, result> &&
-        util::is     <typename lazy<U>::value_type, result> &&
-        util::scalar <typename lazy<T>::value_type::value_type> &&
-        util::scalar <typename lazy<U>::value_type::value_type>
-    result<bool> operator || (lazy<T> const & first, lazy<U> const & second) {
+        esl::same_template <typename lazy<T>::value_type, esl::result> &&
+        esl::same_template <typename lazy<U>::value_type, esl::result> &&
+        esl::scalar        <typename lazy<T>::value_type::value_type> &&
+        esl::scalar        <typename lazy<U>::value_type::value_type>
+    esl::result<bool> operator || (lazy<T> const & first, lazy<U> const & second) {
         auto first_result = first.eval();
         if (!first_result)
             return {first_result.error()};

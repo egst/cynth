@@ -1,7 +1,5 @@
 #pragma once
 
-#include "esl/lift.hpp"
-
 #include <utility>
 #include <concepts>
 #include <optional>
@@ -294,16 +292,5 @@ namespace esl {
             ? std::optional<value_type>{*r}
             : std::optional<value_type>{};
     };
-
-    /*
-    namespace target {
-
-        template <typename...> struct result {};
-
-    }
-
-    template <> struct specialization_map<target::result>:            specialization_map_base<detail::lift::result>       {};
-    template <> struct specialization_map<esl::result>:               specialization_map_base<detail::lift::result>       {};
-    */
 
 }

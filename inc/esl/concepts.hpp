@@ -62,4 +62,32 @@ namespace esl {
     template <typename T, typename... Ts>
     concept none_same_as = !some_same_as<T, Ts...>;
 
+    namespace detail::concepts {
+
+        template <typename, typename>
+        inline constexpr bool element = false;
+
+        template <template <typename...> typename C, typename T, typename... Ts>
+        inline constexpr bool element<T, C<Ts...>> = (std::same_as<T, Ts> || ...);
+
+        template <typename, typename>
+        inline constexpr bool subset = false;
+
+        template <template <typename...> typename C, typename... Ts, typename... Us>
+        inline constexpr bool subset<C<Ts...>, C<Us...>> = (element<Ts, C<Us...>> && ...);
+
+    }
+
+    /** Item containable in the variant.
+        e.g. variant_member<item, variant>
+        or   variant_member<variant> item */
+    template <typename T, typename Variant>
+    concept variant_member = detail::concepts::element<std::remove_cvref_t<T>, Variant>;
+
+    /** First variant containable in the other.
+        e.g. compatible_variant<source, target>
+        or   compatible_variant<target> source */
+    template <typename T, typename U>
+    concept compatible_variant = detail::concepts::subset<T, U> || detail::concepts::subset<typename T::variant, U>;
+
 }
