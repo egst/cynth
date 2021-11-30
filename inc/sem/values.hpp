@@ -1,229 +1,238 @@
 #pragma once
 
-#include "config.hpp"
-#include "category_base.hpp"
-#include "view.hpp"
-#include "component.hpp"
-#include "result.hpp"
+#include <variant>
+#include <vector>
+#include <string>
+
+#include "esl/type_manip.hpp"
+#include "esl/result.hpp"
+#include "esl/category.hpp"
+#include "esl/component.hpp"
+#include "esl/tiny_vector.hpp"
+#include "esl/view.hpp"
+
 #include "common_interface_types.hpp"
-#include "sem/context_forward.hpp"
 #include "sem/forward.hpp"
 #include "sem/interface_types.hpp"
-#include "ast/categories_forward.hpp"
-#include "util/general.hpp"
+#include "sem/numeric_types.hpp"
+#include "ast/forward_categories.hpp"
 
-#include <string>
-#include <vector>
-#include <type_traits>
+// Note: No macros escape this file.
+#define VALUE \
+    DisplayResult display () const; \
+    ValueTypeResult valueType () const
 
-// Note: Macros are always undefined at the end of the file.
-#define VALUE_DECL \
-    display_result    display    () const; \
-    value_type_result value_type () const
+#define GET(type) \
+    GetResult<type> get () const
 
-namespace cynth::sem::value {
+#define CONVERSION(type) \
+    ConversionResult convert (Context &, type const &) const
 
-    struct Bool {
-        bool value;
+namespace cynth::sem {
 
-        get_result<bool> get () const;
+    namespace value {
 
-        conversion_result convert (context &, type::Bool  const &) const;
-        conversion_result convert (context &, type::Int   const &) const;
-        conversion_result convert (context &, type::Float const &) const;
-        conversion_result convert (context &, type::Const const &) const; // TODO
+        struct Bool {
+            bool value;
 
-        VALUE_DECL;
-    };
+            VALUE;
 
-    struct Int {
-        integral value;
+            GET(bool);
 
-        get_result<integral> get () const;
+            CONVERSION(type::Bool);
+            CONVERSION(type::Int);
+            CONVERSION(type::Float);
+            CONVERSION(type::Const);
 
-        conversion_result convert (context &, type::Bool  const &) const;
-        conversion_result convert (context &, type::Int   const &) const;
-        conversion_result convert (context &, type::Float const &) const;
-        conversion_result convert (context &, type::Const const &) const; // TODO
+            constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
+        };
 
-        VALUE_DECL;
-    };
+        struct Int {
+            Integral value;
 
-    struct Float {
-        floating value;
+            VALUE;
 
-        get_result<floating> get () const;
+            GET(Integral);
 
-        conversion_result convert (context &, type::Bool  const &) const;
-        conversion_result convert (context &, type::Int   const &) const;
-        conversion_result convert (context &, type::Float const &) const;
-        conversion_result convert (context &, type::Const const &) const; // TODO
+            CONVERSION(type::Bool);
+            CONVERSION(type::Int);
+            CONVERSION(type::Float);
+            CONVERSION(type::Const);
 
-        VALUE_DECL;
-    };
+            constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
+        };
 
-    struct String {
-        string value;
+        struct Float {
+            Floating value;
 
-        get_result<string> get () const;
+            VALUE;
 
-        VALUE_DECL;
-    };
+            GET(Floating);
 
-    namespace detail {
+            CONVERSION(type::Bool);
+            CONVERSION(type::Int);
+            CONVERSION(type::Float);
+            CONVERSION(type::Const);
 
-        using simple = variant <
+            constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
+        };
+
+        struct String {
+            std::string value;
+
+            VALUE;
+
+            GET(std::string);
+
+            constexpr static CompleteValue make (std::string); //return sem::value::Sting{.value = value};
+        };
+
+        /** Constant values will not be used in the first versions. */
+        struct Const {
+            esl::component<CompleteValue> value;
+
+            VALUE;
+
+            CONVERSION(type::Bool);
+            CONVERSION(type::Int);
+            CONVERSION(type::Float);
+            CONVERSION(type::Const);
+            CONVERSION(type::Array);
+        };
+
+        struct InValue {
+            esl::component<CompleteValue> value;
+        };
+
+        struct In {
+            InValue * value;
+            esl::component<CompleteValue> type;
+
+            VALUE;
+
+            CONVERSION(type::Bool);
+            CONVERSION(type::Int);
+            CONVERSION(type::Float);
+            CONVERSION(type::In);
+            CONVERSION(type::Const);
+            CONVERSION(type::Buffer);
+        };
+
+        struct OutValue {
+            esl::component<CompleteValue> value;
+        };
+
+        struct Out {
+            OutValue * value;
+            esl::component<CompleteValue> type;
+
+            VALUE;
+
+            CONVERSION(type::Out);
+        };
+
+        template <template <typename...> typename Base>
+        struct vector_param {
+            template <typename T>
+            struct test_vector: Base<T> {};
+        };
+
+        template <typename T, template <typename...> typename Base>
+        using basic_test_vector = typename vector_param<Base>::template test_vector<T>;
+
+        template <typename T> using test_vector      = basic_test_vector<T, std::vector>;
+        template <typename T> using tiny_test_vector = basic_test_vector<T, esl::tiny_vector>;
+
+        struct ArrayValue {
+            using Vector = esl::component_vector<esl::tiny_vector<CompleteValue>>;
+
+            Vector value;
+        };
+
+        struct Array {
+            using Vector = ArrayValue::Vector;
+
+            ArrayValue * value;
+            esl::component_vector<CompleteValue> type;
+            Integral size;
+
+            VALUE;
+
+            GET(std::vector<esl::tiny_vector<CompleteValue>>);
+
+            CONVERSION(type::Array);
+            CONVERSION(type::Const);
+
+            constexpr static esl::result<CompleteValue> make (
+                value::ArrayValue *,
+                esl::tiny_component_vector<CompleteType> &&,
+                Integral
+            );
+
+            esl::view<Vector::iterator> trimmed_value () const;
+        };
+
+        struct FunctionValue;
+
+        struct BufferValue {
+            using Sample = Floating;
+            using Vector = std::vector<Floating>;
+
+            Vector value;
+            FunctionValue * generator;
+        };
+
+        struct Buffer {
+            using Sample = BufferValue::Sample;
+            using Vector = std::vector<Sample>;
+
+            BufferValue * value;
+            Integral size;
+
+            VALUE;
+
+            CONVERSION(type::Buffer);
+
+            constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
+        };
+
+        struct FunctionValue {
+            using Body = ast::category::Expression;
+
+            esl::component_vector<CompleteType> out_type;
+            esl::component_vector<CompleteDeclaration> parameters;
+            esl::component<Body> body;
+            esl::component<Context> capture;
+        };
+
+        struct Function {
+            FunctionValue * value;
+
+            VALUE;
+
+            GET(Function);
+
+            CONVERSION(type::Function);
+            CONVERSION(type::Buffer);
+        };
+
+        struct Unknown {
+            esl::optional_component<IncompleteDeclaration> decl;
+        };
+
+    }
+
+    namespace detail::values {
+
+        using Simple = std::variant<
             value::Bool,
             value::Int,
             value::Float,
             value::String
         >;
 
-    }
-
-    struct simple: category_base<simple, detail::simple> {
-        using base = category_base<simple, detail::simple>;
-        using base::base;
-    };
-
-    /** Constant values will not be used in the first versions. */
-    struct Const {
-        component<value::complete> value;
-
-        conversion_result convert (context &, type::Bool  const &) const;
-        conversion_result convert (context &, type::Int   const &) const;
-        conversion_result convert (context &, type::Float const &) const;
-        conversion_result convert (context &, type::Const const &) const;
-        conversion_result convert (context &, type::Array const &) const;
-
-        VALUE_DECL;
-    };
-
-    struct InValue {
-        component<value::complete> value;
-    };
-
-    struct In {
-        InValue *                 value;
-        component<type::complete> type;
-
-        // TODO: In types should have a specified type
-        // for the same purposes as out types and arrays:
-        // Int in a;
-        // Float in b = a; # a referential read view over a with a different type
-        // Float c = a;    # reading implicitly converted values
-        // Float out d;
-        // Int out e = d;  # a referential write view over d with a different type
-        // e[] = 2;        # writing implicitly converted values
-        // Float [3] f;
-        // Int [2] g = f;  # a referential view over f with a different type and size
-
-        conversion_result convert (context &, type::Bool   const &) const;
-        conversion_result convert (context &, type::Int    const &) const;
-        conversion_result convert (context &, type::Float  const &) const;
-        conversion_result convert (context &, type::In     const &) const;
-        conversion_result convert (context &, type::Const  const &) const;
-        conversion_result convert (context &, type::Buffer const &) const;
-
-        VALUE_DECL;
-    };
-
-    struct OutValue {
-        component<value::complete> value;
-    };
-
-    struct Out {
-        OutValue *                value;
-        component<type::complete> type;
-
-        conversion_result convert (context &, type::Out const &) const;
-
-        VALUE_DECL;
-    };
-
-    struct ArrayValue {
-        using vector = component_vector<tuple_vector<value::complete>>;
-
-        vector value;
-    };
-
-    struct Array {
-        using vector = ArrayValue::vector;
-
-        ArrayValue *                     value;
-        component_vector<type::complete> type;
-        integral                         size;
-
-        view<ArrayValue::vector::iterator> trimmed_value () const;
-
-        get_result<std::vector<tuple_vector<value::complete>>> get () const;
-
-        conversion_result convert (context &, type::Array const &) const;
-        conversion_result convert (context &, type::Const const &) const;
-
-        VALUE_DECL;
-    };
-
-    struct FunctionValue;
-
-    struct BufferValue {
-        using sample_type = floating;
-        using vector      = std::vector<floating>;
-
-        vector          value;
-        FunctionValue * generator;
-    };
-
-    struct Buffer {
-        using sample_type = floating;
-        using vector      = std::vector<sample_type>;
-
-        BufferValue * value;
-        integral      size;
-
-        conversion_result convert (context &, type::Buffer const &) const;
-
-        VALUE_DECL;
-    };
-
-    struct FunctionValue {
-        component_vector <type::complete>            out_type;
-        component_vector <complete_decl>             parameters;
-        component        <ast::category::Expression> body;
-        component        <context>                   capture;
-    };
-
-    struct Function {
-        FunctionValue * value;
-
-        get_result<Function> get () const;
-
-        conversion_result convert (context &, type::Function const &) const;
-        conversion_result convert (context &, type::Buffer   const &) const;
-
-        VALUE_DECL;
-    };
-
-    /** Function templates will not be implemented in the first versions. */
-    struct FunctionTemplate {
-        // TODO
-    };
-
-    // Just some examples of unknown types and values:
-    // Int       [Int       size] array
-    // Int       [type Size size] array
-    // type Elem [type Size size] array
-    // $         [$         size] array
-    // $         [$]              array
-    // $         []               array
-    struct unknown {
-        optional_component<incomplete_decl> decl;
-    };
-
-    namespace detail {
-
-        using any_base = util::extend <
-            value::simple::variant,
+        using Complete = esl::extend<
+            Simple,
             value::In,
             value::Out,
             value::Const,
@@ -232,47 +241,25 @@ namespace cynth::sem::value {
             value::Function
         >;
 
-        template <bool Complete>
-        using any = std::conditional_t <
+        using Incomplete = esl::extend<
             Complete,
-            any_base,
-            util::extend <
-                any_base,
-                value::unknown
-            >
+            value::Unknown
         >;
 
     }
 
-    template <bool Complete>
-    struct any: category_base<any<Complete>, detail::any<Complete>, true> {
-        using base = category_base<any<Complete>, detail::any<Complete>, true>;
-        using base::base;
+    struct CompleteValue: esl::category<CompleteValue, detail::values::Complete> {
+        using Base = esl::category<CompleteValue, detail::values::Complete>;
+        using Base::Base;
     };
 
-    template struct any<true>;
-    template struct any<false>;
-
-    constexpr auto make_bool = [] (bool value) -> value::complete {
-        return value::Bool{.value = value};
+    struct IncompleteValue: esl::category<IncompleteValue, detail::values::Incomplete> {
+        using Base = esl::category<IncompleteValue, detail::values::Incomplete>;
+        using Base::Base;
     };
-
-    constexpr auto make_int = [] (integral value) -> value::complete {
-        return value::Int{.value = value};
-    };
-
-    constexpr auto make_float = [] (floating value) -> value::complete {
-        return value::Float{.value = value};
-    };
-
-    constexpr auto make_string = [] (string value) -> value::complete {
-        return value::String{.value = value};
-    };
-
-    result<value::complete> make_array (value::ArrayValue *, component_vector<type::complete> &&, integral);
-
-    result<value::complete> make_buffer (value::BufferValue *, integral);
 
 }
 
-#undef VALUE_DECL
+#undef VALUE
+#undef GET
+#undef CONVERSION

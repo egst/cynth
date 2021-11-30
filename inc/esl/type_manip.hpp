@@ -5,12 +5,53 @@
 
 namespace esl {
 
+    template <typename Ref>
+    struct arrow_proxy {
+        using value_type = Ref;
+
+        value_type * operator -> () {
+            return &ref;
+        }
+
+    private:
+        value_type ref;
+    };
+
     template <typename T>
     using lref_or_val = std::conditional_t<
         std::is_lvalue_reference_v<T>,
         T,                         // Keep lvalue references.
         std::remove_reference_t<T> // Remove rvalue references (and keep direct values untouched).
     >;
+
+    template <typename T>
+    struct holder {
+        using value_type      = esl::lref_or_val<T>;
+        using reference       = std::add_lvalue_reference_t<value_type>;
+        using const_reference = std::add_lvalue_reference_t<std::add_const_t<value_type>>;
+        using pointer         = esl::arrow_proxy<value_type>;
+        using const_pointer   = esl::arrow_proxy<std::add_const_t<value_type>>;
+
+        template <std::same_as<T> U>
+        constexpr holder (U && value): value_{std::forward<T>(value)} {}
+
+        const_reference value       () const { return value_; }
+        reference       value       ()       { return value_; }
+        const_reference operator *  () const { return value(); }
+        reference       operator *  ()       { return value(); }
+        const_pointer   operator -> () const { return {value()}; }
+        pointer         operator -> ()       { return {value()}; }
+
+    protected:
+        value_type value_;
+    };
+
+    template <typename T> holder(T &&) -> holder<T>;
+
+    template <typename T>
+    constexpr holder<T> hold (T && value) {
+        return {std::forward<T>(value)};
+    }
 
     /** Add/remove any kind of reference to mimic another type. */
     template <typename T, typename U>

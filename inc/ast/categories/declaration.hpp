@@ -1,22 +1,22 @@
 #pragma once
 
-#include "config.hpp"
-#include "category_base.hpp"
+#include "esl/category.hpp"
+
 #include "ast/nodes/declarations.hpp"
 
 namespace cynth::ast::category {
 
-    namespace detail {
+    namespace detail::declaration {
 
-        using declaration = variant <
+        using Variant = std::variant<
             node::Declaration,
             node::TupleDecl
         >;
 
     }
 
-    struct Declaration: category_base<Declaration, detail::declaration> {
-        using base = category_base<Declaration, detail::declaration>;
+    struct Declaration: esl::category<Declaration, detail::declaration::Variant> {
+        using base = esl::category<Declaration, detail::declaration::Variant>;
         using base::base;
     };
 

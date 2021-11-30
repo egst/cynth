@@ -1,43 +1,50 @@
 #pragma once
 
-#include "component.hpp"
-#include "category_base.hpp"
+#include <variant>
+
+#include "esl/component.hpp"
+#include "esl/category.hpp"
+
 #include "sem/forward.hpp"
 #include "sem/interface_types.hpp"
 
-// Note: Macros are always undefined at the end of the file.
-#define TARGET_DECL \
-    target_res_result resolve_target (bool) const
+// Note: No macros escape this file.
+#define TARGET_INTERFACE \
+    TargetResolutionResult resolveTarget (bool) const
 
 namespace cynth::sem {
 
-    struct direct_target {
-        typed_value & value;
+    namespace target {
 
-        TARGET_DECL;
-    };
+        struct Direct {
+            TypedValue & value;
 
-    struct subscript_target {
-        component        <any_target>      container;
-        component_vector <value::complete> location;
+            TARGET_INTERFACE;
+        };
 
-        TARGET_DECL;
-    };
+        struct Subscript {
+            esl::component<Target> container;
+            esl::component_vector<CompleteValue> location;
 
-    namespace detail {
+            TARGET_INTERFACE;
+        };
 
-        using any = variant <
-            direct_target,
-            subscript_target
+    }
+
+    namespace detail::targets {
+
+        using Any = std::variant<
+            target::Direct,
+            target::Subscript
         >;
 
     }
 
-    struct any_target: category_base<any_target, detail::any, true> {
-        using base = category_base<any_target, detail::any, true>;
+    struct Target: esl::category<Target, detail::targets::Any> {
+        using base = esl::category<Target, detail::targets::Any>;
         using base::base;
     };
 
 }
 
-#undef TARGET_DECL
+#undef TARGET_INTERFACE

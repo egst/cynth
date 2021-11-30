@@ -2,7 +2,7 @@
 
 namespace cynth::sem {
 
-    using integral = int;
-    using floating = float;
+    using Integral = int;
+    using Floating = float;
 
 }

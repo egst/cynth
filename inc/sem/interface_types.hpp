@@ -1,21 +1,25 @@
 #pragma once
 
-#include "config.hpp"
-#include "result.hpp"
-#include "sem/context_forward.hpp"
+#include <string>
+#include <optional>
+
+#include "esl/result.hpp"
+
 #include "sem/forward.hpp"
 
 namespace cynth::sem {
 
-    using common_type_result = result<complete_type>;
-    using conversion_result  = result<complete_value>;
-    using decay_result       = complete_type;
+    // Types:
+    using CommonTypeResult       = esl::result<CompleteType>;
+    using SameTypeResult         = bool;
+    using TypeTranslationResult  = esl::result<std::string>;
+    using TypeCompletionResult   = esl::result<CompleteType>;
+    using TypeDecayResult        = std::optional<CompleteType>;
+    // Values:
+    using ConversionResult       = esl::result<CompleteValue>;
     template <typename T>
-    using get_result         = result<T>;
-    using value_type_result  = complete_type;
-    using complete_result    = result<complete_type>;
-    using target_res_result  = result<typed_target_value>;
-    using names_result       = vector<string>;
-    using type_transl_result = result<string>;
+    using GetResult              = esl::result<T>;
+    using ValueTypeResult        = CompleteType;
+    using TargetResolutionResult = esl::result<TypedTargetValue>;
 
 }

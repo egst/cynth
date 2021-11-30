@@ -1,20 +1,21 @@
 #pragma once
 
-#include "component.hpp"
-#include "ast/interface_types.hpp"
-#include "ast/categories_forward.hpp"
-#include "ast/nodes/expressions.hpp"
-#include "ast/nodes/types.hpp"
+#include "esl/component.hpp"
+
 #include "sem/context.hpp"
 #include "sem/translation_context.hpp"
+#include "ast/forward_categories.hpp"
+#include "ast/interface_types.hpp"
+#include "ast/nodes/expressions.hpp"
+#include "ast/nodes/types.hpp"
 
 #include <string>
 
-// Note: Macros are always undefined at the end of the file.
-#define STMT_DECL \
-    display_result     display   ()                           const; \
-    execution_result   execute   (sem::context &)             const; \
-    translation_result translate (sem::translation_context &) const
+// Note: No macros escape this file.
+#define STATEMENT_INTERFACE \
+    DisplayResult display () const; \
+    ExecutionResult execute (sem::Context &) const; \
+    TranslationResult translate (sem::TranslationContext &) const
 
 namespace cynth::ast::node {
 
@@ -22,80 +23,81 @@ namespace cynth::ast::node {
     struct Assignment {
         // Target is syntactically any expression (otherwise it would be too complicated to parse),
         // but semantically it may be only be a name or a tuple of names.
-        component<category::Expression> target;
-        component<category::Expression> value;
+        // TODO: This is no longer true. Should I type this tighter?
+        esl::component<category::Expression> target;
+        esl::component<category::Expression> value;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** T a = b */
     struct Definition {
-        component<category::Declaration> target;
-        component<category::Expression>  value;
+        esl::component<category::Declaration> target;
+        esl::component<category::Expression>  value;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** for (T e in a) x */
     struct For {
-        component<category::RangeDecl> declarations;
-        component<category::Statement> body;
+        esl::component<category::RangeDeclaration> declarations;
+        esl::component<category::Statement>        body;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** Out f (In a) b */
     struct FunctionDef {
-        component<category::Type>        output;
-        component<category::Declaration> input;
-        component<node::Name>            name;
-        component<category::Expression>  body;
+        esl::component<category::Type>        output;
+        esl::component<category::Declaration> input;
+        esl::component<node::Name>            name;
+        esl::component<category::Expression>  body;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** if (cond) a else b */
     struct If {
-        component<category::Expression> condition;
-        component<category::Statement>  positive_branch;
-        component<category::Statement>  negative_branch;
+        esl::component<category::Expression> condition;
+        esl::component<category::Statement>  positive_branch;
+        esl::component<category::Statement>  negative_branch;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** return a
         return ()
         return */
     struct Return {
-        component<category::Expression> value;
+        esl::component<category::Expression> value;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** type T = U */
     struct TypeDef {
-        component<node::TypeName> target;
-        component<category::Type> type;
+        esl::component<node::TypeName> target;
+        esl::component<category::Type> type;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** when (cond) a */
     struct When {
-        component <category::Expression> condition;
-        component <category::Statement>  branch;
+        esl::component <category::Expression> condition;
+        esl::component <category::Statement>  branch;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
     /** while (cond) a */
     struct While {
-        component<category::Expression> condition;
-        component<category::Statement>  body;
+        esl::component<category::Expression> condition;
+        esl::component<category::Statement>  body;
 
-        STMT_DECL;
+        STATEMENT_INTERFACE;
     };
 
 }
 
-#undef STMT_DECL
+#undef STATEMENT_INTERFACE

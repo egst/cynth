@@ -39,13 +39,13 @@ namespace cynth::sem {
     // TODO: Better modulo semantics.
     // TODO: Better conversions.
 
-    // TODO: Division by 0?
+    // TODO: Division by 0? (And other special floating point values...)
 
-    constexpr auto btoi = [] (bool     a) -> integral { return a; };
-    constexpr auto itob = [] (integral a) -> bool     { return a; };
-    constexpr auto itof = [] (integral a) -> floating { return a; };
-    constexpr auto ftoi = [] (floating a) -> integral { return a; };
-    constexpr auto btof = [] (bool     a) -> floating { return itof(btoi(a)); };
-    constexpr auto ftob = [] (floating a) -> bool     { return itob(ftoi(a)); };
+    constexpr auto btoi = [] (bool     a) -> Integral { return a; };
+    constexpr auto itob = [] (Integral a) -> bool     { return a; };
+    constexpr auto itof = [] (Integral a) -> Floating { return a; };
+    constexpr auto ftoi = [] (Floating a) -> Integral { return a; };
+    constexpr auto btof = [] (bool     a) -> Floating { return itof(btoi(a)); };
+    constexpr auto ftob = [] (Floating a) -> bool     { return itob(ftoi(a)); };
 
 }

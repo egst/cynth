@@ -1,254 +1,267 @@
 #pragma once
 
-#include "config.hpp"
-#include "category_base.hpp"
-#include "component.hpp"
+#include "esl/type_manip.hpp"
+#include "esl/result.hpp"
+#include "esl/component.hpp"
+#include "esl/category.hpp"
+
 #include "common_interface_types.hpp"
-#include "sem/forward.hpp"
+#include "sem/numeric_types.hpp"
 #include "sem/interface_types.hpp"
-#include "util/general.hpp"
 
 #include <type_traits>
+#include <variant>
 
-// Note: Macros are always undefined at the end of the file.
-#define TYPE_DECL \
-    display_result     display     () const; \
-    type_transl_result transl_type () const
+// Note: No macros escape this file.
+#define TYPE \
+    DisplayResult display () const; \
+    TypeTranslationResult translateType () const
 
-namespace cynth::sem::type {
+#define COMMON(type) \
+    CommonTypeResult common (type const &) const
 
-    struct Bool {
-        common_type_result common (type::Bool  const &) const;
-        common_type_result common (type::Int   const &) const;
-        common_type_result common (type::Float const &) const;
-        common_type_result common (type::In    const &) const;
-        common_type_result common (type::Const const &) const;
+#define SAME(type) \
+    SameTypeResult same (type const &) const
 
-        bool same (type::Bool const &) const;
+#define DECAY() \
+    TypeDecayResult decay () const
 
-        TYPE_DECL;
-    };
+#define INCOMPLETE_TYPE \
+    TypeCompletionResult complete (Context &) const
 
-    struct Int {
-        // implicit common (Bool)
-        common_type_result common (type::Int   const &) const;
-        common_type_result common (type::Float const &) const;
-        common_type_result common (type::In    const &) const;
-        common_type_result common (type::Const const &) const;
+namespace cynth::sem {
 
-        bool same (type::Int const &) const;
+    namespace type {
 
-        TYPE_DECL;
-    };
+        struct Bool {
+            TYPE;
 
-    struct Float {
-        // implicit common (Bool)
-        // implicit common (Int)
-        common_type_result common (type::Float const &) const;
-        common_type_result common (type::In    const &) const;
-        common_type_result common (type::Const const &) const;
+            COMMON(type::Bool);
+            COMMON(type::Int);
+            COMMON(type::Float);
+            COMMON(type::In);
+            COMMON(type::Const);
 
-        bool same (type::Float const &) const;
+            SAME(type::Bool);
 
-        TYPE_DECL;
-    };
+            // TODO?
+            //constexpr static CompleteType make ();
+        };
 
-    /** Strings will not be used in the first versions. */
-    struct String {
-        common_type_result common (type::String const &) const;
+        struct Int {
+            TYPE;
 
-        bool same (type::String const &) const;
+            // implicit common(Bool)
+            COMMON(type::Int);
+            COMMON(type::Float);
+            COMMON(type::In);
+            COMMON(type::Const);
 
-        TYPE_DECL;
-    };
+            SAME(type::Int);
+        };
 
-    namespace detail {
+        struct Float {
+            TYPE;
 
-        using simple = variant <
+            // implicit common(Bool)
+            // implicit common(Int)
+            COMMON(type::Float);
+            COMMON(type::In);
+            COMMON(type::Const);
+
+            SAME(type::Float);
+        };
+
+        /** Strings will not be used in the first versions. */
+        struct String {
+            TYPE;
+
+            COMMON(type::String);
+
+            SAME(type::String);
+        };
+
+        namespace detail::types {
+
+            template <bool Complete>
+            struct In {
+                esl::component<Type<Complete>> type;
+            };
+
+            template <bool Complete>
+            struct Out {
+                esl::component<Type<Complete>> type;
+            };
+
+            template <bool Complete>
+            struct Const {
+                esl::component<Type<Complete>> type;
+            };
+
+            template <bool Complete>
+            using Size = std::conditional_t <
+                Complete,
+                Integral,
+                esl::component<IncompleteValue>
+            >;
+
+            template <bool Complete>
+            struct Array {
+                esl::component_vector<Type<Complete>> type;
+                Size<Complete> size;
+            };
+
+            template <bool Complete>
+            struct Buffer {
+                constexpr static char const * sampleType = "float"; // TODO?
+                Size<Complete> size;
+            };
+
+            template <bool Complete>
+            struct Function {
+                esl::component_vector<Type<Complete>> out;
+                esl::component_vector<Type<Complete>> in;
+            };
+
+        }
+
+        struct In: detail::types::In<true> {
+            TYPE;
+
+            // implicit common(Bool)
+            // implicit common(Int)
+            // implicit common(Float)
+
+            SAME(type::In);
+
+            DECAY();
+        };
+
+        struct Out: detail::types::Out<true> {
+            TYPE;
+
+            SAME(type::Out);
+
+            DECAY();
+        };
+
+        struct Const: detail::types::Const<true> {
+            TYPE;
+
+            // implicit common(Bool)
+            // implicit common(Int)
+            // implicit common(Float)
+            COMMON(type::Const);
+
+            SAME(type::Const);
+
+            DECAY();
+        };
+
+        struct Array: detail::types::Array<true> {
+            TYPE;
+
+            COMMON(type::Array);
+
+            SAME(type::Array);
+
+            constexpr static esl::result<type::Array> make (esl::tiny_component_vector<CompleteType> &&, Integral);
+        };
+
+        struct Buffer: detail::types::Buffer<true> {
+            TYPE;
+
+            COMMON(type::Buffer);
+
+            SAME(type::Buffer);
+
+            constexpr static esl::result<type::Buffer> make (Integral);
+        };
+
+        struct Function: detail::types::Function<true> {
+            TYPE;
+
+            COMMON(type::Function);
+
+            SAME(type::Function);
+        };
+
+        struct IncompleteIn: detail::types::In<false> {
+            INCOMPLETE_TYPE;
+        };
+
+        struct IncompleteOut: detail::types::Out<false> {
+            INCOMPLETE_TYPE;
+        };
+
+        struct IncompleteConst: detail::types::Const<false> {
+            INCOMPLETE_TYPE;
+        };
+
+        struct IncompleteArray: detail::types::Array<false> {
+            INCOMPLETE_TYPE;
+        };
+
+        struct IncompleteBuffer: detail::types::Buffer<false> {
+            INCOMPLETE_TYPE;
+        };
+
+        struct IncompleteFunction: detail::types::Function<false> {
+            INCOMPLETE_TYPE;
+        };
+
+        struct Unknown {
+            esl::optional_component<TypeDeclaration> declaration;
+        };
+
+    }
+
+    namespace detail::types {
+
+        using Simple = std::variant <
             type::Bool,
             type::Int,
             type::Float,
             type::String
         >;
 
-    }
+        using Complete = esl::extend<
+            Simple,
+            type::Const,
+            type::In,
+            type::Out,
+            type::Array,
+            type::Buffer,
+            type::Function
+        >;
 
-    // TODO: This isn't even used anywhere.
-    struct simple: category_base<simple, detail::simple> {
-        using base = category_base<simple, detail::simple>;
-        using base::base;
-    };
-
-    template <bool Complete>
-    struct in_type {
-        component<type::any<Complete>> type;
-
-        decay_result decay () const requires Complete;
-
-        // implicit common (Bool)
-        // implicit common (Int)
-        // implicit common (Float)
-
-        bool same (type::In const &) const requires Complete;
-
-        complete_result complete (context &) const requires (!Complete);
-
-        TYPE_DECL;
-    };
-
-    template struct in_type<true>;
-    template struct in_type<false>;
-
-    template <bool Complete>
-    struct out_type {
-        component<type::any<Complete>> type;
-
-        decay_result decay () const requires Complete;
-
-        bool same (type::Out const &) const requires Complete;
-
-        complete_result complete (context &) const requires (!Complete);
-
-        TYPE_DECL;
-    };
-
-    template struct out_type<true>;
-    template struct out_type<false>;
-
-    template <bool Complete>
-    struct const_type {
-        component<type::any<Complete>> type;
-
-        decay_result decay () const requires Complete;
-
-        // implicit common (Bool)
-        // implicit common (Int)
-        // implicit common (Float)
-        common_type_result common (type::Const const &) const requires Complete;
-
-        bool same (type::Const const &) const requires Complete;
-
-        complete_result complete (context &) const requires (!Complete);
-
-        TYPE_DECL;
-    };
-
-    template struct const_type<true>;
-    template struct const_type<false>;
-
-    namespace detail {
-
-        template <bool Complete>
-        using size_type = std::conditional_t <
+        using Incomplete = esl::extend<
             Complete,
-            integral,
-            component<value::incomplete>
+            type::IncompleteConst,
+            type::IncompleteIn,
+            type::IncompleteOut,
+            type::IncompleteArray,
+            type::IncompleteBuffer,
+            type::IncompleteFunction,
+            type::Unknown
         >;
 
     }
 
-    template <bool Complete>
-    struct array_type {
-        component_vector<type::any<Complete>> type;
-        detail::size_type<Complete>           size;
-
-        common_type_result common (type::Array const &) const requires Complete;
-
-        bool same (type::Array const &) const requires Complete;
-
-        complete_result complete (context &) const requires (!Complete);
-
-        TYPE_DECL;
+    struct CompleteType: esl::category<CompleteType, detail::types::Complete> {
+        using Base = esl::category<CompleteType, detail::types::Complete>;
+        using Base::Base;
     };
 
-    template struct array_type<true>;
-    template struct array_type<false>;
-
-    result<type::Array> make_array (component_vector<type::complete> &&, integral);
-
-    template <bool Complete>
-    struct buffer_type {
-        constexpr static char const * sample_type = "float";
-
-        detail::size_type<Complete> size;
-
-        common_type_result common (type::Buffer const &) const requires Complete;
-
-        bool same (type::Buffer const &) const requires Complete;
-
-        complete_result complete (context &) const requires (!Complete);
-
-        TYPE_DECL;
+    struct IncompleteType: esl::category<IncompleteType, detail::types::Incomplete> {
+        using Base = esl::category<IncompleteType, detail::types::Incomplete>;
+        using Base::Base;
     };
-
-    template struct buffer_type<true>;
-    template struct buffer_type<false>;
-
-    result<type::Buffer> make_buffer (integral);
-
-    template <bool Complete>
-    struct function_type {
-        // Might return or accept a tuple.
-        component_vector<type::any<Complete>> out;
-        component_vector<type::any<Complete>> in;
-
-        common_type_result common (type::Function const &) const requires Complete;
-
-        bool same (type::Function const &) const requires Complete;
-
-        complete_result complete (context &) const requires (!Complete);
-
-        TYPE_DECL;
-    };
-
-    template struct function_type<true>;
-    template struct function_type<false>;
-
-    struct unknown {
-        optional_component<type_decl> declaration;
-    };
-
-    namespace detail {
-
-        using any_base = util::extend <
-            type::simple::variant,
-            type::const_type    <true>,
-            type::in_type       <true>,
-            type::out_type      <true>,
-            type::array_type    <true>,
-            type::buffer_type   <true>,
-            type::function_type <true>
-        >;
-
-        template <bool Complete>
-        using any = std::conditional_t <
-            Complete,
-            any_base,
-            util::extend <
-                any_base,
-                type::const_type    <false>,
-                type::in_type       <false>,
-                type::out_type      <false>,
-                type::array_type    <false>,
-                type::buffer_type   <false>,
-                type::function_type <false>,
-                type::unknown
-            >
-        >;
-
-    }
-
-    // Note: Incomplete types are actually "possibly incomplete".
-    // I.e. complete types are a subset of incomplete types.
-    template <bool Complete>
-    struct any: category_base<any<Complete>, detail::any<Complete>> {
-        using base = category_base<any<Complete>, detail::any<Complete>>;
-        using base::base;
-    };
-
-    template struct any<true>;
-    template struct any<false>;
 
 }
 
-#undef TYPE_DECL
+#undef TYPE
+#undef COMMON
+#undef SAME
+#undef DECAY
+#undef INCOMPLETE_TYPE

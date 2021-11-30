@@ -1,27 +1,35 @@
 #pragma once
 
+#include "esl/component.hpp"
+
 #include "sem/forward.hpp"
-#include "component.hpp"
 
 namespace cynth::sem {
 
-    template <bool Complete>
-    struct Declaration {
-        component_vector<type::any<Complete>> type;
-        std::string                           name;
-    };
+    namespace detail::declarations {
 
-    template struct Declaration<true>;
-    template struct Declaration<false>;
+        template <bool Complete>
+        struct Declaration {
+            esl::component_vector<Type<Complete>> type;
+            std::string name;
+        };
 
-    struct TypeDecl {
+        template <bool Complete>
+        struct RangeDeclaration {
+            esl::component_vector<Declaration<Complete>> declaration;
+            esl::component<CompleteValue> range;
+        };
+
+    }
+
+    struct CompleteDeclaration:  detail::declarations::Declaration<true>  {};
+    struct InompleteDeclaration: detail::declarations::Declaration<false> {};
+
+    struct TypeDeclaration {
         std::string name;
     };
 
-    template <bool Complete>
-    struct RangeDecl {
-        component_vector <Declaration<Complete>> declaration;
-        component        <value::complete>       range;
-    };
+    struct CompleteRangeDeclaration:   detail::declarations::RangeDeclaration<true> {};
+    struct IncompleteRangeDeclaration: detail::declarations::RangeDeclaration<true> {};
 
 }

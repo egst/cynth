@@ -1,17 +1,11 @@
 #pragma once
 
-#include "basic_config.hpp"
-#include "util/tiny_vector.hpp"
-
-#include <variant>
-#include <vector>
-#include <optional>
-
-#include <iostream>
-
 namespace Cynth {
 
-    template <typename T>
-    using TupleVector = Util::TinyVector<T>;
+    // cth_t_Int, ue3_foo, ...
+    constexpr char const * global_prefix = "cth";
+    constexpr char const * type_prefix = "t";
+    constexpr char const * user_prefix = "u";
+    constexpr char const * elem_prefix = "e";
 
 }

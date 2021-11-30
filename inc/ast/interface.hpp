@@ -1,59 +1,57 @@
 #pragma once
 
-#include "lift.hpp"
-#include "interface_types.hpp"
+#include <concepts>
+
+#include "esl/functional.hpp"
+#include "esl/result.hpp"
+#include "esl/containers.hpp"
+
+#include "util.hpp"
 #include "common_interface.hpp"
 #include "sem/context.hpp"
 #include "sem/translation_context.hpp"
-#include "sem/values.hpp"
-
-#include <string>
-#include <variant>
-#include <concepts>
+#include "ast/interface_types.hpp"
 
 namespace cynth::ast::interface {
 
     template <typename Node>
-    concept any = cynth::interface::displayable<Node>;
-
-    template <typename Node>
-    concept expression = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.evaluate(ctx) } -> std::same_as<evaluation_result>;
+    concept expression = requires (Node node, sem::Context & ctx) {
+        { node.evaluate(ctx) } -> std::same_as<EvaluationResult>;
     };
 
     template <typename Node>
-    concept statement = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.execute(ctx) } -> std::same_as<execution_result>;
+    concept statement = requires (Node node, sem::Context & ctx) {
+        { node.execute(ctx) } -> std::same_as<ExecutionResult>;
     };
 
     template <typename Node>
-    concept type = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.eval_type(ctx) } -> std::same_as<type_eval_result>;
+    concept type = requires (Node node, sem::Context & ctx) {
+        { node.evalType(ctx) } -> std::same_as<TypeEvaluationResult>;
     };
 
     template <typename Node>
-    concept array_elem = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.eval_array_elem(ctx) } -> std::same_as<evaluation_result>; // TODO: Decide on the result type.
+    concept arrayElem = requires (Node node, sem::Context & ctx) {
+        { node.evalArrayElem(ctx) } -> std::same_as<EvaluationResult>; // TODO: Decide on the result type.
     };
 
     template <typename Node>
-    concept declaration = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.eval_decl(ctx) } -> std::same_as<decl_eval_result>;
+    concept declaration = requires (Node node, sem::Context & ctx) {
+        { node.evalDecl(ctx) } -> std::same_as<DeclarationEvaluationResult>;
     };
 
     template <typename Node>
-    concept range_decl = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.eval_range_decl(ctx) } -> std::same_as<range_decl_eval_result>;
+    concept rangeDecl = requires (Node node, sem::Context & ctx) {
+        { node.evalRangeDecl(ctx) } -> std::same_as<RangeDeclarationEvaluationResult>;
     };
 
     template <typename Node>
-    concept target = interface::any<Node> && requires (Node node, sem::context & ctx) {
-        { node.eval_target(ctx) } -> std::same_as<target_eval_result>;
+    concept target = requires (Node node, sem::Context & ctx) {
+        { node.evalTarget(ctx) } -> std::same_as<TargetEvaluationResult>;
     };
 
     template <typename Node>
-    concept translatable = requires (Node node, sem::translation_context & ctx) {
-        { node.translate(ctx) } -> std::same_as<translation_result>;
+    concept translatable = requires (Node node, sem::TranslationContext & ctx) {
+        { node.translate(ctx) } -> std::same_as<TranslationResult>;
     };
 
 }
@@ -74,41 +72,38 @@ namespace cynth::ast {
      *  Only after the helper statements may the currently translated construct's direct translation be placed, if there is one.
      *  Also, the "compconst" context is modified accordingly.
      */
-    constexpr auto translate = [] (sem::translation_context & ctx) {
-        return lift::any{util::overload {
-            [&ctx] <interface::translatable Node> (Node const & node) -> translation_result {
+    constexpr auto translate (sem::TranslationContext & ctx) {
+        return esl::overload(
+            [&ctx] (interface::translatable auto const & node) -> TranslationResult {
                 return node.translate(ctx);
             },
-            [] <interface::any Node> (Node const &) -> translation_result requires (!interface::translatable<Node>) {
-                return make_translation_result(result_error{"This node is not directly translatable."});
+            [] <typename Node> (Node const &) -> TranslationResult {
+                return esl::result_error{"This node is not directly translatable."};
             }
-        }};
-    };
+        );
+    }
 
-    constexpr auto execute = [] (sem::context & ctx) {
-        return lift::any{util::overload {
-            [&ctx] <interface::statement Node> (Node const & node) {
+    constexpr auto execute (sem::Context & ctx) {
+        return esl::overload(
+            [&ctx] (interface::statement auto const & node) {
                 return node.execute(ctx);
             },
-            [&ctx] <interface::expression Node> (Node const & node) -> execution_result
-            requires (!interface::statement<Node>) {
-                auto result = util::unite_results(node.evaluate(ctx));
+            [&ctx] (interface::expression auto const & node) -> ExecutionResult {
+                auto result = esl::unite_results(node.evaluate(ctx));
                 if (!result)
                     return result.error();
                 return {};
             }
-        }};
-    };
+        );
+    }
 
-    constexpr auto evaluate = [] (sem::context & ctx) {
-        return lift::any {
-            [&ctx] <interface::expression Node> (Node const & node) {
-                return node.evaluate(ctx);
-            }
+    constexpr auto evaluate (sem::Context & ctx) {
+        return [&ctx] <interface::expression Node> (Node const & node) {
+            return node.evaluate(ctx);
         };
-    };
+    }
 
-    constexpr auto names = lift::any {
+    constexpr auto names =
         [] <typename Node> (Node const & node)
         requires (
             interface::expression <Node> ||
@@ -116,61 +111,51 @@ namespace cynth::ast {
             interface::type       <Node>
         ) {
             return node.names();
-        }
-    };
+        };
 
-    constexpr auto type_names = lift::any {
+    constexpr auto type_names =
         [] <typename Node> (Node const & node)
         requires (
             interface::expression <Node> ||
             interface::statement  <Node> ||
             interface::type       <Node>
         ) {
-            return node.type_names();
-        }
-    };
-
-    constexpr auto eval_type = [] (sem::context & ctx) {
-        return lift::any {
-            [&ctx] <interface::type Node> (Node const & node) {
-                return node.eval_type(ctx);
-            }
+            return node.typeNames();
         };
-    };
 
-    constexpr auto eval_array_elem = [] (sem::context & ctx) {
-        return lift::any {
-            [&ctx] <interface::array_elem Node> (Node const & node) {
-                return node.eval_array_elem(ctx);
-            }
+    constexpr auto evalType (sem::Context & ctx) {
+        return [&ctx] (interface::type auto const & node) {
+            return node.evalType(ctx);
         };
-    };
+    }
 
-    constexpr auto eval_decl = [] (sem::context & ctx) {
-        return lift::any {
-            [&ctx] <interface::declaration Node> (Node const & node) {
-                return node.eval_decl(ctx);
-            }
+    constexpr auto evalArrayElem (sem::Context & ctx) {
+        return [&ctx] (interface::arrayElem auto const & node) {
+            return node.evalArrayElem(ctx);
         };
-    };
+    }
 
-    constexpr auto eval_range_decl = [] (sem::context & ctx) {
-        return lift::any {
-            [&ctx] <interface::range_decl Node> (Node const & node) {
-                return node.eval_range_decl(ctx);
-            }
+    constexpr auto evalDecl (sem::Context & ctx) {
+        return [&ctx] (interface::declaration auto const & node) {
+            return node.evalDecl(ctx);
         };
-    };
+    }
 
-    constexpr auto eval_target = [] (sem::context & ctx) {
-        return lift::any{util::overload {
-            [&ctx] <interface::any Node> (Node const & node) -> target_eval_result requires interface::target<Node> {
-                return node.eval_target(ctx);
+    constexpr auto evalRangeDecl (sem::Context & ctx) {
+        return [&ctx] (interface::rangeDecl auto const & node) {
+            return node.evalRangeDecl(ctx);
+        };
+    }
+
+    constexpr auto evalTarget (sem::Context & ctx) {
+        return esl::overload(
+            [&ctx] (interface::target auto const & node) -> TargetEvaluationResult {
+                return node.evalTarget(ctx);
             },
-            [] <interface::any Node> (Node const &) -> target_eval_result requires (!interface::target<Node>) {
-                return result_error{"Assignment target may only be a name, a subscript or any tuple thereof."};
-            },
-        }};
-    };
+            [] (auto const &) -> TargetEvaluationResult {
+                return esl::result_error{"Assignment target may only be a name, a subscript or any tuple thereof."};
+            }
+        );
+    }
 
 }

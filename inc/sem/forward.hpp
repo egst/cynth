@@ -1,65 +1,113 @@
 #pragma once
 
-namespace Cynth::Sem {
+#include <type_traits>
 
-    template <bool> struct Declaration;
+namespace cynth::sem {
 
-    using CompleteDecl   = Declaration<true>;
-    using IncompleteDecl = Declaration<false>;
+    struct Context;
 
-    struct TypeDecl;
+    struct TypedValue;
+    struct TypedTargetValue;
 
-    template <bool> struct RangeDecl;
+    struct CompleteDeclaration;
+    struct IncompleteDeclaration;
 
-    using CompleteRangedecl   = RangeDecl<true>;
-    using IncompleteRangeDecl = RangeDecl<false>;
+    template <bool Complete>
+    using Declaration = std::conditional_t<
+        Complete,
+        CompleteDeclaration,
+        IncompleteDeclaration
+    >;
 
-    struct DirectTarget;
-    struct SubscriptTarget;
-    struct AnyTarget;
+    struct TypeDeclaration;
 
-    namespace Value {
+    struct CompleteRangeDeclaration;
+    struct IncompleteRangeDeclaration;
 
-        template <bool> struct any;
+    template <bool Complete>
+    using RangeDeclaration = std::conditional_t<
+        Complete,
+        CompleteRangeDeclaration,
+        IncompleteRangeDeclaration
+    >;
 
-        using complete   = any<true>;
-        using incomplete = any<false>;
+    namespace target {
 
-        //struct referential;
+        struct DirectTarget;
+        struct SubscriptTarget;
 
     }
 
-    using CompleteValue = value::complete;
+    struct Target;
 
-    namespace type {
-
-        template <bool> struct any;
-
-        using complete   = any<true>;
-        using incomplete = any<false>;
+    namespace value {
 
         struct Bool;
         struct Int;
         struct Float;
         struct String;
 
-        template <bool> struct in_type;
-        template <bool> struct out_type;
-        template <bool> struct const_type;
-        template <bool> struct array_type;
-        template <bool> struct buffer_type;
-        template <bool> struct function_type;
+        struct InValue;
+        struct OutValue;
+        struct ConstValue;
+        struct ArrayValue;
+        struct BufferValue;
+        struct FunctionValue;
 
-        using In               = in_type       <true>;
-        using Out              = out_type      <true>;
-        using Const            = const_type    <true>;
-        using Array            = array_type    <true>;
-        using Buffer           = buffer_type   <true>;
-        using Function         = function_type <true>;
-        using FunctionTemplate = function_type <false>;
+        struct In;
+        struct Out;
+        struct Const;
+        struct Array;
+        struct Buffer;
+        struct Function;
+
+        struct Unknown;
 
     }
 
-    using complete_type = type::complete;
+    struct CompleteValue;
+    struct IncompleteValue;
+
+    template <bool Complete>
+    using Value = std::conditional_t<
+        Complete,
+        CompleteValue,
+        IncompleteValue
+    >;
+
+    namespace type {
+
+        struct Bool;
+        struct Int;
+        struct Float;
+        struct String;
+
+        struct In;
+        struct Out;
+        struct Const;
+        struct Array;
+        struct Buffer;
+        struct Function;
+
+        struct IncompleteIn;
+        struct IncompleteOut;
+        struct IncompleteConst;
+        struct IncompleteArray;
+        struct IncompleteBuffer;
+        struct IncompleteFunction;
+
+        struct Unknown;
+
+    }
+
+    struct CompleteType;
+    struct IncompleteType;
+
+    template <bool Complete>
+    using Type = std::conditional_t<
+        Complete,
+        CompleteType,
+        IncompleteType
+    >;
 
 }

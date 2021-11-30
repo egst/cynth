@@ -4,6 +4,6 @@
 
 namespace cynth {
 
-    using display_result = std::string;
+    using DisplayResult = std::string;
 
 }

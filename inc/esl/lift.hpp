@@ -126,6 +126,27 @@ namespace esl {
         }
     }
 
+    template <template <typename...> typename V, typename F, typename T>
+    constexpr auto lift_on_range_cat (F const & functor, T && target) {
+        using value_type  = decltype(*esl::make_forwarding_iterator<T>(target.begin()));
+        using result_type = decltype(functor.invoke(std::declval<value_type>()));
+        using nested_type = esl::range_value_type<result_type>;
+        if constexpr (std::same_as<result_type, void>) {
+            for (auto && val : std::forward<T>(target))
+                functor.invoke(std::forward<value_type>(val));
+            return esl::result<void>{};
+        } else {
+            using vector = V<nested_type>;
+            vector result;
+            if constexpr (esl::reservable_range<vector>)
+                result.reserve(target.size()); // It could need more though, but this is the known minimum.
+            for (auto && val : std::forward<T>(target))
+                for (auto && nested : functor.invoke(std::forward<value_type>(val)))
+                    result.push_back(esl::forward_like<result_type>(nested));
+            return result;
+        }
+    }
+
     namespace detail::lift {
 
         template <typename Derived, typename F>
@@ -155,6 +176,22 @@ namespace esl {
             template <esl::sized_range T, esl::sized_range U> //requires (!esl::same_template<T, U>)
             constexpr auto operator () (T && first, U && second) const {
                 return esl::lift_on_range<vector_type>(derived(), std::forward<T>(first), std::forward<U>(second));
+            }
+
+        private:
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+        template <typename Derived, typename F>
+        struct nested_range_cat_impl {
+            template <typename T>
+            using vector_type = std::vector<T>;
+
+            template <esl::sized_range T>
+            constexpr auto operator () (T && target) const {
+                return esl::lift_on_range_cat<vector_type>(derived(), std::forward<T>(target));
             }
 
         private:
@@ -288,6 +325,7 @@ namespace esl {
 
         template <typename...> struct direct {};
         template <typename...> struct sized_range {};
+        template <typename...> struct nested_range_cat {};
 
         // Just an experiment:
         template <typename...> struct asymetric {};
@@ -298,12 +336,13 @@ namespace esl {
     // are implemented here. Other esl containers have their implementation in their respective headers.
     // Custom implementations may be added for any contiainer.
     // Note: esl::result is implemented here, because it's a dependency of the sized_range implementation.
-    template <> struct lift_specialization_map<target::direct>:      lift_implementation<detail::lift::direct_impl>       {};
-    template <> struct lift_specialization_map<target::sized_range>: lift_implementation<detail::lift::sized_range_impl>  {};
-    template <> struct lift_specialization_map<std::vector>:         lift_implementation<detail::lift::sized_range_impl>  {};
-    template <> struct lift_specialization_map<std::optional>:       lift_implementation<detail::lift::optional_impl>     {};
-    template <> struct lift_specialization_map<std::variant>:        lift_implementation<detail::lift::variant_impl>      {};
-    template <> struct lift_specialization_map<esl::result>:         lift_implementation<detail::lift::result_impl>       {};
+    template <> struct lift_specialization_map<target::direct>:           lift_implementation<detail::lift::direct_impl>       {};
+    template <> struct lift_specialization_map<target::sized_range>:      lift_implementation<detail::lift::sized_range_impl>  {};
+    template <> struct lift_specialization_map<target::nested_range_cat>: lift_implementation<detail::lift::sized_range_impl>  {};
+    template <> struct lift_specialization_map<std::vector>:              lift_implementation<detail::lift::sized_range_impl>  {};
+    template <> struct lift_specialization_map<std::optional>:            lift_implementation<detail::lift::optional_impl>     {};
+    template <> struct lift_specialization_map<std::variant>:             lift_implementation<detail::lift::variant_impl>      {};
+    template <> struct lift_specialization_map<esl::result>:              lift_implementation<detail::lift::result_impl>       {};
 
     // User-defined: (TODO)
     /*
@@ -425,27 +464,11 @@ namespace esl {
         return {esl::overload(std::forward<Fs>(fs)...)};
     }
 
+    /*
+    template <template <typename...> typename... Ts, typename... Fs>
+    constexpr auto lift_bin (Fs &&... fs) {
+        return {esl::overload(std::forward<Fs>(fs)...)};
+    }
+    */
+
 }
-
-#if 0
-
-        template <typename Derived, typename F>
-        struct tuple_vector {
-            template <esl::same_template<cynth::tuple_vector> T>
-            constexpr auto operator () (T && target) const {
-                return esl::lift_on_range<cynth::tuple_vector>(derived(), std::forward<T>(target));
-            }
-
-            template <esl::same_template<cynth::tuple_vector> T, esl::same_template<cynth::tuple_vector> U>
-            constexpr auto operator () (T && first, U && second) const {
-                return esl::lift_on_range<cynth::tuple_vector>(derived(), std::forward<T>(first), std::forward<U>(second));
-            }
-
-        private:
-
-            constexpr Derived const & derived () const {
-                return *static_cast<Derived const *>(this);
-            }
-        };
-
-#endif

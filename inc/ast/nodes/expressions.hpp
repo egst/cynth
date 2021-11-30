@@ -1,69 +1,79 @@
 #pragma once
 
-#include "ast/interface_types.hpp"
-#include "ast/categories_forward.hpp"
-#include "component.hpp"
-#include "sem/values.hpp"
-#include "sem/declarations.hpp"
-#include "sem/context.hpp"
-#include "sem/translation_context.hpp"
-
 #include <string>
 
-// Note: Macros are always undefined at the end of the file.
-#define EXPR_DECL \
-    display_result     display     ()                           const; \
-    evaluation_result  evaluate    (sem::context &)             const; \
-    translation_result translate   (sem::translation_context &) const
-#define NOEVAL_DECL \
-    display_result     display     ()                           const; \
-    translation_result translate   (sem::translation_context &) const
-#define EXEC_DECL \
-    execution_result   execute     (sem::context &)             const
-#define TARGET_DECL \
-    target_eval_result eval_target (sem::context &)             const
+#include "esl/category.hpp"
+
+#include "sem/numeric_types.hpp"
+#include "sem/context.hpp"
+#include "sem/translation_context.hpp"
+#include "ast/interface_types.hpp"
+#include "ast/forward_categories.hpp"
+
+// Note: No macros escape this file.
+#define DISPLAY_INTERFACE() \
+    DisplayResult display () const
+
+#define TRANSLATE_INTERFACE() \
+    TranslationResult translate (sem::TranslationContext &) const
+
+#define EVALUATE_INTERFACE() \
+    EvaluationResult evaluate (sem::Context &) const
+
+#define EXECUTE_INTERFACE() \
+    ExecutionResult execute (sem::Context &) const
+
+#define EVALUATE_TARGET_INTERFACE() \
+    TargetEvaluationResult evaluateTarget (sem::Context &) const
+
+#define EXPRESSION_INTERFACE \
+    DISPLAY_INTERFACE(); \
+    TRANSLATE_INTERFACE(); \
+    EVALUATE_INTERFACE()
 
 namespace cynth::ast::node {
 
     /** a + b */
     struct Add {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a && b */
     struct And {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** f(in) */
     struct Application {
-        component<category::Expression> function;
-        component<category::Expression> arguments;
+        esl::component<category::Expression> function;
+        esl::component<category::Expression> arguments;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** [a, ...] */
     struct Array {
-        component_vector<category::ArrayElem> elements;
+        esl::component_vector<category::ArrayElement> elements;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** { stmt; ... } */
     struct Block {
-        component_vector<category::Statement> statements;
+        esl::component_vector<category::Statement> statements;
 
-        template <bool = true> evaluation_result evaluate (sem::context &) const;
+        DISPLAY_INTERFACE();
+        TRANSLATE_INTERFACE();
+        EVALUATE_INTERFACE();
+        EXECUTE_INTERFACE();
 
-        NOEVAL_DECL;
-        EXEC_DECL;
+        template <bool = true> EvaluationResult evaluate (sem::Context &) const;
     };
 
     /**
@@ -73,213 +83,216 @@ namespace cynth::ast::node {
     struct Bool {
         bool value;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** T(a) */
     struct Conversion {
-        component<category::Type>       type;
-        component<category::Expression> argument;
+        esl::component<category::Type>       type;
+        esl::component<category::Expression> argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a / b */
     struct Div {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a == b */
     struct Eq {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** for (T e in a) x */
     struct ExprFor {
-        component<category::RangeDecl>  declarations;
-        component<category::Expression> body;
+        esl::component<category::RangeDeclaration> declarations;
+        esl::component<category::Expression>       body;
 
-        EXPR_DECL;
-        EXEC_DECL;
+        EXPRESSION_INTERFACE;
+        EXECUTE_INTERFACE();
     };
 
     /** if (cond) a else b */
     struct ExprIf {
-        component<category::Expression> condition;
-        component<category::Expression> positive_branch;
-        component<category::Expression> negative_branch;
+        esl::component<category::Expression> condition;
+        esl::component<category::Expression> positive_branch;
+        esl::component<category::Expression> negative_branch;
 
-        EXPR_DECL;
-        EXEC_DECL;
+        EXPRESSION_INTERFACE;
+        EXECUTE_INTERFACE();
     };
 
     /** 12.34e-56 */
     struct Float {
-        floating value;
+        sem::Floating value;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** Out fn (In a) */
     struct Function {
-        component<category::Type>        output;
-        component<category::Declaration> input;
-        component<category::Expression>  body;
+        esl::component<category::Type>        output;
+        esl::component<category::Declaration> input;
+        esl::component<category::Expression>  body;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a >= b */
     struct Ge {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a > b */
     struct Gt {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** 12e-34 */
     struct Int {
-        integral value;
+        sem::Integral value;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a <= b */
     struct Le {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a < b */
     struct Lt {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a - b */
     struct Minus {
-        component<category::Expression> argument;
+        esl::component<category::Expression> argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a % b */
     struct Mod {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a * b */
     struct Mul {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a */
     struct Name {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
-        component<std::string> name;
+        esl::component<std::string> name;
 
-        EXPR_DECL;
-        TARGET_DECL;
+        EXPRESSION_INTERFACE;
+        EVALUATE_TARGET_INTERFACE();
     };
 
     /** a != b */
     struct Ne {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** !a */
     struct Not {
-        component<category::Expression> argument;
+        esl::component<category::Expression> argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a || b */
     struct Or {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a + b */
     struct Plus {
-        component<category::Expression> argument;
+        esl::component<category::Expression> argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a ** b */
     struct Pow {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** "abc" */
     struct String {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
-        component<std::string> value;
+        esl::component<std::string> value;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a - b */
     struct Sub {
-        component<category::Expression> left_argument;
-        component<category::Expression> right_argument;
+        esl::component<category::Expression> left_argument;
+        esl::component<category::Expression> right_argument;
 
-        EXPR_DECL;
+        EXPRESSION_INTERFACE;
     };
 
     /** a[b] */
     struct Subscript {
-        component        <category::Expression> container;
-        component_vector <category::ArrayElem>  location;
+        esl::component<category::Expression>          container;
+        esl::component_vector<category::ArrayElement> location;
 
-        EXPR_DECL;
-        TARGET_DECL;
+        EXPRESSION_INTERFACE;
+        EVALUATE_TARGET_INTERFACE();
     };
 
     /** (a, ...) */
     struct Tuple {
         // TODO: Non-unary vector?
-        component_vector<category::Expression> values;
+        esl::component_vector<category::Expression> values;
 
-        EXPR_DECL;
-        TARGET_DECL;
+        EXPRESSION_INTERFACE;
+        EVALUATE_TARGET_INTERFACE();
     };
 
 }
 
-#undef EXPR_DECL
-#undef EXEC_DECL
-#undef TARGET_DECL
+#undef DISPLAY_INTERFACE
+#undef TRANSLATE_INTERFACE
+#undef EVALUATE_INTERFACE
+#undef EXECUTE_INTERFACE
+#undef EVALUATE_TARGET_INTERFACE
+#undef EXPRESSION_INTERFACE

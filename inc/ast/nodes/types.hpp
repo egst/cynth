@@ -1,16 +1,17 @@
 #pragma once
 
-#include "component.hpp"
-#include "ast/interface_types.hpp"
-#include "ast/categories_forward.hpp"
-#include "sem/context.hpp"
-
 #include <string>
 
-// Note: Macros are always undefined at the end of the file.
-#define TYPE_DECL \
-    display_result   display   ()               const; \
-    type_eval_result eval_type (sem::context &) const
+#include "esl/component.hpp"
+
+#include "sem/context.hpp"
+#include "ast/interface_types.hpp"
+#include "ast/forward_categories.hpp"
+
+// Note: No macros escape this file.
+#define TYPE_INTERFACE \
+    DisplayResult display () const; \
+    TypeEvaluationResult evaluateType (sem::Context &) const
 
 namespace cynth::ast::node {
 
@@ -19,78 +20,78 @@ namespace cynth::ast::node {
         T [$]
         T [] */
     struct ArrayType {
-        component          <category::Type>    type;
-        optional_component <category::Pattern> size;
+        esl::component<category::Type> type;
+        esl::optional_component<category::Pattern> size;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** $ */
     struct Auto {
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** buffer [a] */
     // TODO: Maybe allow pattern size here too?
     // Incomplete sem buffer type is declared, so right now it's possible semantically, but not syntactically.
     struct BufferType {
-        component<category::Expression> size;
+        esl::component<category::Expression> size;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** T const */
     struct ConstType {
-        component<category::Type> type;
+        esl::component<category::Type> type;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** Out (In) */
     struct FunctionType {
-        component<category::Type> output;
-        component<category::Type> input;
+        esl::component<category::Type> output;
+        esl::component<category::Type> input;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** T in */
     struct InType {
-        component<category::Type> type;
+        esl::component<category::Type> type;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** T out */
     struct OutType {
-        component<category::Type> type;
+        esl::component<category::Type> type;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** (T, ...) */
     struct TupleType {
         // TODO: Non-unary vector?
-        component_vector<category::Type> types;
+        esl::component_vector<category::Type> types;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** T */
     struct TypeName {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
-        component<std::string> name;
+        esl::component<std::string> name;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
     /** type T */
     struct TypeDecl {
-        component<node::TypeName> name;
+        esl::component<node::TypeName> name;
 
-        TYPE_DECL;
+        TYPE_INTERFACE;
     };
 
 }
 
-#undef TYPE_DECL
+#undef TYPE_INTERFACE

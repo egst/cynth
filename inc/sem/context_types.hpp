@@ -1,79 +1,76 @@
 #pragma once
 
-#include "config.hpp"
-#include "sem/forward.hpp"
-#include "sem/types.hpp"
-#include "sem/values.hpp"
-#include "lift.hpp"
-
 #include <optional>
 #include <string>
 #include <forward_list>
+//#include <utility>
+
+#include "esl/result.hpp"
+#include "esl/lift.hpp"
+#include "esl/tiny_vector.hpp"
+#include "esl/containers.hpp"
+
+#include "sem/forward.hpp"
+#include "sem/types.hpp"
+#include "sem/values.hpp"
 
 namespace cynth::sem {
 
-    // TODO: Move this to sem::
-    using value_vector       = tuple_vector<value::complete>;
-    using typed_value_vector = tuple_vector<typed_value>;
-    using target_vector      = tuple_vector<value::complete *>;
-    using type_vector        = tuple_vector<type::complete>;
+    using ValueVector      = esl::tiny_vector<CompleteValue>;
+    using TypedValueVector = esl::tiny_vector<TypedValue>;
+    using TargetVector     = esl::tiny_vector<CompleteValue *>;
+    using TypeVector       = esl::tiny_vector<CompleteType>;
 
     template <typename T>
-    using refval_container = std::forward_list<T>;
+    using RefvalContainer = std::forward_list<T>;
 
     // TODO: There probably won't be cases of having both value and expression.
-    // There might be cases of having neither one thouhg.
+    // There might be cases of having neither one though.
     // So value and expression could be combined in optional<variant<value, string>>
-    struct typed_value {
-        type::complete                 type;
-        std::optional<value::complete> value;      // Compilation constant value.
-        std::optional<std::string>     expression; // Translated C expression - usually a name.
+    // Update: What about functions? They'll have a runtime C expression - the context struct
+    // (probably just its name), as well as a compile time value - the C function name.
+    struct TypedValue {
+        CompleteType                 type;
+        std::optional<CompleteValue> value;      // Compilation constant value.
+        std::optional<std::string>   expression; // Translated C expression - usually a name.
     };
 
     // TODO: vector<struct{value *, type}> instead of struct{vector<value *>, vector<type>}
-    struct typed_target_value {
-        target_vector value;
-        type_vector   type;
+    struct TypedTargetValue {
+        //TargetVector value;
+        //TypeVector   type;
+        CompleteValue * value;
+        CompleteType    type;
 
-        result<void> assign (value_vector && values) {
+        esl::result<void> assign (ValueVector && values) {
             // TODO
             /*
-            return lift::tuple_vector {
-                [] (value::complete * target, value::complete && value) {
+            return esl::lift<esl::tiny_vector>(
+                [] (CompleteValue * target, CompleteValue && value) {
                     *target = std::move(value);
                 }
-            } (value, std::move(values));
+            )(value, std::move(values));
             */
             return {};
         }
     };
 
-    inline target_vector make_target_vector (value_vector & values) {
-        return lift::tuple_vector {
-            [] (value::complete & value) -> value::complete * { return &value; }
-        } (values);
+    inline TargetVector makeTargetVector (ValueVector & values) {
+        return esl::lift<esl::tiny_vector>(
+            [] (CompleteValue & value) -> CompleteValue * { return &value; }
+        )(values);
     }
 
-    inline target_vector make_target_vector (value::complete & value) {
-        return util::init<tuple_vector>(&value);
+    inline TargetVector makeTargetVector (CompleteValue & value) {
+        return esl::init<esl::tiny_vector>(&value);
     }
 
-    inline type_vector make_type_vector (type::complete const & type) {
-        return util::init<tuple_vector>(type);
+    inline TypeVector makeTypeVector (CompleteType const & type) {
+        return esl::init<esl::tiny_vector>(type);
     }
 
-    inline value_vector make_value_vector (value::complete const & value) {
-        return util::init<tuple_vector>(value);
+    inline ValueVector makeValueVector (CompleteValue const & value) {
+        return esl::init<esl::tiny_vector>(value);
     }
-
-    /*
-    inline opt_value_vector make_opt_value_vector (value::complete const & value) {
-        return util::init<tuple_vector>(std::make_optional(value));
-    }
-
-    inline opt_expr_vector make_opt_expr_vector (std::string const & expr) {
-        return util::init<tuple_vector>(std::make_optional(expr));
-    }
-    */
 
 }

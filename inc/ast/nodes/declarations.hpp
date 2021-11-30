@@ -1,37 +1,37 @@
 #pragma once
 
-#include "component.hpp"
+#include "esl/component.hpp"
+
+#include "sem/context.hpp"
+#include "sem/translation_context.hpp"
+#include "ast/forward_categories.hpp"
 #include "ast/interface_types.hpp"
 #include "ast/nodes/expressions.hpp"
-#include "ast/categories_forward.hpp"
-#include "sem/context.hpp"
 
-#include <string>
-
-// Note: Macros are always undefined at the end of the file.
-#define DECL_DECL \
-    display_result     display   ()                           const; \
-    decl_eval_result   eval_decl (sem::context &)             const; \
-    execution_result   execute   (sem::context &)             const; \
-    translation_result translate (sem::translation_context &) const
+// Note: No macros escape this file.
+#define DECLARATION_INTERFACE \
+    DisplayResult display () const; \
+    DeclarationEvaluationResult evaluateDeclaration (sem::Context &) const; \
+    ExecutionResult execute (sem::Context &) const; \
+    TranslationResult translate (sem::TranslationContext &) const
 
 namespace cynth::ast::node {
 
     /** T a */
     struct Declaration {
-        component<node::Name>     name;
-        component<category::Type> type;
+        esl::component<node::Name>     name;
+        esl::component<category::Type> type;
 
-        DECL_DECL;
+        DECLARATION_INTERFACE;
     };
 
     /** (T a, ...) */
     struct TupleDecl {
-        component_vector<category::Declaration> declarations;
+        esl::component_vector<category::Declaration> declarations;
 
-        DECL_DECL;
+        DECLARATION_INTERFACE;
     };
 
 }
 
-#undef DECL_DECL
+#undef DECLARATION_INTERFACE

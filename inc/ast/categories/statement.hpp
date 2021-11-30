@@ -1,19 +1,18 @@
 #pragma once
 
-#include "category_base.hpp"
-#include "ast/nodes/statements.hpp"
+#include "esl/type_manip.hpp"
+#include "esl/category.hpp"
+
 #include "ast/categories/declaration.hpp"
 #include "ast/categories/expression.hpp"
-#include "util/general.hpp"
-
-#include <concepts>
+#include "ast/nodes/statements.hpp"
 
 namespace cynth::ast::category {
 
-    namespace detail {
+    namespace detail::statement {
 
-        using statement = util::extend <
-            util::concat <
+        using Variant = esl::extend<
+            esl::concat <
                 category::Declaration::variant,
                 category::Expression::variant
             >,
@@ -30,8 +29,8 @@ namespace cynth::ast::category {
 
     }
 
-    struct Statement: category_base<Statement, detail::statement> {
-        using base = category_base<Statement, detail::statement>;
+    struct Statement: esl::category<Statement, detail::statement::Variant> {
+        using base = esl::category<Statement, detail::statement::Variant>;
         using base::base;
     };
 

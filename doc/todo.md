@@ -24,30 +24,6 @@
 * how come, that i need to handle delete and new for incomplete component types manually, but it just somehow works for std::vector of incomplete types?
 * check if `return decltype(auto)` used where needed (esp. in lift)
 
-# Style
-
-* in functions, prefer explicit return type with generic initializer return over auto return type with explicit initializer return  
-    i.e. `-> result` and `return {value}` instead of `-> auto` and `return result{value}`  
-* detail namespaces begin to collide. specify them locally as `detail::lift`, `detail::iterator` etc.
-* keeping track of noexcept could be nice i guess
-
-* don't specify sem:: and ast:: inside those namespaces
-* specify esl:: everywhere (even inside esl)
-* specify interface::, node::, category::, type:: and value:: everywhere
-
-* `PascalCase` for types (structs, classes, typedefs) and namespaces
-* `camelCase` for values (variables and members, incl. constants and enum values) and functions (incl. all methods)
-* `camelCase` for concepts (they're basically templated boolean values)
-* ALL_CAPS macros
-* Exception: `snake_case` (aka `standard_case`) to conform with or mimic `std::` related stuff - everyhting in `esl::`  
-    also, PascalCase type tpl parameter and ALL_CAPS non-type tpl parameters everywhere in `esl::`  
-    otherwise, there is no reason to differentiate tpl parameters and other values and types
-* `Detail::Foo` namespacpace for implementation helpers in a file (or some sort of semantic section) named `foo`  
-    don't use plain `Detail` namespace, as the names could quickly start to collide
-* `f()` everywhere, except `f ()` in declarations/definitions and when aligning  
-    same goes for `t<>` and `a[]` everywhere except when aligning
-* `requires ()` with explicit parentheses
-
 # Naming
 
 * rename sem::value::(Array|Buffer|In|Out).value->value to something less generic and ambiguous

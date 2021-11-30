@@ -252,7 +252,6 @@ namespace esl {
 
         template <template <typename...> typename Base>
         struct vector_param {
-            // TODO: tiny_vector version.
             template <typename T>
             struct component_vector: Base<T> {
                 using base = Base<T>;
@@ -297,12 +296,14 @@ namespace esl {
 
                 /** Construct from a compatible vector type. */
                 template <detail::component::compatible_vector<value_type, component_vector> V>
-                constexpr component_vector (V && other) {
-                    reserve(other.size());
+                // TODO: This doesn't work as a constructor. (It requires a complete type.)
+                constexpr static component_vector make (V && other) {
+                    component_vector v;
+                    v.reserve(other.size());
                     for (auto & item : other)
-                        //push_back(component<value_type>{std::move(item)});
-                        //push_back(std::move(item));
-                        push_back(std::move(static_cast<value_type>(item)));
+                        //v.push_back(component<value_type>{std::move(item)});
+                        //v.push_back(std::move(item));
+                        v.push_back(std::move(static_cast<value_type>(item)));
                 }
 
                 /** Convert to a compatible vector type. */

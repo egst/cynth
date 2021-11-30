@@ -1,79 +1,83 @@
 #pragma once
 
-#include "lift.hpp"
-#include "result.hpp"
-#include "sem/context.hpp"
-#include "sem/values.hpp"
-#include "sem/types.hpp"
-#include "sem/declarations.hpp"
-#include "ast/interface_types.hpp"
-#include "util/general.hpp"
-#include "util/string.hpp"
-#include "util/container.hpp"
+#include "esl/macros.hpp"
 
 #include <concepts>
+#include <optional>
+#include <utility>
+
+#include "esl/type_manip.hpp"
+#include "esl/concepts.hpp"
+#include "esl/functional.hpp"
+#include "esl/containers.hpp"
+#include "esl/ranges.hpp"
+
+#include "sem/interface_types.hpp"
+#include "sem/context.hpp"
+#include "sem/values.hpp"
+#include "sem/declarations.hpp"
 
 namespace cynth::sem::interface {
 
     template <typename Node>
-    concept value = util::variant_member<Node, complete_value::variant>;
+    concept value = esl::variant_member<Node, CompleteValue::variant>;
 
     template <typename Node, typename To>
-    concept convertible = requires (Node node, context & ctx, To const & to) {
-        { node.convert(ctx, to) } -> std::same_as<conversion_result>;
+    concept convertible = requires (Node node, Context & ctx, To const & to) {
+        { node.convert(ctx, to) } -> std::same_as<ConversionResult>;
     };
 
     template <typename Node>
     concept typed = requires (Node node) {
-        { node.value_type() } -> std::same_as<value_type_result>;
+        { node.valueType() } -> std::same_as<ValueTypeResult>;
     };
 
     template <typename Node, typename Out>
-    concept value_of = requires (Node node) {
-        { node.get() } -> std::same_as<get_result<Out>>;
+    concept valueOf = requires (Node node) {
+        { node.get() } -> std::same_as<GetResult<Out>>;
     };
 
     template <typename Node>
-    concept type = util::variant_member<Node, complete_type::variant>;
+    concept type = esl::variant_member<Node, CompleteType::variant>;
 
     template <typename Node>
     concept decaying = requires (Node node) {
-        { node.decay() } -> std::same_as<decay_result>;
+        { node.decay() } -> std::same_as<TypeDecayResult>;
     };
 
     template <typename Node, typename As>
     concept same = requires (Node node, As const & as) {
-        { node.same(as) } -> std::same_as<bool>;
+        { node.same(as) } -> std::same_as<SameTypeResult>;
     };
 
     template <typename Node, typename With>
     concept common = requires (Node node, With const & type) {
-        { node.common(type) } -> std::same_as<common_type_result>;
+        { node.common(type) } -> std::same_as<CommonTypeResult>;
     };
 
     template <typename Node>
-    concept incomplete_type = util::variant_member<Node, type::incomplete::variant>;
+    concept incompleteType = esl::variant_member<Node, IncompleteType::variant>;
 
     template <typename Node>
-    concept completable_type = requires (Node node, context & ctx) {
-        { node.complete(ctx) } -> std::same_as<complete_result>;
+    concept completableType = requires (Node node, Context & ctx) {
+        { node.complete(ctx) } -> std::same_as<TypeCompletionResult>;
     };
 
     template <typename Node>
     concept target = requires (Node node, bool c) {
-        { node.resolve_target(c) } -> std::same_as<target_res_result>;
+        { node.resolveTarget(c) } -> std::same_as<TargetResolutionResult>;
     };
 
     /*
     template <typename Node>
-    concept translatable = requires (Node node, translation_context & ctx) {
-        { node.translate(ctx) } -> std::same_as<translation_result>;
+    concept translatable = requires (Node node, TranslationContext & ctx) {
+        { node.translate(ctx) } -> std::same_as<TranslationResult>;
     };
     */
 
     template <typename Node>
-    concept translatable_type = requires (Node node) {
-        { node.transl_type() } -> std::same_as<type_transl_result>;
+    concept translatableType = requires (Node node) {
+        { node.translateType() } -> std::same_as<TypeTranslationResult>;
     };
 
 }
@@ -96,255 +100,238 @@ namespace cynth::sem {
     };
     */
 
-    constexpr auto transl_type = util::overload{
-        [] <typename Node> (Node const & node) -> type_transl_result
-        requires (interface::translatable_type<Node>) {
-            return node.transl_type();
+    constexpr auto translateType = esl::overload(
+        [] (interface::translatableType auto const & node) -> TypeTranslationResult {
+            return node.translateType();
         },
-        [] <typename Node> (Node const & node) -> type_transl_result
-        requires (!interface::translatable_type<Node>) {
-            return result_error{"This type cannot be directly translated."};
+        [] (auto const & node) -> TypeTranslationResult {
+            return esl::result_error{"This type cannot be directly translated."};
         }
-    };
+    );
 
-    /**
-     *  value_type (any<interface::value> value) -> complete_type
-     */
-    constexpr auto value_type = lift::any {
-        [] <interface::typed Node> (Node const & node) {
-            return node.value_type();
-        }
-    };
+    constexpr auto valueType =
+        [] (interface::typed auto const & node) -> ValueTypeResult {
+            return node.valueType();
+        };
 
-    /**
-     *  get <Out> (any<interface::value> value) -> result<Out>
-     */
     template <typename Out>
-    constexpr auto get = lift::any{util::overload {
-        [] <interface::value_of<Out> Node> (Node const & node) -> get_result<Out> {
-            return node.get();
+    constexpr auto get = esl::overload(
+        [] (interface::valueOf<Out> auto const & node) -> GetResult<Out> {
+            return node.template get<Out>();
         },
-        [] <interface::value Node> (Node const &) -> get_result<Out> requires (!interface::value_of<Node, Out>) {
-            return result_error{"Value does not contain the requested type."};
-        },
-    }};
+        [] (auto const &) -> GetResult<Out> {
+            return esl::result_error{"Value does not contain the requested type."};
+        }
+    );
 
-    /**
-     *  same (interface::type type) (any<interface::type> to) -> bool
-     *  same (any<interface::type> type, any<interface::type> to) -> bool
-     *
-     *  TODO: Maybe I should enforce that the same method may only be called on the same type.
-     *  (Two types may be "same" only if they are represented by the same C++ type.)
-     */
-    constexpr auto same = lift::any_asymetric{util::overload {
-        [] <interface::type Node, interface::type As> (Node const & node, As const & as) requires (interface::same<Node, As>) {
+    constexpr auto same = esl::overload(
+        [] <interface::type Node, interface::type As> (Node const & node, As const & as) -> SameTypeResult
+        requires (interface::same<Node, As>) {
             return node.same(as);
         },
-        [] <interface::type Node, interface::type As> (Node const &, As const &) requires (!interface::same<Node, As>) {
+        [] (interface::type auto const &, interface::type auto const &) -> SameTypeResult {
             return false;
         }
-    }};
+    );
 
-    /**
-     *  decay (any<interface::type> type) -> optional<complete_type>
-     *  TODO: Maybe it would be better to return the same type for non-decaying types?
-     */
-    constexpr auto decay = lift::any{util::overload {
-        [] <interface::type Node> (Node const & node) requires (interface::decaying<Node>) {
-            return std::optional<decay_result>{node.decay()};
+    // TODO: Maybe it would be better to return the same type for non-decaying types?
+    // (As if they decay into themselves.)
+    constexpr auto decay = esl::overload(
+        [] <interface::type Node> (Node const & node) -> TypeDecayResult
+        requires (interface::decaying<Node>) {
+            return {node.decay()};
         },
-        [] <interface::type Node> (Node const &) requires (!interface::decaying<Node>) {
-            return std::optional<decay_result>{};
+        [] (interface::type auto const &) -> TypeDecayResult {
+            return {};
         }
-    }};
+    );
 
-    /**
-     *  Shorthand for same(decay(type), to).
-     *
-     *  decays (interface::type type) (any<interface::type> to) -> bool
-     *  decays (any<interface::type> type, any<interface::type> to) -> bool
-     */
-    constexpr auto decays = lift::any_asymetric{util::overload {
-        [] <interface::type Node, interface::type To> (Node const & node, To const & to) requires (interface::decaying<Node>) {
-            return same(to)(node.decay());
+    constexpr auto decaysTo = esl::overload(
+        [] <interface::type Node, interface::type To> (Node const & node, To const & to) -> bool
+        requires (interface::decaying<Node>) {
+            auto result = esl::lift<std::optional>(esl::curry(same)(to))(node.decay());
+            return result && *result; // i.e. decays && decays to the same type
         },
-        [] <interface::type Node, interface::type To> (Node const &, To const &) requires (!interface::decaying<Node>) {
+        [] (interface::type auto const &, interface::type auto const &) -> bool {
             return false;
         }
-    }};
+    );
 
     /**
-     *  common (interface::type a) (any<interface::type> b) -> optional<complete_type>
-     *  common (any<interface::type> a, any<interface::type> b) -> optional<complete_type>
-     *
      *  This operation is symetric.
      *  It is enough to only provide one implementation for both directions.
      */
-    constexpr auto common = lift::any_asymetric{util::overload {
-        [] <interface::type Node> (Node const & node, Node const & with)
-        requires interface::common<Node, Node> {
+    constexpr auto common = esl::overload(
+        [] <interface::type Node> (Node const & node, Node const & with) -> CommonTypeResult
+        requires (interface::common<Node, Node>) {
             return node.common(with);
         },
-        [] <interface::type Node, interface::type With> (Node const & node, With const & with)
-        requires (!std::same_as<Node, With>) && interface::common<Node, With> && (!interface::common<With, Node>) {
+        [] <interface::type Node, interface::type With> (Node const & node, With const & with) -> CommonTypeResult
+        requires (
+            !std::same_as<Node, With> &&
+            interface::common<Node, With> &&
+            !interface::common<With, Node>
+        ) {
             return node.common(with);
         },
-        [] <interface::type Node, interface::type With> (Node const & node, With const & with)
-        requires (!std::same_as<Node, With>) && (!interface::common<Node, With>) && interface::common<With, Node> {
+        [] <interface::type Node, interface::type With> (Node const & node, With const & with) -> CommonTypeResult
+        requires (
+            !std::same_as<Node, With> &&
+            !interface::common<Node, With> &&
+            interface::common<With, Node>
+        ) {
             return with.common(node);
         },
-        [] <interface::type Node, interface::type With> (Node const &, With const &)
-        requires /*(!std::same_as<Node, With>) &&*/ (!interface::common<Node, With>) && (!interface::common<With, Node>) {
-            return common_type_result{result_error{"No comomn type."}};
+        [] <interface::type Node, interface::type With> (Node const &, With const &) -> CommonTypeResult
+        requires (
+            !interface::common<Node, With> &&
+            !interface::common<With, Node>
+        ) {
+            return {esl::result_error{"No comomn type."}};
         },
         // TODO: This problem should be caught at compile-time.
-        [] <interface::type Node, interface::type With> (Node const &, With const &)
-        requires /*(!std::same_as<Node, With>) &&*/ interface::common<Node, With> && interface::common<With, Node> {
-            return common_type_result{result_error{"Two-way node.common(with) implementation found."}};
+        [] <interface::type Node, interface::type With> (Node const &, With const &) -> CommonTypeResult
+        requires (
+            interface::common<Node, With> &&
+            interface::common<With, Node>
+        ) {
+            return {esl::result_error{"Two-way node.common(with) implementation found."}};
         }
-    }};
+    );
 
-    /**
-     *  convert (interface::type to) (any<interface::value> value) -> result<complete_value>
-     *  convert (any<interface::value> value, any<interface::type> type) -> result<complete_value>
-     */
-    constexpr auto convert = [] (context & ctx) {
-        return lift::any_asymetric{util::overload {
-            [&ctx] <interface::type To, interface::value Node> (Node const & node, To const & to) requires (interface::convertible<Node, To>) {
+    constexpr auto convert = [] (Context & ctx) {
+        return esl::overload(
+            [&ctx] <interface::value Node, interface::type To> (Node const & node, To const & to) -> ConversionResult
+            requires (interface::convertible<Node, To>) {
                 return node.convert(ctx, to);
             },
-            [] <interface::type To, interface::value Node> (Node const &, To const &) requires (!interface::convertible<Node, To>) {
-                return result<complete_value>{result_error{"No conversion available."}};
+            [] (interface::value auto const &, interface::type auto const &) -> ConversionResult {
+                return {esl::result_error{"No conversion available."}};
             }
-        }};
-    };
-
-    /**
-     *  convert_to (any<interface::value> value) (interface::type to) -> result<complete_value>
-     *  convert_to (any<interface::type> to)(any<interface::value> value) -> result<complete_value>
-     */
-    constexpr auto convert_to = [] (context & ctx) {
-        return lift::any_asymetric{util::overload {
-            [&ctx] <interface::type To, interface::value Node> (To const & to, Node const & node) requires (interface::convertible<Node, To>) {
-                return node.convert(ctx, to);
-            },
-            [] <interface::type To, interface::value Node> (To const &, Node const &) requires (!interface::convertible<Node, To>) {
-                return result<complete_value>{result_error{"No conversion available."}};
-            }
-        }};
+        );
     };
 
     namespace detail {
 
-        constexpr auto make_type_complete = [] (context & ctx) {
-            return util::overload {
-                [] <interface::type Node> (Node && node) -> complete_result {
-                    return complete_type{std::forward<Node>(node)};
+        constexpr auto makeTypeComplete = [] (Context & ctx) {
+            return esl::overload(
+                [] <interface::type Node> (Node && node) -> TypeCompletionResult {
+                    return CompleteType{std::forward<Node>(node)};
                 },
-                [&ctx] <interface::incomplete_type Node> (Node const & node) -> complete_result requires interface::completable_type<Node> {
+                [&ctx] <interface::incompleteType Node> (Node const & node) -> TypeCompletionResult
+                requires interface::completableType<Node> {
                     return node.complete(ctx);
                 },
-                [] (type::unknown const &) -> complete_result {
-                    return {result_error{"An unknown type ($ or type T) is not complete."}};
+                [] (type::Unknown const &) -> TypeCompletionResult {
+                    return {esl::result_error{"An unknown type ($ or type T) is not complete."}};
                 }
-                /*[] <interface::incomplete_type Node> (Node const &) -> complete_result requires (!interface::completable_type<Node>) {
-                    return {result_error{"Complete type expected."}};
+                /*[] <interface::incompleteType Node> (Node const &) -> TypeCompletionResult
+                requires (!interface::completableType<Node>) {
+                    return {esl::result_error{"Complete type expected."}};
                 }*/
-            };
+            );
         };
 
 
-        constexpr auto make_decl_complete = [] (context & ctx) {
-            return util::overload {
-                [&ctx] <util::same_as_no_cvref<incomplete_decl> Decl> (Decl && decl) -> result<complete_decl> {
-                    auto complete = util::unite_results(lift::category_component{detail::make_type_complete(ctx)}(util::forward_like<Decl>(decl.type)));
+        constexpr auto makeDeclComplete = [] (Context & ctx) {
+            return esl::overload(
+                [&ctx] <esl::same_but_cvref<IncompleteDeclaration> Decl> (Decl && decl)
+                -> esl::result<CompleteDeclaration> {
+                    auto complete = esl::unite_results(esl::lift<esl::component, esl::target::category>(
+                        detail::makeTypeComplete(ctx)
+                    )(esl::forward_like<Decl>(decl.type)));
                     if (!complete)
                         return complete.error();
-                    return complete_decl {
+                    return CompleteDeclaration{
                         .type = *std::move(complete),
                         .name = decl.name
                     };
                 },
-                [] <util::same_as_no_cvref<complete_decl> Decl> (Decl && decl) -> result<complete_decl> {
+                [] <esl::same_but_cvref<CompleteDeclaration> Decl> (Decl && decl)
+                -> esl::result<CompleteDeclaration> {
                     return std::forward<Decl>(decl);
                 }
-            };
+            );
         };
 
-        constexpr auto make_range_decl_complete = [] (context & ctx) {
-            return util::overload {
-                [&ctx] <util::same_as_no_cvref<incomplete_range_decl> Decl> (Decl && decl) -> result<complete_range_decl> {
-                    auto complete = util::unite_results(lift::component{detail::make_decl_complete(ctx)}(util::forward_like<Decl>(decl.declaration)));
+        constexpr auto makeRangeDeclComplete = [] (Context & ctx) {
+            return esl::overload(
+                [&ctx] <esl::same_but_cvref<IncompleteRangeDeclaration> Decl> (Decl && decl)
+                -> esl::result<CompleteRangeDeclaration> {
+                    auto complete = esl::unite_results(lift<esl::component>(
+                        detail::makeDeclComplete(ctx)
+                    )(esl::forward_like<Decl>(decl.declaration)));
                     if (!complete)
                         return complete.error();
-                    return complete_range_decl {
+                    return CompleteRangeDeclaration{
                         .declaration = *std::move(complete),
                         .range       = decl.range
                     };
                 },
-                [] <util::same_as_no_cvref<complete_range_decl> Decl> (Decl && decl) -> result<complete_range_decl> {
+                [] <esl::same_but_cvref<CompleteRangeDeclaration> Decl> (Decl && decl)
+                -> esl::result<CompleteRangeDeclaration> {
                     return std::forward<Decl>(decl);
                 }
-            };
+            );
         };
 
     }
 
-    constexpr auto complete = [] (context & ctx) {
-        return lift::any{util::overload {
-            detail::make_type_complete(ctx),
-            detail::make_decl_complete(ctx),
-            detail::make_range_decl_complete(ctx)
-        }};
+    constexpr auto complete = [] (Context & ctx) {
+        return esl::overload(
+            detail::makeTypeComplete(ctx),
+            detail::makeDeclComplete(ctx),
+            detail::makeRangeDeclComplete(ctx)
+        );
     };
 
-    // TODO: It would probably be better to write this out manually.
-    constexpr auto incomplete = lift::any{util::overload {
-        [] <interface::type Type> (Type && type) -> result<type::incomplete> {
-            return type::incomplete{complete_type{std::forward<Type>(type)}};
+    constexpr auto uncomplete = esl::overload(
+        [] <interface::type Type> (Type && type) -> esl::result<IncompleteType> {
+            return IncompleteType{CompleteType{std::forward<Type>(type)}};
         },
-        /*[] <interface::incomplete_type Type> (Type && type) -> result<type::incomplete> {
-            return type::incomplete{std::forward<Type>(type)};
+        /*[] <interface::incompleteType Type> (Type && type) -> esl::result<IncompleteType> {
+            return IncompleteType{std::forward<Type>(type)};
         },*/
-        [] <interface::value Type> (Type && type) -> result<value::incomplete> {
-            return value::incomplete{std::forward<Type>(type)};
+        [] <interface::value Type> (Type && type) -> esl::result<IncompleteValue> {
+            return IncompleteValue{std::forward<Type>(type)};
         }
-        // ... TODO declaration?
-    }};
+        // ... declaration?
+    );
 
-    constexpr auto decl_type = util::overload {
-        [] <util::same_as_no_cvref<complete_decl> Decl> (Decl && decl) -> tuple_vector<complete_type> {
-            return util::forward_like<Decl>(decl.type);
+    constexpr auto declarationType = esl::overload(
+        [] <esl::same_but_cvref<CompleteDeclaration> Decl> (Decl && decl) -> esl::tiny_vector<CompleteType> {
+            return esl::forward_like<Decl>(decl.type);
         },
-        [] <util::same_as_no_cvref<incomplete_decl> Decl> (Decl && decl) -> tuple_vector<type::incomplete> {
-            return util::forward_like<Decl>(decl.type);
-        },
-        [] <util::range_of<complete_decl> Decls> (Decls && decls) -> tuple_vector<complete_type> {
-            tuple_vector<complete_type> result;
+        [] <esl::same_but_cvref<IncompleteRangeDeclaration> Decl> (Decl && decl) -> esl::tiny_vector<IncompleteType> {
+            return esl::forward_like<Decl>(decl.type);
+        }
+        // Note: use lift<target::nested_tiny_vector_cat>(declarationType) instead
+        /*
+        [] <esl::range_of<CompleteDeclaration> Decls> (Decls && decls) -> esl::tiny_vector<CompleteType> {
+            esl::tiny_vector<CompleteType> result;
             for (auto & decl : decls) for (auto & type : decl.type) {
-                result.push_back(util::forward_like<Decls>(type));
+                result.push_back(esl::forward_like<Decls>(type));
             }
             return result;
         },
-        [] <util::range_of<incomplete_decl> Decls> (Decls && decls) -> tuple_vector<type::incomplete> {
-            tuple_vector<type::incomplete> result;
+        [] <esl::range_of<IncompleteRangeDeclaration> Decls> (Decls && decls) -> esl::tiny_vector<IncompleteType> {
+            esl::tiny_vector<IncompleteType> result;
             for (auto & decl : decls) for (auto & type : decl.type) {
-                result.push_back(util::forward_like<Decls>(type));
+                result.push_back(esl::forward_like<Decls>(type));
             }
             return result;
         }
-    };
+        */
+    );
 
-    constexpr auto resolve_target = lift::any {
+    constexpr auto resolveTarget =
         [] <interface::target Node> (Node const & node) {
-            return node.resolve_target(false);
-        }
-    };
+            return node.resolveTarget(false);
+        };
 
-    constexpr auto resolve_const_target = lift::any {
+    constexpr auto resolveConstTarget =
         [] <interface::target Node> (Node const & node) {
-            return node.resolve_target(true);
-        }
-    };
+            return node.resolveTarget(true);
+        };
 
 }

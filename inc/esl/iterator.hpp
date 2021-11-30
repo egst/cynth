@@ -1,5 +1,6 @@
 #pragma once
 
+#include "esl/type_manip.hpp"
 #include "esl/concepts.hpp"
 
 #include <type_traits>
@@ -20,16 +21,6 @@ namespace esl {
     }
 
     namespace detail::iterator {
-
-        template <typename Ref>
-        struct arrow_proxy {
-            Ref * operator -> () {
-                return &ref;
-            }
-
-        private:
-            Ref ref;
-        };
 
         template <typename I>
         concept dereference = requires (I const c) {
@@ -140,7 +131,7 @@ namespace esl {
             if constexpr (std::is_reference_v<decltype(ref)>) {
                 return std::addressof(ref);
             } else {
-                return detail::iterator::arrow_proxy{std::move(ref)};
+                return esl::arrow_proxy{std::move(ref)};
             }
         }
 

@@ -15,15 +15,15 @@ namespace esl {
 
     // Note: Most categories are kept non-copyable mostly just to make sure, that the copy/move semantics distinction works as expected.
     template <typename Derived, typename Variant, bool COPYABLE = true>
-    struct category_base {
+    struct category {
         using variant = Variant;
         variant value;
 
-        category_base () = delete;
-        //category_base (category_base const &) = delete;
+        category () = delete;
+        //category (category const &) = delete;
 
         template <esl::variant_member<variant> T> requires (esl::temporary<T> || COPYABLE)
-        constexpr category_base (T && other):
+        constexpr category (T && other):
             value{std::forward<T>(other)} {
             esl::dout << "category{node}\n";
         }
@@ -36,7 +36,7 @@ namespace esl {
         }
 
         template <typename T> requires esl::compatible_variant<decltype(T::value), variant> && (esl::temporary<T> || COPYABLE)
-        constexpr category_base (T && other):
+        constexpr category (T && other):
             value{esl::variant_cast<variant>(esl::forward_like<T>(other.value))} {
             esl::dout << "category{category}\n";
         }
@@ -53,8 +53,8 @@ namespace esl {
 
         template <typename T>
         concept categorial_impl =
-            std::derived_from<T, category_base<T, typename T::variant, true>> ||
-            std::derived_from<T, category_base<T, typename T::variant, false>>;
+            std::derived_from<T, esl::category<T, typename T::variant, true>> ||
+            std::derived_from<T, esl::category<T, typename T::variant, false>>;
 
     }
 

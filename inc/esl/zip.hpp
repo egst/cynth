@@ -97,8 +97,8 @@ namespace esl {
         using iterator        = detail::zip::zip_iterator<false, Enum, Cs...>;
         using const_iterator  = detail::zip::zip_iterator<true,  Enum, Cs...>;
 
-        constexpr zip_type (Cs &&... containers): containers{std::forward<Cs>(containers)...} {}
-        //constexpr zip_type (std::tuple<Cs const &...> containers): containers{containers} {}
+        template <std::same_as<Cs>... Ts>
+        constexpr zip_type (Ts &&... containers): containers{std::forward<Ts>(containers)...} {}
 
         constexpr zip_type ()                  = default;
         constexpr zip_type (zip_type const & other) = default;
@@ -147,7 +147,7 @@ namespace esl {
         std::tuple<esl::lref_or_val<Cs>...> containers;
     };
 
-    //template <esl::range... Cs> zip_type(Cs &&...) -> zip_type<false, Cs...>;
+    template <esl::range... Cs> zip_type(Cs &&...) -> zip_type<false, Cs...>;
 
     template <esl::range... Cs>
     constexpr zip_type<false, Cs...> zip (Cs &&... containers) {

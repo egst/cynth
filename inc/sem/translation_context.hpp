@@ -1,87 +1,88 @@
 #pragma once
 
-#include "result.hpp"
-#include "component.hpp"
-#include "sem/context.hpp"
-#include "sem/types.hpp"
-// TODO: All explicit includes.
-
-#include <string>
 #include <cstddef>
+#include <string>
+
+#include "esl/result.hpp"
+#include "esl/tiny_vector.hpp"
+#include "esl/component.hpp"
+
+#include "sem/context.hpp"
+#include "sem/forward.hpp"
 
 namespace cynth::sem {
 
     // TODO: find a better name for this
-    struct translation_context {
+    struct TranslationContext {
 
-        result<typed_value> convert (
-            type::complete const &,
-            typed_value    const &
+        esl::result<TypedValue> convert (
+            CompleteType const &,
+            TypedValue   const &
         );
 
-        result<tuple_vector<typed_value>> convert (
-            tuple_vector<type::complete> const &,
-            tuple_vector<typed_value>    const &
+        esl::result<esl::tiny_vector<TypedValue>> convert (
+            esl::tiny_vector<CompleteType> const &,
+            esl::tiny_vector<TypedValue>   const &
         );
 
-        result<void> define (
-            complete_decl             const &,
-            tuple_vector<typed_value> const &
+        esl::result<void> define (
+            CompleteDeclaration const &,
+            esl::tiny_vector<TypedValue> const &
         );
 
-        result<void> define (
-            tuple_vector<complete_decl> const &,
-            tuple_vector<typed_value>   const &
+        esl::result<void> define (
+            esl::tiny_vector<CompleteDeclaration> const &,
+            esl::tiny_vector<TypedValue>          const &
         );
 
-        result<void> define (
-            std::string                  const &,
-            tuple_vector<type::complete> const &,
-            tuple_vector<typed_value>    const &
+        esl::result<void> define (
+            std::string const &,
+            esl::tiny_vector<CompleteType> const &,
+            esl::tiny_vector<TypedValue>   const &
         );
 
-        result<void> declare (
-            std::string                  const &,
-            tuple_vector<type::complete> const &
+        esl::result<void> declare (
+            std::string const &,
+            esl::tiny_vector<CompleteType> const &
         );
 
-        result<void> assign (
-            std::string               const &,
-            tuple_vector<typed_value> const &
+        esl::result<void> assign (
+            std::string const &,
+            esl::tiny_vector<TypedValue> const &
         );
 
-        std::size_t next_id ();
+        std::size_t nextId ();
 
     protected:
-        result<void> declare_value (
-            std::string                  const &,
-            tuple_vector<type::complete> const &
+        esl::result<void> declareValue (
+            std::string const &,
+            esl::tiny_vector<CompleteType> const &
         );
 
-        result<void> init_value (
-            std::string                   const &,
-            component_vector<typed_value> const &
+        esl::result<void> initValue (
+            std::string const &,
+            esl::component_vector<TypedValue> const & // TODO: or maybe tiny_component_vector?
         );
 
         // TODO...
-        result<void> begin_function   ();
-        result<void> end_function     ();
-        result<void> begin_scope      ();
-        result<void> end_scope        ();
-        result<void> insert_statement ();
+        esl::result<void> beginFunction   ();
+        esl::result<void> endFunction     ();
+        esl::result<void> beginScope      ();
+        esl::result<void> endScope        ();
+        esl::result<void> insertStatement ();
 
         // Global & main:
-        //tuple_vector<?> declarations;    // may contaion initializations
-        //tuple_vector<?> definitions;     // function definitions
-        //tuple_vector<?> initializations;
-        //tuple_vector<?> statements;      // statements, `if (...) {`, `for (...) {`, `{`, `}`
+        //esl::tiny_vector<?> declarations;    // may contaion initializations
+        //esl::tiny_vector<?> definitions;     // function definitions
+        //esl::tiny_vector<?> initializations;
+        //esl::tiny_vector<?> statements;      // statements, `if (...) {`, `for (...) {`, `{`, `}`
 
         // Local (current function):
         struct {
-            //tuple_vector<?> declarations;
-            //tuple_vector<?> initializations;
-            //tuple_vector<?> statements;      // statements, `if (...) {`, `for (...) {`, `{`, `}`
-        } function_context;
+            //esl::tiny_vector<?> declarations;
+            //esl::tiny_vector<?> initializations;
+            //esl::tiny_vector<?> statements;      // statements, `if (...) {`, `for (...) {`, `{`, `}`
+        } functionContext;
 
         // Every identifier that could potentially collide with others
         // gets a unique id incorporated into its name.
@@ -100,7 +101,7 @@ namespace cynth::sem {
 
     public: // TODO: Decide on visibility. (And other similar structures as well.)
         // Compilation constants:
-        context compconst_context;
+        Context compconst;
 
     };
 

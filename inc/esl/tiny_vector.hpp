@@ -311,9 +311,30 @@ namespace esl {
             }
         };
 
+        template <typename Derived, typename F>
+        struct nested_lift_impl {
+            template <esl::sized_range T>
+            constexpr auto operator () (T && target) const {
+                return esl::lift_on_range_cat<esl::tiny_vector>(derived(), std::forward<T>(target));
+            }
+
+        private:
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+    }
+
+    namespace target {
+
+        template <typename...> struct nested_tiny_vector_cat {};
+
     }
 
     template <> struct lift_specialization_map<esl::tiny_vector>:
         lift_implementation<detail::tiny_vector::lift_impl> {};
+    template <> struct lift_specialization_map<esl::target::nested_tiny_vector_cat>:
+        lift_implementation<detail::tiny_vector::nested_lift_impl> {};
 
 }

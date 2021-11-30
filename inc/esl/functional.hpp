@@ -1,13 +1,41 @@
 #pragma once
 
-#include "esl/tuple.hpp"
+#include "esl/type_manip.hpp"
 #include "esl/concepts.hpp"
+#include "esl/tuple.hpp"
 
 #include <utility>
 #include <type_traits>
 #include <tuple>
+#include <functional>
 
 namespace esl {
+
+    template <typename F>
+    struct functor_type {
+        template <std::same_as<F> T>
+        constexpr functor_type (T && f): function{std::forward<T>(f)} {}
+
+        template <typename... Args>
+        constexpr decltype(auto) operator () (Args &&... args) const {
+            return function(std::forward<Args>(args)...);
+        }
+
+    private:
+        esl::lref_or_val<F> function;
+    };
+
+    template <typename F> functor_type(F &&) -> functor_type<F>;
+
+    template <typename F> requires (std::is_class_v<std::remove_reference_t<F>>)
+    constexpr F && functor (F && f) {
+        return std::forward<F>(f);
+    };
+
+    template <typename F>
+    constexpr functor_type<F> functor (F && f) {
+        return {std::forward<F>(f)};
+    };
 
     /** Overload set from lambda functions. */
     template <typename... Fs> struct overload_type: Fs... {
@@ -17,11 +45,57 @@ namespace esl {
 
     template <typename... Fs>
     constexpr auto overload (Fs &&... fs) {
-        return overload_type{std::forward<Fs>(fs)...};
+        return overload_type{functor(std::forward<Fs>(fs))...};
     }
 
     template <typename... Fs>
     using overloaded = decltype(esl::overload(std::declval<Fs>()...));
+
+    template <typename F>
+    constexpr auto flip (F && f) {
+        return [fun = functor(f)] <typename A, typename B> (A && a, B && b) -> decltype(auto) {
+            return fun(std::forward<A>(a))(std::forward<B>(b));
+        };
+    }
+
+    template <typename F>
+    constexpr auto flip_bin (F && f) {
+        return [fun = functor(f)] <typename A, typename B> (A && a, B && b) -> decltype(auto) {
+            return fun(std::forward<A>(a), std::forward<B>(b));
+        };
+    }
+
+    template <typename F>
+    constexpr auto curry (F && f) {
+        return [fun = functor(f)] <typename A> (A && a) -> decltype(auto) {
+            return [a = esl::hold(std::forward<A>(a)), fun = esl::forward_like<F>(fun)] <typename B> (B && b)
+            -> decltype(auto) {
+                return fun(esl::forward_like<A>(*a), std::forward<B>(b));
+            };
+        };
+    }
+
+    template <typename F>
+    constexpr auto curry_flip (F && f) {
+        return flip(curry(std::forward<F>(f)));
+    }
+
+    // Note: Flip and curry are nice to use, but I'm not sure if they bring some overhead.
+    // Usually even this kind of crazy lambda nesting and such gets optimized away completely
+    // (with the -O2 setting currently used) but I haven't tested these exact functions yet.
+    // Anyways, it'll probably be better to use std::bind or the following two functions.
+
+    template <typename F, typename T>
+    constexpr auto bind_first (F && f, T && arg) {
+        using namespace std::placeholders;
+        return std::bind(std::forward<F>(f), std::forward<T>(arg), _2);
+    }
+
+    template <typename F, typename T>
+    constexpr auto bind_second (F && f, T && arg) {
+        using namespace std::placeholders;
+        return std::bind(std::forward<F>(f), _1, std::forward<T>(arg));
+    }
 
     namespace detail::functional {
 

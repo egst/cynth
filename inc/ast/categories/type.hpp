@@ -1,15 +1,16 @@
 #pragma once
 
-#include "config.hpp"
-#include "category_base.hpp"
-#include "sem/declarations.hpp"
+#include <variant>
+
+#include "esl/category.hpp"
+
 #include "ast/nodes/types.hpp"
 
 namespace cynth::ast::category {
 
-    namespace detail {
+    namespace detail::type {
 
-        using type = variant <
+        using Variant = std::variant<
             node::ArrayType,
             node::Auto,
             node::BufferType,
@@ -24,8 +25,8 @@ namespace cynth::ast::category {
 
     }
 
-    struct Type: category_base<Type, detail::type> {
-        using base = category_base<Type, detail::type>;
+    struct Type: esl::category<Type, detail::type::Variant> {
+        using base = esl::category<Type, detail::type::Variant>;
         using base::base;
     };
 
