@@ -45,7 +45,7 @@ namespace esl {
 
     template <typename... Fs>
     constexpr auto overload (Fs &&... fs) {
-        return overload_type{functor(std::forward<Fs>(fs))...};
+        return overload_type{esl::functor(std::forward<Fs>(fs))...};
     }
 
     template <typename... Fs>
@@ -53,21 +53,21 @@ namespace esl {
 
     template <typename F>
     constexpr auto flip (F && f) {
-        return [fun = functor(f)] <typename A, typename B> (A && a, B && b) -> decltype(auto) {
+        return [fun = esl::functor(f)] <typename A, typename B> (A && a, B && b) -> decltype(auto) {
             return fun(std::forward<A>(a))(std::forward<B>(b));
         };
     }
 
     template <typename F>
     constexpr auto flip_bin (F && f) {
-        return [fun = functor(f)] <typename A, typename B> (A && a, B && b) -> decltype(auto) {
+        return [fun = esl::functor(f)] <typename A, typename B> (A && a, B && b) -> decltype(auto) {
             return fun(std::forward<A>(a), std::forward<B>(b));
         };
     }
 
     template <typename F>
     constexpr auto curry (F && f) {
-        return [fun = functor(f)] <typename A> (A && a) -> decltype(auto) {
+        return [fun = esl::functor(f)] <typename A> (A && a) -> decltype(auto) {
             return [a = esl::hold(std::forward<A>(a)), fun = esl::forward_like<F>(fun)] <typename B> (B && b)
             -> decltype(auto) {
                 return fun(esl::forward_like<A>(*a), std::forward<B>(b));

@@ -182,7 +182,7 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.YY_MOVE_OR_COPY< cynth::ast::category::ArrayElem > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::ast::category::ArrayElement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -211,7 +211,7 @@ namespace yy {
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.YY_MOVE_OR_COPY< cynth::ast::category::RangeDecl > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::ast::category::RangeDeclaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -305,12 +305,12 @@ namespace yy {
         value.YY_MOVE_OR_COPY< cynth::ast::node::For > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Function > (YY_MOVE (that.value));
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.YY_MOVE_OR_COPY< cynth::ast::node::FunDef > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.YY_MOVE_OR_COPY< cynth::ast::node::FunctionDef > (YY_MOVE (that.value));
+      case symbol_kind::S_node_function: // node_function
+        value.YY_MOVE_OR_COPY< cynth::ast::node::Function > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -438,27 +438,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.YY_MOVE_OR_COPY< cynth::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.YY_MOVE_OR_COPY< cynth::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.YY_MOVE_OR_COPY< cynth::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.YY_MOVE_OR_COPY< cynth::component_vector<cynth::ast::category::RangeDecl> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.YY_MOVE_OR_COPY< cynth::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.YY_MOVE_OR_COPY< cynth::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -489,7 +489,7 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElem > (YY_MOVE (that.value));
+        value.move< cynth::ast::category::ArrayElement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -518,7 +518,7 @@ namespace yy {
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDecl > (YY_MOVE (that.value));
+        value.move< cynth::ast::category::RangeDeclaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -612,12 +612,12 @@ namespace yy {
         value.move< cynth::ast::node::For > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (YY_MOVE (that.value));
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.move< cynth::ast::node::FunDef > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunctionDef > (YY_MOVE (that.value));
+      case symbol_kind::S_node_function: // node_function
+        value.move< cynth::ast::node::Function > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -745,27 +745,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< cynth::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< cynth::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< cynth::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< cynth::component_vector<cynth::ast::category::RangeDecl> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< cynth::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< cynth::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -796,7 +796,7 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.copy< cynth::ast::category::ArrayElem > (that.value);
+        value.copy< cynth::ast::category::ArrayElement > (that.value);
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -825,7 +825,7 @@ namespace yy {
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.copy< cynth::ast::category::RangeDecl > (that.value);
+        value.copy< cynth::ast::category::RangeDeclaration > (that.value);
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -919,12 +919,12 @@ namespace yy {
         value.copy< cynth::ast::node::For > (that.value);
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.copy< cynth::ast::node::Function > (that.value);
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.copy< cynth::ast::node::FunDef > (that.value);
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.copy< cynth::ast::node::FunctionDef > (that.value);
+      case symbol_kind::S_node_function: // node_function
+        value.copy< cynth::ast::node::Function > (that.value);
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -1052,27 +1052,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.copy< cynth::component_vector<cynth::ast::category::ArrayElem> > (that.value);
+        value.copy< esl::component_vector<cynth::ast::category::ArrayElement> > (that.value);
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.copy< cynth::component_vector<cynth::ast::category::Declaration> > (that.value);
+        value.copy< esl::component_vector<cynth::ast::category::Declaration> > (that.value);
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.copy< cynth::component_vector<cynth::ast::category::Expression> > (that.value);
+        value.copy< esl::component_vector<cynth::ast::category::Expression> > (that.value);
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.copy< cynth::component_vector<cynth::ast::category::RangeDecl> > (that.value);
+        value.copy< esl::component_vector<cynth::ast::category::RangeDeclaration> > (that.value);
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.copy< cynth::component_vector<cynth::ast::category::Statement> > (that.value);
+        value.copy< esl::component_vector<cynth::ast::category::Statement> > (that.value);
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.copy< cynth::component_vector<cynth::ast::category::Type> > (that.value);
+        value.copy< esl::component_vector<cynth::ast::category::Type> > (that.value);
         break;
 
       case symbol_kind::S_start: // start
@@ -1101,7 +1101,7 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElem > (that.value);
+        value.move< cynth::ast::category::ArrayElement > (that.value);
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -1130,7 +1130,7 @@ namespace yy {
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDecl > (that.value);
+        value.move< cynth::ast::category::RangeDeclaration > (that.value);
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -1224,12 +1224,12 @@ namespace yy {
         value.move< cynth::ast::node::For > (that.value);
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (that.value);
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.move< cynth::ast::node::FunDef > (that.value);
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunctionDef > (that.value);
+      case symbol_kind::S_node_function: // node_function
+        value.move< cynth::ast::node::Function > (that.value);
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -1357,27 +1357,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< cynth::component_vector<cynth::ast::category::ArrayElem> > (that.value);
+        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (that.value);
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< cynth::component_vector<cynth::ast::category::Declaration> > (that.value);
+        value.move< esl::component_vector<cynth::ast::category::Declaration> > (that.value);
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< cynth::component_vector<cynth::ast::category::Expression> > (that.value);
+        value.move< esl::component_vector<cynth::ast::category::Expression> > (that.value);
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< cynth::component_vector<cynth::ast::category::RangeDecl> > (that.value);
+        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (that.value);
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< cynth::component_vector<cynth::ast::category::Statement> > (that.value);
+        value.move< esl::component_vector<cynth::ast::category::Statement> > (that.value);
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< cynth::component_vector<cynth::ast::category::Type> > (that.value);
+        value.move< esl::component_vector<cynth::ast::category::Type> > (that.value);
         break;
 
       case symbol_kind::S_start: // start
@@ -1770,11 +1770,11 @@ namespace yy {
         yylhs.value.emplace< int > (); // Modified.
         break;
 
-      case symbol_kind::S_node_function: // node_function
+      case symbol_kind::S_node_function_def: // node_function_def
         yylhs.value.emplace< int > (); // Modified.
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
+      case symbol_kind::S_node_function: // node_function
         yylhs.value.emplace< int > (); // Modified.
         break;
 
@@ -1903,27 +1903,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        yylhs.value.emplace< cynth::component_vector<cynth::ast::category::ArrayElem> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::ast::category::ArrayElement> > ();
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        yylhs.value.emplace< cynth::component_vector<cynth::ast::category::Declaration> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Declaration> > ();
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        yylhs.value.emplace< cynth::component_vector<cynth::ast::category::Expression> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Expression> > ();
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        yylhs.value.emplace< cynth::component_vector<cynth::ast::category::RangeDecl> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::ast::category::RangeDeclaration> > ();
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        yylhs.value.emplace< cynth::component_vector<cynth::ast::category::Statement> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Statement> > ();
         break;
 
       case symbol_kind::S_type_list: // type_list
-        yylhs.value.emplace< cynth::component_vector<cynth::ast::category::Type> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Type> > ();
         break;
 
       case symbol_kind::S_start: // start
@@ -1963,7 +1963,7 @@ namespace yy {
   case 3: // start: stmt_list
 #line 205 "gen/parser.y"
                     {
-        result = {YY_MOVE (yystack_[0].value.as < cynth::component_vector<cynth::ast::category::Statement> > ())};
+        result = {YY_MOVE (yystack_[0].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
     }
 #line 1969 "src/parser.cpp"
     break;
@@ -1971,7 +1971,7 @@ namespace yy {
   case 4: // start: stmt_list SEMI
 #line 208 "gen/parser.y"
                          {
-        result = {YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::Statement> > ())};
+        result = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
     }
 #line 1977 "src/parser.cpp"
     break;
@@ -1990,37 +1990,37 @@ namespace yy {
 
   case 7: // cat_range_decl: node_range_decl
 #line 219 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::RangeDecl > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeDecl > ()); }
+                     { yylhs.value.as < cynth::ast::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeDecl > ()); }
 #line 1995 "src/parser.cpp"
     break;
 
   case 8: // cat_range_decl: paren_range_decl
 #line 220 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::RangeDecl > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDecl > ()); }
+                     { yylhs.value.as < cynth::ast::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDeclaration > ()); }
 #line 2001 "src/parser.cpp"
     break;
 
   case 9: // cat_array_elem: node_range_to
 #line 223 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElem > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeTo > ()); }
+                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeTo > ()); }
 #line 2007 "src/parser.cpp"
     break;
 
   case 10: // cat_array_elem: node_range_to_by
 #line 224 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElem > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeToBy > ()); }
+                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeToBy > ()); }
 #line 2013 "src/parser.cpp"
     break;
 
   case 11: // cat_array_elem: node_spread
 #line 225 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElem > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Spread > ()); }
+                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Spread > ()); }
 #line 2019 "src/parser.cpp"
     break;
 
   case 12: // cat_array_elem: cat_expression
 #line 226 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElem > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
 #line 2025 "src/parser.cpp"
     break;
 
@@ -2134,7 +2134,7 @@ namespace yy {
 
   case 31: // pure: node_function_def
 #line 255 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::FunctionDef > ()); }
+                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::FunDef > ()); }
 #line 2139 "src/parser.cpp"
     break;
 
@@ -2425,7 +2425,7 @@ namespace yy {
   case 79: // paren_type: OPAREN type_list CPAREN
 #line 333 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::Type> > ())};
+        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Type> > ())};
     }
 #line 2431 "src/parser.cpp"
     break;
@@ -2433,7 +2433,7 @@ namespace yy {
   case 80: // paren_type: OPAREN type_list COMMA CPAREN
 #line 336 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Type> > ())};
+        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Type> > ())};
     }
 #line 2439 "src/parser.cpp"
     break;
@@ -2537,7 +2537,7 @@ namespace yy {
   case 93: // node_array_type: cat_type OBRACK AUTO CBRACK
 #line 391 "gen/parser.y"
                                       {
-        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .size = cynth::optional_component<cynth::ast::category::Pattern>{}};
+        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .size = esl::optional_component<cynth::ast::category::Pattern>{}};
     }
 #line 2543 "src/parser.cpp"
     break;
@@ -2545,7 +2545,7 @@ namespace yy {
   case 94: // node_array_type: cat_type OBRACK CBRACK
 #line 394 "gen/parser.y"
                                  {
-        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Type > ()), .size = cynth::optional_component<cynth::ast::category::Pattern>{}};
+        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Type > ()), .size = esl::optional_component<cynth::ast::category::Pattern>{}};
     }
 #line 2551 "src/parser.cpp"
     break;
@@ -2577,7 +2577,7 @@ namespace yy {
   case 98: // paren_range_decl: OPAREN cat_range_decl CPAREN
 #line 414 "gen/parser.y"
                                          {
-        yylhs.value.as < cynth::ast::category::RangeDecl > () = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDecl > ());
+        yylhs.value.as < cynth::ast::category::RangeDeclaration > () = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDeclaration > ());
     }
 #line 2583 "src/parser.cpp"
     break;
@@ -2585,7 +2585,7 @@ namespace yy {
   case 99: // paren_range_decl: OPAREN range_decl_list CPAREN
 #line 417 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::RangeDecl > () = cynth::ast::node::TupleRangeDecl{YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::RangeDecl> > ())};
+        yylhs.value.as < cynth::ast::category::RangeDeclaration > () = cynth::ast::node::TupleRangeDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > ())};
     }
 #line 2591 "src/parser.cpp"
     break;
@@ -2593,7 +2593,7 @@ namespace yy {
   case 100: // paren_range_decl: OPAREN range_decl_list COMMA CPAREN
 #line 420 "gen/parser.y"
                                               {
-        yylhs.value.as < cynth::ast::category::RangeDecl > () = cynth::ast::node::TupleRangeDecl{YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::RangeDecl> > ())};
+        yylhs.value.as < cynth::ast::category::RangeDeclaration > () = cynth::ast::node::TupleRangeDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > ())};
     }
 #line 2599 "src/parser.cpp"
     break;
@@ -2609,7 +2609,7 @@ namespace yy {
   case 102: // paren_decl: OPAREN decl_list CPAREN
 #line 428 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::Declaration> > ())};
+        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Declaration> > ())};
     }
 #line 2615 "src/parser.cpp"
     break;
@@ -2617,7 +2617,7 @@ namespace yy {
   case 103: // paren_decl: OPAREN decl_list COMMA CPAREN
 #line 431 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Declaration> > ())};
+        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Declaration> > ())};
     }
 #line 2623 "src/parser.cpp"
     break;
@@ -2681,7 +2681,7 @@ namespace yy {
   case 111: // paren_expr: OPAREN expr_list CPAREN
 #line 473 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::Expression> > ())};
+        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Expression> > ())};
     }
 #line 2687 "src/parser.cpp"
     break;
@@ -2689,7 +2689,7 @@ namespace yy {
   case 112: // paren_expr: OPAREN expr_list COMMA CPAREN
 #line 476 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Expression> > ())};
+        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Expression> > ())};
     }
 #line 2695 "src/parser.cpp"
     break;
@@ -2721,7 +2721,7 @@ namespace yy {
   case 116: // node_block: OBRACE stmt_list CBRACE
 #line 494 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::node::Block > () = {YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::Statement> > ())};
+        yylhs.value.as < cynth::ast::node::Block > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
     }
 #line 2727 "src/parser.cpp"
     break;
@@ -2729,7 +2729,7 @@ namespace yy {
   case 117: // node_block: OBRACE stmt_list SEMI CBRACE
 #line 497 "gen/parser.y"
                                        {
-        yylhs.value.as < cynth::ast::node::Block > () = {YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Statement> > ())};
+        yylhs.value.as < cynth::ast::node::Block > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
     }
 #line 2735 "src/parser.cpp"
     break;
@@ -2753,7 +2753,7 @@ namespace yy {
   case 120: // node_int: INT
 #line 512 "gen/parser.y"
         {
-        yylhs.value.as < cynth::ast::node::Int > () = {cynth::util::stoi(YY_MOVE (yystack_[0].value.as < std::string > ()))};
+        yylhs.value.as < cynth::ast::node::Int > () = {esl::stoi<cynth::sem::Integral>(YY_MOVE (yystack_[0].value.as < std::string > ()))}; // TODO: The sem::Integral type should be obtainable from ast::node::Int
     }
 #line 2759 "src/parser.cpp"
     break;
@@ -2769,7 +2769,7 @@ namespace yy {
   case 122: // node_string: STRING
 #line 522 "gen/parser.y"
            {
-        yylhs.value.as < cynth::ast::node::String > () = {cynth::util::trim(YY_MOVE (yystack_[0].value.as < std::string > ()))};
+        yylhs.value.as < cynth::ast::node::String > () = {esl::trim(YY_MOVE (yystack_[0].value.as < std::string > ()))};
     }
 #line 2775 "src/parser.cpp"
     break;
@@ -2817,7 +2817,7 @@ namespace yy {
   case 128: // node_array: OBRACK array_elem_list CBRACK
 #line 544 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::node::Array > () = {YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::ArrayElem> > ())};
+        yylhs.value.as < cynth::ast::node::Array > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ())};
     }
 #line 2823 "src/parser.cpp"
     break;
@@ -2825,7 +2825,7 @@ namespace yy {
   case 129: // node_array: OBRACK array_elem_list SEMI CBRACK
 #line 547 "gen/parser.y"
                                              {
-        yylhs.value.as < cynth::ast::node::Array > () = {YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::ArrayElem> > ())};
+        yylhs.value.as < cynth::ast::node::Array > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ())};
     }
 #line 2831 "src/parser.cpp"
     break;
@@ -2993,7 +2993,7 @@ namespace yy {
   case 150: // node_subscript: expr_post OBRACK array_elem_list CBRACK
 #line 652 "gen/parser.y"
                                                                  {
-        yylhs.value.as < cynth::ast::node::Subscript > () = {.container = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Expression > ()), .location = YY_MOVE (yystack_[1].value.as < cynth::component_vector<cynth::ast::category::ArrayElem> > ())};
+        yylhs.value.as < cynth::ast::node::Subscript > () = {.container = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Expression > ()), .location = YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ())};
     }
 #line 2999 "src/parser.cpp"
     break;
@@ -3017,7 +3017,7 @@ namespace yy {
   case 153: // node_expr_for: FOR paren_range_decl cat_expression
 #line 665 "gen/parser.y"
                                                     {
-        yylhs.value.as < cynth::ast::node::ExprFor > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDecl > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::ast::node::ExprFor > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
     }
 #line 3023 "src/parser.cpp"
     break;
@@ -3049,7 +3049,7 @@ namespace yy {
   case 157: // node_function_def: cat_type node_name paren_decl cat_expression
 #line 687 "gen/parser.y"
                                                                       {
-        yylhs.value.as < cynth::ast::node::FunctionDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
     }
 #line 3055 "src/parser.cpp"
     break;
@@ -3057,7 +3057,7 @@ namespace yy {
   case 158: // node_function_def: void_type node_name paren_decl cat_expression
 #line 690 "gen/parser.y"
                                                                        {
-        yylhs.value.as < cynth::ast::node::FunctionDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
     }
 #line 3063 "src/parser.cpp"
     break;
@@ -3065,7 +3065,7 @@ namespace yy {
   case 159: // node_function_def: cat_type node_name void_decl cat_expression
 #line 693 "gen/parser.y"
                                                                      {
-        yylhs.value.as < cynth::ast::node::FunctionDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
     }
 #line 3071 "src/parser.cpp"
     break;
@@ -3073,7 +3073,7 @@ namespace yy {
   case 160: // node_function_def: void_type node_name void_decl cat_expression
 #line 696 "gen/parser.y"
                                                                       {
-        yylhs.value.as < cynth::ast::node::FunctionDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
     }
 #line 3079 "src/parser.cpp"
     break;
@@ -3129,7 +3129,7 @@ namespace yy {
   case 167: // node_for: FOR paren_range_decl pure
 #line 725 "gen/parser.y"
                                           {
-        yylhs.value.as < cynth::ast::node::For > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDecl > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < cynth::ast::node::For > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
     }
 #line 3135 "src/parser.cpp"
     break;
@@ -3145,7 +3145,7 @@ namespace yy {
   case 169: // array_elem_list: cat_array_elem
 #line 737 "gen/parser.y"
                           {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::ArrayElem> > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::ArrayElem > ())};
+        yylhs.value.as < esl::component_vector<cynth::ast::category::ArrayElement> > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::ArrayElement > ())};
     }
 #line 3151 "src/parser.cpp"
     break;
@@ -3153,7 +3153,7 @@ namespace yy {
   case 170: // array_elem_list: array_elem_list COMMA cat_array_elem
 #line 740 "gen/parser.y"
                                                      {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::ArrayElem> > () = cynth::util::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::ArrayElem > ()), YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::ArrayElem> > ()));
+        yylhs.value.as < esl::component_vector<cynth::ast::category::ArrayElement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::ArrayElement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ()));
     }
 #line 3159 "src/parser.cpp"
     break;
@@ -3161,7 +3161,7 @@ namespace yy {
   case 171: // stmt_list: cat_statement
 #line 745 "gen/parser.y"
                          {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Statement> > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Statement> > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
     }
 #line 3167 "src/parser.cpp"
     break;
@@ -3169,7 +3169,7 @@ namespace yy {
   case 172: // stmt_list: stmt_list SEMI cat_statement
 #line 748 "gen/parser.y"
                                              {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Statement> > () = cynth::util::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ()), YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Statement> > ()));
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Statement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Statement> > ()));
     }
 #line 3175 "src/parser.cpp"
     break;
@@ -3177,7 +3177,7 @@ namespace yy {
   case 173: // type_list: cat_type COMMA cat_type
 #line 753 "gen/parser.y"
                                            {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Type> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Type > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Type> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Type > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
     }
 #line 3183 "src/parser.cpp"
     break;
@@ -3185,7 +3185,7 @@ namespace yy {
   case 174: // type_list: type_list COMMA cat_type
 #line 756 "gen/parser.y"
                                          {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Type> > () = cynth::util::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ()), YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Type> > ()));
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Type> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Type> > ()));
     }
 #line 3191 "src/parser.cpp"
     break;
@@ -3193,7 +3193,7 @@ namespace yy {
   case 175: // expr_list: cat_expression COMMA cat_expression
 #line 761 "gen/parser.y"
                                                        {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Expression> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Expression> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
     }
 #line 3199 "src/parser.cpp"
     break;
@@ -3201,7 +3201,7 @@ namespace yy {
   case 176: // expr_list: expr_list COMMA cat_expression
 #line 764 "gen/parser.y"
                                                {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Expression> > () = cynth::util::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Expression> > ()));
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Expression> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Expression> > ()));
     }
 #line 3207 "src/parser.cpp"
     break;
@@ -3209,7 +3209,7 @@ namespace yy {
   case 177: // decl_list: cat_declaration COMMA cat_declaration
 #line 769 "gen/parser.y"
                                                          {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Declaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Declaration > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ())};
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Declaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Declaration > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ())};
     }
 #line 3215 "src/parser.cpp"
     break;
@@ -3217,7 +3217,7 @@ namespace yy {
   case 178: // decl_list: decl_list COMMA cat_declaration
 #line 772 "gen/parser.y"
                                                 {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::Declaration> > () = cynth::util::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ()), YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::Declaration> > ()));
+        yylhs.value.as < esl::component_vector<cynth::ast::category::Declaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Declaration> > ()));
     }
 #line 3223 "src/parser.cpp"
     break;
@@ -3225,7 +3225,7 @@ namespace yy {
   case 179: // range_decl_list: cat_range_decl COMMA cat_range_decl
 #line 777 "gen/parser.y"
                                                        {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::RangeDecl> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::RangeDecl > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDecl > ())};
+        yylhs.value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::RangeDeclaration > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDeclaration > ())};
     }
 #line 3231 "src/parser.cpp"
     break;
@@ -3233,7 +3233,7 @@ namespace yy {
   case 180: // range_decl_list: range_decl_list COMMA cat_range_decl
 #line 780 "gen/parser.y"
                                                      {
-        yylhs.value.as < cynth::component_vector<cynth::ast::category::RangeDecl> > () = cynth::util::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDecl > ()), YY_MOVE (yystack_[2].value.as < cynth::component_vector<cynth::ast::category::RangeDecl> > ()));
+        yylhs.value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDeclaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > ()));
     }
 #line 3239 "src/parser.cpp"
     break;

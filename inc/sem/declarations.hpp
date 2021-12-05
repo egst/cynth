@@ -22,8 +22,8 @@ namespace cynth::sem {
 
     }
 
-    struct CompleteDeclaration:  detail::declarations::Declaration<true>  {};
-    struct InompleteDeclaration: detail::declarations::Declaration<false> {};
+    struct CompleteDeclaration:   detail::declarations::Declaration<true>  {};
+    struct IncompleteDeclaration: detail::declarations::Declaration<false> {};
 
     struct TypeDeclaration {
         std::string name;

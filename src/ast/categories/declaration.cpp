@@ -1,22 +1,24 @@
 #include "ast/categories/declaration.hpp"
 
-#include "component.hpp"
+#include "esl/component.hpp"
 
-namespace cynth {
+namespace esl {
+
+    using cynth::ast::category::Declaration;
 
     template <>
-    void component_deleter<ast::category::Declaration>::operator () (ast::category::Declaration * ptr) const {
+    void component_deleter<Declaration>::operator () (Declaration * ptr) const {
         delete ptr;
     }
 
     template <>
-    ast::category::Declaration * component_allocator<ast::category::Declaration>::operator () (ast::category::Declaration const & other) const {
-        return new ast::category::Declaration{other};
+    Declaration * component_allocator<Declaration>::operator () (Declaration const & other) const {
+        return new Declaration{other};
     }
 
     template <>
-    ast::category::Declaration * component_allocator<ast::category::Declaration>::operator () (ast::category::Declaration && other) const {
-        return new ast::category::Declaration{std::move(other)};
+    Declaration * component_allocator<Declaration>::operator () (Declaration && other) const {
+        return new Declaration{std::move(other)};
     }
 
 }

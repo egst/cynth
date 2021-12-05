@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <variant>
+
 #include "esl/macros.hpp"
 #include "esl/debug.hpp"
 #include "esl/type_manip.hpp"

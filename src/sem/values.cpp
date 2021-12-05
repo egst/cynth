@@ -1,66 +1,63 @@
 #include "sem/values.hpp"
 
-#include "config.hpp"
-#include "view.hpp"
-#include "component.hpp"
-#include "common_interface.hpp"
-#include "ast/categories/array_elem.hpp"
-#include "ast/categories/declaration.hpp"
-#include "ast/categories/expression.hpp"
-#include "sem/context.hpp"
-#include "sem/interface.hpp"
-#include "sem/types.hpp"
-#include "sem/util.hpp"
-#include "util/general.hpp"
-#include "util/operations.hpp"
-#include "util/string.hpp"
+#include "esl/component.hpp"
 
-#include <iostream>
-#include <utility>
+namespace esl {
 
+    using cynth::sem::CompleteValue;
+    using cynth::sem::IncompleteValue;
+
+    template <>
+    void component_deleter<CompleteValue>::operator () (CompleteValue * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    CompleteValue * component_allocator<CompleteValue>::operator () (CompleteValue const & other) const {
+        return new CompleteValue{other};
+    }
+
+    template <>
+    CompleteValue * component_allocator<CompleteValue>::operator () (CompleteValue && other) const {
+        return new CompleteValue{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<IncompleteValue>::operator () (IncompleteValue * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    IncompleteValue * component_allocator<IncompleteValue>::operator () (IncompleteValue const & other) const {
+        return new IncompleteValue{other};
+    }
+
+    template <>
+    IncompleteValue * component_allocator<IncompleteValue>::operator () (IncompleteValue && other) const {
+        return new IncompleteValue{std::move(other)};
+    }
+
+}
+
+// TODO
+#if 0
 namespace cynth {
 
     //// Implementation helpers ////
 
-    sem::conversion_result make_const (auto const & result) {
-        if (!result)
-            return result.error();
-        return {sem::value::Const {
-            .value = *result
-        }};
+    namespace {
+
+        sem::conversion_result make_const (auto const & result) {
+            if (!result)
+                return result.error();
+            return {sem::value::Const {
+                .value = *result
+            }};
+        }
+
     }
 
     //// Categories ////
-
-    template <>
-    void component_deleter<sem::value::complete>::operator () (sem::value::complete * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    sem::value::complete * component_allocator<sem::value::complete>::operator () (sem::value::complete const & other) const {
-        return new sem::value::complete{other};
-    }
-
-    template <>
-    sem::value::complete * component_allocator<sem::value::complete>::operator () (sem::value::complete && other) const {
-        return new sem::value::complete{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<sem::value::incomplete>::operator () (sem::value::incomplete * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    sem::value::incomplete * component_allocator<sem::value::incomplete>::operator () (sem::value::incomplete const & other) const {
-        return new sem::value::incomplete{other};
-    }
-
-    template <>
-    sem::value::incomplete * component_allocator<sem::value::incomplete>::operator () (sem::value::incomplete && other) const {
-        return new sem::value::incomplete{std::move(other)};
-    }
 
     //// Bool ////
 
@@ -416,3 +413,4 @@ namespace cynth {
     }
 
 }
+#endif

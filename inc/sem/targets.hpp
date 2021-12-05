@@ -2,11 +2,11 @@
 
 #include <variant>
 
-#include "esl/component.hpp"
 #include "esl/category.hpp"
+#include "esl/component.hpp"
 
-#include "sem/forward.hpp"
 #include "sem/interface_types.hpp"
+#include "sem/values.hpp"
 
 // Note: No macros escape this file.
 #define TARGET_INTERFACE \

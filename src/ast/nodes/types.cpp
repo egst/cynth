@@ -1,35 +1,176 @@
 #include "ast/nodes/types.hpp"
 
-#include "common_interface.hpp"
-#include "ast/categories/expression.hpp"
-#include "ast/categories/pattern.hpp"
-#include "ast/categories/type.hpp"
-#include "ast/interface.hpp"
-#include "sem/interface.hpp"
-#include "util/general.hpp"
-#include "util/container.hpp"
-#include "util/string.hpp"
+#include "esl/component.hpp"
 
-#include <string>
+namespace esl {
 
-namespace cynth {
-
-    //// ArrayType ////
+    using cynth::ast::node::ArrayType
+    using cynth::ast::node::Auto
+    using cynth::ast::node::BufferType
+    using cynth::ast::node::ConstType
+    using cynth::ast::node::InType
+    using cynth::ast::node::OutType
+    using cynth::ast::node::TupleType
+    using cynth::ast::node::TypeDecl
+    using cynth::ast::node::TypeName
 
     template <>
-    void component_deleter<ast::node::ArrayType>::operator () (ast::node::ArrayType * ptr) const {
+    void component_deleter<ArrayType>::operator () (ArrayType * ptr) const {
         delete ptr;
     }
 
     template <>
-    ast::node::ArrayType * component_allocator<ast::node::ArrayType>::operator () (ast::node::ArrayType const & other) const {
-        return new ast::node::ArrayType{other};
+    ArrayType * component_allocator<ArrayType>::operator () (ArrayType const & other) const {
+        return new ArrayType{other};
     }
 
     template <>
-    ast::node::ArrayType * component_allocator<ast::node::ArrayType>::operator () (ast::node::ArrayType && other) const {
-        return new ast::node::ArrayType{std::move(other)};
+    ArrayType * component_allocator<ArrayType>::operator () (ArrayType && other) const {
+        return new ArrayType{std::move(other)};
     }
+
+    template <>
+    void component_deleter<Auto>::operator () (Auto * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Auto * component_allocator<Auto>::operator () (Auto const & other) const {
+        return new Auto{other};
+    }
+
+    template <>
+    Auto * component_allocator<Auto>::operator () (Auto && other) const {
+        return new Auto{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<BufferType>::operator () (BufferType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    BufferType * component_allocator<BufferType>::operator () (BufferType const & other) const {
+        return new BufferType{other};
+    }
+
+    template <>
+    BufferType * component_allocator<BufferType>::operator () (BufferType && other) const {
+        return new BufferType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<ConstType>::operator () (ConstType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ConstType * component_allocator<ConstType>::operator () (ConstType const & other) const {
+        return new ConstType{other};
+    }
+
+    template <>
+    ConstType * component_allocator<ConstType>::operator () (ConstType && other) const {
+        return new ConstType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<FunctionType>::operator () (FunctionType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    FunctionType * component_allocator<FunctionType>::operator () (FunctionType const & other) const {
+        return new FunctionType{other};
+    }
+
+    template <>
+    FunctionType * component_allocator<FunctionType>::operator () (FunctionType && other) const {
+        return new FunctionType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<InType>::operator () (InType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    InType * component_allocator<InType>::operator () (InType const & other) const {
+        return new InType{other};
+    }
+
+    template <>
+    InType * component_allocator<InType>::operator () (InType && other) const {
+        return new InType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<OutType>::operator () (OutType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    OutType * component_allocator<OutType>::operator () (OutType const & other) const {
+        return new OutType{other};
+    }
+
+    template <>
+    OutType * component_allocator<OutType>::operator () (OutType && other) const {
+        return new OutType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TupleType>::operator () (TupleType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TupleType * component_allocator<TupleType>::operator () (TupleType const & other) const {
+        return new TupleType{other};
+    }
+
+    template <>
+    TupleType * component_allocator<TupleType>::operator () (TupleType && other) const {
+        return new TupleType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TypeDecl>::operator () (TypeDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl const & other) const {
+        return new TypeDecl{other};
+    }
+
+    template <>
+    TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl && other) const {
+        return new TypeDecl{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TypeName>::operator () (TypeName * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TypeName * component_allocator<TypeName>::operator () (TypeName const & other) const {
+        return new TypeName{other};
+    }
+
+    template <>
+    TypeName * component_allocator<TypeName>::operator () (TypeName && other) const {
+        return new TypeName{std::move(other)};
+    }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
+
+    //// ArrayType ////
 
     display_result ast::node::ArrayType::display () const {
         //return cynth::display(type) + " [" + util::coalesce(cynth::display(size) ?: "") + "]";
@@ -66,21 +207,6 @@ namespace cynth {
 
     //// Auto ////
 
-    template <>
-    void component_deleter<ast::node::Auto>::operator () (ast::node::Auto * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Auto * component_allocator<ast::node::Auto>::operator () (ast::node::Auto const & other) const {
-        return new ast::node::Auto{other};
-    }
-
-    template <>
-    ast::node::Auto * component_allocator<ast::node::Auto>::operator () (ast::node::Auto && other) const {
-        return new ast::node::Auto{std::move(other)};
-    }
-
     display_result ast::node::Auto::display () const {
         return "$";
     }
@@ -90,21 +216,6 @@ namespace cynth {
     }
 
     //// BufferType ////
-
-    template <>
-    void component_deleter<ast::node::BufferType>::operator () (ast::node::BufferType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::BufferType * component_allocator<ast::node::BufferType>::operator () (ast::node::BufferType const & other) const {
-        return new ast::node::BufferType{other};
-    }
-
-    template <>
-    ast::node::BufferType * component_allocator<ast::node::BufferType>::operator () (ast::node::BufferType && other) const {
-        return new ast::node::BufferType{std::move(other)};
-    }
 
     display_result ast::node::BufferType::display () const {
         return "buffer [" + cynth::display(size) + "]";
@@ -123,21 +234,6 @@ namespace cynth {
     }
 
     //// ConstType ////
-
-    template <>
-    void component_deleter<ast::node::ConstType>::operator () (ast::node::ConstType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::ConstType * component_allocator<ast::node::ConstType>::operator () (ast::node::ConstType const & other) const {
-        return new ast::node::ConstType{other};
-    }
-
-    template <>
-    ast::node::ConstType * component_allocator<ast::node::ConstType>::operator () (ast::node::ConstType && other) const {
-        return new ast::node::ConstType{std::move(other)};
-    }
 
     display_result ast::node::ConstType::display () const {
         return cynth::display(type) + " const";
@@ -176,21 +272,6 @@ namespace cynth {
 
     //// FunctionType ////
 
-    template <>
-    void component_deleter<ast::node::FunctionType>::operator () (ast::node::FunctionType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::FunctionType * component_allocator<ast::node::FunctionType>::operator () (ast::node::FunctionType const & other) const {
-        return new ast::node::FunctionType{other};
-    }
-
-    template <>
-    ast::node::FunctionType * component_allocator<ast::node::FunctionType>::operator () (ast::node::FunctionType && other) const {
-        return new ast::node::FunctionType{std::move(other)};
-    }
-
     display_result ast::node::FunctionType::display () const {
         return cynth::display(output) + " " + util::parenthesized(cynth::display(input));
     }
@@ -213,21 +294,6 @@ namespace cynth {
     }
 
     //// InType ////
-
-    template <>
-    void component_deleter<ast::node::InType>::operator () (ast::node::InType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::InType * component_allocator<ast::node::InType>::operator () (ast::node::InType const & other) const {
-        return new ast::node::InType{other};
-    }
-
-    template <>
-    ast::node::InType * component_allocator<ast::node::InType>::operator () (ast::node::InType && other) const {
-        return new ast::node::InType{std::move(other)};
-    }
 
     display_result ast::node::InType::display () const {
         return cynth::display(type) + " in";
@@ -265,21 +331,6 @@ namespace cynth {
 
     //// OutType ////
 
-    template <>
-    void component_deleter<ast::node::OutType>::operator () (ast::node::OutType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::OutType * component_allocator<ast::node::OutType>::operator () (ast::node::OutType const & other) const {
-        return new ast::node::OutType{other};
-    }
-
-    template <>
-    ast::node::OutType * component_allocator<ast::node::OutType>::operator () (ast::node::OutType && other) const {
-        return new ast::node::OutType{std::move(other)};
-    }
-
     display_result ast::node::OutType::display () const {
         return cynth::display(type) + " out";
     }
@@ -313,21 +364,6 @@ namespace cynth {
 
     //// TupleType ////
 
-    template <>
-    void component_deleter<ast::node::TupleType>::operator () (ast::node::TupleType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::TupleType * component_allocator<ast::node::TupleType>::operator () (ast::node::TupleType const & other) const {
-        return new ast::node::TupleType{other};
-    }
-
-    template <>
-    ast::node::TupleType * component_allocator<ast::node::TupleType>::operator () (ast::node::TupleType && other) const {
-        return new ast::node::TupleType{std::move(other)};
-    }
-
     display_result ast::node::TupleType::display () const {
         return "(" + util::join(", ", cynth::display(types)) + ")";
     }
@@ -342,21 +378,6 @@ namespace cynth {
 
     //// TypeDecl ////
 
-    template <>
-    void component_deleter<ast::node::TypeDecl>::operator () (ast::node::TypeDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::TypeDecl * component_allocator<ast::node::TypeDecl>::operator () (ast::node::TypeDecl const & other) const {
-        return new ast::node::TypeDecl{other};
-    }
-
-    template <>
-    ast::node::TypeDecl * component_allocator<ast::node::TypeDecl>::operator () (ast::node::TypeDecl && other) const {
-        return new ast::node::TypeDecl{std::move(other)};
-    }
-
     display_result ast::node::TypeDecl::display () const {
         return "type " + cynth::display(name);
     }
@@ -366,21 +387,6 @@ namespace cynth {
     }
 
     //// TypeName ////
-
-    template <>
-    void component_deleter<ast::node::TypeName>::operator () (ast::node::TypeName * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::TypeName * component_allocator<ast::node::TypeName>::operator () (ast::node::TypeName const & other) const {
-        return new ast::node::TypeName{other};
-    }
-
-    template <>
-    ast::node::TypeName * component_allocator<ast::node::TypeName>::operator () (ast::node::TypeName && other) const {
-        return new ast::node::TypeName{std::move(other)};
-    }
 
     display_result ast::node::TypeName::display () const {
         return *name;
@@ -394,3 +400,4 @@ namespace cynth {
     }
 
 }
+#endif

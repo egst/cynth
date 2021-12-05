@@ -1,51 +1,70 @@
-#include "ast/nodes/range_decls.hpp"
+#include "ast/nodes/range_declarations.hpp"
 
-#include "ast/nodes/expressions.hpp"
-#include "ast/categories/type.hpp"
-#include "ast/categories/declaration.hpp"
-#include "ast/categories/expression.hpp"
-#include "ast/categories/range_decl.hpp"
-#include "ast/interface.hpp"
-#include "sem/interface.hpp"
-#include "sem/declarations.hpp"
+#include "esl/component.hpp"
 
-#include "sem/util.hpp"
-#include "util/string.hpp"
-#include "util/container.hpp"
+namespace esl {
 
-#include <string>
-
-namespace cynth {
-
-    ast::execution_result decl_execute (auto const & node, sem::context & ctx) {
-        auto decls_result = util::unite_results(sem::complete(ast::eval_decl(ctx)(node)));
-        if (!decls_result)
-            return ast::make_execution_result(decls_result.error());
-        auto decls = *std::move(decls_result);
-
-        auto decl_result = ctx.declare(decls);
-        if (!decl_result)
-            return ast::make_execution_result(decl_result.error());
-
-        return {};
-    }
-
-    //// RangeDecl ////
+    using cynth::ast::node::RangeDecl;
+    using cynth::ast::node::TupleRangeDecl;
 
     template <>
-    void component_deleter<ast::node::RangeDecl>::operator () (ast::node::RangeDecl * ptr) const {
+    void component_deleter<RangeDecl>::operator () (RangeDecl * ptr) const {
         delete ptr;
     }
 
-    template <> ast::node::RangeDecl *
-    component_allocator<ast::node::RangeDecl>::operator () (ast::node::RangeDecl const & other) const {
-        return new ast::node::RangeDecl{other};
+    template <>
+    RangeDecl * component_allocator<RangeDecl>::operator () (RangeDecl const & other) const {
+        return new RangeDecl{other};
     }
 
-    template <> ast::node::RangeDecl *
-    component_allocator<ast::node::RangeDecl>::operator () (ast::node::RangeDecl && other) const {
-        return new ast::node::RangeDecl{std::move(other)};
+    template <>
+    RangeDecl * component_allocator<RangeDecl>::operator () (RangeDecl && other) const {
+        return new RangeDecl{std::move(other)};
     }
+
+    template <>
+    void component_deleter<TupleRangeDecl>::operator () (TupleRangeDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TupleRangeDecl * component_allocator<TupleRangeDecl>::operator () (
+        TupleRangeDecl const & other
+    ) const {
+        return new TupleRangeDecl{other};
+    }
+
+    template <>
+    TupleRangeDecl * component_allocator<TupleRangeDecl>::operator () (
+        TupleRangeDecl && other
+    ) const {
+        return new TupleRangeDecl{std::move(other)};
+    }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
+
+    namespace {
+
+        ast::execution_result decl_execute (auto const & node, sem::context & ctx) {
+            auto decls_result = util::unite_results(sem::complete(ast::eval_decl(ctx)(node)));
+            if (!decls_result)
+                return ast::make_execution_result(decls_result.error());
+            auto decls = *std::move(decls_result);
+
+            auto decl_result = ctx.declare(decls);
+            if (!decl_result)
+                return ast::make_execution_result(decl_result.error());
+
+            return {};
+        }
+
+    }
+
+    //// RangeDecl ////
 
     display_result ast::node::RangeDecl::display () const {
         return cynth::display(declaration) + " in " + cynth::display(range);
@@ -66,21 +85,6 @@ namespace cynth {
 
     //// TupleRangeDecl ////
 
-    template <>
-    void component_deleter<ast::node::TupleRangeDecl>::operator () (ast::node::TupleRangeDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <> ast::node::TupleRangeDecl *
-    component_allocator<ast::node::TupleRangeDecl>::operator () (ast::node::TupleRangeDecl const & other) const {
-        return new ast::node::TupleRangeDecl{other};
-    }
-
-    template <> ast::node::TupleRangeDecl *
-    component_allocator<ast::node::TupleRangeDecl>::operator () (ast::node::TupleRangeDecl && other) const {
-        return new ast::node::TupleRangeDecl{std::move(other)};
-    }
-
     display_result ast::node::TupleRangeDecl::display () const {
         return "(" + util::join(", ", cynth::display(declarations)) + ")";
     }
@@ -94,3 +98,4 @@ namespace cynth {
     }
 
 }
+#endif

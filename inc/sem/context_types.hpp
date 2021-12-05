@@ -45,7 +45,7 @@ namespace cynth::sem {
         esl::result<void> assign (ValueVector && values) {
             // TODO
             /*
-            return esl::lift<esl::tiny_vector>(
+            return esl::lift<esl::target::tiny_vector>(
                 [] (CompleteValue * target, CompleteValue && value) {
                     *target = std::move(value);
                 }
@@ -56,7 +56,7 @@ namespace cynth::sem {
     };
 
     inline TargetVector makeTargetVector (ValueVector & values) {
-        return esl::lift<esl::tiny_vector>(
+        return esl::lift<esl::target::tiny_vector>(
             [] (CompleteValue & value) -> CompleteValue * { return &value; }
         )(values);
     }

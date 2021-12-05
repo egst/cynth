@@ -1,41 +1,161 @@
 #include "ast/nodes/statements.hpp"
 
-#include "sem/forward.hpp"
-#include "result.hpp"
-#include "common_interface.hpp"
-#include "ast/nodes/expressions.hpp"
-#include "ast/categories/declaration.hpp"
-#include "ast/categories/range_decl.hpp"
-#include "ast/categories/expression.hpp"
-#include "ast/categories/statement.hpp"
-#include "ast/categories/type.hpp"
-#include "ast/interface.hpp"
-#include "sem/interface.hpp"
-#include "sem/util.hpp"
-#include "util/general.hpp"
-#include "util/string.hpp"
-#include "util/container.hpp"
+namespace esl {
 
-#include <string>
-
-namespace cynth {
-
-    //// Assignment ////
+    using cynth::ast::node::Assignment;
+    using cynth::ast::node::Definition;
+    using cynth::ast::node::For;
+    using cynth::ast::node::FunDef;
+    using cynth::ast::node::If;
+    using cynth::ast::node::Return;
+    using cynth::ast::node::If;
+    using cynth::ast::node::Return;
+    using cynth::ast::node::TypeDef;
+    using cynth::ast::node::When;
+    using cynth::ast::node::While;
 
     template <>
-    void component_deleter<ast::node::Assignment>::operator () (ast::node::Assignment * ptr) const {
+    void component_deleter<Assignment>::operator () (Assignment * ptr) const {
         delete ptr;
     }
 
     template <>
-    ast::node::Assignment * component_allocator<ast::node::Assignment>::operator () (ast::node::Assignment const & other) const {
-        return new ast::node::Assignment{other};
+    Assignment * component_allocator<Assignment>::operator () (Assignment const & other) const {
+        return new Assignment{other};
     }
 
     template <>
-    ast::node::Assignment * component_allocator<ast::node::Assignment>::operator () (ast::node::Assignment && other) const {
-        return new ast::node::Assignment{std::move(other)};
+    Assignment * component_allocator<Assignment>::operator () (Assignment && other) const {
+        return new Assignment{std::move(other)};
     }
+
+    template <>
+    void component_deleter<Definition>::operator () (Definition * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Definition * component_allocator<Definition>::operator () (Definition const & other) const {
+        return new Definition{other};
+    }
+
+    template <>
+    Definition * component_allocator<Definition>::operator () (Definition && other) const {
+        return new Definition{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<For>::operator () (For * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    For * component_allocator<For>::operator () (For const & other) const {
+        return new For{other};
+    }
+
+    template <>
+    For * component_allocator<For>::operator () (For && other) const {
+        return new For{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<FunDef>::operator () (FunDef * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    FunDef * component_allocator<FunDef>::operator () (FunDef const & other) const {
+        return new FunDef{other};
+    }
+
+    template <>
+    FunDef * component_allocator<FunDef>::operator () (FunDef && other) const {
+        return new FunDef{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<If>::operator () (If * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    If * component_allocator<If>::operator () (If const & other) const {
+        return new If{other};
+    }
+
+    template <>
+    If * component_allocator<If>::operator () (If && other) const {
+        return new If{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Return>::operator () (Return * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Return * component_allocator<Return>::operator () (Return const & other) const {
+        return new Return{other};
+    }
+
+    template <>
+    Return * component_allocator<Return>::operator () (Return && other) const {
+        return new Return{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TypeDef>::operator () (TypeDef * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TypeDef * component_allocator<TypeDef>::operator () (TypeDef const & other) const {
+        return new TypeDef{other};
+    }
+
+    template <>
+    TypeDef * component_allocator<TypeDef>::operator () (TypeDef && other) const {
+        return new TypeDef{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<While>::operator () (While * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    While * component_allocator<While>::operator () (While const & other) const {
+        return new While{other};
+    }
+
+    template <>
+    While * component_allocator<While>::operator () (While && other) const {
+        return new While{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<When>::operator () (When * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    When * component_allocator<When>::operator () (When const & other) const {
+        return new When{other};
+    }
+
+    template <>
+    When * component_allocator<When>::operator () (When && other) const {
+        return new When{std::move(other)};
+    }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
+
+    //// Assignment ////
 
     display_result ast::node::Assignment::display () const {
         return cynth::display(target) + " = " + cynth::display(value);
@@ -82,21 +202,6 @@ namespace cynth {
 
     //// Definition ////
 
-    template <>
-    void component_deleter<ast::node::Definition>::operator () (ast::node::Definition * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Definition * component_allocator<ast::node::Definition>::operator () (ast::node::Definition const & other) const {
-        return new ast::node::Definition{other};
-    }
-
-    template <>
-    ast::node::Definition * component_allocator<ast::node::Definition>::operator () (ast::node::Definition && other) const {
-        return new ast::node::Definition{std::move(other)};
-    }
-
     display_result ast::node::Definition::display () const {
         return cynth::display(target) + " = " + cynth::display(value);
     }
@@ -139,21 +244,6 @@ namespace cynth {
 
     //// For ////
 
-    template <>
-    void component_deleter<ast::node::For>::operator () (ast::node::For * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::For * component_allocator<ast::node::For>::operator () (ast::node::For const & other) const {
-        return new ast::node::For{other};
-    }
-
-    template <>
-    ast::node::For * component_allocator<ast::node::For>::operator () (ast::node::For && other) const {
-        return new ast::node::For{std::move(other)};
-    }
-
     display_result ast::node::For::display () const {
         return
             "for " + util::parenthesized(cynth::display(declarations)) +
@@ -187,21 +277,6 @@ namespace cynth {
     }
 
     //// FunctionDef ////
-
-    template <>
-    void component_deleter<ast::node::FunctionDef>::operator () (ast::node::FunctionDef * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::FunctionDef * component_allocator<ast::node::FunctionDef>::operator () (ast::node::FunctionDef const & other) const {
-        return new ast::node::FunctionDef{other};
-    }
-
-    template <>
-    ast::node::FunctionDef * component_allocator<ast::node::FunctionDef>::operator () (ast::node::FunctionDef && other) const {
-        return new ast::node::FunctionDef{std::move(other)};
-    }
 
     display_result ast::node::FunctionDef::display () const {
         return cynth::display(output) + " " + cynth::display(name) + " " + util::parenthesized(cynth::display(input)) + " " + cynth::display(body);
@@ -243,21 +318,6 @@ namespace cynth {
 
     //// If ////
 
-    template <>
-    void component_deleter<ast::node::If>::operator () (ast::node::If * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::If * component_allocator<ast::node::If>::operator () (ast::node::If const & other) const {
-        return new ast::node::If{other};
-    }
-
-    template <>
-    ast::node::If * component_allocator<ast::node::If>::operator () (ast::node::If && other) const {
-        return new ast::node::If{std::move(other)};
-    }
-
     display_result ast::node::If::display () const {
         return
             "if "    + util::parenthesized(cynth::display(condition)) +
@@ -277,21 +337,6 @@ namespace cynth {
 
     //// Return ////
 
-    template <>
-    void component_deleter<ast::node::Return>::operator () (ast::node::Return * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Return * component_allocator<ast::node::Return>::operator () (ast::node::Return const & other) const {
-        return new ast::node::Return{other};
-    }
-
-    template <>
-    ast::node::Return * component_allocator<ast::node::Return>::operator () (ast::node::Return && other) const {
-        return new ast::node::Return{std::move(other)};
-    }
-
     display_result ast::node::Return::display () const {
         return "return " + cynth::display(value);
     }
@@ -306,21 +351,6 @@ namespace cynth {
     }
 
     //// TypeDef ////
-
-    template <>
-    void component_deleter<ast::node::TypeDef>::operator () (ast::node::TypeDef * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::TypeDef * component_allocator<ast::node::TypeDef>::operator () (ast::node::TypeDef const & other) const {
-        return new ast::node::TypeDef{other};
-    }
-
-    template <>
-    ast::node::TypeDef * component_allocator<ast::node::TypeDef>::operator () (ast::node::TypeDef && other) const {
-        return new ast::node::TypeDef{std::move(other)};
-    }
 
     display_result ast::node::TypeDef::display () const {
         return "type " + cynth::display(target) + " = " + cynth::display(type);
@@ -342,21 +372,6 @@ namespace cynth {
     }
 
     //// While ////
-
-    template <>
-    void component_deleter<ast::node::While>::operator () (ast::node::While * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::While * component_allocator<ast::node::While>::operator () (ast::node::While const & other) const {
-        return new ast::node::While{other};
-    }
-
-    template <>
-    ast::node::While * component_allocator<ast::node::While>::operator () (ast::node::While && other) const {
-        return new ast::node::While{std::move(other)};
-    }
 
     display_result ast::node::While::display () const {
         return
@@ -383,21 +398,6 @@ namespace cynth {
 
     //// When ////
 
-    template <>
-    void component_deleter<ast::node::When>::operator () (ast::node::When * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::When * component_allocator<ast::node::When>::operator () (ast::node::When const & other) const {
-        return new ast::node::When{other};
-    }
-
-    template <>
-    ast::node::When * component_allocator<ast::node::When>::operator () (ast::node::When && other) const {
-        return new ast::node::When{std::move(other)};
-    }
-
     display_result ast::node::When::display () const {
         return
             "when " + util::parenthesized(cynth::display(condition)) +
@@ -416,3 +416,4 @@ namespace cynth {
     }
 
 }
+#endif

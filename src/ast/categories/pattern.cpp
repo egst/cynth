@@ -1,25 +1,24 @@
 #include "ast/categories/pattern.hpp"
 
-#include "ast/categories/array_elem.hpp"
-#include "ast/categories/statement.hpp"
-#include "ast/categories/range_decl.hpp"
-#include "component.hpp"
+#include "esl/component.hpp"
 
-namespace cynth {
+namespace esl {
+
+    using cynth::ast::category::Pattern;
 
     template <>
-    void component_deleter<ast::category::Pattern>::operator () (ast::category::Pattern * ptr) const {
+    void component_deleter<Pattern>::operator () (Pattern * ptr) const {
         delete ptr;
     }
 
     template <>
-    ast::category::Pattern * component_allocator<ast::category::Pattern>::operator () (ast::category::Pattern const & other) const {
-        return new ast::category::Pattern{other};
+    Pattern * component_allocator<Pattern>::operator () (Pattern const & other) const {
+        return new Pattern{other};
     }
 
     template <>
-    ast::category::Pattern * component_allocator<ast::category::Pattern>::operator () (ast::category::Pattern && other) const {
-        return new ast::category::Pattern{std::move(other)};
+    Pattern * component_allocator<Pattern>::operator () (Pattern && other) const {
+        return new Pattern{std::move(other)};
     }
 
 }

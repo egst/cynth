@@ -19,7 +19,7 @@ namespace cynth::ast::category {
             node::Assignment,
             node::Definition,
             node::For,
-            node::FunctionDef,
+            node::FunDef,
             node::If,
             node::Return,
             node::TypeDef,

@@ -328,13 +328,14 @@ namespace esl {
 
     namespace target {
 
-        template <typename...> struct nested_tiny_vector_cat {};
+        struct tiny_vector {};
+        struct nested_tiny_vector_cat {};
 
     }
 
-    template <> struct lift_specialization_map<esl::tiny_vector>:
+    template <> struct lift_specialization_map<target::tiny_vector>:
         lift_implementation<detail::tiny_vector::lift_impl> {};
-    template <> struct lift_specialization_map<esl::target::nested_tiny_vector_cat>:
+    template <> struct lift_specialization_map<target::nested_tiny_vector_cat>:
         lift_implementation<detail::tiny_vector::nested_lift_impl> {};
 
 }

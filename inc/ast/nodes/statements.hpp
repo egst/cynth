@@ -47,7 +47,7 @@ namespace cynth::ast::node {
     };
 
     /** Out f (In a) b */
-    struct FunctionDef {
+    struct FunDef {
         esl::component<category::Type>        output;
         esl::component<category::Declaration> input;
         esl::component<node::Name>            name;

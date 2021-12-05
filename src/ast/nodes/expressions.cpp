@@ -1,247 +1,713 @@
 #include "ast/nodes/expressions.hpp"
 
-#include "component.hpp"
-#include "config.hpp"
-#include "lift.hpp"
-#include "ast/categories/array_elem.hpp"
-#include "ast/categories/declaration.hpp"
-#include "ast/categories/expression.hpp"
-#include "ast/categories/statement.hpp"
-#include "ast/categories/type.hpp"
-#include "ast/categories/range_decl.hpp"
-#include "ast/interface.hpp"
-#include "ast/interface_types.hpp"
-#include "sem/context.hpp"
-#include "sem/values.hpp"
-#include "sem/types.hpp"
-#include "sem/targets.hpp"
-#include "sem/util.hpp"
-#include "util/general.hpp"
-#include "util/container.hpp"
-#include "util/string.hpp"
-#include "util/operations.hpp"
+#include "esl/component.hpp"
 
-#include <string>
+namespace esl {
 
-using namespace std::string_literals;
-
-namespace cynth {
-
-    //// Implementation helpers ////
-
-    // Arithmetic operations //
-
-    template <bool Check>
-    constexpr auto bin_arith_floats = [] <typename F> (sem::context & ctx, F && f) {
-        return [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::some<sem::value::Float, T, U>) {
-            return lift::result{sem::value::make_float} (
-                lift::result{std::forward<F>(f)} (
-                    sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(a))),
-                    sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(b)))
-                )
-            );
-        };
-    };
-
-    template <bool Check>
-    constexpr auto bin_arith_ints = [] <typename F> (sem::context & ctx, F && f) {
-        return [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::none<sem::value::Float, T, U>) {
-            return lift::result{sem::value::make_int} (
-                lift::result{std::forward<F>(f)} (
-                    sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(a))),
-                    sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(b)))
-                )
-            );
-        };
-    };
-
-    constexpr auto bin_arith = [] <typename I, typename F> (sem::context & ctx, I && i, F && f) {
-        return [&ctx, &i, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<sem::value::complete>>> {
-            if (first.size() == 0)
-                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
-            if (second.size() == 0)
-                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
-            if (first.size() > second.size())
-                return ast::make_evaluation_result(result_error{"More values on the lhs of a binary operation."});
-            if (first.size() < second.size())
-                return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
-            return lift::evaluation{util::overload {
-                bin_arith_floats<true>(ctx, f),
-                [&ctx, &i, &f] <util::temporary T, util::temporary U> (T && a, U && b) -> result<sem::value::complete> requires util::none<sem::value::Float, T, U> {
-                    auto results = sem::decays(sem::type::Float{})(sem::value_type((a))) || sem::decays(sem::type::Float{})(sem::value_type((b)))
-                        ? bin_arith_floats <false>(ctx, std::forward<F>(f))(std::move(a), std::move(b))
-                        : bin_arith_ints   <false>(ctx, std::forward<I>(i))(std::move(a), std::move(b));
-                    if (!results)
-                        return results.error();
-                    return *results;
-                },
-            }} (std::move(first), std::move(second));
-        };
-    };
-
-    template <bool Check>
-    constexpr auto un_arith_float = [] <typename F> (sem::context & ctx, F && f) {
-        return [&ctx, &f] <util::temporary T> (T && a) requires (!Check || util::same_as_no_cvref<sem::value::Float, T>) {
-            return lift::result{sem::value::make_float} (
-                lift::result{std::forward<F>(f)} (
-                    sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(a)))
-                )
-            );
-        };
-    };
-
-    template <bool Check>
-    constexpr auto un_arith_int = [] <typename F> (sem::context & ctx, F && f) {
-        return [&ctx, &f] <util::temporary T> (T && a) requires (!Check || !util::same_as_no_cvref<sem::value::Float, T>) {
-            return lift::result{sem::value::make_int} (
-                lift::result{std::forward<F>(f)} (
-                    sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(a)))
-                )
-            );
-        };
-    };
-
-    constexpr auto un_arith = [] <typename I, typename F> (sem::context & ctx, I && i, F && f) {
-        return [&ctx, &i, &f] (util::temporary auto && arg) -> tuple_vector<result<sem::value::complete>> {
-            if (arg.size() == 0)
-                return ast::make_evaluation_result(result_error{"Cannot use the void value in a unary operation."});
-            return lift::evaluation{util::overload {
-                un_arith_float<true>(ctx, f),
-                [&ctx, &i, &f] <util::temporary T> (T && a) {
-                    return sem::decays(sem::type::Float{})(sem::value_type(a))
-                        ? un_arith_float <false>(ctx, std::forward<F>(f))(std::move(a))
-                        : un_arith_int   <false>(ctx, std::forward<I>(i))(std::move(a));
-                },
-            }} (std::move(arg));
-        };
-    };
-
-    // Comparison operations //
-
-    constexpr auto compare_same_types = [] <typename F> (F && f) {
-        return lift::any_asymetric{util::overload {
-            // TODO: Decaying types (T const, T in, T out -> T)
-            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Bool> {
-                return lift::result{sem::value::make_bool} (
-                    lift::result{std::forward<F>(f)} (
-                        sem::get<bool>(std::move(a)),
-                        sem::get<bool>(std::move(b))
-                    )
-                );
-            },
-            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Int> {
-                return lift::result{sem::value::make_bool} (
-                    lift::result{std::forward<F>(f)} (
-                        sem::get<integral>(std::move(a)),
-                        sem::get<integral>(std::move(b))
-                    )
-                );
-            },
-            [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Float> {
-                return lift::result{sem::value::make_bool} (
-                    lift::result{std::forward<F>(f)} (
-                        sem::get<floating>(std::move(a)),
-                        sem::get<floating>(std::move(b))
-                    )
-                );
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Function> {
-                return result<sem::value::complete>{result_error{"Cannot compare functions."}};
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Array> {
-                // TODO
-                return result<sem::value::complete>{result_error{"Array comparison not supported yet."}};
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Buffer> {
-                // TODO
-                return result<sem::value::complete>{result_error{"Cannot compare buffers"}};
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::String> {
-                // TODO
-                return result<sem::value::complete>{result_error{"Strings are not supported yet."}};
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::In> {
-                // This shouldn't happen unless this overload set is used incorectly.
-                return result<sem::value::complete>{result_error{}};
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Out> {
-                // This shouldn't happen unless this overload set is used incorectly.
-                return result<sem::value::complete>{result_error{}};
-            },
-            [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Const> {
-                // This shouldn't happen unless this overload set is used incorectly.
-                return result<sem::value::complete>{result_error{}};
-            },
-            [] <util::temporary T, util::temporary U> (T &&, U &&) requires sem::interface::value<T> && sem::interface::value<U> && (!util::same_as_no_cvref<T, U>) {
-                return result<sem::value::complete>{result_error{"Cannot compare incompatible types."}};
-            }
-        }};
-    };
-
-    constexpr auto compare = [] <typename F> (sem::context & ctx, F && f) {
-        return [&ctx, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<sem::value::complete>>> {
-            if (first.size() == 0)
-                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
-            if (second.size() == 0)
-                return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
-            if (first.size() > second.size())
-                return ast::make_evaluation_result(result_error{"More values on the lhs of a binary operation."});
-            if (first.size() < second.size())
-                return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
-            return lift::evaluation{util::overload {
-                [&f] <util::temporary T> (T && a, T && b) {
-                    return compare_same_types(std::forward<F>(f))(std::move(a), std::move(b));
-                },
-                [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!util::same_as_no_cvref<T, U>) {
-                    auto a_type    = sem::value_type(a);
-                    auto b_type    = sem::value_type(b);
-                    auto a_decayed = util::coalesce(sem::decay(a_type), std::move(a_type)); // TODO: The lazy trick (with ?:) doesn't work here.
-                    auto b_decayed = util::coalesce(sem::decay(b_type), std::move(b_type));
-                    return compare_same_types (
-                        std::forward<F>(f))(sem::convert_to(ctx)(std::move(a))(std::move(a_decayed)),
-                        sem::convert_to(ctx)(std::move(b))(std::move(b_decayed))
-                    );
-                }
-            }} (std::move(first), std::move(second));
-        };
-    };
-
-    constexpr auto add = [] (sem::context & ctx) { return bin_arith(ctx, util::add, util::add);  };
-    constexpr auto sub = [] (sem::context & ctx) { return bin_arith(ctx, util::sub, util::sub);  };
-    constexpr auto mul = [] (sem::context & ctx) { return bin_arith(ctx, util::mul, util::mul);  };
-    constexpr auto div = [] (sem::context & ctx) { return bin_arith(ctx, util::div, util::div);  };
-    constexpr auto pow = [] (sem::context & ctx) { return bin_arith(ctx, util::pow, util::pow);  };
-    constexpr auto mod = [] (sem::context & ctx) { return bin_arith(ctx, util::mod, util::fmod); };
-
-    constexpr auto plus  = [] (sem::context & ctx) { return un_arith(ctx, util::plus,  util::plus);  };
-    constexpr auto minus = [] (sem::context & ctx) { return un_arith(ctx, util::minus, util::minus); };
-
-    constexpr auto eq = [] (sem::context & ctx) { return compare(ctx, util::eq); };
-    constexpr auto ne = [] (sem::context & ctx) { return compare(ctx, util::ne); };
-    constexpr auto gt = [] (sem::context & ctx) { return compare(ctx, util::gt); };
-    constexpr auto lt = [] (sem::context & ctx) { return compare(ctx, util::lt); };
-    constexpr auto ge = [] (sem::context & ctx) { return compare(ctx, util::ge); };
-    constexpr auto le = [] (sem::context & ctx) { return compare(ctx, util::le); };
-
-    // Arrays //
-
-
-    //// Add ////
+    using cynth::ast::node::Add;
+    using cynth::ast::node::And;
+    using cynth::ast::node::Application;
+    using cynth::ast::node::Array;
+    using cynth::ast::node::Block;
+    using cynth::ast::node::Bool;
+    using cynth::ast::node::Conversion;
+    using cynth::ast::node::Div;
+    using cynth::ast::node::Eq;
+    using cynth::ast::node::ExprFor;
+    using cynth::ast::node::ExprIf;
+    using cynth::ast::node::Float;
+    using cynth::ast::node::Function;
+    using cynth::ast::node::Ge;
+    using cynth::ast::node::Gt;
+    using cynth::ast::node::Int;
+    using cynth::ast::node::Le;
+    using cynth::ast::node::Lt;
+    using cynth::ast::node::Minus;
+    using cynth::ast::node::Mod;
+    using cynth::ast::node::Mul;
+    using cynth::ast::node::Name;
+    using cynth::ast::node::Ne;
+    using cynth::ast::node::Not;
+    using cynth::ast::node::Or;
+    using cynth::ast::node::Plus;
+    using cynth::ast::node::Pow;
+    using cynth::ast::node::String;
+    using cynth::ast::node::Sub;
+    using cynth::ast::node::Subscript;
+    using cynth::ast::node::Tuple;
 
     template <>
-    void component_deleter<ast::node::Add>::operator () (ast::node::Add * ptr) const {
+    void component_deleter<Add>::operator () (Add * ptr) const {
         delete ptr;
     }
 
     template <>
-    ast::node::Add * component_allocator<ast::node::Add>::operator () (ast::node::Add const & other) const {
-        return new ast::node::Add{other};
+    Add * component_allocator<Add>::operator () (Add const & other) const {
+        return new Add{other};
     }
 
     template <>
-    ast::node::Add * component_allocator<ast::node::Add>::operator () (ast::node::Add && other) const {
-        return new ast::node::Add{std::move(other)};
+    Add * component_allocator<Add>::operator () (Add && other) const {
+        return new Add{std::move(other)};
     }
+
+    template <>
+    void component_deleter<And>::operator () (And * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    And * component_allocator<And>::operator () (And const & other) const {
+        return new And{other};
+    }
+
+    template <>
+    And * component_allocator<And>::operator () (And && other) const {
+        return new And{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Application>::operator () (Application * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Application * component_allocator<Application>::operator () (Application const & other) const {
+        return new Application{other};
+    }
+
+    template <>
+    Application * component_allocator<Application>::operator () (Application && other) const {
+        return new Application{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Array>::operator () (Array * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Array * component_allocator<Array>::operator () (Array const & other) const {
+        return new Array{other};
+    }
+
+    template <>
+    Array * component_allocator<Array>::operator () (Array && other) const {
+        return new Array{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Block>::operator () (Block * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Block * component_allocator<Block>::operator () (Block const & other) const {
+        return new Block{other};
+    }
+
+    template <>
+    Block * component_allocator<Block>::operator () (Block && other) const {
+        return new Block{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Bool>::operator () (Bool * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Bool * component_allocator<Bool>::operator () (Bool const & other) const {
+        return new Bool{other};
+    }
+
+    template <>
+    Bool * component_allocator<Bool>::operator () (Bool && other) const {
+        return new Bool{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Conversion>::operator () (Conversion * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Conversion * component_allocator<Conversion>::operator () (Conversion const & other) const {
+        return new Conversion{other};
+    }
+
+    template <>
+    Conversion * component_allocator<Conversion>::operator () (Conversion && other) const {
+        return new Conversion{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Div>::operator () (Div * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Div * component_allocator<Div>::operator () (Div const & other) const {
+        return new Div{other};
+    }
+
+    template <>
+    Div * component_allocator<Div>::operator () (Div && other) const {
+        return new Div{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Eq>::operator () (Eq * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Eq * component_allocator<Eq>::operator () (Eq const & other) const {
+        return new Eq{other};
+    }
+
+    template <>
+    Eq * component_allocator<Eq>::operator () (Eq && other) const {
+        return new Eq{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<ExprFor>::operator () (ExprFor * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ExprFor * component_allocator<ExprFor>::operator () (ExprFor const & other) const {
+        return new ExprFor{other};
+    }
+
+    template <>
+    ExprFor * component_allocator<ExprFor>::operator () (ExprFor && other) const {
+        return new ExprFor{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<ExprIf>::operator () (ExprIf * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ExprIf * component_allocator<ExprIf>::operator () (ExprIf const & other) const {
+        return new ExprIf{other};
+    }
+
+    template <>
+    ExprIf * component_allocator<ExprIf>::operator () (ExprIf && other) const {
+        return new ExprIf{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Float>::operator () (Float * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Float * component_allocator<Float>::operator () (Float const & other) const {
+        return new Float{other};
+    }
+
+    template <>
+    Float * component_allocator<Float>::operator () (Float && other) const {
+        return new Float{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Function>::operator () (Function * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Function * component_allocator<Function>::operator () (Function const & other) const {
+        return new Function{other};
+    }
+
+    template <>
+    Function * component_allocator<Function>::operator () (Function && other) const {
+        return new Function{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Ge>::operator () (Ge * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Ge * component_allocator<Ge>::operator () (Ge const & other) const {
+        return new Ge{other};
+    }
+
+    template <>
+    Ge * component_allocator<Ge>::operator () (Ge && other) const {
+        return new Ge{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Gt>::operator () (Gt * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Gt * component_allocator<Gt>::operator () (Gt const & other) const {
+        return new Gt{other};
+    }
+
+    template <>
+    Gt * component_allocator<Gt>::operator () (Gt && other) const {
+        return new Gt{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Int>::operator () (Int * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Int * component_allocator<Int>::operator () (Int const & other) const {
+        return new Int{other};
+    }
+
+    template <>
+    Int * component_allocator<Int>::operator () (Int && other) const {
+        return new Int{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Le>::operator () (Le * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Le * component_allocator<Le>::operator () (Le const & other) const {
+        return new Le{other};
+    }
+
+    template <>
+    Le * component_allocator<Le>::operator () (Le && other) const {
+        return new Le{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Lt>::operator () (Lt * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Lt * component_allocator<Lt>::operator () (Lt const & other) const {
+        return new Lt{other};
+    }
+
+    template <>
+    Lt * component_allocator<Lt>::operator () (Lt && other) const {
+        return new Lt{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Minus>::operator () (Minus * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Minus * component_allocator<Minus>::operator () (Minus const & other) const {
+        return new Minus{other};
+    }
+
+    template <>
+    Minus * component_allocator<Minus>::operator () (Minus && other) const {
+        return new Minus{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Mod>::operator () (Mod * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Mod * component_allocator<Mod>::operator () (Mod const & other) const {
+        return new Mod{other};
+    }
+
+    template <>
+    Mod * component_allocator<Mod>::operator () (Mod && other) const {
+        return new Mod{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Mul>::operator () (Mul * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Mul * component_allocator<Mul>::operator () (Mul const & other) const {
+        return new Mul{other};
+    }
+
+    template <>
+    Mul * component_allocator<Mul>::operator () (Mul && other) const {
+        return new Mul{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Name>::operator () (Name * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Name * component_allocator<Name>::operator () (Name const & other) const {
+        return new Name{other};
+    }
+
+    template <>
+    Name * component_allocator<Name>::operator () (Name && other) const {
+        return new Name{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Ne>::operator () (Ne * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Ne * component_allocator<Ne>::operator () (Ne const & other) const {
+        return new Ne{other};
+    }
+
+    template <>
+    Ne * component_allocator<Ne>::operator () (Ne && other) const {
+        return new Ne{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Not>::operator () (Not * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Not * component_allocator<Not>::operator () (Not const & other) const {
+        return new Not{other};
+    }
+
+    template <>
+    Not * component_allocator<Not>::operator () (Not && other) const {
+        return new Not{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Or>::operator () (Or * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Or * component_allocator<Or>::operator () (Or const & other) const {
+        return new Or{other};
+    }
+
+    template <>
+    Or * component_allocator<Or>::operator () (Or && other) const {
+        return new Or{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Plus>::operator () (Plus * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Plus * component_allocator<Plus>::operator () (Plus const & other) const {
+        return new Plus{other};
+    }
+
+    template <>
+    Plus * component_allocator<Plus>::operator () (Plus && other) const {
+        return new Plus{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Pow>::operator () (Pow * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Pow * component_allocator<Pow>::operator () (Pow const & other) const {
+        return new Pow{other};
+    }
+
+    template <>
+    Pow * component_allocator<Pow>::operator () (Pow && other) const {
+        return new Pow{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<String>::operator () (String * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    String * component_allocator<String>::operator () (String const & other) const {
+        return new String{other};
+    }
+
+    template <>
+    String * component_allocator<String>::operator () (String && other) const {
+        return new String{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Sub>::operator () (Sub * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Sub * component_allocator<Sub>::operator () (Sub const & other) const {
+        return new Sub{other};
+    }
+
+    template <>
+    Sub * component_allocator<Sub>::operator () (Sub && other) const {
+        return new Sub{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Subscript>::operator () (Subscript * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Subscript* component_allocator<Subscript>::operator () (Subscript const & other) const {
+        return new Subscript{other};
+    }
+
+    template <>
+    Subscript* component_allocator<Subscript>::operator () (Subscript && other) const {
+        return new Subscript{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Tuple>::operator () (Tuple * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Tuple * component_allocator<Tuple>::operator () (Tuple const & other) const {
+        return new Tuple{other};
+    }
+
+    template <>
+    Tuple * component_allocator<Tuple>::operator () (Tuple && other) const {
+        return new Tuple{std::move(other)};
+    }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
+
+    //// Implementation helpers ////
+
+    namespace {
+
+        // Arithmetic operations //
+
+        template <bool Check>
+        constexpr auto bin_arith_floats = [] <typename F> (sem::context & ctx, F && f) {
+            return [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::some<sem::value::Float, T, U>) {
+                return lift::result{sem::value::make_float} (
+                    lift::result{std::forward<F>(f)} (
+                        sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(a))),
+                        sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(b)))
+                    )
+                );
+            };
+        };
+
+        template <bool Check>
+        constexpr auto bin_arith_ints = [] <typename F> (sem::context & ctx, F && f) {
+            return [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!Check || util::none<sem::value::Float, T, U>) {
+                return lift::result{sem::value::make_int} (
+                    lift::result{std::forward<F>(f)} (
+                        sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(a))),
+                        sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(b)))
+                    )
+                );
+            };
+        };
+
+        constexpr auto bin_arith = [] <typename I, typename F> (sem::context & ctx, I && i, F && f) {
+            return [&ctx, &i, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<sem::value::complete>>> {
+                if (first.size() == 0)
+                    return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+                if (second.size() == 0)
+                    return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+                if (first.size() > second.size())
+                    return ast::make_evaluation_result(result_error{"More values on the lhs of a binary operation."});
+                if (first.size() < second.size())
+                    return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
+                return lift::evaluation{util::overload {
+                    bin_arith_floats<true>(ctx, f),
+                    [&ctx, &i, &f] <util::temporary T, util::temporary U> (T && a, U && b) -> result<sem::value::complete> requires util::none<sem::value::Float, T, U> {
+                        auto results = sem::decays(sem::type::Float{})(sem::value_type((a))) || sem::decays(sem::type::Float{})(sem::value_type((b)))
+                            ? bin_arith_floats <false>(ctx, std::forward<F>(f))(std::move(a), std::move(b))
+                            : bin_arith_ints   <false>(ctx, std::forward<I>(i))(std::move(a), std::move(b));
+                        if (!results)
+                            return results.error();
+                        return *results;
+                    },
+                }} (std::move(first), std::move(second));
+            };
+        };
+
+        template <bool Check>
+        constexpr auto un_arith_float = [] <typename F> (sem::context & ctx, F && f) {
+            return [&ctx, &f] <util::temporary T> (T && a) requires (!Check || util::same_as_no_cvref<sem::value::Float, T>) {
+                return lift::result{sem::value::make_float} (
+                    lift::result{std::forward<F>(f)} (
+                        sem::get<floating>(sem::convert(ctx)(sem::type::Float{})(std::move(a)))
+                    )
+                );
+            };
+        };
+
+        template <bool Check>
+        constexpr auto un_arith_int = [] <typename F> (sem::context & ctx, F && f) {
+            return [&ctx, &f] <util::temporary T> (T && a) requires (!Check || !util::same_as_no_cvref<sem::value::Float, T>) {
+                return lift::result{sem::value::make_int} (
+                    lift::result{std::forward<F>(f)} (
+                        sem::get<integral>(sem::convert(ctx)(sem::type::Int{})(std::move(a)))
+                    )
+                );
+            };
+        };
+
+        constexpr auto un_arith = [] <typename I, typename F> (sem::context & ctx, I && i, F && f) {
+            return [&ctx, &i, &f] (util::temporary auto && arg) -> tuple_vector<result<sem::value::complete>> {
+                if (arg.size() == 0)
+                    return ast::make_evaluation_result(result_error{"Cannot use the void value in a unary operation."});
+                return lift::evaluation{util::overload {
+                    un_arith_float<true>(ctx, f),
+                    [&ctx, &i, &f] <util::temporary T> (T && a) {
+                        return sem::decays(sem::type::Float{})(sem::value_type(a))
+                            ? un_arith_float <false>(ctx, std::forward<F>(f))(std::move(a))
+                            : un_arith_int   <false>(ctx, std::forward<I>(i))(std::move(a));
+                    },
+                }} (std::move(arg));
+            };
+        };
+
+        // Comparison operations //
+
+        constexpr auto compare_same_types = [] <typename F> (F && f) {
+            return lift::any_asymetric{util::overload {
+                // TODO: Decaying types (T const, T in, T out -> T)
+                [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Bool> {
+                    return lift::result{sem::value::make_bool} (
+                        lift::result{std::forward<F>(f)} (
+                            sem::get<bool>(std::move(a)),
+                            sem::get<bool>(std::move(b))
+                        )
+                    );
+                },
+                [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Int> {
+                    return lift::result{sem::value::make_bool} (
+                        lift::result{std::forward<F>(f)} (
+                            sem::get<integral>(std::move(a)),
+                            sem::get<integral>(std::move(b))
+                        )
+                    );
+                },
+                [&f] <util::temporary T> (T && a, T && b) requires util::same_as_no_cvref<T, sem::value::Float> {
+                    return lift::result{sem::value::make_bool} (
+                        lift::result{std::forward<F>(f)} (
+                            sem::get<floating>(std::move(a)),
+                            sem::get<floating>(std::move(b))
+                        )
+                    );
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Function> {
+                    return result<sem::value::complete>{result_error{"Cannot compare functions."}};
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Array> {
+                    // TODO
+                    return result<sem::value::complete>{result_error{"Array comparison not supported yet."}};
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Buffer> {
+                    // TODO
+                    return result<sem::value::complete>{result_error{"Cannot compare buffers"}};
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::String> {
+                    // TODO
+                    return result<sem::value::complete>{result_error{"Strings are not supported yet."}};
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::In> {
+                    // This shouldn't happen unless this overload set is used incorectly.
+                    return result<sem::value::complete>{result_error{}};
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Out> {
+                    // This shouldn't happen unless this overload set is used incorectly.
+                    return result<sem::value::complete>{result_error{}};
+                },
+                [] <util::temporary T> (T &&, T &&) requires util::same_as_no_cvref<T, sem::value::Const> {
+                    // This shouldn't happen unless this overload set is used incorectly.
+                    return result<sem::value::complete>{result_error{}};
+                },
+                [] <util::temporary T, util::temporary U> (T &&, U &&) requires sem::interface::value<T> && sem::interface::value<U> && (!util::same_as_no_cvref<T, U>) {
+                    return result<sem::value::complete>{result_error{"Cannot compare incompatible types."}};
+                }
+            }};
+        };
+
+        constexpr auto compare = [] <typename F> (sem::context & ctx, F && f) {
+            return [&ctx, &f] (util::temporary auto && first, util::temporary auto && second) -> result<tuple_vector<result<sem::value::complete>>> {
+                if (first.size() == 0)
+                    return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+                if (second.size() == 0)
+                    return ast::make_evaluation_result(result_error{"Cannot use the void value on the lhs of a binary operation."});
+                if (first.size() > second.size())
+                    return ast::make_evaluation_result(result_error{"More values on the lhs of a binary operation."});
+                if (first.size() < second.size())
+                    return ast::make_evaluation_result(result_error{"More values on the rhs of a binary operation."});
+                return lift::evaluation{util::overload {
+                    [&f] <util::temporary T> (T && a, T && b) {
+                        return compare_same_types(std::forward<F>(f))(std::move(a), std::move(b));
+                    },
+                    [&ctx, &f] <util::temporary T, util::temporary U> (T && a, U && b) requires (!util::same_as_no_cvref<T, U>) {
+                        auto a_type    = sem::value_type(a);
+                        auto b_type    = sem::value_type(b);
+                        auto a_decayed = util::coalesce(sem::decay(a_type), std::move(a_type)); // TODO: The lazy trick (with ?:) doesn't work here.
+                        auto b_decayed = util::coalesce(sem::decay(b_type), std::move(b_type));
+                        return compare_same_types (
+                            std::forward<F>(f))(sem::convert_to(ctx)(std::move(a))(std::move(a_decayed)),
+                            sem::convert_to(ctx)(std::move(b))(std::move(b_decayed))
+                        );
+                    }
+                }} (std::move(first), std::move(second));
+            };
+        };
+
+        constexpr auto add = [] (sem::context & ctx) { return bin_arith(ctx, util::add, util::add);  };
+        constexpr auto sub = [] (sem::context & ctx) { return bin_arith(ctx, util::sub, util::sub);  };
+        constexpr auto mul = [] (sem::context & ctx) { return bin_arith(ctx, util::mul, util::mul);  };
+        constexpr auto div = [] (sem::context & ctx) { return bin_arith(ctx, util::div, util::div);  };
+        constexpr auto pow = [] (sem::context & ctx) { return bin_arith(ctx, util::pow, util::pow);  };
+        constexpr auto mod = [] (sem::context & ctx) { return bin_arith(ctx, util::mod, util::fmod); };
+
+        constexpr auto plus  = [] (sem::context & ctx) { return un_arith(ctx, util::plus,  util::plus);  };
+        constexpr auto minus = [] (sem::context & ctx) { return un_arith(ctx, util::minus, util::minus); };
+
+        constexpr auto eq = [] (sem::context & ctx) { return compare(ctx, util::eq); };
+        constexpr auto ne = [] (sem::context & ctx) { return compare(ctx, util::ne); };
+        constexpr auto gt = [] (sem::context & ctx) { return compare(ctx, util::gt); };
+        constexpr auto lt = [] (sem::context & ctx) { return compare(ctx, util::lt); };
+        constexpr auto ge = [] (sem::context & ctx) { return compare(ctx, util::ge); };
+        constexpr auto le = [] (sem::context & ctx) { return compare(ctx, util::le); };
+
+    }
+
+    //// Add ////
 
     display_result ast::node::Add::display () const {
         return "(" + cynth::display(left_argument) + " + " + cynth::display(right_argument) + ")";
@@ -255,21 +721,6 @@ namespace cynth {
     }
 
     //// And ////
-
-    template <>
-    void component_deleter<ast::node::And>::operator () (ast::node::And * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::And * component_allocator<ast::node::And>::operator () (ast::node::And const & other) const {
-        return new ast::node::And{other};
-    }
-
-    template <>
-    ast::node::And * component_allocator<ast::node::And>::operator () (ast::node::And && other) const {
-        return new ast::node::And{std::move(other)};
-    }
 
     display_result ast::node::And::display () const {
         return "(" + cynth::display(left_argument) + " && " + cynth::display(right_argument) + ")";
@@ -287,21 +738,6 @@ namespace cynth {
     }
 
     //// Application ////
-
-    template <>
-    void component_deleter<ast::node::Application>::operator () (ast::node::Application * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Application * component_allocator<ast::node::Application>::operator () (ast::node::Application const & other) const {
-        return new ast::node::Application{other};
-    }
-
-    template <>
-    ast::node::Application * component_allocator<ast::node::Application>::operator () (ast::node::Application && other) const {
-        return new ast::node::Application{std::move(other)};
-    }
 
     display_result ast::node::Application::display () const {
         return cynth::display(function) + util::parenthesized(cynth::display(arguments));
@@ -355,21 +791,6 @@ namespace cynth {
 
     //// Array ////
 
-    template <>
-    void component_deleter<ast::node::Array>::operator () (ast::node::Array * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Array * component_allocator<ast::node::Array>::operator () (ast::node::Array const & other) const {
-        return new ast::node::Array{other};
-    }
-
-    template <>
-    ast::node::Array * component_allocator<ast::node::Array>::operator () (ast::node::Array && other) const {
-        return new ast::node::Array{std::move(other)};
-    }
-
     display_result ast::node::Array::display () const {
         return "[" + util::join(", ", cynth::display(elements)) + "]";
     }
@@ -412,21 +833,6 @@ namespace cynth {
     }
 
     //// Block ////
-
-    template <>
-    void component_deleter<ast::node::Block>::operator () (ast::node::Block * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Block * component_allocator<ast::node::Block>::operator () (ast::node::Block const & other) const {
-        return new ast::node::Block{other};
-    }
-
-    template <>
-    ast::node::Block * component_allocator<ast::node::Block>::operator () (ast::node::Block && other) const {
-        return new ast::node::Block{std::move(other)};
-    }
 
     display_result ast::node::Block::display () const {
         return statements.empty()
@@ -479,21 +885,6 @@ namespace cynth {
 
     //// Bool ////
 
-    template <>
-    void component_deleter<ast::node::Bool>::operator () (ast::node::Bool * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Bool * component_allocator<ast::node::Bool>::operator () (ast::node::Bool const & other) const {
-        return new ast::node::Bool{other};
-    }
-
-    template <>
-    ast::node::Bool * component_allocator<ast::node::Bool>::operator () (ast::node::Bool && other) const {
-        return new ast::node::Bool{std::move(other)};
-    }
-
     display_result ast::node::Bool::display () const {
         return value ? "true" : "false";
     }
@@ -503,21 +894,6 @@ namespace cynth {
     }
 
     //// Conversion ////
-
-    template <>
-    void component_deleter<ast::node::Conversion>::operator () (ast::node::Conversion * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Conversion * component_allocator<ast::node::Conversion>::operator () (ast::node::Conversion const & other) const {
-        return new ast::node::Conversion{other};
-    }
-
-    template <>
-    ast::node::Conversion * component_allocator<ast::node::Conversion>::operator () (ast::node::Conversion && other) const {
-        return new ast::node::Conversion{std::move(other)};
-    }
 
     display_result ast::node::Conversion::display () const {
         return cynth::display(type) + util::parenthesized(cynth::display(argument));
@@ -542,21 +918,6 @@ namespace cynth {
 
     //// Div ///
 
-    template <>
-    void component_deleter<ast::node::Div>::operator () (ast::node::Div * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Div * component_allocator<ast::node::Div>::operator () (ast::node::Div const & other) const {
-        return new ast::node::Div{other};
-    }
-
-    template <>
-    ast::node::Div * component_allocator<ast::node::Div>::operator () (ast::node::Div && other) const {
-        return new ast::node::Div{std::move(other)};
-    }
-
     display_result ast::node::Div::display () const {
         return "(" + cynth::display(left_argument) + " / " + cynth::display(right_argument) + ")";
     }
@@ -570,21 +931,6 @@ namespace cynth {
 
     //// Eq ///
 
-    template <>
-    void component_deleter<ast::node::Eq>::operator () (ast::node::Eq * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Eq * component_allocator<ast::node::Eq>::operator () (ast::node::Eq const & other) const {
-        return new ast::node::Eq{other};
-    }
-
-    template <>
-    ast::node::Eq * component_allocator<ast::node::Eq>::operator () (ast::node::Eq && other) const {
-        return new ast::node::Eq{std::move(other)};
-    }
-
     display_result ast::node::Eq::display () const {
         return "(" + cynth::display(left_argument) + " == " + cynth::display(right_argument) + ")";
     }
@@ -597,21 +943,6 @@ namespace cynth {
     }
 
     //// ExprFor ////
-
-    template <>
-    void component_deleter<ast::node::ExprFor>::operator () (ast::node::ExprFor * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::ExprFor * component_allocator<ast::node::ExprFor>::operator () (ast::node::ExprFor const & other) const {
-        return new ast::node::ExprFor{other};
-    }
-
-    template <>
-    ast::node::ExprFor * component_allocator<ast::node::ExprFor>::operator () (ast::node::ExprFor && other) const {
-        return new ast::node::ExprFor{std::move(other)};
-    }
 
     display_result ast::node::ExprFor::display () const {
         return
@@ -705,21 +1036,6 @@ namespace cynth {
 
     //// ExprIf ////
 
-    template <>
-    void component_deleter<ast::node::ExprIf>::operator () (ast::node::ExprIf * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::ExprIf * component_allocator<ast::node::ExprIf>::operator () (ast::node::ExprIf const & other) const {
-        return new ast::node::ExprIf{other};
-    }
-
-    template <>
-    ast::node::ExprIf * component_allocator<ast::node::ExprIf>::operator () (ast::node::ExprIf && other) const {
-        return new ast::node::ExprIf{std::move(other)};
-    }
-
     display_result ast::node::ExprIf::display () const {
         return
             "if "    + util::parenthesized(cynth::display(condition)) +
@@ -752,21 +1068,6 @@ namespace cynth {
 
     //// Float ////
 
-    template <>
-    void component_deleter<ast::node::Float>::operator () (ast::node::Float * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Float * component_allocator<ast::node::Float>::operator () (ast::node::Float const & other) const {
-        return new ast::node::Float{other};
-    }
-
-    template <>
-    ast::node::Float * component_allocator<ast::node::Float>::operator () (ast::node::Float && other) const {
-        return new ast::node::Float{std::move(other)};
-    }
-
     display_result ast::node::Float::display () const {
         return std::to_string(value);
     }
@@ -776,21 +1077,6 @@ namespace cynth {
     }
 
     //// Function ////
-
-    template <>
-    void component_deleter<ast::node::Function>::operator () (ast::node::Function * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Function * component_allocator<ast::node::Function>::operator () (ast::node::Function const & other) const {
-        return new ast::node::Function{other};
-    }
-
-    template <>
-    ast::node::Function * component_allocator<ast::node::Function>::operator () (ast::node::Function && other) const {
-        return new ast::node::Function{std::move(other)};
-    }
 
     display_result ast::node::Function::display () const {
         return cynth::display(output) + " fn " + util::parenthesized(cynth::display(input)) + " " + cynth::display(body);
@@ -820,21 +1106,6 @@ namespace cynth {
 
     //// Ge ////
 
-    template <>
-    void component_deleter<ast::node::Ge>::operator () (ast::node::Ge * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Ge * component_allocator<ast::node::Ge>::operator () (ast::node::Ge const & other) const {
-        return new ast::node::Ge{other};
-    }
-
-    template <>
-    ast::node::Ge * component_allocator<ast::node::Ge>::operator () (ast::node::Ge && other) const {
-        return new ast::node::Ge{std::move(other)};
-    }
-
     display_result ast::node::Ge::display () const {
         return "(" + cynth::display(left_argument) + " >= " + cynth::display(right_argument) + ")";
     }
@@ -847,21 +1118,6 @@ namespace cynth {
     }
 
     //// Gt ////
-
-    template <>
-    void component_deleter<ast::node::Gt>::operator () (ast::node::Gt * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Gt * component_allocator<ast::node::Gt>::operator () (ast::node::Gt const & other) const {
-        return new ast::node::Gt{other};
-    }
-
-    template <>
-    ast::node::Gt * component_allocator<ast::node::Gt>::operator () (ast::node::Gt && other) const {
-        return new ast::node::Gt{std::move(other)};
-    }
 
     display_result ast::node::Gt::display () const {
         return "(" + cynth::display(left_argument) + " > " + cynth::display(right_argument) + ")";
@@ -876,21 +1132,6 @@ namespace cynth {
 
     //// Int ////
 
-    template <>
-    void component_deleter<ast::node::Int>::operator () (ast::node::Int * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Int * component_allocator<ast::node::Int>::operator () (ast::node::Int const & other) const {
-        return new ast::node::Int{other};
-    }
-
-    template <>
-    ast::node::Int * component_allocator<ast::node::Int>::operator () (ast::node::Int && other) const {
-        return new ast::node::Int{std::move(other)};
-    }
-
     display_result ast::node::Int::display () const {
         return std::to_string(value);
     }
@@ -900,21 +1141,6 @@ namespace cynth {
     }
 
     //// Le ////
-
-    template <>
-    void component_deleter<ast::node::Le>::operator () (ast::node::Le * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Le * component_allocator<ast::node::Le>::operator () (ast::node::Le const & other) const {
-        return new ast::node::Le{other};
-    }
-
-    template <>
-    ast::node::Le * component_allocator<ast::node::Le>::operator () (ast::node::Le && other) const {
-        return new ast::node::Le{std::move(other)};
-    }
 
     display_result ast::node::Le::display () const {
         return "(" + cynth::display(left_argument) + " <= " + cynth::display(right_argument) + ")";
@@ -929,21 +1155,6 @@ namespace cynth {
 
     //// Lt ////
 
-    template <>
-    void component_deleter<ast::node::Lt>::operator () (ast::node::Lt * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Lt * component_allocator<ast::node::Lt>::operator () (ast::node::Lt const & other) const {
-        return new ast::node::Lt{other};
-    }
-
-    template <>
-    ast::node::Lt * component_allocator<ast::node::Lt>::operator () (ast::node::Lt && other) const {
-        return new ast::node::Lt{std::move(other)};
-    }
-
     display_result ast::node::Lt::display () const {
         return "(" + cynth::display(left_argument) + " < " + cynth::display(right_argument) + ")";
     }
@@ -957,21 +1168,6 @@ namespace cynth {
 
     //// Minus ////
 
-    template <>
-    void component_deleter<ast::node::Minus>::operator () (ast::node::Minus * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Minus * component_allocator<ast::node::Minus>::operator () (ast::node::Minus const & other) const {
-        return new ast::node::Minus{other};
-    }
-
-    template <>
-    ast::node::Minus * component_allocator<ast::node::Minus>::operator () (ast::node::Minus && other) const {
-        return new ast::node::Minus{std::move(other)};
-    }
-
     display_result ast::node::Minus::display () const {
         return "-" + cynth::display(argument);
     }
@@ -981,21 +1177,6 @@ namespace cynth {
     }
 
     //// Mod ////
-
-    template <>
-    void component_deleter<ast::node::Mod>::operator () (ast::node::Mod * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Mod * component_allocator<ast::node::Mod>::operator () (ast::node::Mod const & other) const {
-        return new ast::node::Mod{other};
-    }
-
-    template <>
-    ast::node::Mod * component_allocator<ast::node::Mod>::operator () (ast::node::Mod && other) const {
-        return new ast::node::Mod{std::move(other)};
-    }
 
     display_result ast::node::Mod::display () const {
         return "(" + cynth::display(left_argument) + " % " + cynth::display(right_argument) + ")";
@@ -1010,21 +1191,6 @@ namespace cynth {
 
     //// Mul ////
 
-    template <>
-    void component_deleter<ast::node::Mul>::operator () (ast::node::Mul * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Mul * component_allocator<ast::node::Mul>::operator () (ast::node::Mul const & other) const {
-        return new ast::node::Mul{other};
-    }
-
-    template <>
-    ast::node::Mul * component_allocator<ast::node::Mul>::operator () (ast::node::Mul && other) const {
-        return new ast::node::Mul{std::move(other)};
-    }
-
     display_result ast::node::Mul::display () const {
         return "(" + cynth::display(left_argument) + " * " + cynth::display(right_argument) + ")";
     }
@@ -1037,21 +1203,6 @@ namespace cynth {
     }
 
     //// Name ////
-
-    template <>
-    void component_deleter<ast::node::Name>::operator () (ast::node::Name * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Name * component_allocator<ast::node::Name>::operator () (ast::node::Name const & other) const {
-        return new ast::node::Name{other};
-    }
-
-    template <>
-    ast::node::Name * component_allocator<ast::node::Name>::operator () (ast::node::Name && other) const {
-        return new ast::node::Name{std::move(other)};
-    }
 
     display_result ast::node::Name::display () const {
         return *name;
@@ -1078,21 +1229,6 @@ namespace cynth {
 
     //// Ne ////
 
-    template <>
-    void component_deleter<ast::node::Ne>::operator () (ast::node::Ne * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Ne * component_allocator<ast::node::Ne>::operator () (ast::node::Ne const & other) const {
-        return new ast::node::Ne{other};
-    }
-
-    template <>
-    ast::node::Ne * component_allocator<ast::node::Ne>::operator () (ast::node::Ne && other) const {
-        return new ast::node::Ne{std::move(other)};
-    }
-
     display_result ast::node::Ne::display () const {
         return "(" + cynth::display(left_argument) + " != " + cynth::display(right_argument) + ")";
     }
@@ -1105,21 +1241,6 @@ namespace cynth {
     }
 
     //// Not ////
-
-    template <>
-    void component_deleter<ast::node::Not>::operator () (ast::node::Not * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Not * component_allocator<ast::node::Not>::operator () (ast::node::Not const & other) const {
-        return new ast::node::Not{other};
-    }
-
-    template <>
-    ast::node::Not * component_allocator<ast::node::Not>::operator () (ast::node::Not && other) const {
-        return new ast::node::Not{std::move(other)};
-    }
 
     display_result ast::node::Not::display () const {
         return "!" + cynth::display(argument);
@@ -1139,21 +1260,6 @@ namespace cynth {
 
     //// Or ////
 
-    template <>
-    void component_deleter<ast::node::Or>::operator () (ast::node::Or * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Or * component_allocator<ast::node::Or>::operator () (ast::node::Or const & other) const {
-        return new ast::node::Or{other};
-    }
-
-    template <>
-    ast::node::Or * component_allocator<ast::node::Or>::operator () (ast::node::Or && other) const {
-        return new ast::node::Or{std::move(other)};
-    }
-
     display_result ast::node::Or::display () const {
         return "(" + cynth::display(left_argument) + " || " + cynth::display(right_argument) + ")";
     }
@@ -1171,21 +1277,6 @@ namespace cynth {
 
     //// Plus ////
 
-    template <>
-    void component_deleter<ast::node::Plus>::operator () (ast::node::Plus * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Plus * component_allocator<ast::node::Plus>::operator () (ast::node::Plus const & other) const {
-        return new ast::node::Plus{other};
-    }
-
-    template <>
-    ast::node::Plus * component_allocator<ast::node::Plus>::operator () (ast::node::Plus && other) const {
-        return new ast::node::Plus{std::move(other)};
-    }
-
     display_result ast::node::Plus::display () const {
         return "+" + cynth::display(argument);
     }
@@ -1195,21 +1286,6 @@ namespace cynth {
     }
 
     //// Pow ////
-
-    template <>
-    void component_deleter<ast::node::Pow>::operator () (ast::node::Pow * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Pow * component_allocator<ast::node::Pow>::operator () (ast::node::Pow const & other) const {
-        return new ast::node::Pow{other};
-    }
-
-    template <>
-    ast::node::Pow * component_allocator<ast::node::Pow>::operator () (ast::node::Pow && other) const {
-        return new ast::node::Pow{std::move(other)};
-    }
 
     display_result ast::node::Pow::display () const {
         return "(" + cynth::display(left_argument) + " ** " + cynth::display(right_argument) + ")";
@@ -1224,21 +1300,6 @@ namespace cynth {
 
     //// String ////
 
-    template <>
-    void component_deleter<ast::node::String>::operator () (ast::node::String * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::String * component_allocator<ast::node::String>::operator () (ast::node::String const & other) const {
-        return new ast::node::String{other};
-    }
-
-    template <>
-    ast::node::String * component_allocator<ast::node::String>::operator () (ast::node::String && other) const {
-        return new ast::node::String{std::move(other)};
-    }
-
     display_result ast::node::String::display () const {
         //return "\"" + value + "\"";
         return "\"" + *value + "\"";
@@ -1249,21 +1310,6 @@ namespace cynth {
     }
 
     //// Sub ////
-
-    template <>
-    void component_deleter<ast::node::Sub>::operator () (ast::node::Sub * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Sub * component_allocator<ast::node::Sub>::operator () (ast::node::Sub const & other) const {
-        return new ast::node::Sub{other};
-    }
-
-    template <>
-    ast::node::Sub * component_allocator<ast::node::Sub>::operator () (ast::node::Sub && other) const {
-        return new ast::node::Sub{std::move(other)};
-    }
 
     display_result ast::node::Sub::display () const {
         return "(" + cynth::display(left_argument) + " - " + cynth::display(right_argument) + ")";
@@ -1277,21 +1323,6 @@ namespace cynth {
     }
 
     //// Subscript ////
-
-    template <>
-    void component_deleter<ast::node::Subscript>::operator () (ast::node::Subscript * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Subscript * component_allocator<ast::node::Subscript>::operator () (ast::node::Subscript const & other) const {
-        return new ast::node::Subscript{other};
-    }
-
-    template <>
-    ast::node::Subscript * component_allocator<ast::node::Subscript>::operator () (ast::node::Subscript && other) const {
-        return new ast::node::Subscript{std::move(other)};
-    }
 
     display_result ast::node::Subscript::display () const {
         return cynth::display(container) + " [" + util::join(", ", cynth::display(location)) + "]";
@@ -1375,21 +1406,6 @@ namespace cynth {
 
     //// Tuple ////
 
-    template <>
-    void component_deleter<ast::node::Tuple>::operator () (ast::node::Tuple * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ast::node::Tuple * component_allocator<ast::node::Tuple>::operator () (ast::node::Tuple const & other) const {
-        return new ast::node::Tuple{other};
-    }
-
-    template <>
-    ast::node::Tuple * component_allocator<ast::node::Tuple>::operator () (ast::node::Tuple && other) const {
-        return new ast::node::Tuple{std::move(other)};
-    }
-
     display_result ast::node::Tuple::display () const {
         return "(" + util::join(", ", cynth::display(values)) + ")";
     }
@@ -1414,3 +1430,4 @@ namespace cynth {
     }
 
 }
+#endif

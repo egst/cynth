@@ -1,18 +1,7 @@
-#include "sem/util.hpp"
+#include "sem/misc.hpp"
 
-#include "config.hpp"
-#include "lift.hpp"
-#include "sem/context.hpp"
-#include "sem/declarations.hpp"
-#include "sem/values.hpp"
-#include "sem/targets.hpp"
-#include "sem/interface.hpp"
-#include "ast/categories/expression.hpp"
-#include "ast/categories/array_elem.hpp"
-#include "ast/nodes/expressions.hpp"
-#include "util/general.hpp"
-#include "util/container.hpp"
-
+// TODO
+#if 0
 namespace cynth {
 
     result<std::pair<integral, sem::range_vector>> sem::for_decls (sem::context & ctx, ast::category::RangeDecl declarations) {
@@ -142,3 +131,4 @@ namespace cynth {
     }
 
 }
+#endif

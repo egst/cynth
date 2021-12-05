@@ -78,7 +78,13 @@ namespace esl {
 
     }
 
-    template <> struct lift_specialization_map<esl::view>:
+    namespace target {
+
+        struct view;
+
+    }
+
+    template <> struct lift_specialization_map<target::view>:
         lift_implementation<detail::view::lift_impl> {};
 
 }

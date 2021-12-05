@@ -1,47 +1,66 @@
 #include "ast/nodes/declarations.hpp"
 
-#include "ast/nodes/expressions.hpp"
-#include "ast/categories/type.hpp"
-#include "ast/categories/declaration.hpp"
-#include "ast/interface.hpp"
-#include "sem/interface.hpp"
-#include "sem/util.hpp"
-#include "util/string.hpp"
-#include "util/container.hpp"
+#include "esl/component.hpp"
 
-#include <string>
+namespace esl {
 
-namespace cynth {
-
-    ast::execution_result decl_execute (auto const & node, sem::context & ctx) {
-        auto decls_result = util::unite_results(sem::complete(ctx)(ast::eval_decl(ctx)(node)));
-        if (!decls_result)
-            return ast::make_execution_result(decls_result.error());
-        auto decls = *std::move(decls_result);
-
-        auto decl_result = ctx.declare(decls);
-        if (!decl_result)
-            return ast::make_execution_result(decl_result.error());
-
-        return {};
-    }
-
-    //// Declaration ////
+    using cynth::ast::node::Declaration;
+    using cynth::ast::node::TupleDecl;
 
     template <>
-    void component_deleter<ast::node::Declaration>::operator () (ast::node::Declaration * ptr) const {
+    void component_deleter<Declaration>::operator () (Declaration * ptr) const {
         delete ptr;
     }
 
-    template <> ast::node::Declaration *
-    component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration const & other) const {
-        return new ast::node::Declaration{other};
+    template <>
+    Declaration * component_allocator<Declaration>::operator () (Declaration const & other) const {
+        return new Declaration{other};
     }
 
-    template <> ast::node::Declaration *
-    component_allocator<ast::node::Declaration>::operator () (ast::node::Declaration && other) const {
-        return new ast::node::Declaration{std::move(other)};
+    template <>
+    Declaration * component_allocator<Declaration>::operator () (Declaration && other) const {
+        return new Declaration{std::move(other)};
     }
+
+    template <>
+    void component_deleter<TupleDecl>::operator () (TupleDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TupleDecl * component_allocator<TupleDecl>::operator () (TupleDecl const & other) const {
+        return new TupleDecl{other};
+    }
+
+    template <>
+    TupleDecl * component_allocator<TupleDecl>::operator () (TupleDecl && other) const {
+        return new TupleDecl{std::move(other)};
+    }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
+
+    namespace {
+
+        ast::execution_result decl_execute (auto const & node, sem::context & ctx) {
+            auto decls_result = util::unite_results(sem::complete(ctx)(ast::eval_decl(ctx)(node)));
+            if (!decls_result)
+                return ast::make_execution_result(decls_result.error());
+            auto decls = *std::move(decls_result);
+
+            auto decl_result = ctx.declare(decls);
+            if (!decl_result)
+                return ast::make_execution_result(decl_result.error());
+
+            return {};
+        }
+
+    }
+
+    //// Declaration ////
 
     display_result ast::node::Declaration::display () const {
         return cynth::display(type) + " " + cynth::display(name);
@@ -65,21 +84,6 @@ namespace cynth {
 
     //// TupleDecl ////
 
-    template <>
-    void component_deleter<ast::node::TupleDecl>::operator () (ast::node::TupleDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <> ast::node::TupleDecl *
-    component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl const & other) const {
-        return new ast::node::TupleDecl{other};
-    }
-
-    template <> ast::node::TupleDecl *
-    component_allocator<ast::node::TupleDecl>::operator () (ast::node::TupleDecl && other) const {
-        return new ast::node::TupleDecl{std::move(other)};
-    }
-
     display_result ast::node::TupleDecl::display () const {
         return "(" + util::join(", ", cynth::display(declarations)) + ")";
     }
@@ -97,3 +101,4 @@ namespace cynth {
     }
 
 }
+#endif

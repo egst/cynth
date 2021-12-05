@@ -101,11 +101,6 @@ clean: clean-dist clean-bin clean-dep
 test:
 	$(DEEPER_DEPS)
 
-# Generating lexer files:
-$(SRC)$(IMPL_LEXER)$(EXT_IMPL): $(GEN)lexer.l
-	$(call INFO,Generating the lexer...)
-	$(GEN_LEXER)
-
 # Generating parser files:
 $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	$(call INFO,Generating the parser...)
@@ -114,6 +109,11 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	sed -i 's/yylhs.value.emplace< cynth::ast::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 #	$(call INFO,Moving the generated parser header file to the correct location...)
 #	mv $(SRC)$(IMPL_PARSER)$(EXT_HEAD) $(INC)$(HEAD_PARSER)$(EXT_HEAD)
+
+# Generating lexer files:
+$(SRC)$(IMPL_LEXER)$(EXT_IMPL): $(GEN)lexer.l
+	$(call INFO,Generating the lexer...)
+	$(GEN_LEXER)
 
 # Source files dependencies:
 $(DEP_SRC)%$(EXT_DEP): $(SRC)%$(EXT_IMPL)
@@ -137,8 +137,8 @@ $(BIN_ENTRY)%$(EXT_OBJ): $(ENTRY)%$(EXT_IMPL)
 
 # TODO: Remove the `$(SRC_FILES)` once I figure out a way to filter out the implementation dependencies.
 # Linking executable files:
-#$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
-$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ)
+$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
+#$(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ)
 	$(call INFO,Linking \"$(call FILE_NAME,$<)\" executable file...)
 	$(LINK)
 
@@ -176,4 +176,4 @@ $(SRC)$(IMPL_LEXER):  $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 
 #### DEPENDENCIES ####
 
-#include $(DEP_SRC_FILES) $(DEP_ENTRY_FILES)
+include $(DEP_SRC_FILES) $(DEP_ENTRY_FILES)

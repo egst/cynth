@@ -14,7 +14,7 @@
 namespace cynth::ast::node {
 
     /** T e in a */
-    struct RangeDeclaration {
+    struct RangeDecl {
         esl::component<category::Declaration> declaration;
         esl::component<category::Expression>  range;
 
@@ -22,7 +22,7 @@ namespace cynth::ast::node {
     };
 
     /** (T e in a, ...) */
-    struct TupleRangeDeclaration {
+    struct TupleRangeDecl {
         esl::component_vector<category::RangeDeclaration> declarations;
 
         RANGE_DECLARATION_INTERFACE;

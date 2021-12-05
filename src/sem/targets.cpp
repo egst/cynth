@@ -1,26 +1,31 @@
 #include "sem/targets.hpp"
 
-#include "sem/context_types.hpp"
-#include "sem/interface.hpp"
-#include "lift.hpp"
-#include "util/general.hpp"
+#include "esl/component.hpp"
 
-namespace cynth {
+namespace esl {
+
+    using cynth::sem::Target;
 
     template <>
-    void component_deleter<sem::any_target>::operator () (sem::any_target * ptr) const {
+    void component_deleter<Target>::operator () (Target * ptr) const {
         delete ptr;
     }
 
     template <>
-    sem::any_target * component_allocator<sem::any_target>::operator () (sem::any_target const & other) const {
-        return new sem::any_target{other};
+    Target * component_allocator<Target>::operator () (Target const & other) const {
+        return new Target{other};
     }
 
     template <>
-    sem::any_target * component_allocator<sem::any_target>::operator () (sem::any_target && other) const {
-        return new sem::any_target{std::move(other)};
+    Target * component_allocator<Target>::operator () (Target && other) const {
+        return new Target{std::move(other)};
     }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
 
     constexpr auto const_check = [] (auto const & type_tuple) {
         return util::all(lift::category_vector{util::overload {
@@ -151,3 +156,4 @@ namespace cynth {
     }
 
 }
+#endif

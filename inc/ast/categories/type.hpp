@@ -18,7 +18,7 @@ namespace cynth::ast::category {
             node::FunctionType,
             node::InType,
             node::OutType,
-            node::TupleType,
+            node::TupleType, // TODO: Or TypeTuple?
             node::TypeDecl,
             node::TypeName
         >;

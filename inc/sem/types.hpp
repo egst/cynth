@@ -18,16 +18,16 @@
     TypeTranslationResult translateType () const
 
 #define COMMON(type) \
-    CommonTypeResult common (type const &) const
+    CommonTypeResult commonType (type const &) const
 
 #define SAME(type) \
-    SameTypeResult same (type const &) const
+    SameTypeResult sameType (type const &) const
 
 #define DECAY() \
-    TypeDecayResult decay () const
+    TypeDecayResult decayType () const
 
 #define INCOMPLETE_TYPE \
-    TypeCompletionResult complete (Context &) const
+    TypeCompletionResult completeType (Context &) const
 
 namespace cynth::sem {
 
@@ -126,6 +126,8 @@ namespace cynth::sem {
         }
 
         struct In: detail::types::In<true> {
+            using detail::types::In<true>::type;
+
             TYPE;
 
             // implicit common(Bool)
@@ -165,7 +167,7 @@ namespace cynth::sem {
 
             SAME(type::Array);
 
-            constexpr static esl::result<type::Array> make (esl::tiny_component_vector<CompleteType> &&, Integral);
+            static esl::result<type::Array> make (esl::component_vector<CompleteType> &&, Integral);
         };
 
         struct Buffer: detail::types::Buffer<true> {
@@ -175,7 +177,7 @@ namespace cynth::sem {
 
             SAME(type::Buffer);
 
-            constexpr static esl::result<type::Buffer> make (Integral);
+            static esl::result<type::Buffer> make (Integral);
         };
 
         struct Function: detail::types::Function<true> {

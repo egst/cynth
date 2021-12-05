@@ -23,7 +23,7 @@ namespace cynth::sem {
 
     esl::result<std::pair<Integral, RangeVector>> for_decls (
         Context &,
-        ast::category::RangeDecl
+        ast::category::RangeDeclaration
     );
 
     using ArrayVector = value::Array::Vector;
@@ -31,7 +31,7 @@ namespace cynth::sem {
 
     esl::result<std::pair<ArrayVector, ArrayType>> arrayElems (
         Context &,
-        esl::component_vector<ast::category::ArrayElem> const & // TODO: or maybe tiny_component_vector?
+        esl::component_vector<ast::category::ArrayElement> const & // TODO: or maybe tiny_component_vector?
     );
 
     namespace detail::misc {
@@ -71,7 +71,7 @@ namespace cynth::sem {
     constexpr auto arrayElemTypeCheck = esl::overload(
         detail::misc::ArrayElemShallowTypeCheck,
         [] (type::Const const & type) -> esl::result<void> {
-            return esl::lift<esl::component, target::category>(
+            return esl::lift<esl::target::component, esl::target::category>(
                 detail::misc::ArrayElemShallowTypeCheck,
                 [] (type::Const const &) -> esl::result<void> {
                     return esl::result_error{"Nested const array value type. (TODO: This case shouldn't happen.)"};

@@ -85,7 +85,7 @@ namespace esl {
 
     namespace target {
 
-        template <typename...> struct category {};
+        struct category {};
 
     }
 

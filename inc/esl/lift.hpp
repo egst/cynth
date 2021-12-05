@@ -19,7 +19,7 @@
 
 namespace esl {
 
-    template <template <typename...> typename> struct lift_specialization_map;
+    template <typename> struct lift_specialization_map;
 
     template <template <typename, typename> typename S>
     struct lift_implementation {
@@ -27,7 +27,7 @@ namespace esl {
         using tpl = S<Derived, F>;
     };
 
-    template <template <typename...> typename Tag, typename Derived, typename F>
+    template <typename Tag, typename Derived, typename F>
     using specialization = typename lift_specialization_map<Tag>::template tpl<Derived, F>;
 
     namespace detail::lift {
@@ -36,7 +36,7 @@ namespace esl {
         template <
             typename Derived,
             typename F,
-            template <typename...> typename... Tags
+            typename... Tags
         >
         struct base: esl::specialization<Tags, Derived, F>... {
             F fun;
@@ -312,25 +312,37 @@ namespace esl {
 
     }
 
-    // For generic constructs that do not have a corresponding type,
-    // these "fake" types are used to specify a particular lift.
+    template <template <typename...> typename> struct lift_tpl_target_map;
+
+    template <typename T>
+    struct lift_target {
+        using target = T;
+    };
+
     namespace target {
 
-        /** deprecated */
-        template <typename...> struct any {};
-        /** deprecated */
-        template <typename...> struct any_once {};
-        /** deprecated */
-        template <typename...> struct any_asymetric {};
+        struct direct {};
+        struct sized_range {};
+        struct nested_range_cat {};
 
-        template <typename...> struct direct {};
-        template <typename...> struct sized_range {};
-        template <typename...> struct nested_range_cat {};
+        struct optional {};
+        struct variant {};
+        struct vector {};
 
-        // Just an experiment:
-        template <typename...> struct asymetric {};
+        struct result {};
+
+        template <typename...> struct nested {};
+
+        /** ex.: target::tpl<std::vector> -> target::vector */
+        template <template <typename...> typename Tpl>
+        using tpl = typename lift_tpl_target_map<Tpl>::target;
 
     }
+
+    template <> struct lift_tpl_target_map<std::optional>: lift_target<target::optional> {};
+    template <> struct lift_tpl_target_map<std::variant>:  lift_target<target::variant>  {};
+    template <> struct lift_tpl_target_map<std::vector>:   lift_target<target::vector>   {};
+    template <> struct lift_tpl_target_map<esl::result>:   lift_target<target::result>   {};
 
     // Only std containers (vector, variant and such), generic containers (sized_range) and esl::result
     // are implemented here. Other esl containers have their implementation in their respective headers.
@@ -339,27 +351,15 @@ namespace esl {
     template <> struct lift_specialization_map<target::direct>:           lift_implementation<detail::lift::direct_impl>       {};
     template <> struct lift_specialization_map<target::sized_range>:      lift_implementation<detail::lift::sized_range_impl>  {};
     template <> struct lift_specialization_map<target::nested_range_cat>: lift_implementation<detail::lift::sized_range_impl>  {};
-    template <> struct lift_specialization_map<std::vector>:              lift_implementation<detail::lift::sized_range_impl>  {};
-    template <> struct lift_specialization_map<std::optional>:            lift_implementation<detail::lift::optional_impl>     {};
-    template <> struct lift_specialization_map<std::variant>:             lift_implementation<detail::lift::variant_impl>      {};
-    template <> struct lift_specialization_map<esl::result>:              lift_implementation<detail::lift::result_impl>       {};
+    template <> struct lift_specialization_map<target::vector>:           lift_implementation<detail::lift::sized_range_impl>  {};
+    template <> struct lift_specialization_map<target::optional>:         lift_implementation<detail::lift::optional_impl>     {};
+    template <> struct lift_specialization_map<target::variant>:          lift_implementation<detail::lift::variant_impl>      {};
+    template <> struct lift_specialization_map<target::result>:           lift_implementation<detail::lift::result_impl>       {};
 
-    // User-defined: (TODO)
-    /*
-    template <> struct lift_specialization_map<target::tuple_vector>:      lift_implementation<tuple_vector> {};
-    template <> struct lift_specialization_map<cynth::tuple_vector>:       lift_implementation<tuple_vector> {};
-    template <> struct lift_specialization_map<target::category>:          lift_implementation<category>     {};
-    template <> struct lift_specialization_map<target::component>:         lift_implementation<component>    {};
-    template <> struct lift_specialization_map<cynth::component>:          lift_implementation<component>    {};
-    template <> struct lift_specialization_map<cynth::optional_component>: lift_implementation<component>    {};
-    template <> struct lift_specialization_map<cynth::component_vector>:   lift_implementation<component>    {};
-    // TODO: Do I really want lift over component, optional_component and component_vector to do the same thing?
-    */
-
-    template <typename, template <typename...> typename... Rest> struct lift_type;
+    template <typename, typename... Rest> struct lift_type;
 
     // Nested target:
-    template <typename F, template <typename...> typename First, template <typename...> typename... Rest>
+    template <typename F, typename First, typename... Rest>
     struct lift_type<F, First, Rest...>: detail::lift::base<lift_type<F, First, Rest...>, lift_type<F, Rest...>, First> {
         using base = detail::lift::base<lift_type<F, First, Rest...>, lift_type<F, Rest...>, First>;
 
@@ -368,7 +368,7 @@ namespace esl {
     };
 
     // Single target:
-    template <typename F, template <typename...> typename T>
+    template <typename F, typename T>
     struct lift_type<F, T>: detail::lift::base<lift_type<F, T>, F, T> {
         using base = detail::lift::base<lift_type<F, T>, F, T>;
 
@@ -385,90 +385,59 @@ namespace esl {
         constexpr lift_type (F &&      f): base{std::move(f)} {}
     };
 
+    /*
+     *  Lift usage:
+     *
+     *  n-ary vs nested lift:
+     *  f = lift_nary<result, vector, variant>(g)         => f(result<T>, vector<U>, variant<V, W>)   # fixed number of args
+     *  f = lift_nested<result, vector, variant>(g)       => f(result<vector<variant<T, U>>>, ...)    # any number of args (if the individual implementations support it)
+     *
+     *  to combine both:
+     *  f = lift_nary<nested<result, vector>, variant>(g) => f(result<vector<T>>, variant<U, V>, ...)
+     *
+     *  the default `lift` is `lift_nested`
+     *
+     *  lift_*<...>(f, g, h) performs overload(f, g, h)
+     */
+
+    template <typename... Ts, typename... Fs>
+    constexpr lift_type<esl::overloaded<Fs...>, Ts...> lift_nested (Fs &&... fs) {
+        return {esl::overload(std::forward<Fs>(fs)...)};
+    }
+
+    template <typename... Ts, typename... Fs>
+    constexpr auto lift (Fs &&... fs) {
+        return lift_nested<Ts...>(std::forward<Fs>(fs)...);
+    }
+
     namespace detail::lift {
 
-        template <typename T, typename F>
-        using any_base = detail::lift::base <
-            T,
-            F,
-            target::sized_range,
-            std::variant,
-            esl::result,
-            target::direct
-        >;
-
-    }
-
-    /** deprecated */
-    template <typename F>
-    struct lift_type<F, target::any_once>: detail::lift::any_base<lift_type<F, target::any_once>, F> {
-        using base = detail::lift::any_base<lift_type<F, target::any_once>, F>;
-
-        constexpr lift_type (F const & f): base{f}            {}
-        constexpr lift_type (F &&      f): base{std::move(f)} {}
-    };
-
-    /** deprecated */
-    template <typename F>
-    struct lift_type<F, target::any>: detail::lift::any_base<lift_type<F, target::any>, F> {
-        using base = detail::lift::any_base<lift_type<F, target::any>, F>;
-
-        constexpr lift_type (F const & f): base{f}            {}
-        constexpr lift_type (F &&      f): base{std::move(f)} {}
-
-        using detail::lift::sized_range_impl  <lift_type<F, target::any>, F>::operator();
-        using detail::lift::variant_impl      <lift_type<F, target::any>, F>::operator();
-        using detail::lift::result_impl       <lift_type<F, target::any>, F>::operator();
-        using detail::lift::direct_impl       <lift_type<F, target::any>, F>::operator();
+        template <typename T>
+        struct nested {
+            template <typename... Fs>
+            constexpr static auto lift (Fs &&... fs) {
+                return lift_nested<T>(std::forward<Fs>(fs)...);
+            }
+        };
 
         template <typename... Ts>
-        constexpr auto function () const {
-            return [this] (Ts &&... args) {
-                return operator()(std::forward<Ts>(args)...);
-            };
-        }
-    };
+        struct nested<target::nested<Ts...>> {
+            template <typename... Fs>
+            constexpr static auto lift (Fs &&... fs) {
+                return lift_nested<Ts...>(std::forward<Fs>(fs)...);
+            }
+        };
 
-    /**
-     *  deprecated
-     *
-     *  Provides two overloads:
-     *  f(w{a}, w{b})
-     *  f(b)(w{a})
-     *  where w is any abstraction that is supported by lift<target::any_once>.
-     */
-    template <typename F>
-    struct lift_type<F, target::any_asymetric> {
-        F fun;
-
-        constexpr lift_type (F const & fun): fun{fun}            {}
-        constexpr lift_type (F &&      fun): fun{std::move(fun)} {}
-
-        template <typename T, typename U>
-        constexpr decltype(auto) operator () (T && a, U && b) const {
-            return lift_type<F, target::any>{fun}(std::forward<T>(a), std::forward<U>(b));
-        }
-
-        template <typename U>
-        constexpr auto operator () (U && b) const {
-            return lift_type<F, target::any>{
-                [this, &b] <typename T> (T && a) /*-> decltype(auto)*/ requires std::invocable<F, T, U> {
-                    return fun(std::forward<T>(a), std::forward<U>(b));
-                }
-            };
-        }
-    };
-
-    template <template <typename...> typename... Ts, typename... Fs>
-    constexpr lift_type<esl::overloaded<Fs...>, Ts...> lift (Fs &&... fs) {
-        return {esl::overload(std::forward<Fs>(fs)...)};
     }
 
-    /*
-    template <template <typename...> typename... Ts, typename... Fs>
-    constexpr auto lift_bin (Fs &&... fs) {
-        return {esl::overload(std::forward<Fs>(fs)...)};
+    /** Only the binary version works right now. */
+    template <typename T, typename U, typename... Fs>
+    constexpr auto lift_nary (Fs &&... fs) {
+        return [...fs = esl::functor(std::forward<Fs>(fs))] <typename V, typename W> (V && a, W && b) {
+            return detail::lift::nested<U>::lift(
+                esl::curry(detail::lift::nested<T>::lift(fs...))(std::forward<V>(a))
+            )(std::forward<W>(b));
+        };
     }
-    */
 
 }

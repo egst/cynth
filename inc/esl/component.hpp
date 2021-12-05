@@ -374,6 +374,7 @@ namespace esl {
             }
         };
 
+        /*
         template <typename, template <typename, template <typename...> typename> typename>
         struct matching_template_impl: std::false_type {};
 
@@ -385,43 +386,53 @@ namespace esl {
 
         template <typename T, template <typename, template <typename...> typename> typename Tpl>
         concept matching_template = matching_template_impl<T, Tpl>::value;
+        */
 
-        template <typename Derived, typename F>
-        struct lift_component_vector_impl {
-            template <typename T>
-            using vector_type = typename component_vector<T>::base;
+        template <template <typename...> typename C>
+        struct lift_component_vector {
+            template <typename Derived, typename F>
+            struct impl {
+                template <typename T>
+                using vector_type = typename C<T>::base;
 
-            template <matching_template<esl::basic_component_vector> T>
-            constexpr auto operator () (T && target) const {
-                return esl::lift_on_range<vector_type>(derived(), std::forward<T>(target));
-            }
-            template <matching_template<esl::basic_component_vector> T, matching_template<esl::basic_component_vector> U>
-            constexpr auto operator () (T && first, U && second) const {
-                return esl::lift_on_range<vector_type>(derived(), std::forward<T>(first), std::forward<U>(second));
-            }
+                //template <matching_template<esl::basic_component_vector> T>
+                template <esl::same_template<C> T>
+                constexpr auto operator () (T && target) const {
+                    return esl::lift_on_range<vector_type>(derived(), std::forward<T>(target));
+                }
+                template <esl::same_template<C> T, esl::same_template<C> U>
+                constexpr auto operator () (T && first, U && second) const {
+                    return esl::lift_on_range<vector_type>(derived(), std::forward<T>(first), std::forward<U>(second));
+                }
 
-        private:
-            constexpr Derived const & derived () const {
-                return *static_cast<Derived const *>(this);
-            }
+            private:
+                constexpr Derived const & derived () const {
+                    return *static_cast<Derived const *>(this);
+                }
+            };
         };
 
     }
 
     namespace target {
 
-        template <typename...> struct component_vector {};
+        struct component {};
+        struct optional_component {};
+        struct component_vector {};
+        struct tiny_component_vector {};
 
     }
 
-    template <> struct lift_specialization_map<esl::component>:
+    template <> struct lift_specialization_map<target::component>:
         lift_implementation<esl::detail::component::lift_component_impl> {};
 
-    template <> struct lift_specialization_map<esl::optional_component>:
-        lift_implementation<esl::detail::component::lift_component_impl> {};
+    template <> struct lift_specialization_map<target::optional_component>:
+        lift_implementation<esl::detail::component::lift_optional_component_impl> {};
 
-    template <template <typename...> typename Base>
-    struct lift_specialization_map<detail::component::vector_param<Base>::template component_vector>:
-        lift_implementation<esl::detail::component::lift_component_impl> {};
+    template <> struct lift_specialization_map<target::component_vector>:
+        lift_implementation<esl::detail::component::lift_component_vector<esl::component_vector>::impl> {};
+
+    template <> struct lift_specialization_map<target::tiny_component_vector>:
+        lift_implementation<esl::detail::component::lift_component_vector<esl::component_vector>::impl> {};
 
 }

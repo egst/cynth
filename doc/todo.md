@@ -10,6 +10,7 @@
 * include clean-up (careful with sem/declarations)
 * link object files selectively
 * don't forget about the clang sanitizer and other debug options in the makefile
+* don't forget about the comented out part to link all cpp files
 
 # C++ details
 

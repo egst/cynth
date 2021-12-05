@@ -29,7 +29,7 @@ namespace cynth::sem::interface {
 
     template <typename Node>
     concept typed = requires (Node node) {
-        { node.valueType() } -> std::same_as<ValueTypeResult>;
+        { node.type() } -> std::same_as<ValueTypeResult>;
     };
 
     template <typename Node, typename Out>
@@ -42,17 +42,17 @@ namespace cynth::sem::interface {
 
     template <typename Node>
     concept decaying = requires (Node node) {
-        { node.decay() } -> std::same_as<TypeDecayResult>;
+        { node.decayType() } -> std::same_as<TypeDecayResult>;
     };
 
     template <typename Node, typename As>
     concept same = requires (Node node, As const & as) {
-        { node.same(as) } -> std::same_as<SameTypeResult>;
+        { node.sameType(as) } -> std::same_as<SameTypeResult>;
     };
 
     template <typename Node, typename With>
     concept common = requires (Node node, With const & type) {
-        { node.common(type) } -> std::same_as<CommonTypeResult>;
+        { node.commonType(type) } -> std::same_as<CommonTypeResult>;
     };
 
     template <typename Node>
@@ -60,7 +60,7 @@ namespace cynth::sem::interface {
 
     template <typename Node>
     concept completableType = requires (Node node, Context & ctx) {
-        { node.complete(ctx) } -> std::same_as<TypeCompletionResult>;
+        { node.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
     };
 
     template <typename Node>
@@ -84,20 +84,11 @@ namespace cynth::sem::interface {
 
 namespace cynth::sem {
 
-    // In the following docblock comments, the construct any<T>
-    // means any abstraction, that is supported by lift::any.
-    // f (any<T>, any<T>) means that to completely unwrap any one of them,
-    // a series of the same lift::* operations must be applied.
-    // E.g. f(std::variant<int, float>, std::variant<int, bool>) is ok,
-    // but f(std::vector<int>, std::variant<int>) is not.
-    // TODO: Remove the lift wrappers. Put them explicitly where needed at the call site.
-
     /*
-    constexpr auto translate = lift::any {
+    constexpr auto translate =
         [] <interface::value Node> (Node const & node) {
             return node.translate();
-        }
-    };
+        };
     */
 
     constexpr auto translateType = esl::overload(
@@ -124,10 +115,10 @@ namespace cynth::sem {
         }
     );
 
-    constexpr auto same = esl::overload(
+    constexpr auto sameType = esl::overload(
         [] <interface::type Node, interface::type As> (Node const & node, As const & as) -> SameTypeResult
         requires (interface::same<Node, As>) {
-            return node.same(as);
+            return node.sameType(as);
         },
         [] (interface::type auto const &, interface::type auto const &) -> SameTypeResult {
             return false;
@@ -136,10 +127,10 @@ namespace cynth::sem {
 
     // TODO: Maybe it would be better to return the same type for non-decaying types?
     // (As if they decay into themselves.)
-    constexpr auto decay = esl::overload(
+    constexpr auto decayType = esl::overload(
         [] <interface::type Node> (Node const & node) -> TypeDecayResult
         requires (interface::decaying<Node>) {
-            return {node.decay()};
+            return {node.decayType()};
         },
         [] (interface::type auto const &) -> TypeDecayResult {
             return {};
@@ -149,7 +140,7 @@ namespace cynth::sem {
     constexpr auto decaysTo = esl::overload(
         [] <interface::type Node, interface::type To> (Node const & node, To const & to) -> bool
         requires (interface::decaying<Node>) {
-            auto result = esl::lift<std::optional>(esl::curry(same)(to))(node.decay());
+            auto result = esl::lift<esl::target::optional>(esl::curry(sameType)(to))(node.decayType());
             return result && *result; // i.e. decays && decays to the same type
         },
         [] (interface::type auto const &, interface::type auto const &) -> bool {
@@ -161,10 +152,10 @@ namespace cynth::sem {
      *  This operation is symetric.
      *  It is enough to only provide one implementation for both directions.
      */
-    constexpr auto common = esl::overload(
+    constexpr auto commonType = esl::overload(
         [] <interface::type Node> (Node const & node, Node const & with) -> CommonTypeResult
         requires (interface::common<Node, Node>) {
-            return node.common(with);
+            return node.commonType(with);
         },
         [] <interface::type Node, interface::type With> (Node const & node, With const & with) -> CommonTypeResult
         requires (
@@ -172,7 +163,7 @@ namespace cynth::sem {
             interface::common<Node, With> &&
             !interface::common<With, Node>
         ) {
-            return node.common(with);
+            return node.commonType(with);
         },
         [] <interface::type Node, interface::type With> (Node const & node, With const & with) -> CommonTypeResult
         requires (
@@ -180,7 +171,7 @@ namespace cynth::sem {
             !interface::common<Node, With> &&
             interface::common<With, Node>
         ) {
-            return with.common(node);
+            return with.commonType(node);
         },
         [] <interface::type Node, interface::type With> (Node const &, With const &) -> CommonTypeResult
         requires (
@@ -195,7 +186,7 @@ namespace cynth::sem {
             interface::common<Node, With> &&
             interface::common<With, Node>
         ) {
-            return {esl::result_error{"Two-way node.common(with) implementation found."}};
+            return {esl::result_error{"Two-way node.commonType(with) implementation found."}};
         }
     );
 
@@ -220,7 +211,7 @@ namespace cynth::sem {
                 },
                 [&ctx] <interface::incompleteType Node> (Node const & node) -> TypeCompletionResult
                 requires interface::completableType<Node> {
-                    return node.complete(ctx);
+                    return node.completeType(ctx);
                 },
                 [] (type::Unknown const &) -> TypeCompletionResult {
                     return {esl::result_error{"An unknown type ($ or type T) is not complete."}};
@@ -237,7 +228,7 @@ namespace cynth::sem {
             return esl::overload(
                 [&ctx] <esl::same_but_cvref<IncompleteDeclaration> Decl> (Decl && decl)
                 -> esl::result<CompleteDeclaration> {
-                    auto complete = esl::unite_results(esl::lift<esl::component, esl::target::category>(
+                    auto complete = esl::unite_results(esl::lift<esl::target::component, esl::target::category>(
                         detail::makeTypeComplete(ctx)
                     )(esl::forward_like<Decl>(decl.type)));
                     if (!complete)
@@ -258,7 +249,7 @@ namespace cynth::sem {
             return esl::overload(
                 [&ctx] <esl::same_but_cvref<IncompleteRangeDeclaration> Decl> (Decl && decl)
                 -> esl::result<CompleteRangeDeclaration> {
-                    auto complete = esl::unite_results(lift<esl::component>(
+                    auto complete = esl::unite_results(lift<esl::target::component>(
                         detail::makeDeclComplete(ctx)
                     )(esl::forward_like<Decl>(decl.declaration)));
                     if (!complete)
@@ -277,7 +268,7 @@ namespace cynth::sem {
 
     }
 
-    constexpr auto complete = [] (Context & ctx) {
+    constexpr auto completeType = [] (Context & ctx) {
         return esl::overload(
             detail::makeTypeComplete(ctx),
             detail::makeDeclComplete(ctx),
@@ -285,7 +276,7 @@ namespace cynth::sem {
         );
     };
 
-    constexpr auto uncomplete = esl::overload(
+    constexpr auto uncompleteType = esl::overload(
         [] <interface::type Type> (Type && type) -> esl::result<IncompleteType> {
             return IncompleteType{CompleteType{std::forward<Type>(type)}};
         },

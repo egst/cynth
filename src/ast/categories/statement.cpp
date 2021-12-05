@@ -1,24 +1,24 @@
 #include "ast/categories/statement.hpp"
 
-#include "ast/categories/array_elem.hpp"
-#include "ast/categories/range_decl.hpp"
-#include "component.hpp"
+#include "esl/component.hpp"
 
-namespace cynth {
+namespace esl {
+
+    using cynth::ast::category::Statement;
 
     template <>
-    void component_deleter<ast::category::Statement>::operator () (ast::category::Statement * ptr) const {
+    void component_deleter<Statement>::operator () (Statement * ptr) const {
         delete ptr;
     }
 
     template <>
-    ast::category::Statement * component_allocator<ast::category::Statement>::operator () (ast::category::Statement const & other) const {
-        return new ast::category::Statement{other};
+    Statement * component_allocator<Statement>::operator () (Statement const & other) const {
+        return new Statement{other};
     }
 
     template <>
-    ast::category::Statement * component_allocator<ast::category::Statement>::operator () (ast::category::Statement && other) const {
-        return new ast::category::Statement{std::move(other)};
+    Statement * component_allocator<Statement>::operator () (Statement && other) const {
+        return new Statement{std::move(other)};
     }
 
 }

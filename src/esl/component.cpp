@@ -1,14 +1,15 @@
-#include "component.hpp"
+#include "esl/component.hpp"
 
 #include "config.hpp"
 
 #include <string>
 
-namespace cynth {
+namespace esl {
 
-    // Yeah, I know it makes no sense to heap-allocate the std::string value container,
+    // TODO: It makes no sense to heap-allocate the std::string value container,
     // but weird stuff is happening otherwise for some reason, which needs to be fixed,
-    // but right now this is the quick workaround. (TODO)
+    // but right now this is the quick workaround.
+    // This is the only implementation file for the otherwise header-only ESL library.
 
     template <>
     void component_deleter<std::string>::operator () (std::string * ptr) const {

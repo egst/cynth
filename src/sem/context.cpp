@@ -1,24 +1,33 @@
 #include "sem/context.hpp"
 
-#include "config.hpp"
-#include "sem/context_types.hpp"
+#include "esl/component.hpp"
 
-namespace cynth {
+namespace esl {
+
+    using cynth::sem::Context;
 
     template <>
-    void component_deleter<sem::context>::operator () (sem::context * ptr) const {
+    void component_deleter<Context>::operator () (Context * ptr) const {
         delete ptr;
     }
 
     template <>
-    sem::context * component_allocator<sem::context>::operator () (sem::context const & other) const {
-        return new sem::context{other};
+    Context * component_allocator<Context>::operator () (
+        Context const & other
+    ) const {
+        return new Context{other};
     }
 
     template <>
-    sem::context * component_allocator<sem::context>::operator () (sem::context && other) const {
-        return new sem::context{std::move(other)};
+    Context * component_allocator<Context>::operator () (Context && other) const {
+        return new Context{std::move(other)};
     }
+
+}
+
+// TODO
+#if 0
+namespace cynth {
 
     sem::context::context (): parent{nullptr} {}
 
@@ -310,3 +319,4 @@ namespace cynth {
     template reference_result<sem::value::FunctionValue> sem::context::store_value (sem::value::FunctionValue const &);
 
 }
+#endif

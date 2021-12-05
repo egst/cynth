@@ -1,53 +1,64 @@
 #include "sem/declarations.hpp"
 
-#include "sem/types.hpp"
-#include "component.hpp"
+#include "esl/component.hpp"
 
-namespace cynth {
+#include "sem/declarations.hpp"
+
+namespace esl {
+
+    using cynth::sem::CompleteDeclaration;
+    using cynth::sem::IncompleteDeclaration;
+    using cynth::sem::TypeDeclaration;
 
     template <>
-    void component_deleter<sem::complete_decl>::operator () (sem::complete_decl * ptr) const {
+    void component_deleter<CompleteDeclaration>::operator () (CompleteDeclaration * ptr) const {
         delete ptr;
     }
 
     template <>
-    sem::complete_decl * component_allocator<sem::complete_decl>::operator () (sem::complete_decl const & other) const {
-        return new sem::complete_decl{other};
+    CompleteDeclaration * component_allocator<CompleteDeclaration>::operator () (
+        CompleteDeclaration const & other
+    ) const {
+        return new CompleteDeclaration{other};
     }
 
     template <>
-    sem::complete_decl * component_allocator<sem::complete_decl>::operator () (sem::complete_decl && other) const {
-        return new sem::complete_decl{std::move(other)};
+    CompleteDeclaration * component_allocator<CompleteDeclaration>::operator () (CompleteDeclaration && other) const {
+        return new CompleteDeclaration{std::move(other)};
     }
 
     template <>
-    void component_deleter<sem::incomplete_decl>::operator () (sem::incomplete_decl * ptr) const {
+    void component_deleter<IncompleteDeclaration>::operator () (IncompleteDeclaration * ptr) const {
         delete ptr;
     }
 
     template <>
-    sem::incomplete_decl * component_allocator<sem::incomplete_decl>::operator () (sem::incomplete_decl const & other) const {
-        return new sem::incomplete_decl{other};
+    IncompleteDeclaration * component_allocator<IncompleteDeclaration>::operator () (
+        IncompleteDeclaration const & other
+    ) const {
+        return new IncompleteDeclaration{other};
     }
 
     template <>
-    sem::incomplete_decl * component_allocator<sem::incomplete_decl>::operator () (sem::incomplete_decl && other) const {
-        return new sem::incomplete_decl{std::move(other)};
+    IncompleteDeclaration * component_allocator<IncompleteDeclaration>::operator () (
+        IncompleteDeclaration && other
+    ) const {
+        return new IncompleteDeclaration{std::move(other)};
     }
 
     template <>
-    void component_deleter<sem::type_decl>::operator () (sem::type_decl * ptr) const {
+    void component_deleter<TypeDeclaration>::operator () (TypeDeclaration * ptr) const {
         delete ptr;
     }
 
     template <>
-    sem::type_decl * component_allocator<sem::type_decl>::operator () (sem::type_decl const & other) const {
-        return new sem::type_decl{other};
+    TypeDeclaration * component_allocator<TypeDeclaration>::operator () (TypeDeclaration const & other) const {
+        return new TypeDeclaration{other};
     }
 
     template <>
-    sem::type_decl * component_allocator<sem::type_decl>::operator () (sem::type_decl && other) const {
-        return new sem::type_decl{std::move(other)};
+    TypeDeclaration * component_allocator<TypeDeclaration>::operator () (TypeDeclaration && other) const {
+        return new TypeDeclaration{std::move(other)};
     }
 
 }

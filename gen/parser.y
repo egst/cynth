@@ -1,12 +1,12 @@
 %code requires {
 
-    #include "ast.hpp"
-    #include "util/string.hpp"
-    #include "util/general.hpp"
+    #include <string>
 
-    //#include <string>
-    //#include <vector>
-    //#include <utility>
+    #include "esl/string.hpp"
+    #include "esl/containers.hpp"
+
+    #include "bundle_ast.hpp"
+    #include "sem/numeric_types.hpp"
 
 }
 
@@ -91,12 +91,12 @@
 %nterm <int> start
 
 /* [categories] */
-%nterm <cynth::ast::category::Type>        cat_type
-%nterm <cynth::ast::category::Declaration> cat_declaration
-%nterm <cynth::ast::category::RangeDecl>   cat_range_decl
-%nterm <cynth::ast::category::ArrayElem>   cat_array_elem
-%nterm <cynth::ast::category::Expression>  cat_expression
-%nterm <cynth::ast::category::Statement>   cat_statement
+%nterm <cynth::ast::category::Type>             cat_type
+%nterm <cynth::ast::category::Declaration>      cat_declaration
+%nterm <cynth::ast::category::RangeDeclaration> cat_range_decl
+%nterm <cynth::ast::category::ArrayElement>     cat_array_elem
+%nterm <cynth::ast::category::Expression>       cat_expression
+%nterm <cynth::ast::category::Statement>        cat_statement
 
 /* [syntactic categories] */
 %nterm <cynth::ast::category::Statement>   pure
@@ -127,11 +127,11 @@
 %nterm <cynth::ast::node::TypeDecl>        node_type_decl
 
 /* [declarations] */
-%nterm <cynth::ast::category::Declaration> paren_decl
-%nterm <cynth::ast::category::RangeDecl>   paren_range_decl
-%nterm <cynth::ast::category::Declaration> void_decl
-%nterm <cynth::ast::node::Declaration>     node_declaration
-%nterm <cynth::ast::node::RangeDecl>       node_range_decl
+%nterm <cynth::ast::category::Declaration>      paren_decl
+%nterm <cynth::ast::category::RangeDeclaration> paren_range_decl
+%nterm <cynth::ast::category::Declaration>      void_decl
+%nterm <cynth::ast::node::Declaration>          node_declaration
+%nterm <cynth::ast::node::RangeDecl>            node_range_decl
 
 /* [array elements] */
 %nterm <cynth::ast::node::RangeTo>         node_range_to
@@ -180,7 +180,7 @@
 /* [statements] */
 %nterm <cynth::ast::node::Definition>      node_definition
 %nterm <cynth::ast::node::Assignment>      node_assignment
-%nterm <cynth::ast::node::FunctionDef>     node_function_def
+%nterm <cynth::ast::node::FunDef>          node_function_def
 %nterm <cynth::ast::node::TypeDef>         node_type_def
 %nterm <cynth::ast::node::Return>          node_return
 %nterm <cynth::ast::node::If>              node_if
@@ -189,12 +189,12 @@
 %nterm <cynth::ast::node::While>           node_while
 
 /* [temporary structures] */
-%nterm <cynth::component_vector<cynth::ast::category::Type>>        type_list
-%nterm <cynth::component_vector<cynth::ast::category::Declaration>> decl_list
-%nterm <cynth::component_vector<cynth::ast::category::RangeDecl>>   range_decl_list
-%nterm <cynth::component_vector<cynth::ast::category::ArrayElem>>   array_elem_list
-%nterm <cynth::component_vector<cynth::ast::category::Expression>>  expr_list
-%nterm <cynth::component_vector<cynth::ast::category::Statement>>   stmt_list
+%nterm <esl::component_vector<cynth::ast::category::Type>>             type_list
+%nterm <esl::component_vector<cynth::ast::category::Declaration>>      decl_list
+%nterm <esl::component_vector<cynth::ast::category::RangeDeclaration>> range_decl_list
+%nterm <esl::component_vector<cynth::ast::category::ArrayElement>>     array_elem_list
+%nterm <esl::component_vector<cynth::ast::category::Expression>>       expr_list
+%nterm <esl::component_vector<cynth::ast::category::Statement>>        stmt_list
 
 %%
 
@@ -389,10 +389,10 @@ node_array_type:
         $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size}};
     } |
     cat_type[type] OBRACK AUTO CBRACK {
-        $$ = {.type = $type, .size = cynth::optional_component<cynth::ast::category::Pattern>{}};
+        $$ = {.type = $type, .size = esl::optional_component<cynth::ast::category::Pattern>{}};
     } |
     cat_type[type] OBRACK CBRACK {
-        $$ = {.type = $type, .size = cynth::optional_component<cynth::ast::category::Pattern>{}};
+        $$ = {.type = $type, .size = esl::optional_component<cynth::ast::category::Pattern>{}};
     } |
     cat_type[type] OBRACK cat_declaration[size_decl] CBRACK {
         $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size_decl}};
@@ -510,7 +510,7 @@ node_bool:
 
 node_int:
     INT {
-        $$ = {cynth::util::stoi($1)};
+        $$ = {esl::stoi<cynth::sem::Integral>($1)}; // TODO: The sem::Integral type should be obtainable from ast::node::Int
     }
 
 node_float:
@@ -520,7 +520,7 @@ node_float:
 
 node_string:
     STRING {
-        $$ = {cynth::util::trim($1)};
+        $$ = {esl::trim($1)};
     }
 
 node_function:
@@ -738,7 +738,7 @@ array_elem_list:
         $$ = {$first};
     } |
     array_elem_list[rest] COMMA cat_array_elem[next] {
-        $$ = cynth::util::push_back($next, $rest);
+        $$ = esl::push_back($next, $rest);
     }
 
 stmt_list:
@@ -746,7 +746,7 @@ stmt_list:
         $$ = {$first};
     } |
     stmt_list[rest] SEMI cat_statement[next] {
-        $$ = cynth::util::push_back($next, $rest);
+        $$ = esl::push_back($next, $rest);
     }
 
 type_list:
@@ -754,7 +754,7 @@ type_list:
         $$ = {$first, $second};
     } |
     type_list[rest] COMMA cat_type[next] {
-        $$ = cynth::util::push_back($next, $rest);
+        $$ = esl::push_back($next, $rest);
     }
 
 expr_list:
@@ -762,7 +762,7 @@ expr_list:
         $$ = {$first, $second};
     } |
     expr_list[rest] COMMA cat_expression[next] {
-        $$ = cynth::util::push_back($next, $rest);
+        $$ = esl::push_back($next, $rest);
     }
 
 decl_list:
@@ -770,7 +770,7 @@ decl_list:
         $$ = {$first, $second};
     } |
     decl_list[rest] COMMA cat_declaration[next] {
-        $$ = cynth::util::push_back($next, $rest);
+        $$ = esl::push_back($next, $rest);
     }
 
 range_decl_list:
@@ -778,7 +778,7 @@ range_decl_list:
         $$ = {$first, $second};
     } |
     range_decl_list[rest] COMMA cat_range_decl[next] {
-        $$ = cynth::util::push_back($next, $rest);
+        $$ = esl::push_back($next, $rest);
     }
 
 %%

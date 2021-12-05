@@ -1,20 +1,21 @@
 #include "sem/translation_context.hpp"
 
-#include "result.hpp"
-#include "lift2.hpp"
-#include "component.hpp"
-#include "sem/context.hpp"
+#include "esl/lift.hpp"
+#include "esl/result.hpp"
+#include "esl/tiny_vector.hpp"
+#include "esl/zip.hpp"
+
+#include "sem/context_types.hpp"
+#include "sem/declarations.hpp"
 #include "sem/interface.hpp"
-#include "sem/types.hpp"
-#include "util/zip.hpp"
 
-#include <string>
-
-#define INSPECT(val) util::inspect<decltype(val)>{};
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
 
 namespace cynth::sem {
 
-    std::size_t translation_context::next_id () {
+    std::size_t TranslationContext::nextId () {
         return id++;
     }
 
@@ -22,9 +23,9 @@ namespace cynth::sem {
      *  ----decl---   --tuple--
      *  (T, U, V) a = (1, x, y)
      */
-    result<void> translation_context::define (
-        complete_decl             const & decl,
-        tuple_vector<typed_value> const & tuple_val
+    esl::result<void> TranslationContext::define (
+        CompleteDeclaration          const & decl,
+        esl::tiny_vector<TypedValue> const & tuple_val
     ) {
         /*
          *  compconst['a'] = {{T, 1}, {U, ?}, {V, ?}}
@@ -35,39 +36,42 @@ namespace cynth::sem {
          *  }
          */
 
-        auto converted_result = convert(decl.type, tuple_val);
-        if (!converted_result)
-            return converted_result.error();
-        auto converted = *converted_result;
+        auto convertedResult = convert(decl.type, tuple_val);
+        if (!convertedResult)
+            return convertedResult.error();
+        auto converted = *convertedResult;
 
-        compconst_context.define_value(decl.name, converted);
+        compconst.defineValue(decl.name, converted);
 
-        for (auto const & [i, type, value] : util::enumerate(decl.type, converted)) {
+        for (auto const & [i, type, value] : esl::enumerate(decl.type, converted)) {
 
             if (value.value)
                 continue; // Skip compconst values.
 
             if (!value.expression)
-                return result_error{"This value cannot be translated."};
+                return esl::result_error{"This value cannot be translated."};
 
-            //INSPECT(type); // complete_type
+            //ESL_INSPECT(type); // CompleteType
 
-            // {transl_type(type)} cth_ue{i} = 
-            // Possible C types:
-            // Simple:      (`bool` | `int` | `float`)
-            // ConstSimple: <Simple> `const`
-            // Array:       (<Simple> | <ConstSimple> ) `*`
-            // Const:       (<Simple> | <Array>) `const`
-            // In:          <Simple>  # in global scope only
-            // Out:         <Simple>  # in global scope only
-            // Function:    `cth_c_foo_123` # named context struct passed around at runtime +
-            //                              # function name inserted at compile time
+            /*  {transl_type(type)} cth_ue{i} = 
+             *  Possible C types:
+             *  Simple:      (`bool` | `int` | `float`)
+             *  ConstSimple: <Simple> `const`
+             *  Array:       (<Simple> | <ConstSimple> ) `*`
+             *  Const:       (<Simple> | <Array>) `const`
+             *  In:          <Simple>  # in global scope only
+             *  Out:         <Simple>  # in global scope only
+             *  Function:    `cth_c_foo_123 const` # named context struct passed around at runtime +
+             *                                     # function name inserted at compile time
+             *  Buffer:      `float *`             # maybe const?
+             */
 
-            sem::transl_type(type);
-
-            lift2<target::category>(
-                [] (auto && type) {
-                    
+            esl::lift<esl::target::category>(
+                [] (type::Function && type) -> TypeTranslationResult {
+                    return {};
+                },
+                [] (auto && type) -> TypeTranslationResult {
+                    return translateType(type);
                 }
             )(type);
 
@@ -75,6 +79,9 @@ namespace cynth::sem {
 
         return {};
     }
+
+// TODO
+#if 0
 
     /**
      *  -----decls-----   --tuple--
@@ -177,3 +184,4 @@ namespace cynth::sem {
     }
 
 }
+#endif

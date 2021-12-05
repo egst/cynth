@@ -48,13 +48,13 @@
 #line 1 "gen/parser.y"
 
 
-    #include "ast.hpp"
-    #include "util/string.hpp"
-    #include "util/general.hpp"
+    #include <string>
 
-    //#include <string>
-    //#include <vector>
-    //#include <utility>
+    #include "esl/string.hpp"
+    #include "esl/containers.hpp"
+
+    #include "bundle_ast.hpp"
+    #include "sem/numeric_types.hpp"
 
 
 #line 61 "inc/parser.hpp"
@@ -384,7 +384,7 @@ namespace yy {
     union union_type
     {
       // cat_array_elem
-      char dummy1[sizeof (cynth::ast::category::ArrayElem)];
+      char dummy1[sizeof (cynth::ast::category::ArrayElement)];
 
       // cat_declaration
       // paren_decl
@@ -410,7 +410,7 @@ namespace yy {
 
       // cat_range_decl
       // paren_range_decl
-      char dummy4[sizeof (cynth::ast::category::RangeDecl)];
+      char dummy4[sizeof (cynth::ast::category::RangeDeclaration)];
 
       // cat_statement
       // pure
@@ -481,11 +481,11 @@ namespace yy {
       // node_for
       char dummy26[sizeof (cynth::ast::node::For)];
 
-      // node_function
-      char dummy27[sizeof (cynth::ast::node::Function)];
-
       // node_function_def
-      char dummy28[sizeof (cynth::ast::node::FunctionDef)];
+      char dummy27[sizeof (cynth::ast::node::FunDef)];
+
+      // node_function
+      char dummy28[sizeof (cynth::ast::node::Function)];
 
       // node_function_type
       char dummy29[sizeof (cynth::ast::node::FunctionType)];
@@ -581,22 +581,22 @@ namespace yy {
       char dummy59[sizeof (cynth::ast::node::While)];
 
       // array_elem_list
-      char dummy60[sizeof (cynth::component_vector<cynth::ast::category::ArrayElem>)];
+      char dummy60[sizeof (esl::component_vector<cynth::ast::category::ArrayElement>)];
 
       // decl_list
-      char dummy61[sizeof (cynth::component_vector<cynth::ast::category::Declaration>)];
+      char dummy61[sizeof (esl::component_vector<cynth::ast::category::Declaration>)];
 
       // expr_list
-      char dummy62[sizeof (cynth::component_vector<cynth::ast::category::Expression>)];
+      char dummy62[sizeof (esl::component_vector<cynth::ast::category::Expression>)];
 
       // range_decl_list
-      char dummy63[sizeof (cynth::component_vector<cynth::ast::category::RangeDecl>)];
+      char dummy63[sizeof (esl::component_vector<cynth::ast::category::RangeDeclaration>)];
 
       // stmt_list
-      char dummy64[sizeof (cynth::component_vector<cynth::ast::category::Statement>)];
+      char dummy64[sizeof (esl::component_vector<cynth::ast::category::Statement>)];
 
       // type_list
-      char dummy65[sizeof (cynth::component_vector<cynth::ast::category::Type>)];
+      char dummy65[sizeof (esl::component_vector<cynth::ast::category::Type>)];
 
       // start
       char dummy66[sizeof (int)];
@@ -890,7 +890,7 @@ namespace yy {
         switch (this->kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElem > (std::move (that.value));
+        value.move< cynth::ast::category::ArrayElement > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -919,7 +919,7 @@ namespace yy {
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDecl > (std::move (that.value));
+        value.move< cynth::ast::category::RangeDeclaration > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -1013,12 +1013,12 @@ namespace yy {
         value.move< cynth::ast::node::For > (std::move (that.value));
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (std::move (that.value));
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.move< cynth::ast::node::FunDef > (std::move (that.value));
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunctionDef > (std::move (that.value));
+      case symbol_kind::S_node_function: // node_function
+        value.move< cynth::ast::node::Function > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -1146,27 +1146,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< cynth::component_vector<cynth::ast::category::ArrayElem> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (std::move (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< cynth::component_vector<cynth::ast::category::Declaration> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Declaration> > (std::move (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< cynth::component_vector<cynth::ast::category::Expression> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Expression> > (std::move (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< cynth::component_vector<cynth::ast::category::RangeDecl> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (std::move (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< cynth::component_vector<cynth::ast::category::Statement> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Statement> > (std::move (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< cynth::component_vector<cynth::ast::category::Type> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::ast::category::Type> > (std::move (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -1202,12 +1202,12 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::ArrayElem&& v)
+      basic_symbol (typename Base::kind_type t, cynth::ast::category::ArrayElement&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::ArrayElem& v)
+      basic_symbol (typename Base::kind_type t, const cynth::ast::category::ArrayElement& v)
         : Base (t)
         , value (v)
       {}
@@ -1235,12 +1235,12 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::RangeDecl&& v)
+      basic_symbol (typename Base::kind_type t, cynth::ast::category::RangeDeclaration&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::RangeDecl& v)
+      basic_symbol (typename Base::kind_type t, const cynth::ast::category::RangeDeclaration& v)
         : Base (t)
         , value (v)
       {}
@@ -1488,23 +1488,23 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, cynth::ast::node::FunDef&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const cynth::ast::node::FunDef& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::ast::node::Function&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
       basic_symbol (typename Base::kind_type t, const cynth::ast::node::Function& v)
-        : Base (t)
-        , value (v)
-      {}
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::FunctionDef&& v)
-        : Base (t)
-        , value (std::move (v))
-      {}
-#else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::FunctionDef& v)
         : Base (t)
         , value (v)
       {}
@@ -1851,67 +1851,67 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::ArrayElem>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::ArrayElement>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::ArrayElem>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::ArrayElement>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Declaration>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Declaration>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Declaration>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Declaration>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Expression>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Expression>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Expression>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Expression>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::RangeDecl>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::RangeDeclaration>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::RangeDecl>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::RangeDeclaration>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Statement>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Statement>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Statement>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Statement>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::component_vector<cynth::ast::category::Type>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Type>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::component_vector<cynth::ast::category::Type>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Type>& v)
         : Base (t)
         , value (v)
       {}
@@ -1962,7 +1962,7 @@ namespace yy {
 switch (yykind)
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.template destroy< cynth::ast::category::ArrayElem > ();
+        value.template destroy< cynth::ast::category::ArrayElement > ();
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -1991,7 +1991,7 @@ switch (yykind)
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.template destroy< cynth::ast::category::RangeDecl > ();
+        value.template destroy< cynth::ast::category::RangeDeclaration > ();
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -2085,12 +2085,12 @@ switch (yykind)
         value.template destroy< cynth::ast::node::For > ();
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.template destroy< cynth::ast::node::Function > ();
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.template destroy< cynth::ast::node::FunDef > ();
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.template destroy< cynth::ast::node::FunctionDef > ();
+      case symbol_kind::S_node_function: // node_function
+        value.template destroy< cynth::ast::node::Function > ();
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -2218,27 +2218,27 @@ switch (yykind)
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.template destroy< cynth::component_vector<cynth::ast::category::ArrayElem> > ();
+        value.template destroy< esl::component_vector<cynth::ast::category::ArrayElement> > ();
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.template destroy< cynth::component_vector<cynth::ast::category::Declaration> > ();
+        value.template destroy< esl::component_vector<cynth::ast::category::Declaration> > ();
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.template destroy< cynth::component_vector<cynth::ast::category::Expression> > ();
+        value.template destroy< esl::component_vector<cynth::ast::category::Expression> > ();
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.template destroy< cynth::component_vector<cynth::ast::category::RangeDecl> > ();
+        value.template destroy< esl::component_vector<cynth::ast::category::RangeDeclaration> > ();
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.template destroy< cynth::component_vector<cynth::ast::category::Statement> > ();
+        value.template destroy< esl::component_vector<cynth::ast::category::Statement> > ();
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.template destroy< cynth::component_vector<cynth::ast::category::Type> > ();
+        value.template destroy< esl::component_vector<cynth::ast::category::Type> > ();
         break;
 
       case symbol_kind::S_start: // start
@@ -3572,7 +3572,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.copy< cynth::ast::category::ArrayElem > (YY_MOVE (that.value));
+        value.copy< cynth::ast::category::ArrayElement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -3601,7 +3601,7 @@ switch (yykind)
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.copy< cynth::ast::category::RangeDecl > (YY_MOVE (that.value));
+        value.copy< cynth::ast::category::RangeDeclaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -3695,12 +3695,12 @@ switch (yykind)
         value.copy< cynth::ast::node::For > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.copy< cynth::ast::node::Function > (YY_MOVE (that.value));
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.copy< cynth::ast::node::FunDef > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.copy< cynth::ast::node::FunctionDef > (YY_MOVE (that.value));
+      case symbol_kind::S_node_function: // node_function
+        value.copy< cynth::ast::node::Function > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -3828,27 +3828,27 @@ switch (yykind)
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.copy< cynth::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.copy< cynth::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.copy< cynth::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.copy< cynth::component_vector<cynth::ast::category::RangeDecl> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.copy< cynth::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.copy< cynth::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -3893,7 +3893,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElem > (YY_MOVE (s.value));
+        value.move< cynth::ast::category::ArrayElement > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
@@ -3922,7 +3922,7 @@ switch (yykind)
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDecl > (YY_MOVE (s.value));
+        value.move< cynth::ast::category::RangeDeclaration > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
@@ -4016,12 +4016,12 @@ switch (yykind)
         value.move< cynth::ast::node::For > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (YY_MOVE (s.value));
+      case symbol_kind::S_node_function_def: // node_function_def
+        value.move< cynth::ast::node::FunDef > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunctionDef > (YY_MOVE (s.value));
+      case symbol_kind::S_node_function: // node_function
+        value.move< cynth::ast::node::Function > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
@@ -4149,27 +4149,27 @@ switch (yykind)
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< cynth::component_vector<cynth::ast::category::ArrayElem> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< cynth::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< cynth::component_vector<cynth::ast::category::Expression> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< cynth::component_vector<cynth::ast::category::RangeDecl> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< cynth::component_vector<cynth::ast::category::Statement> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< cynth::component_vector<cynth::ast::category::Type> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_start: // start
