@@ -2,6 +2,10 @@
 
 #include "esl/component.hpp"
 
+// Note: These are dependencies of nodes/expression.hpp, but are only forward declared there:
+#include "ast/categories/array_element.hpp"
+#include "ast/categories/statement.hpp"
+
 namespace esl {
 
     using cynth::ast::category::Pattern;

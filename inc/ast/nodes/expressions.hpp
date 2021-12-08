@@ -10,6 +10,7 @@
 #include "ast/interface_types.hpp"
 #include "ast/forward_categories.hpp"
 
+
 // Note: No macros escape this file.
 #define DISPLAY_INTERFACE() \
     DisplayResult display () const

@@ -10,7 +10,6 @@
 #include "esl/tiny_vector.hpp"
 #include "esl/containers.hpp"
 
-#include "sem/forward.hpp"
 #include "sem/types.hpp"
 #include "sem/values.hpp"
 

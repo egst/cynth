@@ -5,6 +5,7 @@
 namespace cynth::sem {
 
     struct Context;
+    struct TranslationContext;
 
     struct TypedValue;
     struct TypedTargetValue;
@@ -85,6 +86,7 @@ namespace cynth::sem {
         struct In;
         struct Out;
         struct Const;
+        struct Static;
         struct Array;
         struct Buffer;
         struct Function;
@@ -92,6 +94,7 @@ namespace cynth::sem {
         struct IncompleteIn;
         struct IncompleteOut;
         struct IncompleteConst;
+        struct IncompleteStatic;
         struct IncompleteArray;
         struct IncompleteBuffer;
         struct IncompleteFunction;

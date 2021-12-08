@@ -8,6 +8,8 @@
 #include "sem/interface_types.hpp"
 #include "sem/values.hpp"
 
+//#include "sem/types.hpp"
+
 // Note: No macros escape this file.
 #define TARGET_INTERFACE \
     TargetResolutionResult resolveTarget (bool) const

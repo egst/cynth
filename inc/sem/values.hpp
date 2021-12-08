@@ -11,11 +11,12 @@
 #include "esl/tiny_vector.hpp"
 #include "esl/view.hpp"
 
-#include "common_interface_types.hpp"
+#include "ast/forward_categories.hpp"
 #include "sem/forward.hpp"
 #include "sem/interface_types.hpp"
 #include "sem/numeric_types.hpp"
-#include "ast/forward_categories.hpp"
+#include "sem/types.hpp"
+#include "common_interface_types.hpp"
 
 // Note: No macros escape this file.
 #define VALUE \
@@ -43,6 +44,7 @@ namespace cynth::sem {
             CONVERSION(type::Int);
             CONVERSION(type::Float);
             CONVERSION(type::Const);
+            CONVERSION(type::Static);
 
             constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
         };
@@ -58,6 +60,7 @@ namespace cynth::sem {
             CONVERSION(type::Int);
             CONVERSION(type::Float);
             CONVERSION(type::Const);
+            CONVERSION(type::Static);
 
             constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
         };
@@ -73,6 +76,7 @@ namespace cynth::sem {
             CONVERSION(type::Int);
             CONVERSION(type::Float);
             CONVERSION(type::Const);
+            CONVERSION(type::Static);
 
             constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
         };
@@ -90,6 +94,24 @@ namespace cynth::sem {
         /** Constant values will not be used in the first versions. */
         struct Const {
             esl::component<CompleteValue> value;
+
+            VALUE;
+
+            CONVERSION(type::Bool);
+            CONVERSION(type::Int);
+            CONVERSION(type::Float);
+            CONVERSION(type::Const);
+            CONVERSION(type::Static);
+            CONVERSION(type::Array);
+        };
+
+        struct StaticValue {
+            esl::component<CompleteValue> value;
+        };
+
+        struct Static {
+            StaticValue * value;
+            esl::component<CompleteValue> type;
 
             VALUE;
 
@@ -153,7 +175,7 @@ namespace cynth::sem {
             using Vector = ArrayValue::Vector;
 
             ArrayValue * value;
-            esl::component_vector<CompleteValue> type;
+            esl::component_vector<CompleteType> type;
             Integral size;
 
             VALUE;
@@ -162,10 +184,11 @@ namespace cynth::sem {
 
             CONVERSION(type::Array);
             CONVERSION(type::Const);
+            CONVERSION(type::Static);
 
-            constexpr static esl::result<CompleteValue> make (
+            static esl::result<CompleteValue> make (
                 value::ArrayValue *,
-                esl::tiny_component_vector<CompleteType> &&,
+                esl::component_vector<CompleteType> &&, // TODO: allow lvalues here
                 Integral
             );
 

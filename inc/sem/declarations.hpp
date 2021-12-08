@@ -2,7 +2,8 @@
 
 #include "esl/component.hpp"
 
-#include "sem/forward.hpp"
+#include "sem/types.hpp"
+#include "sem/values.hpp"
 
 namespace cynth::sem {
 

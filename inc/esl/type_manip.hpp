@@ -149,4 +149,41 @@ namespace esl {
     template <typename T, typename... By>
     using replace = typename detail::type_manip::replace<std::remove_cvref_t<T>, By...>::type;
 
+    namespace detail::type_manip {
+
+        template <typename First, typename... Rest>
+        struct last {
+            using type = typename last<Rest...>::type;
+        };
+
+        template <typename T>
+        struct last<T> {
+            using type = T;
+        };
+
+        template <typename, typename> struct append;
+
+        template <typename T, typename... Ts>
+        struct append<std::tuple<Ts...>, T> {
+            using type = std::tuple<Ts..., T>;
+        };
+
+        template <typename Tup, typename First, typename... Rest>
+        struct drop_last {
+            using type = typename drop_last<typename append<Tup, First>::type, Rest...>::type;
+        };
+
+        template <typename Tup, typename Last>
+        struct drop_last<Tup, Last> {
+            using type = Tup;
+        };
+
+    }
+
+    template <typename... Ts>
+    using last = typename detail::type_manip::last<Ts...>::type;
+
+    template <typename... Ts>
+    using drop_last = typename detail::type_manip::drop_last<Ts...>::type;
+
 }

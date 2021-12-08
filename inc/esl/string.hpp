@@ -1,12 +1,20 @@
 #pragma once
 
-#include "esl/ranges.hpp"
-#include "esl/math.hpp"
-
+#include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
-#include <algorithm>
+
+#include "esl/concepts.hpp"
+#include "esl/math.hpp"
+#include "esl/ranges.hpp"
+#include "esl/type_manip.hpp"
+
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
 
 namespace esl {
 
@@ -29,27 +37,109 @@ namespace esl {
         return str;
     }
 
-    // TODO: template <sized_range_of<std::string> T>
     /** Join strings with a delimiter. */
-    template <esl::sized_range T>
-    std::string join (std::string const & delim, T const & pieces) {
-        if (!pieces.size()) return "";
-        std::size_t size = 1;
-        for (auto const & piece : pieces)
-            size += piece.size();
-        size += (pieces.size() - 1) * delim.size();
-        std::vector<char> result;
-        result.reserve(size);
-        for (auto it = pieces.begin(); it != pieces.end() - 1; ++it) {
-            auto const & piece = *it;
-            result.insert(result.end(), piece.data(), piece.data() + piece.size());
-            result.insert(result.end(), delim.data(), delim.data() + delim.size());
+
+    namespace detail::string {
+
+        template <typename... Ts>
+        decltype(auto) last(Ts &&... vals){
+           return (std::forward<Ts>(vals), ...);
         }
-        auto const & last = *(pieces.end() - 1);
-        result.insert(result.end(), last.data(), last.data() + last.size());
-        result.push_back('\0');
-        return {result.data()};
+
+        template <esl::sized_range R, std::same_as<std::string>... Ts>
+        requires (std::same_as<esl::range_value_type<R>, std::string>)
+        std::string join (
+            std::string const & delim,
+            R const & pieces_range,
+            Ts const &... piece_vals
+        ) {
+            std::size_t range_count = pieces_range.size();
+            constexpr std::size_t vals_count = sizeof...(Ts);
+            std::size_t count = vals_count + range_count;
+            if (count == 0) return "";
+
+            std::size_t size = 1;
+            ((size += piece_vals.size()), ...);
+            for (auto const & piece : pieces_range)
+                size += piece.size();
+            size += (count - 1) * delim.size();
+
+            std::vector<char> result;
+            result.reserve(size);
+
+            // Welp, this looks crazy...
+            // but I guess that's the simplest way to to it without introducing even more helper functions.
+            {
+                std::size_t i = 0;
+                ((
+                    i < vals_count - (range_count == 0) ? (
+                        // do this for every value frow `piece_vals...` but the last one (if there are no more values in `pieces_range`)
+                        result.insert(result.end(), piece_vals.data(), piece_vals.data() + piece_vals.size()),
+                        result.insert(result.end(), delim.data(), delim.data() + delim.size()),
+                        0
+                    ) : 0,
+                    ++i
+                ), ...);
+            }
+            // the same thing with the dynamc range:
+            for (auto it = pieces_range.begin(); it != pieces_range.end() - 1; ++it) {
+                auto const & piece = *it;
+                result.insert(result.end(), piece.data(), piece.data() + piece.size());
+                result.insert(result.end(), delim.data(), delim.data() + delim.size());
+            }
+
+            if constexpr (vals_count > 0) {
+                if (range_count == 0) {
+                    auto last = detail::string::last(piece_vals...);
+                    result.insert(result.end(), last.data(), last.data() + last.size());
+                } else {
+                    auto const & last = *(pieces_range.end() - 1);
+                    result.insert(result.end(), last.data(), last.data() + last.size());
+                }
+            } else {
+                auto const & last = *(pieces_range.end() - 1);
+                result.insert(result.end(), last.data(), last.data() + last.size());
+            }
+
+            result.push_back('\0');
+            return {result.data()};
+        }
+
+        template <typename... Ts, size_t... Is>
+        auto join_tup (std::string const & delim, std::tuple<Ts...> args, std::index_sequence<Is...>) {
+            constexpr auto last = sizeof...(Ts) - 1;
+            if constexpr (esl::same_but_cvref<esl::last<Ts...>, std::string>)
+                return detail::string::join(delim, esl::nullrange<std::string>{}, std::get<Is>(args)..., std::get<last>(args));
+            else
+                return detail::string::join(delim, std::get<last>(args), std::get<Is>(args)...);
+        }
+
     }
+
+    template <typename... Ts>
+    auto join (std::string const & delim, Ts &&... args) {
+        if constexpr (sizeof...(args) > 0)
+            return detail::string::join_tup(delim, std::forward_as_tuple(args...), std::make_index_sequence<sizeof...(args) - 1>{});
+        else
+            return detail::string::join(delim, esl::nullrange<std::string>{});
+    }
+
+    /*
+    template <typename... Ts> requires (
+        sizeof...(Ts) > 0 &&
+        esl::sized_range<esl::last<Ts...>> &&
+        std::same_as<esl::range_value_type<esl::last<Ts...>>, std::string> &&
+        !std::same_as<esl::last<Ts...>, std::string>
+    )
+    auto join (std::string const & delim, Ts const &... args) {
+        return detail::string::join(delim, detail::string::last(args...), args...);
+    }
+
+    template <std::same_as<std::string>... Ts>
+    auto join (std::string const & delim, Ts const &... args) {
+        return detail::string::join(delim, esl::nullrange<>{}, args...);
+    }
+    */
 
     /** Trim the first and last characters of a string. Used to remove parentheses. */
     inline std::string trim (std::string const & str) {

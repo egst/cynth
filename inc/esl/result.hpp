@@ -28,6 +28,9 @@ namespace esl {
         result_error (std::string  m): message{m}  {}
         result_error (result_error const &) = default;
         result_error (result_error &&)      = default;
+
+        result_error & operator = (result_error &&)      = default;
+        result_error & operator = (result_error const &) = default;
     };
     // TODO: Instead of simple string error messages, introduce a typed system of errors with specific values.
 
@@ -35,6 +38,14 @@ namespace esl {
 
         template <typename Derived, typename T = result_error>
         struct result_base {
+            result_base () = default;
+
+            result_base (result_base const &) = default;
+            result_base (result_base &&)      = default;
+
+            constexpr result_base & operator = (result_base &&)      = default;
+            constexpr result_base & operator = (result_base const &) = default;
+
             constexpr T const & operator * () const & requires (!std::same_as<T, result_error>) {
                 return derived().value();
             }
@@ -94,6 +105,9 @@ namespace esl {
         constexpr result (result       const &) = default;
         constexpr result (result       &&)      = default;
 
+        constexpr result & operator = (result &&)      = default;
+        constexpr result & operator = (result const &) = default;
+
         constexpr bool has_value () const {
             return content.index() == 0;
         }
@@ -147,6 +161,9 @@ namespace esl {
         constexpr reference_result (value_type       &       v): content{&v}           {}
         constexpr reference_result (reference_result const &) = default;
         constexpr reference_result (reference_result &&)      = default;
+
+        constexpr reference_result & operator = (reference_result &&)      = default;
+        constexpr reference_result & operator = (reference_result const &) = default;
 
         constexpr bool has_value () const {
             return content.index() == 0;
@@ -202,6 +219,9 @@ namespace esl {
         constexpr result (result       const &) = default;
         constexpr result (result       &&)      = default;
 
+        result & operator = (result &&)      = default;
+        result & operator = (result const &) = default;
+
         constexpr bool has_value () const {
             return !content.has_value();
         }
@@ -237,6 +257,11 @@ namespace esl {
         constexpr optional_result (value_type      &&      v): content{std::move(v)} {}
         constexpr optional_result (optional_result const &) = default;
         constexpr optional_result (optional_result &&)      = default;
+        constexpr optional_result (result<T>       const & r): content{r.content}            {}
+        constexpr optional_result (result<T>       &&      r): content{std::move(r.content)} {}
+
+        constexpr optional_result & operator = (optional_result &&)      = default;
+        constexpr optional_result & operator = (optional_result const &) = default;
 
         constexpr bool has_value () const {
             return content.has_value() && (content->index() == 0);

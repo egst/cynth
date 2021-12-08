@@ -2,17 +2,21 @@
 
 #include "esl/component.hpp"
 
+// Note: These are dependencies of nodes/types.hpp, but are only forward declared there:
+#include "ast/categories/type.hpp"
+
 namespace esl {
 
-    using cynth::ast::node::ArrayType
-    using cynth::ast::node::Auto
-    using cynth::ast::node::BufferType
-    using cynth::ast::node::ConstType
-    using cynth::ast::node::InType
-    using cynth::ast::node::OutType
-    using cynth::ast::node::TupleType
-    using cynth::ast::node::TypeDecl
-    using cynth::ast::node::TypeName
+    using cynth::ast::node::ArrayType;
+    using cynth::ast::node::Auto;
+    using cynth::ast::node::BufferType;
+    using cynth::ast::node::ConstType;
+    using cynth::ast::node::FunctionType;
+    using cynth::ast::node::InType;
+    using cynth::ast::node::OutType;
+    using cynth::ast::node::TupleType;
+    using cynth::ast::node::TypeDecl;
+    using cynth::ast::node::TypeName;
 
     template <>
     void component_deleter<ArrayType>::operator () (ArrayType * ptr) const {

@@ -2,6 +2,9 @@
 
 #include "esl/component.hpp"
 
+// Note: These are dependencies of nodes/range_declarations.hpp, but are only forward declared there:
+#include "ast/categories/range_declaration.hpp"
+
 namespace esl {
 
     using cynth::ast::node::RangeDecl;

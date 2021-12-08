@@ -8,9 +8,10 @@
 #include <optional>
 #include <unordered_map>
 
+#include "sem/context_types.hpp"
+#include "sem/declarations.hpp"
 #include "sem/types.hpp"
 #include "sem/values.hpp"
-#include "sem/context_types.hpp"
 
 namespace cynth::sem {
 

@@ -5,9 +5,11 @@
 #include "esl/component.hpp"
 #include "esl/category.hpp"
 
-#include "common_interface_types.hpp"
-#include "sem/numeric_types.hpp"
+#include "sem/forward.hpp"
 #include "sem/interface_types.hpp"
+#include "sem/numeric_types.hpp"
+#include "sem/translation.hpp"
+#include "common_interface_types.hpp"
 
 #include <type_traits>
 #include <variant>
@@ -15,7 +17,20 @@
 // Note: No macros escape this file.
 #define TYPE \
     DisplayResult display () const; \
-    TypeTranslationResult translateType () const
+    StatementTranslationResult translateDefinition ( \
+        TranslationContext &, \
+        std::optional<std::string> const & definition, \
+        bool compval \
+    ) const;
+// TODO: translateDefinition should accept `optional<string> definition` with nullopt value extending the functionality to declarations.
+
+//TypeTranslationResult translateType () const
+
+#define DIRECT_TYPE_NAME(name) \
+    constexpr static char const * typeName = name
+
+#define TYPE_NAME() \
+    TypeNameResult getTypeName () const
 
 #define COMMON(type) \
     CommonTypeResult commonType (type const &) const
@@ -36,11 +51,14 @@ namespace cynth::sem {
         struct Bool {
             TYPE;
 
+            DIRECT_TYPE_NAME(str::boolean);
+
             COMMON(type::Bool);
             COMMON(type::Int);
             COMMON(type::Float);
             COMMON(type::In);
             COMMON(type::Const);
+            COMMON(type::Static);
 
             SAME(type::Bool);
 
@@ -51,11 +69,14 @@ namespace cynth::sem {
         struct Int {
             TYPE;
 
+            DIRECT_TYPE_NAME(str::integral);
+
             // implicit common(Bool)
             COMMON(type::Int);
             COMMON(type::Float);
             COMMON(type::In);
             COMMON(type::Const);
+            COMMON(type::Static);
 
             SAME(type::Int);
         };
@@ -63,11 +84,14 @@ namespace cynth::sem {
         struct Float {
             TYPE;
 
+            DIRECT_TYPE_NAME(str::floating);
+
             // implicit common(Bool)
             // implicit common(Int)
             COMMON(type::Float);
             COMMON(type::In);
             COMMON(type::Const);
+            COMMON(type::Static);
 
             SAME(type::Float);
         };
@@ -75,6 +99,8 @@ namespace cynth::sem {
         /** Strings will not be used in the first versions. */
         struct String {
             TYPE;
+
+            DIRECT_TYPE_NAME(str::string);
 
             COMMON(type::String);
 
@@ -99,10 +125,15 @@ namespace cynth::sem {
             };
 
             template <bool Complete>
+            struct Static {
+                esl::component<Type<Complete>> type;
+            };
+
+            template <bool Complete>
             using Size = std::conditional_t <
                 Complete,
                 Integral,
-                esl::component<IncompleteValue>
+                esl::component<IncompleteValue> // TODO: This makes types dependant on values.
             >;
 
             template <bool Complete>
@@ -150,12 +181,31 @@ namespace cynth::sem {
         struct Const: detail::types::Const<true> {
             TYPE;
 
+            TYPE_NAME();
+
             // implicit common(Bool)
             // implicit common(Int)
             // implicit common(Float)
             COMMON(type::Const);
+            COMMON(type::Static);
+            COMMON(type::Array);
 
             SAME(type::Const);
+
+            DECAY();
+        };
+
+        struct Static: detail::types::Static<true> {
+            TYPE;
+
+            // implicit common(Bool)
+            // implicit common(Int)
+            // implicit common(Float)
+            // implicit common(Const)
+            COMMON(type::Static);
+            COMMON(type::Array);
+
+            SAME(type::Static);
 
             DECAY();
         };
@@ -163,6 +213,8 @@ namespace cynth::sem {
         struct Array: detail::types::Array<true> {
             TYPE;
 
+            // implicit coomon(Const)
+            // implicit coomon(Static)
             COMMON(type::Array);
 
             SAME(type::Array);
@@ -200,6 +252,10 @@ namespace cynth::sem {
             INCOMPLETE_TYPE;
         };
 
+        struct IncompleteStatic: detail::types::Static<false> {
+            INCOMPLETE_TYPE;
+        };
+
         struct IncompleteArray: detail::types::Array<false> {
             INCOMPLETE_TYPE;
         };
@@ -230,6 +286,7 @@ namespace cynth::sem {
         using Complete = esl::extend<
             Simple,
             type::Const,
+            type::Static,
             type::In,
             type::Out,
             type::Array,
@@ -240,6 +297,7 @@ namespace cynth::sem {
         using Incomplete = esl::extend<
             Complete,
             type::IncompleteConst,
+            type::IncompleteStatic,
             type::IncompleteIn,
             type::IncompleteOut,
             type::IncompleteArray,

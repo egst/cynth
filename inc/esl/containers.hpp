@@ -33,7 +33,15 @@ namespace esl {
     template <typename T, template <typename...> typename V>
     V<T> insert_cat (V<T> && a, V<T> && b) {
         a.insert(a.end(), b.begin(), b.end());
-        return std::move(a);
+        return std::move(a); // TODO: Why not forward?
+    }
+
+    /** Concat using the standart push method with variadic value parameters. */
+    template <esl::back_pushable_range R, std::same_as<esl::range_value_type<R>>... Ts>
+    R push_cat (R && r, Ts &&... vals) {
+        R c = std::forward<R>(r);
+        (c.push(vals), ...);
+        return c;
     }
 
     /** vector::push_back in a free function for convenience is some specific cases. */

@@ -1,21 +1,23 @@
 #pragma once
 
-#include "esl/macros.hpp"
-
 #include <concepts>
 #include <optional>
 #include <utility>
 
-#include "esl/type_manip.hpp"
 #include "esl/concepts.hpp"
-#include "esl/functional.hpp"
 #include "esl/containers.hpp"
+#include "esl/functional.hpp"
 #include "esl/ranges.hpp"
+#include "esl/type_manip.hpp"
 
-#include "sem/interface_types.hpp"
 #include "sem/context.hpp"
-#include "sem/values.hpp"
 #include "sem/declarations.hpp"
+#include "sem/interface_types.hpp"
+#include "sem/translation.hpp"
+#include "sem/values.hpp"
+
+//#include "esl/debug.hpp"
+//#include "esl/macros.hpp"
 
 namespace cynth::sem::interface {
 
@@ -68,35 +70,82 @@ namespace cynth::sem::interface {
         { node.resolveTarget(c) } -> std::same_as<TargetResolutionResult>;
     };
 
-    /*
     template <typename Node>
-    concept translatable = requires (Node node, TranslationContext & ctx) {
-        { node.translate(ctx) } -> std::same_as<TranslationResult>;
+    concept translatableExpression = requires (Node node, TranslationContext & ctx) {
+        { node.translate(ctx) } -> std::same_as<ExpressionTranslationResult>;
     };
-    */
 
     template <typename Node>
-    concept translatableType = requires (Node node) {
-        { node.translateType() } -> std::same_as<TypeTranslationResult>;
+    concept translatableDefinition = requires (
+        Node node,
+        TranslationContext & ctx,
+        std::string const & definition,
+        bool compval
+    ) {
+        { node.translateDefinition(ctx, definition, compval) } -> std::same_as<StatementTranslationResult>;
     };
+
+    template <typename Node>
+    concept directlyNamedType = requires {
+        { Node::typeName } -> std::same_as<TypeNameConstant>;
+    };
+
+    template <typename Node>
+    concept namedType = requires (Node node) {
+        { node.getTypeName() } -> std::same_as<TypeNameResult>;
+    };
+
+    template <typename T>
+    concept simpleType =
+        std::same_as<T, type::Bool> ||
+        std::same_as<T, type::Int>  ||
+        std::same_as<T, type::Float>;
 
 }
 
 namespace cynth::sem {
 
-    /*
-    constexpr auto translate =
-        [] <interface::value Node> (Node const & node) {
-            return node.translate();
-        };
-    */
+    constexpr auto translateDefinition (
+        TranslationContext & ctx,
+        std::string const & definition,
+        bool compval
+    ) {
+        return esl::overload(
+            [&ctx, &definition, compval] (interface::translatableExpression auto const & node)
+            -> StatementTranslationResult {
+                return node.translateDefinition(ctx, definition, compval);
+            },
+            [] (interface::type auto const & node) -> StatementTranslationResult {
+                return esl::result_error{"A definition of this type cannot be directly translated."};
+            }
+        );
+    }
 
-    constexpr auto translateType = esl::overload(
-        [] (interface::translatableType auto const & node) -> TypeTranslationResult {
-            return node.translateType();
+    constexpr auto translateExpression (TranslationContext &) {
+        return esl::overload(
+            [] (interface::translatableDefinition auto const & node) -> StatementTranslationResult {
+                return node.translateExpression();
+            },
+            [] (interface::type auto const & node) -> StatementTranslationResult {
+                return esl::result_error{"This expression cannot be directly translated."};
+            }
+        );
+    }
+
+    constexpr auto directTypeName =
+        [] <interface::directlyNamedType T> (T const & node) -> std::string {
+            return c::typeName(std::string{T::typeName});
+        };
+
+    constexpr auto typeName = esl::overload(
+        [] (interface::directlyNamedType auto const & node) -> TypeNameResult {
+            return {directTypeName(node)};
         },
-        [] (auto const & node) -> TypeTranslationResult {
-            return esl::result_error{"This type cannot be directly translated."};
+        [] <interface::namedType T> (T const & node) -> TypeNameResult requires (!interface::directlyNamedType<T>) {
+            return esl::lift<esl::target::result>(c::typeName)(node.getTypeName());
+        },
+        [] <interface::type T> (T const & node) -> TypeNameResult requires (!interface::namedType<T> && !interface::directlyNamedType<T>) {
+            return esl::result_error{"This type does not have a name."};
         }
     );
 
@@ -107,10 +156,11 @@ namespace cynth::sem {
 
     template <typename Out>
     constexpr auto get = esl::overload(
-        [] (interface::valueOf<Out> auto const & node) -> GetResult<Out> {
-            return node.template get<Out>();
+        [] <interface::valueOf<Out> T> (T const & node) -> GetResult<Out> {
+            return node.get();
         },
-        [] (auto const &) -> GetResult<Out> {
+        // TODO: Why is this ambiguout without `requires (!...)` while other similar functions are ok?
+        [] <interface::value T> (T const &) -> GetResult<Out> requires (!interface::valueOf<T, Out>) {
             return esl::result_error{"Value does not contain the requested type."};
         }
     );

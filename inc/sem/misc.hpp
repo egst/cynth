@@ -13,6 +13,7 @@
 #include "sem/numeric_types.hpp"
 #include "sem/forward.hpp"
 #include "sem/context.hpp"
+#include "sem/interface.hpp"
 
 namespace cynth::sem {
 
@@ -38,10 +39,13 @@ namespace cynth::sem {
 
         constexpr auto ArrayElemShallowTypeCheck = esl::overload(
             [] (type::In const &) -> esl::result<void> {
-                return esl::result_error{"Arrays of input values are not supported yet."};
+                return esl::result_error{"Arrays cannot contain input values."};
             },
             [] (type::Out const &) -> esl::result<void> {
-                return esl::result_error{"Arrays of output values are not supported yet."};
+                return esl::result_error{"Arrays cannot contain output values."};
+            },
+            [] (type::Static const &) -> esl::result<void> {
+                return esl::result_error{"Arrays cannot contain static values."};
             },
             [] (type::Array const &) -> esl::result<void> {
                 return esl::result_error{"Nested (multidimensional) arrays are not supported yet."};
@@ -82,16 +86,16 @@ namespace cynth::sem {
 
     constexpr auto copy (Context & ctx) {
         return esl::overload(
-            [&ctx] (value::Array const & a) -> esl::result<value::complete> {
-                auto stored = ctx.store_value(*a.value);
+            [&ctx] (value::Array const & a) -> esl::result<CompleteValue> {
+                auto stored = ctx.storeValue(*a.value);
                 if (!stored)
                     return stored.error();
                 auto typeCopy = a.type;
-                return value::make_array(stored.get(), std::move(typeCopy), a.size);
+                return value::Array::make(stored.get(), std::move(typeCopy), a.size);
             },
-            [] <interface::value T> (T && v) -> esl::result<value::complete>
+            [] <interface::value T> (T && v) -> esl::result<CompleteValue>
             requires (!esl::same_but_cvref<T, value::Array>) {
-                return value::complete{std::forward<T>(v)};
+                return CompleteValue{std::forward<T>(v)};
             }
         );
     };
@@ -104,13 +108,13 @@ namespace cynth::sem {
 
     constexpr auto declarationNames = esl::overload(
         [] (CompleteDeclaration const & declaration) -> std::vector<std::string> {
-            return detail::misc::decl_names(declaration);
+            return detail::misc::declNames(declaration);
         },
         [] (esl::range_of<CompleteDeclaration> auto const & declarations) -> std::vector<std::string> {
-            std::vector<std::string> esl::result;
-            for (auto & decl : declarations) for (auto names : detail::misc::decl_names(decl))
-                esl::result.push_back(std::move(names));
-            return esl::result;
+            std::vector<std::string> result;
+            for (auto & decl : declarations) for (auto names : detail::misc::declNames(decl))
+                result.push_back(std::move(names));
+            return result;
         }
     );
 

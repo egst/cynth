@@ -4,7 +4,7 @@
 
 namespace esl {
 
-    using ast::category::RangeDeclaration;
+    using cynth::ast::category::RangeDeclaration;
 
     template <>
     void component_deleter<RangeDeclaration>::operator () (RangeDeclaration * ptr) const {

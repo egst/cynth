@@ -3,7 +3,9 @@
 * fix the syntax error
 * add errors to the parser
 * fix esl::compose or remove its use everywhere
-* fix the segfaults with strings not wrapped in components
+* fix the segfaults with strings not wrapped in components  
+    maybe the problem was with the esl::join function (with a single value to join)  
+    check if it's fixed or if the problem can be traced to the esl::join function
 
 # Makefile
 
@@ -24,6 +26,7 @@
     however, on raw pointers (or other non-owning referential types) it must be the other way around *move(ptr)
 * how come, that i need to handle delete and new for incomplete component types manually, but it just somehow works for std::vector of incomplete types?
 * check if `return decltype(auto)` used where needed (esp. in lift)
+* `std:forward` when calling perfectly forwarded callables
 
 # Naming
 
@@ -73,6 +76,13 @@
     this should be taken care of now
 * reading input variables should be impossible at compile time  
     passing referential input variables should be possible though
+* decide on consistent "compconst" terminology and semantics
+    * comp(val)      = a value known at compilation type
+    * const(val)     = a value of an explicitly of implicitly `const` type
+    * compconst(val) = a value that is both comp and const  
+    compconst values have no runtime declarations in the C code, only a compilation declaration in the compilation context  
+    non-const values have both a compilation and a runtime declaration  
+    non-const non-comp values have a compilation declaration with no value set until a comp value is assigned to them
 
 # Some old TODOs
 

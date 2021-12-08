@@ -1,7 +1,5 @@
 #include "esl/component.hpp"
 
-#include "config.hpp"
-
 #include <string>
 
 namespace esl {

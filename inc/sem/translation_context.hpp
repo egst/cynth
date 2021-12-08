@@ -53,7 +53,7 @@ namespace cynth::sem {
 
         std::size_t nextId ();
 
-    protected:
+    //protected:
         esl::result<void> declareValue (
             std::string const &,
             esl::tiny_vector<CompleteType> const &
@@ -64,24 +64,23 @@ namespace cynth::sem {
             esl::component_vector<TypedValue> const & // TODO: or maybe tiny_component_vector?
         );
 
-        // TODO...
-        esl::result<void> beginFunction   ();
-        esl::result<void> endFunction     ();
-        esl::result<void> beginScope      ();
-        esl::result<void> endScope        ();
-        esl::result<void> insertStatement ();
+        esl::result<void> beginFunction ();
+        esl::result<void> endFunction   ();
+        esl::result<void> beginScope    ();
+        esl::result<void> endScope      ();
 
-        // Global & main:
-        //esl::tiny_vector<?> declarations;    // may contaion initializations
-        //esl::tiny_vector<?> definitions;     // function definitions
-        //esl::tiny_vector<?> initializations;
-        //esl::tiny_vector<?> statements;      // statements, `if (...) {`, `for (...) {`, `{`, `}`
+        esl::result<void> insertStatement          (std::string);
+        esl::result<void> insertFunctionAllocation (std::string);
+        esl::result<void> insertStaticAllocation   (std::string);
 
-        // Local (current function):
+    protected:
+        // Global:
+        std::vector<std::string> staticData; // static lifetime
+
+        // Local (current function or main):
         struct {
-            //esl::tiny_vector<?> declarations;
-            //esl::tiny_vector<?> initializations;
-            //esl::tiny_vector<?> statements;      // statements, `if (...) {`, `for (...) {`, `{`, `}`
+            std::vector<std::string> functionData; // function scope lifetime
+            std::vector<std::string> statements;   // including stuff like: `if (...) {`, `for (...) {`, `{`, `}`
         } functionContext;
 
         // Every identifier that could potentially collide with others

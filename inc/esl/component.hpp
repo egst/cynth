@@ -304,6 +304,7 @@ namespace esl {
                         //v.push_back(component<value_type>{std::move(item)});
                         //v.push_back(std::move(item));
                         v.push_back(std::move(static_cast<value_type>(item)));
+                    return v;
                 }
 
                 /** Convert to a compatible vector type. */
@@ -328,7 +329,8 @@ namespace esl {
     template <template <typename...> typename Base>
     constexpr auto make_basic_component_vector = [] <esl::range T> (T && values) {
         using value_type = esl::range_value_type<T>;
-        return basic_component_vector<value_type, Base>{std::forward<T>(values)};
+        //return basic_component_vector<value_type, Base>{std::forward<T>(values)};
+        return basic_component_vector<value_type, Base>::make(std::forward<T>(values));
     };
 
     template <typename T> using component_vector      = basic_component_vector<T, std::vector>;

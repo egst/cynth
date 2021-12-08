@@ -1,13 +1,17 @@
 #pragma once
 
-#include "esl/type_manip.hpp"
-#include "esl/concepts.hpp"
-#include "esl/tuple.hpp"
-
-#include <utility>
-#include <type_traits>
-#include <tuple>
 #include <functional>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
+#include "esl/concepts.hpp"
+#include "esl/result.hpp"
+#include "esl/tuple.hpp"
+#include "esl/type_manip.hpp"
+
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
 
 namespace esl {
 
@@ -167,5 +171,51 @@ namespace esl {
 
     template <typename... Fs>
     using composed = decltype(compose(std::declval<Fs>()...));
+
+    namespace detail::functional {
+
+        template <typename...> struct all_same_impl;
+
+        template <typename Single>
+        struct all_same_impl<Single> {
+            constexpr static bool value = true;
+        };
+
+        template <typename First, typename Second, typename... Rest>
+        struct all_same_impl<First, Second, Rest...> {
+            constexpr static bool value = std::same_as<First, Second> && all_same_impl<Second, Rest...>::value;
+        };
+
+        template <typename... Ts>
+        concept all_same = all_same_impl<Ts...>::value;
+
+        template <typename F>
+        using result_type = decltype(std::declval<F>()());
+
+        template <typename...> struct same_result_type_impl;
+
+        template <typename First, typename... Rest>
+        requires (all_same<result_type<First>, result_type<Rest>...>)
+        struct same_result_type_impl<First, Rest...> {
+            using type = result_type<First>;
+        };
+
+        template <typename... Ts>
+        using same_result_type = typename same_result_type_impl<Ts...>::type;
+
+    }
+
+    template <typename First, typename... Rest>
+    constexpr auto chain_results (First && first, Rest &&... rest) {
+        using result_type = detail::functional::same_result_type<First, Rest...>;
+        result_type result = std::forward<First>(first)();
+        ((
+            !result.has_error() ? (
+                result = std::forward<Rest>(rest)(),
+                0
+            ) : 0
+        ), ...);
+        return result;
+    }
 
 }

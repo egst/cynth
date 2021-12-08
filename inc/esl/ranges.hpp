@@ -1,9 +1,11 @@
 #pragma once
 
-#include <cstddef>
-#include <utility>
-#include <type_traits>
 #include <concepts>
+#include <cstddef>
+#include <type_traits>
+#include <utility>
+
+#include "esl/iterator.hpp"
 
 namespace esl {
 
@@ -57,6 +59,24 @@ namespace esl {
     template <typename T>
     concept reservable_range = esl::sized_range<T> && requires (T r, std::size_t size) {
         r.reserve(size);
+    };
+
+    /**
+     *  Usecase: In generic code, where a dummy value conforming to the range requirements above
+     *  needs to be passed somewhere with no overhead.
+     */
+    template <typename T = int>
+    struct nullrange {
+        struct iterator: esl::iterator<iterator> {
+            T dereference () const { return {}; }
+            std::ptrdiff_t distance (iterator const &) const { return 0; }
+            void advance (std::ptrdiff_t) {}
+        };
+        constexpr iterator begin     () const { return {}; }
+        constexpr iterator end       () const { return {}; }
+        constexpr int      size      () const { return 0; }
+        constexpr void     reserve   (std::size_t) const {};
+        constexpr void     push_back (T const &)   const {};
     };
 
 }
