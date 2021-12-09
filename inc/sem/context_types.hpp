@@ -23,15 +23,28 @@ namespace cynth::sem {
     template <typename T>
     using RefvalContainer = std::forward_list<T>;
 
+    struct TranslatedExpression {
+        std::string expression;
+        bool referential;
+
+        inline static TranslatedExpression makeValue (std::string e) {
+            return TranslatedExpression{.expression = e, .referential = false};
+        }
+
+        inline static TranslatedExpression makeReference (std::string e) {
+            return TranslatedExpression{.expression = e, .referential = true};
+        }
+    };
+
     // TODO: There probably won't be cases of having both value and expression.
     // There might be cases of having neither one though.
     // So value and expression could be combined in optional<variant<value, string>>
     // Update: What about functions? They'll have a runtime C expression - the context struct
     // (probably just its name), as well as a compile time value - the C function name.
     struct TypedValue {
-        CompleteType                 type;
-        std::optional<CompleteValue> value;      // Compilation constant value.
-        std::optional<std::string>   expression; // Translated C expression - usually a name.
+        CompleteType type;
+        std::optional<CompleteValue> value; // Compilation constant value.
+        std::optional<TranslatedExpression> expression; // Translated C expression - usually a name.
     };
 
     // TODO: vector<struct{value *, type}> instead of struct{vector<value *>, vector<type>}

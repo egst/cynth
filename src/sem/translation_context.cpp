@@ -1,5 +1,6 @@
 #include "sem/translation_context.hpp"
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -19,8 +20,12 @@
 
 namespace cynth::sem {
 
-    std::size_t TranslationContext::nextId () {
+    std::size_t GlobalContext::nextId () {
         return id++;
+    }
+
+    std::size_t TranslationContext::nextId () {
+        return globalCtx.nextId();
     }
 
     /*
@@ -173,7 +178,7 @@ namespace cynth::sem {
         IN BASIC:
         global:
             cth_{type} volatile cth_val_{i = nextId()};
-         local:
+        local:
             cth_{type} const * var_{nextId()} = &cth_val_{i};
 
         OUT BASIC:
@@ -236,27 +241,44 @@ namespace cynth::sem {
             cth_tup${type1}${type2}$... const * const var_{j = nextId()} = cth_val_{i}.value; // implicitly const & const-valued
             arr_copy_to({definitino}, var_{j});
 
-        FUNCTIION:
+        FUNCTION:
         global:
         struct cth_ret_{i = nextId()} {
             {retType1} e1;
             {retType2} e2;
             ...
         };
-        struct cth_ctx_{i} {
-            int branch;
-            {capType1} val_{capName1}; // TODO: name or id?
-            {capType2} val_{capName2};
+        struct cth_ctx0_{i} {
+            // TODO: name or id?
+            {captType1} var_{captName1};
+            {captType2} var_{captName2};
+            ...
+            // when allocations needed:
+            {captValType2} val_{captName2};
             ...
         };
+        struct cth_ctx1_{i} {
+            {captType1} val_{captName1};
+            {captType2} val_{captName2};
+            ...
+        };
+        ...
+        struct cth_ctx_{i} {
+            int branch;
+            union {
+                cth_ctx0_{i} v0,
+                cth_ctx1_{i} v1,
+                ...
+            } data;
+        };
         cth_ret_{i} cth_fun0_{i} (
-            cth_ctx_{i} const * ctx,
+            cth_ctx0_{i} const * ctx,
             cth_{argType1} val_{j = nextId()},
             cth_{argType2} val_{k = nextId()},
             ...
         ) { ... }
         cth_ret_{i} cth_fun1_{i} (
-            cth_ctx_{i} const * ctx,
+            cth_ctx1_{i} const * ctx,
             cth_{argType1} val_{j = nextId()},
             cth_{argType2} val_{k = nextId()},
             ...
@@ -270,12 +292,14 @@ namespace cynth::sem {
         ) {
             switch (ctx->branch) {
             case 0:
-                return cth_fun0_{i}(ctx, val_{j}, val_{k}, ...);
+                return cth_fun0_{i}(ctx.data.v0, val_{j}, val_{k}, ...);
             case 1:
-                return cth_fun1_{i}(ctx, val_{j}, val_{k}, ...);
+                return cth_fun1_{i}(ctx.data.v1, val_{j}, val_{k}, ...);
             ...
             }
         }
+        local:
+        typeof(<definition>) ctx = <definition>;
 
      */
 
@@ -292,10 +316,10 @@ namespace cynth::sem {
             return convertedResult.error();
         auto converted = *convertedResult;
 
-        // compilation definition:
-        compconst.defineValue(decl.name, converted);
+        // compilation definition: (this performs all the necessary type checks)
+        compCtx.defineValue(decl.name, converted);
 
-        // runtime definition:
+        // runtime definition: (this assumes type correctness)
         for (auto const & [i, type, value] : esl::enumerate(decl.type, converted)) {
             if (!value.expression)
                 return esl::result_error{"This value cannot be translated."}; // TODO: Maybe for some types it's ok?

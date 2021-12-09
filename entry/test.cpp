@@ -11,6 +11,7 @@
 #include "esl/type_manip.hpp"
 #include "esl/zip.hpp"
 
+#include "sem/translation_context.hpp"
 //#include "sem/types.hpp"
 //#include "sem/interface.hpp"
 

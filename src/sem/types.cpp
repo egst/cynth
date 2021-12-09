@@ -68,94 +68,106 @@ namespace cynth::sem {
             std::optional<std::string> const & definition,
             std::string const & typeName
         ) {
-            /*
-            cth_{type} var_{nextId()} = {definition};
-            */
-
             auto def = definition.value_or("0");
             auto id  = std::to_string(ctx.nextId());
 
             auto result = c::definition(c::typeName(typeName), c::variableName(id), def);
 
+            /***
+            local:
+            cth_<type> var_<nextId()> = <definition>;
+            ***/
             return ctx.insertStatement(result);
         }
 
-        enum ArrayKind {
-            constant,
-            nonConst,
-            stat // static
-        };
+        template <typename... Ts>
+        esl::result<std::string> translateArrayAllocation (
+            TranslationContext & ctx,
+            std::optional<std::string> init,
+            std::string size,
+            Ts const &... types
+        ) {
+            auto valName = c::valueName(std::to_string(ctx.nextId()));
+            auto valType = c::arrayValueType(size, types...);
+            auto alloc = init
+                ? c::statement(c::definition(valType, valName, *init))
+                : c::statement(c::declaration(valType, valName));
+
+            /***
+            function:
+            struct cth_arr$<size>$<type1>$<type2>$... val_<i = nextId()> <`= `init>?;
+            ***/
+            auto result = ctx.insertFunctionAllocation(alloc);
+            if (!result)
+                return result.error();
+
+            /***
+            val_<i>.data
+            ***/
+            return c::arrayData(valName);
+        }
+
+        esl::result<std::vector<std::string>> arrayTypeNames (type::Array const & type) {
+            return esl::unite_results(
+                esl::lift<esl::target::component_vector, esl::target::category>(typeName)(type.type)
+            );
+        }
+
+        bool arrayTypesConst (type::Array const & type) {
+            return esl::all(esl::lift<esl::target::component_vector, esl::target::category>(
+                [] (type::Const const &) {
+                    return true;
+                },
+                // TODO: Or any of the implicitly const types. (Which might be irrelevant for arrays though...)
+                [] (auto const &) {
+                    return false;
+                }
+            )(type.type));
+        }
 
         esl::result<void> translateArrayDefinition (
             TranslationContext & ctx,
+            bool constant,
             type::Array const & type,
-            ArrayKind kind,
             std::optional<std::string> const & definition
         ) {
-            auto typeNamesResult = esl::unite_results(
-                esl::lift<esl::target::component_vector, esl::target::category>(typeName)(type.type)
-            );
+            auto typeNamesResult = arrayTypeNames(type);
             if (!typeNamesResult)
                 return typeNamesResult.error();
+            auto typeNames = *typeNamesResult;
 
-            auto types   = c::templateArguments(*typeNamesResult);
-            auto valId   = std::to_string(ctx.nextId());
-            auto varId   = std::to_string(ctx.nextId());
+            auto types   = c::templateArguments(typeNames);
             auto size    = std::to_string(type.size);
-            auto valType = c::arrayType(size, types);
-            auto tupType = c::tupleType(types);
-            auto valName = c::valueName(valId);
-            auto varName = c::variableName(varId);
-            auto init    = definition ? c::statement(c::arrayCopyTo(*definition, varName)) : "";
-            // TODO: Explicitly initialize to all zeros? What does C do in static and stack allocations?
-            // I think it initilizes to zero in static allocations and keeps it uninitialized on the stack, but I might be mistaken.
+            auto varName = c::variableName(std::to_string(ctx.nextId()));
+            auto ptrType = constant
+                ? c::constArrayPointerType(types)
+                : c::arrayPointerType(types);
 
-            if (kind == ArrayKind::stat) {
-                /*
-                global:
-                cth_arr${size}${type1}${type2}$... const cth_val_{i = nextId()}; // implicitly const
+            if (definition) {
+                auto local = c::statement(c::definition(ptrType, varName, *definition));
+
+                /***
                 local:
-                cth_tup${type1}${type2}$... const * const var_{j = nextId()} = cth_val_{i}.value; // implicitly const & const-valued
-                arr_copy_to({definitino}, var_{j});
-
-                note, that some values in the tuple struct might already be const, but adding redundant const to the whole struct is still ok
-                */
-
-                if (!definition)
-                    return esl::result_error{"Static arrays must be explicitly initialized."};
-
-                auto ptrType = c::constness(c::pointer(c::constness(tupType)));
-                auto alloc   = c::statement(c::declaration(c::constness(valType), c::global(valName)));
-                auto local   = c::statement(c::definition(ptrType, varName, c::arrayValue(c::global(valName))));
-
-                return esl::chain_results(
-                    [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
-                    [&ctx, &local] { return ctx.insertStatement(local); },
-                    [&ctx, &init]  { return init.empty() ? esl::result<void>{} : ctx.insertStatement(init); }
-                );
-
+                struct cth_tup$<type1>$<type2>$... * <`const`>? var_<nextId()> = <definition>;
+                ***/
+                return ctx.insertStatement(local);
             }
 
-            /*
+            /***
             function scope:
-            cth_arr${size}${type1}${type2}$... val_{i = nextId()};
+            struct cth_arr$<size>$<type1>$<type2>$... val_<i = nextId()> = {0};
+            ***/
+            auto allocatedResult = translateArrayAllocation(ctx, c::zeroInit(), size, types);
+            if (!allocatedResult)
+                return allocatedResult.error();
+
+            auto local = c::statement(c::definition(ptrType, varName, *allocatedResult));
+
+            /***
             local:
-            cth_tup${type1}${type2}$... * var_{j = nextId()} = val_{i}.value;
-            cth_tup${type1}${type2}$... * const var_{j = nextId()} = val_{i}.value; // const
-            arr_copy_to({definitino}, var_{j})
-
-            note that const values will be specified in the tuple struct so there is no need for more const specifiers
-            */
-
-            auto ptrType = kind == ArrayKind::constant ? c::constness(c::pointer(tupType)) : c::pointer(tupType);
-            auto alloc   = c::statement(c::declaration(valType, valName));
-            auto local   = c::statement(c::definition(ptrType, varName, c::arrayValue(valName)));
-
-            return esl::chain_results(
-                [&ctx, &alloc] { return ctx.insertFunctionAllocation(alloc); },
-                [&ctx, &local] { return ctx.insertStatement(local); },
-                [&ctx, &init]  { return init.empty() ? esl::result<void>{} : ctx.insertStatement(init); }
-            );
+            struct cth_tup$<type1>$<type2>$... * <`const`>? var_<nextId()> = val_<i>.data;
+            ***/
+            return ctx.insertStatement(local);
         };
 
     }
@@ -184,11 +196,6 @@ namespace cynth::sem {
     }
 
     CommonTypeResult type::Bool::commonType (type::Const const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(sem::commonType)(*this, other.type);
-    }
-
-    CommonTypeResult type::Bool::commonType (type::Static const & other) const {
         using target = esl::target::nested<esl::target::component, esl::target::category>;
         return esl::lift_nary<esl::target::direct, target>(sem::commonType)(*this, other.type);
     }
@@ -229,11 +236,6 @@ namespace cynth::sem {
         return esl::lift_nary<esl::target::direct, target>(sem::commonType)(*this, other.type);
     }
 
-    CommonTypeResult type::Int::commonType (type::Static const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(sem::commonType)(*this, other.type);
-    }
-
     bool type::Int::sameType (type::Int const &) const {
         return true;
     }
@@ -266,11 +268,6 @@ namespace cynth::sem {
         return esl::lift_nary<esl::target::direct, target>(sem::commonType)(*this, other.type);
     }
 
-    CommonTypeResult type::Float::commonType (type::Static const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(sem::commonType)(*this, other.type);
-    }
-
     bool type::Float::sameType (type::Float const &) const {
         return true;
     }
@@ -299,7 +296,7 @@ namespace cynth::sem {
 
     StatementTranslationResult type::String::translateDefinition (
         TranslationContext &,
-        std::string const &,
+        std::optional<std::string> const &,
         bool
     ) const {
         return esl::result_error{"Strings are not implemented yet."};
@@ -329,11 +326,43 @@ namespace cynth::sem {
     }
 
     StatementTranslationResult type::In::translateDefinition (
-        TranslationContext &,
-        std::string const &,
+        TranslationContext & ctx,
+        std::optional<std::string> const & definition,
         bool
     ) const {
-        return esl::result_error{"TODO"};
+        auto typeNameResult = esl::lift<esl::target::component, esl::target::category>(sem::directTypeName)(type);
+        if (!typeNameResult)
+            return typeNameResult.error();
+
+        auto type    = c::typeName(*typeNameResult);
+        auto varType = c::inputPointerType(type);
+        auto varName = c::variableName(std::to_string(ctx.nextId()));
+
+        if (definition) {
+            auto local = c::definition(varType, varName, *definition);
+
+            /***
+            local:
+            cth_<type> volatile * var_<nextId()> = <definition>;
+            ***/
+            return ctx.insertStatement(local);
+        }
+
+        auto valType = c::inputValueType(type);
+        auto valName = c::inputValueName(std::to_string(ctx.nextId()));
+        auto alloc   = c::declaration(valType, valName);
+        auto local   = c::definition(varType, varName, c::addressof(valName));
+
+        /***
+        global:
+        cth_<type> volatile cth_inval_<i = nextId()>;
+        local:
+        cth_<type> volatile * var_<nextId()> = &cth_inval_<i>;
+        ***/
+        return esl::chain_results(
+            [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
+            [&ctx, &local] { return ctx.insertStatement(local); }
+        );
     }
 
     //// Out ////
@@ -360,11 +389,43 @@ namespace cynth::sem {
     }
 
     StatementTranslationResult type::Out::translateDefinition (
-        TranslationContext &,
-        std::string const &,
+        TranslationContext & ctx,
+        std::optional<std::string> const & definition,
         bool
     ) const {
-        return esl::result_error{"TODO"};
+        auto typeNameResult = esl::lift<esl::target::component, esl::target::category>(sem::directTypeName)(type);
+        if (!typeNameResult)
+            return typeNameResult.error();
+
+        auto type    = c::typeName(*typeNameResult);
+        auto valType = c::outputValueType(type);
+        auto valName = c::outputValueName(std::to_string(ctx.nextId()));
+        auto varType = c::outputPointerType(valType);
+        auto varName = c::variableName(std::to_string(ctx.nextId()));
+
+        if (definition) {
+            auto local = c::definition(varType, varName, *definition);
+
+            /***
+            local:
+            cth_<type> * var_<nextId()> = <definition>;
+            ***/
+            return ctx.insertStatement(local);
+        }
+
+        auto alloc = c::declaration(valType, valName);
+        auto local = c::definition(varType, varName, c::addressof(valName));
+
+        /***
+        global:
+        cth_<type> cth_outval_<i = nextId()>;
+        local:
+        cth_<type> * var_<nextId()> = &cth_outval_<i>;
+        ***/
+        return esl::chain_results(
+            [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
+            [&ctx, &local] { return ctx.insertStatement(local); }
+        );
     }
 
     //// Const ////
@@ -373,7 +434,7 @@ namespace cynth::sem {
         return "T const"; // TODO
     }
 
-    // TODO: Might not be needed.
+    // TODO: This should be somehow linked with the strings configured in sem/translation.hpp
     /** `T_const` */
     TypeNameResult type::Const::getTypeName () const {
         auto result = esl::lift<esl::target::component, esl::target::category>(sem::typeName)(type);
@@ -396,10 +457,6 @@ namespace cynth::sem {
             .type = *result
         }}};
         */
-    }
-
-    CommonTypeResult type::Const::commonType (type::Static const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(sem::commonType)(type, other.type);
     }
 
     CommonTypeResult type::Const::commonType (type::Array const & other) const {
@@ -434,111 +491,19 @@ namespace cynth::sem {
         if (compval) return {}; // Skip compconst values.
         return esl::lift<esl::target::component, esl::target::category>(
             [&ctx, &definition] (type::Array const & type) -> esl::result<void> {
-                return translateArrayDefinition(ctx, type, ArrayKind::constant, definition);
+                /***
+                struct cth_tup$<type1>$<type2>$... * const var_<nextId()> = <definition|allocated>;
+                ***/
+                return translateArrayDefinition(ctx, true, type, definition);
             },
             [&ctx, &definition] <interface::simpleType T> (T const &) -> esl::result<void> {
-                /*
-                cth_{type}_const var_{nextId()} = {definition};
-                */
+                /***
+                struct cth_<type>_const var_<nextId()> = <definition>;
+                ***/
                 return translateSimpleDefinition(ctx, definition, c::constType(T::typeName));
             },
             [] (auto const &) -> esl::result<void> {
                 return esl::result_error{"Only simple types and arrays may be marked const."};
-            }
-        )(type);
-    }
-
-    //// Static ////
-
-    DisplayResult type::Static::display () const {
-        return "T static"; // TODO
-    }
-
-    TypeDecayResult type::Static::decayType () const {
-        return *type;
-    }
-
-    CommonTypeResult type::Static::commonType (type::Static const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(sem::commonType)(type, other.type);
-    }
-
-    CommonTypeResult type::Static::commonType (type::Array const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(
-            [&other] (type::Array const & a) -> esl::result<CompleteType> {
-                return a.commonType(other);
-            },
-            [] (auto const & a) -> esl::result<CompleteType> {
-                return esl::result_error{"Non-array static type does not have a common type with an array type."};
-            }
-        )(type);
-    }
-
-    bool type::Static::sameType (type::Static const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(sem::sameType)(type, other.type);
-    }
-
-    TypeCompletionResult type::IncompleteStatic::completeType (Context & ctx) const {
-        auto result = esl::lift<esl::target::component, esl::target::category>(sem::completeType(ctx))(type);
-        if (!result)
-            return result.error();
-        return {type::Static{{
-            .type = *result
-        }}};
-    }
-
-    namespace {
-
-        StatementTranslationResult translateStaticDefinition (
-            TranslationContext & ctx,
-            std::optional<std::string> const & definition,
-            std::string const & typeName
-        ) {
-            /*
-            global:
-            cth_{type} const cth_val_{i = nextId()} = {definition};
-            local:
-            cth_{type} const * var_{nextId()} = &cth_val_{i};
-            */
-
-            if (!definition)
-                return esl::result_error{"Static values must be explicitly initialized."};
-
-            auto def     = *definition;
-            auto valId   = std::to_string(ctx.nextId());
-            auto varId   = std::to_string(ctx.nextId());
-            auto valType = c::typeName(typeName);
-            auto varType = c::pointer(valType);
-            auto valName = c::global(c::valueName(valId));
-            auto varName = c::variableName(varId);
-            auto target  = c::addressof(valName);
-            auto alloc   = c::definition(valType, valName, def);
-            auto local   = c::definition(varType, varName, target);
-
-            return esl::chain_results(
-                [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
-                [&ctx, &local] { return ctx.insertStatement(local); }
-            );
-        }
-
-    }
-
-    StatementTranslationResult type::Static::translateDefinition (
-        TranslationContext & ctx,
-        std::optional<std::string> const & definition,
-        bool compval
-    ) const {
-        if (compval) return {}; // Skip compconst values. (Static types are implicitly const.)
-        return esl::lift<esl::target::component, esl::target::category>(
-            [&ctx, &definition] (type::Array const & type) -> esl::result<void> {
-                return translateArrayDefinition(ctx, type, ArrayKind::stat, definition);
-            },
-            [&ctx, &definition] <interface::simpleType T> (T const &) -> esl::result<void> {
-
-
-                return esl::result_error{"TODO"};
-            },
-            [] (auto const &) -> esl::result<void> {
-                return esl::result_error{"Only simple types and arrays can be marked static."};
             }
         )(type);
     }
@@ -640,7 +605,7 @@ namespace cynth::sem {
         std::optional<std::string> const & definition,
         bool
     ) const {
-        return translateArrayDefinition(ctx, *this, ArrayKind::nonConst, definition);
+        return translateArrayDefinition(ctx, false, *this, definition);
     }
 
     //// Buffer ////
@@ -688,12 +653,68 @@ namespace cynth::sem {
         return {*bufferResult};
     }
 
+    namespace {
+
+        enum struct BufferKind {
+            internal,
+            input,
+            output
+        };
+
+        std::string bufferValueName (
+            BufferKind kind,
+            std::string const & id
+        ) {
+            switch (kind) {
+            case BufferKind::internal:
+                return c::bufferValueName(id);
+            case BufferKind::input:
+                return c::inputBufferValueName(id);
+            case BufferKind::output:
+                return c::outputBufferValueName(id);
+            }
+        }
+
+        esl::result<std::string> translateBufferAllocation (
+            TranslationContext & ctx,
+            BufferKind kind,
+            type::Buffer const & type
+        ) {
+            auto valType = c::bufferValueType(std::to_string(type.size));
+            auto valName = bufferValueName(kind, std::to_string(ctx.nextId()));
+            auto alloc   = c::declaration(valType, valName);
+
+            /***
+            global:
+            struct cth_buff$<size> cth_<buff = `buffval`|`inbuffval`|`outbuffval`>_<i = nextId()>;
+            ***/
+            auto allocatedResult = ctx.insertStaticAllocation(alloc);
+
+            /***
+            cth_<buff>_<i>.data;
+            ***/
+            return c::bufferData(valName);
+        }
+
+    }
+
     StatementTranslationResult type::Buffer::translateDefinition (
-        TranslationContext &,
-        std::string const &,
+        TranslationContext & ctx,
+        std::optional<std::string> const & definition,
         bool
     ) const {
-        return esl::result_error{"TODO"};
+        if (!definition)
+            return esl::result_error{"Buffers must be explicitly initialized."};
+
+        auto varType = c::bufferPointerType();
+        auto varName = c::variableName(std::to_string(ctx.nextId()));
+        auto local   = c::definition(varType, varName, *definition);
+
+        /***
+        local:
+        cth_float const * const var_<nextId()> = <definition>;
+        ***/
+        return ctx.insertStatement(local);
     }
 
     //// Function ////
@@ -741,12 +762,35 @@ namespace cynth::sem {
         }}};
     }
 
-    StatementTranslationResult type::Function::translateDefinition (
-        TranslationContext &,
-        std::string const &,
-        bool
-    ) const {
-        return esl::result_error{"TODO"};
+    namespace {
+
+        // TODO: Function "allocation".
+
     }
+
+    StatementTranslationResult type::Function::translateDefinition (
+        TranslationContext & ctx,
+        std::optional<std::string> const & definition,
+        bool compval
+    ) const {
+        // TODO: Can I really skip declating the contexts?
+        // Inserting the compconst function value would need to handle declaring the context in-place as a literal constant.
+        if (compval) return {}; // Skip compconst values.
+
+        if (!definition)
+            return esl::result_error{"Functions must be initialized explicitly."};
+
+        auto varType = c::infer(*definition);
+        auto varName = c::contextVariableName(std::to_string(ctx.nextId()));
+        auto local   = c::definition(varType, varName, *definition);
+
+        /***
+        local:
+        typeof(<definition>) ctxvar_<nextId()> = <definition>;
+        ***/
+        return ctx.insertStatement(local);
+    }
+
+    // TODO: Return the declared variable's name from *::translateDefinition.
 
 }

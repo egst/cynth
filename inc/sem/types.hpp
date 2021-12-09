@@ -21,7 +21,7 @@
         TranslationContext &, \
         std::optional<std::string> const & definition, \
         bool compval \
-    ) const;
+    ) const
 // TODO: translateDefinition should accept `optional<string> definition` with nullopt value extending the functionality to declarations.
 
 //TypeTranslationResult translateType () const
@@ -58,7 +58,6 @@ namespace cynth::sem {
             COMMON(type::Float);
             COMMON(type::In);
             COMMON(type::Const);
-            COMMON(type::Static);
 
             SAME(type::Bool);
 
@@ -76,7 +75,6 @@ namespace cynth::sem {
             COMMON(type::Float);
             COMMON(type::In);
             COMMON(type::Const);
-            COMMON(type::Static);
 
             SAME(type::Int);
         };
@@ -91,7 +89,6 @@ namespace cynth::sem {
             COMMON(type::Float);
             COMMON(type::In);
             COMMON(type::Const);
-            COMMON(type::Static);
 
             SAME(type::Float);
         };
@@ -121,11 +118,6 @@ namespace cynth::sem {
 
             template <bool Complete>
             struct Const {
-                esl::component<Type<Complete>> type;
-            };
-
-            template <bool Complete>
-            struct Static {
                 esl::component<Type<Complete>> type;
             };
 
@@ -187,25 +179,9 @@ namespace cynth::sem {
             // implicit common(Int)
             // implicit common(Float)
             COMMON(type::Const);
-            COMMON(type::Static);
             COMMON(type::Array);
 
             SAME(type::Const);
-
-            DECAY();
-        };
-
-        struct Static: detail::types::Static<true> {
-            TYPE;
-
-            // implicit common(Bool)
-            // implicit common(Int)
-            // implicit common(Float)
-            // implicit common(Const)
-            COMMON(type::Static);
-            COMMON(type::Array);
-
-            SAME(type::Static);
 
             DECAY();
         };
@@ -214,7 +190,6 @@ namespace cynth::sem {
             TYPE;
 
             // implicit coomon(Const)
-            // implicit coomon(Static)
             COMMON(type::Array);
 
             SAME(type::Array);
@@ -252,10 +227,6 @@ namespace cynth::sem {
             INCOMPLETE_TYPE;
         };
 
-        struct IncompleteStatic: detail::types::Static<false> {
-            INCOMPLETE_TYPE;
-        };
-
         struct IncompleteArray: detail::types::Array<false> {
             INCOMPLETE_TYPE;
         };
@@ -286,7 +257,6 @@ namespace cynth::sem {
         using Complete = esl::extend<
             Simple,
             type::Const,
-            type::Static,
             type::In,
             type::Out,
             type::Array,
@@ -297,7 +267,6 @@ namespace cynth::sem {
         using Incomplete = esl::extend<
             Complete,
             type::IncompleteConst,
-            type::IncompleteStatic,
             type::IncompleteIn,
             type::IncompleteOut,
             type::IncompleteArray,

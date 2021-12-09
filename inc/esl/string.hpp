@@ -124,23 +124,6 @@ namespace esl {
             return detail::string::join(delim, esl::nullrange<std::string>{});
     }
 
-    /*
-    template <typename... Ts> requires (
-        sizeof...(Ts) > 0 &&
-        esl::sized_range<esl::last<Ts...>> &&
-        std::same_as<esl::range_value_type<esl::last<Ts...>>, std::string> &&
-        !std::same_as<esl::last<Ts...>, std::string>
-    )
-    auto join (std::string const & delim, Ts const &... args) {
-        return detail::string::join(delim, detail::string::last(args...), args...);
-    }
-
-    template <std::same_as<std::string>... Ts>
-    auto join (std::string const & delim, Ts const &... args) {
-        return detail::string::join(delim, esl::nullrange<>{}, args...);
-    }
-    */
-
     /** Trim the first and last characters of a string. Used to remove parentheses. */
     inline std::string trim (std::string const & str) {
         return str.substr(1, str.size() - 2);

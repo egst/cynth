@@ -12,8 +12,22 @@
 
 namespace cynth::sem {
 
+    struct GlobalContext {
+        std::size_t nextId ();
+
+    protected:
+        std::vector<std::string> internalTypes;
+        std::vector<std::string> internalFunctions;
+        std::vector<std::string> userFunctions;
+        std::vector<std::string> staticData; // static lifetime allocations
+
+        std::size_t id = 0;
+    };
+
     // TODO: find a better name for this
     struct TranslationContext {
+
+        TranslationContext (GlobalContext & ctx): globalCtx{ctx} {}
 
         esl::result<TypedValue> convert (
             CompleteType const &,
@@ -51,8 +65,6 @@ namespace cynth::sem {
             esl::tiny_vector<TypedValue> const &
         );
 
-        std::size_t nextId ();
-
     //protected:
         esl::result<void> declareValue (
             std::string const &,
@@ -69,39 +81,24 @@ namespace cynth::sem {
         esl::result<void> beginScope    ();
         esl::result<void> endScope      ();
 
+        // TODO: Don't forget that these must completely ignore empty strings.
         esl::result<void> insertStatement          (std::string);
         esl::result<void> insertFunctionAllocation (std::string);
         esl::result<void> insertStaticAllocation   (std::string);
+        esl::result<void> insertInternalFunction   (std::string);
+        esl::result<void> insertInternalType       (std::string);
+
+        std::size_t nextId ();
+
+        Context compCtx;
 
     protected:
-        // Global:
-        std::vector<std::string> staticData; // static lifetime
+        GlobalContext & globalCtx;
 
-        // Local (current function or main):
         struct {
-            std::vector<std::string> functionData; // function scope lifetime
+            std::vector<std::string> functionData; // function scope lifetime allocations
             std::vector<std::string> statements;   // including stuff like: `if (...) {`, `for (...) {`, `{`, `}`
-        } functionContext;
-
-        // Every identifier that could potentially collide with others
-        // gets a unique id incorporated into its name.
-        // Examples:
-        // cth_add_Int$Float_Int$Float - internal function to add (Int, Float) + (Int, Float)
-        // cth_Int                     - the (Int) single type
-        // cth_Int$Float               - the (Int, Float) pair type
-        // cth_t_12_Foo                - user defined type named Foo
-        // cth_v_247_bar               - global user defined value named bar
-        // cth_f_67_fun                - user defined function named fun
-        // cth_c_68_fun                - implicitly defined "captured context" struct fo the fun function
-        // cth_s_69_fun                - implicitly defined "switch" function for the fun function
-        // cth_l_69                    - implicitly "lambda" function for a user defined anonymous function
-        // v_116_x                     - local user defined value named x
-        std::size_t id = 0;
-
-    public: // TODO: Decide on visibility. (And other similar structures as well.)
-        // Compilation constants:
-        Context compconst;
-
+        } local;
     };
 
 }

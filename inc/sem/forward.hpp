@@ -7,6 +7,8 @@ namespace cynth::sem {
     struct Context;
     struct TranslationContext;
 
+    struct TranslatedExpression;
+
     struct TypedValue;
     struct TypedTargetValue;
 

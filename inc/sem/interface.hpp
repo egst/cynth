@@ -105,9 +105,10 @@ namespace cynth::sem::interface {
 
 namespace cynth::sem {
 
+    /** Use nullopt definition argument for a declaration. */
     constexpr auto translateDefinition (
         TranslationContext & ctx,
-        std::string const & definition,
+        std::optional<TranslatedExpression> const & definition,
         bool compval
     ) {
         return esl::overload(
@@ -132,17 +133,22 @@ namespace cynth::sem {
         );
     }
 
-    constexpr auto directTypeName =
-        [] <interface::directlyNamedType T> (T const & node) -> std::string {
-            return c::typeName(std::string{T::typeName});
-        };
+    constexpr auto directTypeName = esl::overload(
+        [] <interface::directlyNamedType T> (T const & node) -> TypeNameResult {
+            return std::string{T::typeName};
+        },
+        [] <interface::type T> (T const & node) -> TypeNameResult requires (!interface::directlyNamedType<T>) {
+            return esl::result_error{"This type it not directly named."};
+        }
+    );
 
+    // TODO: Might not be needed.
     constexpr auto typeName = esl::overload(
-        [] (interface::directlyNamedType auto const & node) -> TypeNameResult {
-            return {directTypeName(node)};
+        [] <interface::directlyNamedType T> (T const & node) -> TypeNameResult {
+            return std::string{T::typeName};
         },
         [] <interface::namedType T> (T const & node) -> TypeNameResult requires (!interface::directlyNamedType<T>) {
-            return esl::lift<esl::target::result>(c::typeName)(node.getTypeName());
+            return node.getTypeName();
         },
         [] <interface::type T> (T const & node) -> TypeNameResult requires (!interface::namedType<T> && !interface::directlyNamedType<T>) {
             return esl::result_error{"This type does not have a name."};

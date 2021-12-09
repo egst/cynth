@@ -63,6 +63,7 @@
     (which is the size of a view over the buffer, like with arrays),  
     while the buffer value should contain the actual values and the generator function  
     this way, the buffers may be passed by references that might refer to a smaller buffer
+* is skipping compconst values always ok? what about referential types?
 
 # Cynth
 

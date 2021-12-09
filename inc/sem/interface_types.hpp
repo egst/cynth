@@ -12,7 +12,7 @@ namespace cynth::sem {
     // Types:
     using CommonTypeResult            = esl::result<CompleteType>;
     using SameTypeResult              = bool;
-    using ExpressionTranslationResult = esl::result<std::string>;
+    using ExpressionTranslationResult = esl::result<TranslatedExpression>;
     using StatementTranslationResult  = esl::result<void>;
     using TypeNameResult              = esl::result<std::string>;
     using TypeNameConstant            = char const * const;
