@@ -116,7 +116,7 @@ namespace yy {
 #line 117 "src/parser.cpp"
 
   /// Build a parser object.
-  parser::parser (cynth::ast::node::Block & result_yyarg)
+  parser::parser (cynth::syn::node::Block & result_yyarg)
 #if YYDEBUG
     : yydebug_ (false),
       yycdebug_ (&std::cerr),
@@ -182,13 +182,13 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.YY_MOVE_OR_COPY< cynth::ast::category::ArrayElement > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::category::ArrayElement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.YY_MOVE_OR_COPY< cynth::ast::category::Declaration > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::category::Declaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -206,259 +206,259 @@ namespace yy {
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.YY_MOVE_OR_COPY< cynth::ast::category::Expression > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::category::Expression > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.YY_MOVE_OR_COPY< cynth::ast::category::RangeDeclaration > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::category::RangeDeclaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.YY_MOVE_OR_COPY< cynth::ast::category::Statement > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::category::Statement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.YY_MOVE_OR_COPY< cynth::ast::category::Type > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::category::Type > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Add > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Add > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.YY_MOVE_OR_COPY< cynth::ast::node::And > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::And > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Application > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Application > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Array > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Array > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.YY_MOVE_OR_COPY< cynth::ast::node::ArrayType > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::ArrayType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Assignment > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Assignment > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Auto > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Auto > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Block > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Block > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Bool > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Bool > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.YY_MOVE_OR_COPY< cynth::ast::node::BufferType > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::BufferType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.YY_MOVE_OR_COPY< cynth::ast::node::ConstType > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::ConstType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Conversion > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Conversion > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Declaration > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Declaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Definition > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Definition > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Div > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Div > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Eq > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Eq > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.YY_MOVE_OR_COPY< cynth::ast::node::ExprFor > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::ExprFor > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.YY_MOVE_OR_COPY< cynth::ast::node::ExprIf > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::ExprIf > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Float > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Float > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.YY_MOVE_OR_COPY< cynth::ast::node::For > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::For > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.YY_MOVE_OR_COPY< cynth::ast::node::FunDef > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::FunDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Function > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Function > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.YY_MOVE_OR_COPY< cynth::ast::node::FunctionType > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::FunctionType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Ge > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Ge > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Gt > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Gt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.YY_MOVE_OR_COPY< cynth::ast::node::If > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::If > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.YY_MOVE_OR_COPY< cynth::ast::node::InType > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::InType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Int > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Int > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Le > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Le > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Lt > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Lt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Minus > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Minus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Mod > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Mod > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Mul > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Mul > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Name > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Name > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Ne > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Ne > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Not > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Not > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Or > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Or > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.YY_MOVE_OR_COPY< cynth::ast::node::OutType > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::OutType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Plus > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Plus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Pow > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Pow > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.YY_MOVE_OR_COPY< cynth::ast::node::RangeDecl > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::RangeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.YY_MOVE_OR_COPY< cynth::ast::node::RangeTo > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::RangeTo > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.YY_MOVE_OR_COPY< cynth::ast::node::RangeToBy > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::RangeToBy > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Return > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Return > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Spread > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Spread > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.YY_MOVE_OR_COPY< cynth::ast::node::String > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::String > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Sub > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Sub > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.YY_MOVE_OR_COPY< cynth::ast::node::Subscript > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::Subscript > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.YY_MOVE_OR_COPY< cynth::ast::node::TypeDecl > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::TypeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.YY_MOVE_OR_COPY< cynth::ast::node::TypeDef > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::TypeDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.YY_MOVE_OR_COPY< cynth::ast::node::TypeName > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::TypeName > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.YY_MOVE_OR_COPY< cynth::ast::node::When > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::When > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.YY_MOVE_OR_COPY< cynth::ast::node::While > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< cynth::syn::node::While > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::syn::category::ArrayElement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::syn::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::syn::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::syn::category::RangeDeclaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::syn::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.YY_MOVE_OR_COPY< esl::component_vector<cynth::syn::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -489,13 +489,13 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElement > (YY_MOVE (that.value));
+        value.move< cynth::syn::category::ArrayElement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.move< cynth::ast::category::Declaration > (YY_MOVE (that.value));
+        value.move< cynth::syn::category::Declaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -513,259 +513,259 @@ namespace yy {
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.move< cynth::ast::category::Expression > (YY_MOVE (that.value));
+        value.move< cynth::syn::category::Expression > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDeclaration > (YY_MOVE (that.value));
+        value.move< cynth::syn::category::RangeDeclaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.move< cynth::ast::category::Statement > (YY_MOVE (that.value));
+        value.move< cynth::syn::category::Statement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.move< cynth::ast::category::Type > (YY_MOVE (that.value));
+        value.move< cynth::syn::category::Type > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.move< cynth::ast::node::Add > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Add > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.move< cynth::ast::node::And > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::And > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.move< cynth::ast::node::Application > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Application > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.move< cynth::ast::node::Array > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Array > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.move< cynth::ast::node::ArrayType > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::ArrayType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.move< cynth::ast::node::Assignment > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Assignment > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.move< cynth::ast::node::Auto > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Auto > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.move< cynth::ast::node::Block > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Block > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.move< cynth::ast::node::Bool > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Bool > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.move< cynth::ast::node::BufferType > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::BufferType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.move< cynth::ast::node::ConstType > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::ConstType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.move< cynth::ast::node::Conversion > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Conversion > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.move< cynth::ast::node::Declaration > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Declaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.move< cynth::ast::node::Definition > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Definition > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.move< cynth::ast::node::Div > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Div > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.move< cynth::ast::node::Eq > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Eq > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.move< cynth::ast::node::ExprFor > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::ExprFor > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.move< cynth::ast::node::ExprIf > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::ExprIf > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.move< cynth::ast::node::Float > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Float > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.move< cynth::ast::node::For > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::For > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunDef > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::FunDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Function > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.move< cynth::ast::node::FunctionType > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::FunctionType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.move< cynth::ast::node::Ge > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Ge > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.move< cynth::ast::node::Gt > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Gt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.move< cynth::ast::node::If > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::If > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.move< cynth::ast::node::InType > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::InType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.move< cynth::ast::node::Int > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Int > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.move< cynth::ast::node::Le > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Le > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.move< cynth::ast::node::Lt > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Lt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.move< cynth::ast::node::Minus > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Minus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.move< cynth::ast::node::Mod > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Mod > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.move< cynth::ast::node::Mul > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Mul > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.move< cynth::ast::node::Name > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Name > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.move< cynth::ast::node::Ne > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Ne > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.move< cynth::ast::node::Not > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Not > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.move< cynth::ast::node::Or > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Or > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.move< cynth::ast::node::OutType > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::OutType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.move< cynth::ast::node::Plus > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Plus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.move< cynth::ast::node::Pow > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Pow > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.move< cynth::ast::node::RangeDecl > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::RangeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.move< cynth::ast::node::RangeTo > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::RangeTo > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.move< cynth::ast::node::RangeToBy > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::RangeToBy > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.move< cynth::ast::node::Return > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Return > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.move< cynth::ast::node::Spread > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Spread > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.move< cynth::ast::node::String > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::String > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.move< cynth::ast::node::Sub > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Sub > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.move< cynth::ast::node::Subscript > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::Subscript > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::ast::node::TypeDecl > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::TypeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.move< cynth::ast::node::TypeDef > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::TypeDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.move< cynth::ast::node::TypeName > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::TypeName > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.move< cynth::ast::node::When > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::When > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.move< cynth::ast::node::While > (YY_MOVE (that.value));
+        value.move< cynth::syn::node::While > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::syn::category::ArrayElement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::syn::category::RangeDeclaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -796,13 +796,13 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.copy< cynth::ast::category::ArrayElement > (that.value);
+        value.copy< cynth::syn::category::ArrayElement > (that.value);
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.copy< cynth::ast::category::Declaration > (that.value);
+        value.copy< cynth::syn::category::Declaration > (that.value);
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -820,259 +820,259 @@ namespace yy {
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.copy< cynth::ast::category::Expression > (that.value);
+        value.copy< cynth::syn::category::Expression > (that.value);
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.copy< cynth::ast::category::RangeDeclaration > (that.value);
+        value.copy< cynth::syn::category::RangeDeclaration > (that.value);
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.copy< cynth::ast::category::Statement > (that.value);
+        value.copy< cynth::syn::category::Statement > (that.value);
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.copy< cynth::ast::category::Type > (that.value);
+        value.copy< cynth::syn::category::Type > (that.value);
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.copy< cynth::ast::node::Add > (that.value);
+        value.copy< cynth::syn::node::Add > (that.value);
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.copy< cynth::ast::node::And > (that.value);
+        value.copy< cynth::syn::node::And > (that.value);
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.copy< cynth::ast::node::Application > (that.value);
+        value.copy< cynth::syn::node::Application > (that.value);
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.copy< cynth::ast::node::Array > (that.value);
+        value.copy< cynth::syn::node::Array > (that.value);
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.copy< cynth::ast::node::ArrayType > (that.value);
+        value.copy< cynth::syn::node::ArrayType > (that.value);
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.copy< cynth::ast::node::Assignment > (that.value);
+        value.copy< cynth::syn::node::Assignment > (that.value);
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.copy< cynth::ast::node::Auto > (that.value);
+        value.copy< cynth::syn::node::Auto > (that.value);
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.copy< cynth::ast::node::Block > (that.value);
+        value.copy< cynth::syn::node::Block > (that.value);
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.copy< cynth::ast::node::Bool > (that.value);
+        value.copy< cynth::syn::node::Bool > (that.value);
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.copy< cynth::ast::node::BufferType > (that.value);
+        value.copy< cynth::syn::node::BufferType > (that.value);
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.copy< cynth::ast::node::ConstType > (that.value);
+        value.copy< cynth::syn::node::ConstType > (that.value);
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.copy< cynth::ast::node::Conversion > (that.value);
+        value.copy< cynth::syn::node::Conversion > (that.value);
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.copy< cynth::ast::node::Declaration > (that.value);
+        value.copy< cynth::syn::node::Declaration > (that.value);
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.copy< cynth::ast::node::Definition > (that.value);
+        value.copy< cynth::syn::node::Definition > (that.value);
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.copy< cynth::ast::node::Div > (that.value);
+        value.copy< cynth::syn::node::Div > (that.value);
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.copy< cynth::ast::node::Eq > (that.value);
+        value.copy< cynth::syn::node::Eq > (that.value);
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.copy< cynth::ast::node::ExprFor > (that.value);
+        value.copy< cynth::syn::node::ExprFor > (that.value);
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.copy< cynth::ast::node::ExprIf > (that.value);
+        value.copy< cynth::syn::node::ExprIf > (that.value);
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.copy< cynth::ast::node::Float > (that.value);
+        value.copy< cynth::syn::node::Float > (that.value);
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.copy< cynth::ast::node::For > (that.value);
+        value.copy< cynth::syn::node::For > (that.value);
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.copy< cynth::ast::node::FunDef > (that.value);
+        value.copy< cynth::syn::node::FunDef > (that.value);
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.copy< cynth::ast::node::Function > (that.value);
+        value.copy< cynth::syn::node::Function > (that.value);
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.copy< cynth::ast::node::FunctionType > (that.value);
+        value.copy< cynth::syn::node::FunctionType > (that.value);
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.copy< cynth::ast::node::Ge > (that.value);
+        value.copy< cynth::syn::node::Ge > (that.value);
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.copy< cynth::ast::node::Gt > (that.value);
+        value.copy< cynth::syn::node::Gt > (that.value);
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.copy< cynth::ast::node::If > (that.value);
+        value.copy< cynth::syn::node::If > (that.value);
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.copy< cynth::ast::node::InType > (that.value);
+        value.copy< cynth::syn::node::InType > (that.value);
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.copy< cynth::ast::node::Int > (that.value);
+        value.copy< cynth::syn::node::Int > (that.value);
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.copy< cynth::ast::node::Le > (that.value);
+        value.copy< cynth::syn::node::Le > (that.value);
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.copy< cynth::ast::node::Lt > (that.value);
+        value.copy< cynth::syn::node::Lt > (that.value);
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.copy< cynth::ast::node::Minus > (that.value);
+        value.copy< cynth::syn::node::Minus > (that.value);
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.copy< cynth::ast::node::Mod > (that.value);
+        value.copy< cynth::syn::node::Mod > (that.value);
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.copy< cynth::ast::node::Mul > (that.value);
+        value.copy< cynth::syn::node::Mul > (that.value);
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.copy< cynth::ast::node::Name > (that.value);
+        value.copy< cynth::syn::node::Name > (that.value);
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.copy< cynth::ast::node::Ne > (that.value);
+        value.copy< cynth::syn::node::Ne > (that.value);
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.copy< cynth::ast::node::Not > (that.value);
+        value.copy< cynth::syn::node::Not > (that.value);
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.copy< cynth::ast::node::Or > (that.value);
+        value.copy< cynth::syn::node::Or > (that.value);
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.copy< cynth::ast::node::OutType > (that.value);
+        value.copy< cynth::syn::node::OutType > (that.value);
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.copy< cynth::ast::node::Plus > (that.value);
+        value.copy< cynth::syn::node::Plus > (that.value);
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.copy< cynth::ast::node::Pow > (that.value);
+        value.copy< cynth::syn::node::Pow > (that.value);
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.copy< cynth::ast::node::RangeDecl > (that.value);
+        value.copy< cynth::syn::node::RangeDecl > (that.value);
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.copy< cynth::ast::node::RangeTo > (that.value);
+        value.copy< cynth::syn::node::RangeTo > (that.value);
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.copy< cynth::ast::node::RangeToBy > (that.value);
+        value.copy< cynth::syn::node::RangeToBy > (that.value);
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.copy< cynth::ast::node::Return > (that.value);
+        value.copy< cynth::syn::node::Return > (that.value);
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.copy< cynth::ast::node::Spread > (that.value);
+        value.copy< cynth::syn::node::Spread > (that.value);
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.copy< cynth::ast::node::String > (that.value);
+        value.copy< cynth::syn::node::String > (that.value);
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.copy< cynth::ast::node::Sub > (that.value);
+        value.copy< cynth::syn::node::Sub > (that.value);
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.copy< cynth::ast::node::Subscript > (that.value);
+        value.copy< cynth::syn::node::Subscript > (that.value);
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.copy< cynth::ast::node::TypeDecl > (that.value);
+        value.copy< cynth::syn::node::TypeDecl > (that.value);
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.copy< cynth::ast::node::TypeDef > (that.value);
+        value.copy< cynth::syn::node::TypeDef > (that.value);
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.copy< cynth::ast::node::TypeName > (that.value);
+        value.copy< cynth::syn::node::TypeName > (that.value);
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.copy< cynth::ast::node::When > (that.value);
+        value.copy< cynth::syn::node::When > (that.value);
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.copy< cynth::ast::node::While > (that.value);
+        value.copy< cynth::syn::node::While > (that.value);
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.copy< esl::component_vector<cynth::ast::category::ArrayElement> > (that.value);
+        value.copy< esl::component_vector<cynth::syn::category::ArrayElement> > (that.value);
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.copy< esl::component_vector<cynth::ast::category::Declaration> > (that.value);
+        value.copy< esl::component_vector<cynth::syn::category::Declaration> > (that.value);
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.copy< esl::component_vector<cynth::ast::category::Expression> > (that.value);
+        value.copy< esl::component_vector<cynth::syn::category::Expression> > (that.value);
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.copy< esl::component_vector<cynth::ast::category::RangeDeclaration> > (that.value);
+        value.copy< esl::component_vector<cynth::syn::category::RangeDeclaration> > (that.value);
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.copy< esl::component_vector<cynth::ast::category::Statement> > (that.value);
+        value.copy< esl::component_vector<cynth::syn::category::Statement> > (that.value);
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.copy< esl::component_vector<cynth::ast::category::Type> > (that.value);
+        value.copy< esl::component_vector<cynth::syn::category::Type> > (that.value);
         break;
 
       case symbol_kind::S_start: // start
@@ -1101,13 +1101,13 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElement > (that.value);
+        value.move< cynth::syn::category::ArrayElement > (that.value);
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.move< cynth::ast::category::Declaration > (that.value);
+        value.move< cynth::syn::category::Declaration > (that.value);
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -1125,259 +1125,259 @@ namespace yy {
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.move< cynth::ast::category::Expression > (that.value);
+        value.move< cynth::syn::category::Expression > (that.value);
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDeclaration > (that.value);
+        value.move< cynth::syn::category::RangeDeclaration > (that.value);
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.move< cynth::ast::category::Statement > (that.value);
+        value.move< cynth::syn::category::Statement > (that.value);
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.move< cynth::ast::category::Type > (that.value);
+        value.move< cynth::syn::category::Type > (that.value);
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.move< cynth::ast::node::Add > (that.value);
+        value.move< cynth::syn::node::Add > (that.value);
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.move< cynth::ast::node::And > (that.value);
+        value.move< cynth::syn::node::And > (that.value);
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.move< cynth::ast::node::Application > (that.value);
+        value.move< cynth::syn::node::Application > (that.value);
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.move< cynth::ast::node::Array > (that.value);
+        value.move< cynth::syn::node::Array > (that.value);
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.move< cynth::ast::node::ArrayType > (that.value);
+        value.move< cynth::syn::node::ArrayType > (that.value);
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.move< cynth::ast::node::Assignment > (that.value);
+        value.move< cynth::syn::node::Assignment > (that.value);
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.move< cynth::ast::node::Auto > (that.value);
+        value.move< cynth::syn::node::Auto > (that.value);
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.move< cynth::ast::node::Block > (that.value);
+        value.move< cynth::syn::node::Block > (that.value);
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.move< cynth::ast::node::Bool > (that.value);
+        value.move< cynth::syn::node::Bool > (that.value);
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.move< cynth::ast::node::BufferType > (that.value);
+        value.move< cynth::syn::node::BufferType > (that.value);
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.move< cynth::ast::node::ConstType > (that.value);
+        value.move< cynth::syn::node::ConstType > (that.value);
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.move< cynth::ast::node::Conversion > (that.value);
+        value.move< cynth::syn::node::Conversion > (that.value);
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.move< cynth::ast::node::Declaration > (that.value);
+        value.move< cynth::syn::node::Declaration > (that.value);
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.move< cynth::ast::node::Definition > (that.value);
+        value.move< cynth::syn::node::Definition > (that.value);
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.move< cynth::ast::node::Div > (that.value);
+        value.move< cynth::syn::node::Div > (that.value);
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.move< cynth::ast::node::Eq > (that.value);
+        value.move< cynth::syn::node::Eq > (that.value);
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.move< cynth::ast::node::ExprFor > (that.value);
+        value.move< cynth::syn::node::ExprFor > (that.value);
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.move< cynth::ast::node::ExprIf > (that.value);
+        value.move< cynth::syn::node::ExprIf > (that.value);
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.move< cynth::ast::node::Float > (that.value);
+        value.move< cynth::syn::node::Float > (that.value);
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.move< cynth::ast::node::For > (that.value);
+        value.move< cynth::syn::node::For > (that.value);
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunDef > (that.value);
+        value.move< cynth::syn::node::FunDef > (that.value);
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (that.value);
+        value.move< cynth::syn::node::Function > (that.value);
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.move< cynth::ast::node::FunctionType > (that.value);
+        value.move< cynth::syn::node::FunctionType > (that.value);
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.move< cynth::ast::node::Ge > (that.value);
+        value.move< cynth::syn::node::Ge > (that.value);
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.move< cynth::ast::node::Gt > (that.value);
+        value.move< cynth::syn::node::Gt > (that.value);
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.move< cynth::ast::node::If > (that.value);
+        value.move< cynth::syn::node::If > (that.value);
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.move< cynth::ast::node::InType > (that.value);
+        value.move< cynth::syn::node::InType > (that.value);
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.move< cynth::ast::node::Int > (that.value);
+        value.move< cynth::syn::node::Int > (that.value);
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.move< cynth::ast::node::Le > (that.value);
+        value.move< cynth::syn::node::Le > (that.value);
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.move< cynth::ast::node::Lt > (that.value);
+        value.move< cynth::syn::node::Lt > (that.value);
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.move< cynth::ast::node::Minus > (that.value);
+        value.move< cynth::syn::node::Minus > (that.value);
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.move< cynth::ast::node::Mod > (that.value);
+        value.move< cynth::syn::node::Mod > (that.value);
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.move< cynth::ast::node::Mul > (that.value);
+        value.move< cynth::syn::node::Mul > (that.value);
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.move< cynth::ast::node::Name > (that.value);
+        value.move< cynth::syn::node::Name > (that.value);
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.move< cynth::ast::node::Ne > (that.value);
+        value.move< cynth::syn::node::Ne > (that.value);
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.move< cynth::ast::node::Not > (that.value);
+        value.move< cynth::syn::node::Not > (that.value);
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.move< cynth::ast::node::Or > (that.value);
+        value.move< cynth::syn::node::Or > (that.value);
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.move< cynth::ast::node::OutType > (that.value);
+        value.move< cynth::syn::node::OutType > (that.value);
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.move< cynth::ast::node::Plus > (that.value);
+        value.move< cynth::syn::node::Plus > (that.value);
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.move< cynth::ast::node::Pow > (that.value);
+        value.move< cynth::syn::node::Pow > (that.value);
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.move< cynth::ast::node::RangeDecl > (that.value);
+        value.move< cynth::syn::node::RangeDecl > (that.value);
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.move< cynth::ast::node::RangeTo > (that.value);
+        value.move< cynth::syn::node::RangeTo > (that.value);
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.move< cynth::ast::node::RangeToBy > (that.value);
+        value.move< cynth::syn::node::RangeToBy > (that.value);
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.move< cynth::ast::node::Return > (that.value);
+        value.move< cynth::syn::node::Return > (that.value);
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.move< cynth::ast::node::Spread > (that.value);
+        value.move< cynth::syn::node::Spread > (that.value);
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.move< cynth::ast::node::String > (that.value);
+        value.move< cynth::syn::node::String > (that.value);
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.move< cynth::ast::node::Sub > (that.value);
+        value.move< cynth::syn::node::Sub > (that.value);
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.move< cynth::ast::node::Subscript > (that.value);
+        value.move< cynth::syn::node::Subscript > (that.value);
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::ast::node::TypeDecl > (that.value);
+        value.move< cynth::syn::node::TypeDecl > (that.value);
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.move< cynth::ast::node::TypeDef > (that.value);
+        value.move< cynth::syn::node::TypeDef > (that.value);
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.move< cynth::ast::node::TypeName > (that.value);
+        value.move< cynth::syn::node::TypeName > (that.value);
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.move< cynth::ast::node::When > (that.value);
+        value.move< cynth::syn::node::When > (that.value);
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.move< cynth::ast::node::While > (that.value);
+        value.move< cynth::syn::node::While > (that.value);
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (that.value);
+        value.move< esl::component_vector<cynth::syn::category::ArrayElement> > (that.value);
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< esl::component_vector<cynth::ast::category::Declaration> > (that.value);
+        value.move< esl::component_vector<cynth::syn::category::Declaration> > (that.value);
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< esl::component_vector<cynth::ast::category::Expression> > (that.value);
+        value.move< esl::component_vector<cynth::syn::category::Expression> > (that.value);
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (that.value);
+        value.move< esl::component_vector<cynth::syn::category::RangeDeclaration> > (that.value);
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< esl::component_vector<cynth::ast::category::Statement> > (that.value);
+        value.move< esl::component_vector<cynth::syn::category::Statement> > (that.value);
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< esl::component_vector<cynth::ast::category::Type> > (that.value);
+        value.move< esl::component_vector<cynth::syn::category::Type> > (that.value);
         break;
 
       case symbol_kind::S_start: // start
@@ -1903,27 +1903,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        yylhs.value.emplace< esl::component_vector<cynth::ast::category::ArrayElement> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::syn::category::ArrayElement> > ();
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Declaration> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::syn::category::Declaration> > ();
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Expression> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::syn::category::Expression> > ();
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        yylhs.value.emplace< esl::component_vector<cynth::ast::category::RangeDeclaration> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::syn::category::RangeDeclaration> > ();
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Statement> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::syn::category::Statement> > ();
         break;
 
       case symbol_kind::S_type_list: // type_list
-        yylhs.value.emplace< esl::component_vector<cynth::ast::category::Type> > ();
+        yylhs.value.emplace< esl::component_vector<cynth::syn::category::Type> > ();
         break;
 
       case symbol_kind::S_start: // start
@@ -1963,7 +1963,7 @@ namespace yy {
   case 3: // start: stmt_list
 #line 205 "gen/parser.y"
                     {
-        result = {YY_MOVE (yystack_[0].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
+        result = {YY_MOVE (yystack_[0].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
 #line 1969 "src/parser.cpp"
     break;
@@ -1971,453 +1971,453 @@ namespace yy {
   case 4: // start: stmt_list SEMI
 #line 208 "gen/parser.y"
                          {
-        result = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
+        result = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
 #line 1977 "src/parser.cpp"
     break;
 
   case 5: // cat_declaration: node_declaration
 #line 215 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::Declaration > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Declaration > ()); }
+                     { yylhs.value.as < cynth::syn::category::Declaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Declaration > ()); }
 #line 1983 "src/parser.cpp"
     break;
 
   case 6: // cat_declaration: paren_decl
 #line 216 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::Declaration > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ()); }
+                     { yylhs.value.as < cynth::syn::category::Declaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Declaration > ()); }
 #line 1989 "src/parser.cpp"
     break;
 
   case 7: // cat_range_decl: node_range_decl
 #line 219 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeDecl > ()); }
+                     { yylhs.value.as < cynth::syn::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::RangeDecl > ()); }
 #line 1995 "src/parser.cpp"
     break;
 
   case 8: // cat_range_decl: paren_range_decl
 #line 220 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDeclaration > ()); }
+                     { yylhs.value.as < cynth::syn::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::RangeDeclaration > ()); }
 #line 2001 "src/parser.cpp"
     break;
 
   case 9: // cat_array_elem: node_range_to
 #line 223 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeTo > ()); }
+                     { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::RangeTo > ()); }
 #line 2007 "src/parser.cpp"
     break;
 
   case 10: // cat_array_elem: node_range_to_by
 #line 224 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::RangeToBy > ()); }
+                     { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::RangeToBy > ()); }
 #line 2013 "src/parser.cpp"
     break;
 
   case 11: // cat_array_elem: node_spread
 #line 225 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Spread > ()); }
+                     { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Spread > ()); }
 #line 2019 "src/parser.cpp"
     break;
 
   case 12: // cat_array_elem: cat_expression
 #line 226 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+                     { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2025 "src/parser.cpp"
     break;
 
   case 13: // cat_type: node_auto
 #line 229 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Auto > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Auto > ()); }
 #line 2031 "src/parser.cpp"
     break;
 
   case 14: // cat_type: node_type_name
 #line 230 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::TypeName > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeName > ()); }
 #line 2037 "src/parser.cpp"
     break;
 
   case 15: // cat_type: node_function_type
 #line 231 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::FunctionType > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::FunctionType > ()); }
 #line 2043 "src/parser.cpp"
     break;
 
   case 16: // cat_type: node_array_type
 #line 232 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::ArrayType > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ArrayType > ()); }
 #line 2049 "src/parser.cpp"
     break;
 
   case 17: // cat_type: node_buffer_type
 #line 233 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::BufferType > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::BufferType > ()); }
 #line 2055 "src/parser.cpp"
     break;
 
   case 18: // cat_type: node_type_decl
 #line 234 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::TypeDecl > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeDecl > ()); }
 #line 2061 "src/parser.cpp"
     break;
 
   case 19: // cat_type: node_const_type
 #line 235 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::ConstType > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ConstType > ()); }
 #line 2067 "src/parser.cpp"
     break;
 
   case 20: // cat_type: node_in_type
 #line 236 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::InType > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::InType > ()); }
 #line 2073 "src/parser.cpp"
     break;
 
   case 21: // cat_type: node_out_type
 #line 237 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::OutType > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::OutType > ()); }
 #line 2079 "src/parser.cpp"
     break;
 
   case 22: // cat_type: paren_type
 #line 238 "gen/parser.y"
-                       { yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ()); }
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ()); }
 #line 2085 "src/parser.cpp"
     break;
 
   case 23: // cat_expression: expr_or
 #line 241 "gen/parser.y"
-               { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2091 "src/parser.cpp"
     break;
 
   case 24: // cat_expression: expr_right
 #line 242 "gen/parser.y"
-               { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2097 "src/parser.cpp"
     break;
 
   case 25: // cat_statement: pure
 #line 245 "gen/parser.y"
-                   { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ()); }
+                   { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ()); }
 #line 2103 "src/parser.cpp"
     break;
 
   case 26: // cat_statement: cat_expression
 #line 246 "gen/parser.y"
-                   { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+                   { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2109 "src/parser.cpp"
     break;
 
   case 27: // pure: node_declaration
 #line 251 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Declaration > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Declaration > ()); }
 #line 2115 "src/parser.cpp"
     break;
 
   case 28: // pure: node_definition
 #line 252 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Definition > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Definition > ()); }
 #line 2121 "src/parser.cpp"
     break;
 
   case 29: // pure: node_assignment
 #line 253 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Assignment > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Assignment > ()); }
 #line 2127 "src/parser.cpp"
     break;
 
   case 30: // pure: node_type_def
 #line 254 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::TypeDef > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeDef > ()); }
 #line 2133 "src/parser.cpp"
     break;
 
   case 31: // pure: node_function_def
 #line 255 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::FunDef > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::FunDef > ()); }
 #line 2139 "src/parser.cpp"
     break;
 
   case 32: // pure: node_return
 #line 256 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Return > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Return > ()); }
 #line 2145 "src/parser.cpp"
     break;
 
   case 33: // pure: node_if
 #line 257 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::If > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::If > ()); }
 #line 2151 "src/parser.cpp"
     break;
 
   case 34: // pure: node_for
 #line 258 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::For > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::For > ()); }
 #line 2157 "src/parser.cpp"
     break;
 
   case 35: // pure: node_while
 #line 259 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::While > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::While > ()); }
 #line 2163 "src/parser.cpp"
     break;
 
   case 36: // pure: node_when
 #line 260 "gen/parser.y"
-                      { yylhs.value.as < cynth::ast::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::When > ()); }
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::When > ()); }
 #line 2169 "src/parser.cpp"
     break;
 
   case 37: // expr_or: node_or
 #line 263 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Or > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Or > ()); }
 #line 2175 "src/parser.cpp"
     break;
 
   case 38: // expr_or: expr_and
 #line 264 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2181 "src/parser.cpp"
     break;
 
   case 39: // expr_and: node_and
 #line 267 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::And > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::And > ()); }
 #line 2187 "src/parser.cpp"
     break;
 
   case 40: // expr_and: expr_eq
 #line 268 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2193 "src/parser.cpp"
     break;
 
   case 41: // expr_eq: node_eq
 #line 271 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Eq > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Eq > ()); }
 #line 2199 "src/parser.cpp"
     break;
 
   case 42: // expr_eq: node_ne
 #line 272 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Ne > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Ne > ()); }
 #line 2205 "src/parser.cpp"
     break;
 
   case 43: // expr_eq: expr_ord
 #line 273 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2211 "src/parser.cpp"
     break;
 
   case 44: // expr_ord: node_ge
 #line 276 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Ge > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Ge > ()); }
 #line 2217 "src/parser.cpp"
     break;
 
   case 45: // expr_ord: node_le
 #line 277 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Le > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Le > ()); }
 #line 2223 "src/parser.cpp"
     break;
 
   case 46: // expr_ord: node_gt
 #line 278 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Gt > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Gt > ()); }
 #line 2229 "src/parser.cpp"
     break;
 
   case 47: // expr_ord: node_lt
 #line 279 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Lt > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Lt > ()); }
 #line 2235 "src/parser.cpp"
     break;
 
   case 48: // expr_ord: expr_add
 #line 280 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2241 "src/parser.cpp"
     break;
 
   case 49: // expr_add: node_add
 #line 283 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Add > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Add > ()); }
 #line 2247 "src/parser.cpp"
     break;
 
   case 50: // expr_add: node_sub
 #line 284 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Sub > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Sub > ()); }
 #line 2253 "src/parser.cpp"
     break;
 
   case 51: // expr_add: expr_mul
 #line 285 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2259 "src/parser.cpp"
     break;
 
   case 52: // expr_mul: node_mul
 #line 288 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Mul > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Mul > ()); }
 #line 2265 "src/parser.cpp"
     break;
 
   case 53: // expr_mul: node_div
 #line 289 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Div > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Div > ()); }
 #line 2271 "src/parser.cpp"
     break;
 
   case 54: // expr_mul: node_mod
 #line 290 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Mod > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Mod > ()); }
 #line 2277 "src/parser.cpp"
     break;
 
   case 55: // expr_mul: expr_pow
 #line 291 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2283 "src/parser.cpp"
     break;
 
   case 56: // expr_pow: node_pow
 #line 294 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Pow > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Pow > ()); }
 #line 2289 "src/parser.cpp"
     break;
 
   case 57: // expr_pow: expr_pre
 #line 295 "gen/parser.y"
-             { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2295 "src/parser.cpp"
     break;
 
   case 58: // expr_pre: node_minus
 #line 298 "gen/parser.y"
-               { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Minus > ()); }
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Minus > ()); }
 #line 2301 "src/parser.cpp"
     break;
 
   case 59: // expr_pre: node_plus
 #line 299 "gen/parser.y"
-               { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Plus > ()); }
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Plus > ()); }
 #line 2307 "src/parser.cpp"
     break;
 
   case 60: // expr_pre: node_not
 #line 300 "gen/parser.y"
-               { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Not > ()); }
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Not > ()); }
 #line 2313 "src/parser.cpp"
     break;
 
   case 61: // expr_pre: expr_post
 #line 301 "gen/parser.y"
-               { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2319 "src/parser.cpp"
     break;
 
   case 62: // expr_post: node_application
 #line 304 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Application > ()); }
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Application > ()); }
 #line 2325 "src/parser.cpp"
     break;
 
   case 63: // expr_post: node_conversion
 #line 305 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Conversion > ()); }
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Conversion > ()); }
 #line 2331 "src/parser.cpp"
     break;
 
   case 64: // expr_post: node_subscript
 #line 306 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Subscript > ()); }
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Subscript > ()); }
 #line 2337 "src/parser.cpp"
     break;
 
   case 65: // expr_post: expr_atom
 #line 307 "gen/parser.y"
-                     { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2343 "src/parser.cpp"
     break;
 
   case 66: // expr_atom: node_name
 #line 310 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Name > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Name > ()); }
 #line 2349 "src/parser.cpp"
     break;
 
   case 67: // expr_atom: node_bool
 #line 311 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Bool > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Bool > ()); }
 #line 2355 "src/parser.cpp"
     break;
 
   case 68: // expr_atom: node_int
 #line 312 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Int > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Int > ()); }
 #line 2361 "src/parser.cpp"
     break;
 
   case 69: // expr_atom: node_float
 #line 313 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Float > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Float > ()); }
 #line 2367 "src/parser.cpp"
     break;
 
   case 70: // expr_atom: node_string
 #line 314 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::String > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::String > ()); }
 #line 2373 "src/parser.cpp"
     break;
 
   case 71: // expr_atom: node_block
 #line 315 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Block > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Block > ()); }
 #line 2379 "src/parser.cpp"
     break;
 
   case 72: // expr_atom: node_array
 #line 316 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Array > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Array > ()); }
 #line 2385 "src/parser.cpp"
     break;
 
   case 73: // expr_atom: paren_expr
 #line 317 "gen/parser.y"
-                { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2391 "src/parser.cpp"
     break;
 
   case 74: // expr_right: node_expr_if
 #line 320 "gen/parser.y"
-                  { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::ExprIf > ()); }
+                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ExprIf > ()); }
 #line 2397 "src/parser.cpp"
     break;
 
   case 75: // expr_right: node_expr_for
 #line 321 "gen/parser.y"
-                  { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::ExprFor > ()); }
+                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ExprFor > ()); }
 #line 2403 "src/parser.cpp"
     break;
 
   case 76: // expr_right: node_function
 #line 322 "gen/parser.y"
-                  { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Function > ()); }
+                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Function > ()); }
 #line 2409 "src/parser.cpp"
     break;
 
   case 77: // expr_assgn_target: expr_post
 #line 325 "gen/parser.y"
-              { yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()); }
+              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
 #line 2415 "src/parser.cpp"
     break;
 
   case 78: // paren_type: OPAREN cat_type CPAREN
 #line 330 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::category::Type > () = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ());
+        yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ());
     }
 #line 2423 "src/parser.cpp"
     break;
@@ -2425,7 +2425,7 @@ namespace yy {
   case 79: // paren_type: OPAREN type_list CPAREN
 #line 333 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Type> > ())};
+        yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Type> > ())};
     }
 #line 2431 "src/parser.cpp"
     break;
@@ -2433,7 +2433,7 @@ namespace yy {
   case 80: // paren_type: OPAREN type_list COMMA CPAREN
 #line 336 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Type> > ())};
+        yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Type> > ())};
     }
 #line 2439 "src/parser.cpp"
     break;
@@ -2441,7 +2441,7 @@ namespace yy {
   case 81: // void_type: OPAREN CPAREN
 #line 341 "gen/parser.y"
                   {
-        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{};
+        yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{};
     }
 #line 2447 "src/parser.cpp"
     break;
@@ -2449,7 +2449,7 @@ namespace yy {
   case 82: // void_type: VOID
 #line 344 "gen/parser.y"
          {
-        yylhs.value.as < cynth::ast::category::Type > () = cynth::ast::node::TupleType{};
+        yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{};
     }
 #line 2455 "src/parser.cpp"
     break;
@@ -2457,7 +2457,7 @@ namespace yy {
   case 83: // node_auto: AUTO
 #line 349 "gen/parser.y"
          {
-        yylhs.value.as < cynth::ast::node::Auto > () = {};
+        yylhs.value.as < cynth::syn::node::Auto > () = {};
     }
 #line 2463 "src/parser.cpp"
     break;
@@ -2465,7 +2465,7 @@ namespace yy {
   case 84: // node_type_name: TYPENAME
 #line 354 "gen/parser.y"
                    {
-        yylhs.value.as < cynth::ast::node::TypeName > () = {YY_MOVE (yystack_[0].value.as < std::string > ())};
+        yylhs.value.as < cynth::syn::node::TypeName > () = {YY_MOVE (yystack_[0].value.as < std::string > ())};
     }
 #line 2471 "src/parser.cpp"
     break;
@@ -2473,7 +2473,7 @@ namespace yy {
   case 85: // node_const_type: cat_type CONST
 #line 359 "gen/parser.y"
                          {
-        yylhs.value.as < cynth::ast::node::ConstType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::ConstType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
 #line 2479 "src/parser.cpp"
     break;
@@ -2481,7 +2481,7 @@ namespace yy {
   case 86: // node_in_type: cat_type IN
 #line 364 "gen/parser.y"
                       {
-        yylhs.value.as < cynth::ast::node::InType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::InType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
 #line 2487 "src/parser.cpp"
     break;
@@ -2489,7 +2489,7 @@ namespace yy {
   case 87: // node_out_type: cat_type OUT
 #line 369 "gen/parser.y"
                        {
-        yylhs.value.as < cynth::ast::node::OutType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::OutType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
 #line 2495 "src/parser.cpp"
     break;
@@ -2497,7 +2497,7 @@ namespace yy {
   case 88: // node_function_type: cat_type paren_type
 #line 374 "gen/parser.y"
                                  {
-        yylhs.value.as < cynth::ast::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
 #line 2503 "src/parser.cpp"
     break;
@@ -2505,7 +2505,7 @@ namespace yy {
   case 89: // node_function_type: void_type paren_type
 #line 377 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
 #line 2511 "src/parser.cpp"
     break;
@@ -2513,7 +2513,7 @@ namespace yy {
   case 90: // node_function_type: cat_type void_type
 #line 380 "gen/parser.y"
                                 {
-        yylhs.value.as < cynth::ast::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
 #line 2519 "src/parser.cpp"
     break;
@@ -2521,7 +2521,7 @@ namespace yy {
   case 91: // node_function_type: void_type void_type
 #line 383 "gen/parser.y"
                                  {
-        yylhs.value.as < cynth::ast::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
 #line 2527 "src/parser.cpp"
     break;
@@ -2529,7 +2529,7 @@ namespace yy {
   case 92: // node_array_type: cat_type OBRACK cat_expression CBRACK
 #line 388 "gen/parser.y"
                                                       {
-        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .size = cynth::ast::category::Pattern{YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ())}};
+        yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .size = cynth::syn::category::Pattern{YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ())}};
     }
 #line 2535 "src/parser.cpp"
     break;
@@ -2537,7 +2537,7 @@ namespace yy {
   case 93: // node_array_type: cat_type OBRACK AUTO CBRACK
 #line 391 "gen/parser.y"
                                       {
-        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .size = esl::optional_component<cynth::ast::category::Pattern>{}};
+        yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .size = esl::optional_component<cynth::syn::category::Pattern>{}};
     }
 #line 2543 "src/parser.cpp"
     break;
@@ -2545,7 +2545,7 @@ namespace yy {
   case 94: // node_array_type: cat_type OBRACK CBRACK
 #line 394 "gen/parser.y"
                                  {
-        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Type > ()), .size = esl::optional_component<cynth::ast::category::Pattern>{}};
+        yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Type > ()), .size = esl::optional_component<cynth::syn::category::Pattern>{}};
     }
 #line 2551 "src/parser.cpp"
     break;
@@ -2553,7 +2553,7 @@ namespace yy {
   case 95: // node_array_type: cat_type OBRACK cat_declaration CBRACK
 #line 397 "gen/parser.y"
                                                             {
-        yylhs.value.as < cynth::ast::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .size = cynth::ast::category::Pattern{YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ())}};
+        yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .size = cynth::syn::category::Pattern{YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ())}};
     }
 #line 2559 "src/parser.cpp"
     break;
@@ -2561,7 +2561,7 @@ namespace yy {
   case 96: // node_buffer_type: BUFFER OBRACK cat_expression CBRACK
 #line 402 "gen/parser.y"
                                               {
-        yylhs.value.as < cynth::ast::node::BufferType > () = {.size = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::BufferType > () = {.size = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2567 "src/parser.cpp"
     break;
@@ -2569,7 +2569,7 @@ namespace yy {
   case 97: // node_type_decl: TYPE node_type_name
 #line 407 "gen/parser.y"
                               {
-        yylhs.value.as < cynth::ast::node::TypeDecl > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::node::TypeName > ())};
+        yylhs.value.as < cynth::syn::node::TypeDecl > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeName > ())};
     }
 #line 2575 "src/parser.cpp"
     break;
@@ -2577,7 +2577,7 @@ namespace yy {
   case 98: // paren_range_decl: OPAREN cat_range_decl CPAREN
 #line 414 "gen/parser.y"
                                          {
-        yylhs.value.as < cynth::ast::category::RangeDeclaration > () = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDeclaration > ());
+        yylhs.value.as < cynth::syn::category::RangeDeclaration > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::RangeDeclaration > ());
     }
 #line 2583 "src/parser.cpp"
     break;
@@ -2585,7 +2585,7 @@ namespace yy {
   case 99: // paren_range_decl: OPAREN range_decl_list CPAREN
 #line 417 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::RangeDeclaration > () = cynth::ast::node::TupleRangeDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > ())};
+        yylhs.value.as < cynth::syn::category::RangeDeclaration > () = cynth::syn::node::TupleRangeDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > ())};
     }
 #line 2591 "src/parser.cpp"
     break;
@@ -2593,7 +2593,7 @@ namespace yy {
   case 100: // paren_range_decl: OPAREN range_decl_list COMMA CPAREN
 #line 420 "gen/parser.y"
                                               {
-        yylhs.value.as < cynth::ast::category::RangeDeclaration > () = cynth::ast::node::TupleRangeDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > ())};
+        yylhs.value.as < cynth::syn::category::RangeDeclaration > () = cynth::syn::node::TupleRangeDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > ())};
     }
 #line 2599 "src/parser.cpp"
     break;
@@ -2601,7 +2601,7 @@ namespace yy {
   case 101: // paren_decl: OPAREN cat_declaration CPAREN
 #line 425 "gen/parser.y"
                                           {
-        yylhs.value.as < cynth::ast::category::Declaration > () = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ());
+        yylhs.value.as < cynth::syn::category::Declaration > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ());
     }
 #line 2607 "src/parser.cpp"
     break;
@@ -2609,7 +2609,7 @@ namespace yy {
   case 102: // paren_decl: OPAREN decl_list CPAREN
 #line 428 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Declaration> > ())};
+        yylhs.value.as < cynth::syn::category::Declaration > () = cynth::syn::node::TupleDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Declaration> > ())};
     }
 #line 2615 "src/parser.cpp"
     break;
@@ -2617,7 +2617,7 @@ namespace yy {
   case 103: // paren_decl: OPAREN decl_list COMMA CPAREN
 #line 431 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Declaration> > ())};
+        yylhs.value.as < cynth::syn::category::Declaration > () = cynth::syn::node::TupleDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Declaration> > ())};
     }
 #line 2623 "src/parser.cpp"
     break;
@@ -2625,7 +2625,7 @@ namespace yy {
   case 104: // void_decl: OPAREN CPAREN
 #line 436 "gen/parser.y"
                   {
-        yylhs.value.as < cynth::ast::category::Declaration > () = cynth::ast::node::TupleDecl{};
+        yylhs.value.as < cynth::syn::category::Declaration > () = cynth::syn::node::TupleDecl{};
     }
 #line 2631 "src/parser.cpp"
     break;
@@ -2633,7 +2633,7 @@ namespace yy {
   case 105: // node_declaration: cat_type node_name
 #line 441 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::Declaration > () = {.name = YY_MOVE (yystack_[0].value.as < cynth::ast::node::Name > ()), .type = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::Declaration > () = {.name = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Name > ()), .type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
 #line 2639 "src/parser.cpp"
     break;
@@ -2641,7 +2641,7 @@ namespace yy {
   case 106: // node_range_decl: cat_declaration IN cat_expression
 #line 446 "gen/parser.y"
                                                    {
-        yylhs.value.as < cynth::ast::node::RangeDecl > () = {.declaration = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Declaration > ()), .range = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::RangeDecl > () = {.declaration = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Declaration > ()), .range = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2647 "src/parser.cpp"
     break;
@@ -2649,7 +2649,7 @@ namespace yy {
   case 107: // node_range_to: cat_expression TO cat_expression
 #line 453 "gen/parser.y"
                                                {
-        yylhs.value.as < cynth::ast::node::RangeTo > () = {.from = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), .to = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::RangeTo > () = {.from = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .to = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2655 "src/parser.cpp"
     break;
@@ -2657,7 +2657,7 @@ namespace yy {
   case 108: // node_range_to_by: cat_expression TO cat_expression BY cat_expression
 #line 458 "gen/parser.y"
                                                                      {
-        yylhs.value.as < cynth::ast::node::RangeToBy > () = {.from = YY_MOVE (yystack_[4].value.as < cynth::ast::category::Expression > ()), .to = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), .by = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::RangeToBy > () = {.from = YY_MOVE (yystack_[4].value.as < cynth::syn::category::Expression > ()), .to = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .by = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2663 "src/parser.cpp"
     break;
@@ -2665,7 +2665,7 @@ namespace yy {
   case 109: // node_spread: ELIP cat_expression
 #line 463 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::Spread > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Spread > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2671 "src/parser.cpp"
     break;
@@ -2673,7 +2673,7 @@ namespace yy {
   case 110: // paren_expr: OPAREN cat_expression CPAREN
 #line 470 "gen/parser.y"
                                          {
-        yylhs.value.as < cynth::ast::category::Expression > () = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ());
+        yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ());
     }
 #line 2679 "src/parser.cpp"
     break;
@@ -2681,7 +2681,7 @@ namespace yy {
   case 111: // paren_expr: OPAREN expr_list CPAREN
 #line 473 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Expression> > ())};
+        yylhs.value.as < cynth::syn::category::Expression > () = cynth::syn::node::Tuple{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Expression> > ())};
     }
 #line 2687 "src/parser.cpp"
     break;
@@ -2689,7 +2689,7 @@ namespace yy {
   case 112: // paren_expr: OPAREN expr_list COMMA CPAREN
 #line 476 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Expression> > ())};
+        yylhs.value.as < cynth::syn::category::Expression > () = cynth::syn::node::Tuple{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Expression> > ())};
     }
 #line 2695 "src/parser.cpp"
     break;
@@ -2697,7 +2697,7 @@ namespace yy {
   case 113: // void: OPAREN CPAREN
 #line 481 "gen/parser.y"
                   {
-        yylhs.value.as < cynth::ast::category::Expression > () = cynth::ast::node::Tuple{};
+        yylhs.value.as < cynth::syn::category::Expression > () = cynth::syn::node::Tuple{};
     }
 #line 2703 "src/parser.cpp"
     break;
@@ -2705,7 +2705,7 @@ namespace yy {
   case 114: // node_name: NAME
 #line 486 "gen/parser.y"
                {
-        yylhs.value.as < cynth::ast::node::Name > () = {YY_MOVE (yystack_[0].value.as < std::string > ())};
+        yylhs.value.as < cynth::syn::node::Name > () = {YY_MOVE (yystack_[0].value.as < std::string > ())};
     }
 #line 2711 "src/parser.cpp"
     break;
@@ -2713,7 +2713,7 @@ namespace yy {
   case 115: // node_block: OBRACE CBRACE
 #line 491 "gen/parser.y"
                   {
-        yylhs.value.as < cynth::ast::node::Block > () = {};
+        yylhs.value.as < cynth::syn::node::Block > () = {};
     }
 #line 2719 "src/parser.cpp"
     break;
@@ -2721,7 +2721,7 @@ namespace yy {
   case 116: // node_block: OBRACE stmt_list CBRACE
 #line 494 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::node::Block > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
+        yylhs.value.as < cynth::syn::node::Block > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
 #line 2727 "src/parser.cpp"
     break;
@@ -2729,7 +2729,7 @@ namespace yy {
   case 117: // node_block: OBRACE stmt_list SEMI CBRACE
 #line 497 "gen/parser.y"
                                        {
-        yylhs.value.as < cynth::ast::node::Block > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Statement> > ())};
+        yylhs.value.as < cynth::syn::node::Block > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
 #line 2735 "src/parser.cpp"
     break;
@@ -2737,7 +2737,7 @@ namespace yy {
   case 118: // node_bool: TRUE
 #line 504 "gen/parser.y"
          {
-        yylhs.value.as < cynth::ast::node::Bool > () = {true};
+        yylhs.value.as < cynth::syn::node::Bool > () = {true};
     }
 #line 2743 "src/parser.cpp"
     break;
@@ -2745,7 +2745,7 @@ namespace yy {
   case 119: // node_bool: FALSE
 #line 507 "gen/parser.y"
           {
-        yylhs.value.as < cynth::ast::node::Bool > () = {false};
+        yylhs.value.as < cynth::syn::node::Bool > () = {false};
     }
 #line 2751 "src/parser.cpp"
     break;
@@ -2753,7 +2753,7 @@ namespace yy {
   case 120: // node_int: INT
 #line 512 "gen/parser.y"
         {
-        yylhs.value.as < cynth::ast::node::Int > () = {esl::stoi<cynth::sem::Integral>(YY_MOVE (yystack_[0].value.as < std::string > ()))}; // TODO: The sem::Integral type should be obtainable from ast::node::Int
+        yylhs.value.as < cynth::syn::node::Int > () = {esl::stoi<cynth::sem::Integral>(YY_MOVE (yystack_[0].value.as < std::string > ()))}; // TODO: The sem::Integral type should be obtainable from syn::node::Int
     }
 #line 2759 "src/parser.cpp"
     break;
@@ -2761,7 +2761,7 @@ namespace yy {
   case 121: // node_float: FLOAT
 #line 517 "gen/parser.y"
           {
-        yylhs.value.as < cynth::ast::node::Float > () = {std::stof(YY_MOVE (yystack_[0].value.as < std::string > ()))};
+        yylhs.value.as < cynth::syn::node::Float > () = {std::stof(YY_MOVE (yystack_[0].value.as < std::string > ()))};
     }
 #line 2767 "src/parser.cpp"
     break;
@@ -2769,7 +2769,7 @@ namespace yy {
   case 122: // node_string: STRING
 #line 522 "gen/parser.y"
            {
-        yylhs.value.as < cynth::ast::node::String > () = {esl::trim(YY_MOVE (yystack_[0].value.as < std::string > ()))};
+        yylhs.value.as < cynth::syn::node::String > () = {esl::trim(YY_MOVE (yystack_[0].value.as < std::string > ()))};
     }
 #line 2775 "src/parser.cpp"
     break;
@@ -2777,7 +2777,7 @@ namespace yy {
   case 123: // node_function: cat_type FN paren_decl cat_expression
 #line 527 "gen/parser.y"
                                                          {
-        yylhs.value.as < cynth::ast::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2783 "src/parser.cpp"
     break;
@@ -2785,7 +2785,7 @@ namespace yy {
   case 124: // node_function: void_type FN paren_decl cat_expression
 #line 530 "gen/parser.y"
                                                           {
-        yylhs.value.as < cynth::ast::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2791 "src/parser.cpp"
     break;
@@ -2793,7 +2793,7 @@ namespace yy {
   case 125: // node_function: cat_type FN void_decl cat_expression
 #line 533 "gen/parser.y"
                                                         {
-        yylhs.value.as < cynth::ast::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2799 "src/parser.cpp"
     break;
@@ -2801,7 +2801,7 @@ namespace yy {
   case 126: // node_function: void_type FN void_decl cat_expression
 #line 536 "gen/parser.y"
                                                          {
-        yylhs.value.as < cynth::ast::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2807 "src/parser.cpp"
     break;
@@ -2809,7 +2809,7 @@ namespace yy {
   case 127: // node_array: OBRACK CBRACK
 #line 541 "gen/parser.y"
                   {
-        yylhs.value.as < cynth::ast::node::Array > () = {};
+        yylhs.value.as < cynth::syn::node::Array > () = {};
     }
 #line 2815 "src/parser.cpp"
     break;
@@ -2817,7 +2817,7 @@ namespace yy {
   case 128: // node_array: OBRACK array_elem_list CBRACK
 #line 544 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::node::Array > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ())};
+        yylhs.value.as < cynth::syn::node::Array > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ())};
     }
 #line 2823 "src/parser.cpp"
     break;
@@ -2825,7 +2825,7 @@ namespace yy {
   case 129: // node_array: OBRACK array_elem_list SEMI CBRACK
 #line 547 "gen/parser.y"
                                              {
-        yylhs.value.as < cynth::ast::node::Array > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ())};
+        yylhs.value.as < cynth::syn::node::Array > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ())};
     }
 #line 2831 "src/parser.cpp"
     break;
@@ -2833,7 +2833,7 @@ namespace yy {
   case 130: // node_or: expr_or OR expr_and
 #line 554 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::node::Or > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Or > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2839 "src/parser.cpp"
     break;
@@ -2841,7 +2841,7 @@ namespace yy {
   case 131: // node_and: expr_and AND expr_eq
 #line 559 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::And > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::And > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2847 "src/parser.cpp"
     break;
@@ -2849,7 +2849,7 @@ namespace yy {
   case 132: // node_eq: expr_eq EQ expr_ord
 #line 564 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::node::Eq > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Eq > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2855 "src/parser.cpp"
     break;
@@ -2857,7 +2857,7 @@ namespace yy {
   case 133: // node_ne: expr_eq NE expr_ord
 #line 569 "gen/parser.y"
                                   {
-        yylhs.value.as < cynth::ast::node::Ne > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Ne > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2863 "src/parser.cpp"
     break;
@@ -2865,7 +2865,7 @@ namespace yy {
   case 134: // node_ge: expr_ord GE expr_add
 #line 574 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::Ge > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Ge > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2871 "src/parser.cpp"
     break;
@@ -2873,7 +2873,7 @@ namespace yy {
   case 135: // node_le: expr_ord LE expr_add
 #line 579 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::Le > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Le > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2879 "src/parser.cpp"
     break;
@@ -2881,7 +2881,7 @@ namespace yy {
   case 136: // node_gt: expr_ord GT expr_add
 #line 584 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::Gt > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Gt > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2887 "src/parser.cpp"
     break;
@@ -2889,7 +2889,7 @@ namespace yy {
   case 137: // node_lt: expr_ord LT expr_add
 #line 589 "gen/parser.y"
                                    {
-        yylhs.value.as < cynth::ast::node::Lt > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Lt > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2895 "src/parser.cpp"
     break;
@@ -2897,7 +2897,7 @@ namespace yy {
   case 138: // node_add: expr_add ADD expr_mul
 #line 594 "gen/parser.y"
                                     {
-        yylhs.value.as < cynth::ast::node::Add > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Add > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2903 "src/parser.cpp"
     break;
@@ -2905,7 +2905,7 @@ namespace yy {
   case 139: // node_sub: expr_add SUB expr_mul
 #line 599 "gen/parser.y"
                                     {
-        yylhs.value.as < cynth::ast::node::Sub > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Sub > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2911 "src/parser.cpp"
     break;
@@ -2913,7 +2913,7 @@ namespace yy {
   case 140: // node_mul: expr_mul MUL expr_pow
 #line 604 "gen/parser.y"
                                     {
-        yylhs.value.as < cynth::ast::node::Mul > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Mul > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2919 "src/parser.cpp"
     break;
@@ -2921,7 +2921,7 @@ namespace yy {
   case 141: // node_div: expr_mul DIV expr_pow
 #line 609 "gen/parser.y"
                                     {
-        yylhs.value.as < cynth::ast::node::Div > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Div > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2927 "src/parser.cpp"
     break;
@@ -2929,7 +2929,7 @@ namespace yy {
   case 142: // node_mod: expr_mul MOD expr_pow
 #line 614 "gen/parser.y"
                                     {
-        yylhs.value.as < cynth::ast::node::Mod > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Mod > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2935 "src/parser.cpp"
     break;
@@ -2937,7 +2937,7 @@ namespace yy {
   case 143: // node_pow: expr_pre POW expr_pow
 #line 619 "gen/parser.y"
                                     {
-        yylhs.value.as < cynth::ast::node::Pow > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Pow > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2943 "src/parser.cpp"
     break;
@@ -2945,7 +2945,7 @@ namespace yy {
   case 144: // node_minus: SUB expr_pre
 #line 624 "gen/parser.y"
                       {
-        yylhs.value.as < cynth::ast::node::Minus > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Minus > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2951 "src/parser.cpp"
     break;
@@ -2953,7 +2953,7 @@ namespace yy {
   case 145: // node_plus: ADD expr_pre
 #line 629 "gen/parser.y"
                       {
-        yylhs.value.as < cynth::ast::node::Plus > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Plus > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2959 "src/parser.cpp"
     break;
@@ -2961,7 +2961,7 @@ namespace yy {
   case 146: // node_not: NOT expr_pre
 #line 634 "gen/parser.y"
                       {
-        yylhs.value.as < cynth::ast::node::Not > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Not > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2967 "src/parser.cpp"
     break;
@@ -2969,7 +2969,7 @@ namespace yy {
   case 147: // node_application: expr_post paren_expr
 #line 639 "gen/parser.y"
                                               {
-        yylhs.value.as < cynth::ast::node::Application > () = {.function = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ()), .arguments = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Application > () = {.function = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .arguments = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2975 "src/parser.cpp"
     break;
@@ -2977,7 +2977,7 @@ namespace yy {
   case 148: // node_application: expr_post void
 #line 642 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::node::Application > () = {.function = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ()), .arguments = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Application > () = {.function = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .arguments = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2983 "src/parser.cpp"
     break;
@@ -2985,7 +2985,7 @@ namespace yy {
   case 149: // node_conversion: cat_type paren_expr
 #line 647 "gen/parser.y"
                                         {
-        yylhs.value.as < cynth::ast::node::Conversion > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Type > ()), .argument = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Conversion > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .argument = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 2991 "src/parser.cpp"
     break;
@@ -2993,7 +2993,7 @@ namespace yy {
   case 150: // node_subscript: expr_post OBRACK array_elem_list CBRACK
 #line 652 "gen/parser.y"
                                                                  {
-        yylhs.value.as < cynth::ast::node::Subscript > () = {.container = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Expression > ()), .location = YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ())};
+        yylhs.value.as < cynth::syn::node::Subscript > () = {.container = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .location = YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ())};
     }
 #line 2999 "src/parser.cpp"
     break;
@@ -3001,7 +3001,7 @@ namespace yy {
   case 151: // node_subscript: expr_post OBRACK CBRACK
 #line 655 "gen/parser.y"
                                        {
-        yylhs.value.as < cynth::ast::node::Subscript > () = {.container = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), .location = {}};
+        yylhs.value.as < cynth::syn::node::Subscript > () = {.container = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .location = {}};
     }
 #line 3007 "src/parser.cpp"
     break;
@@ -3009,7 +3009,7 @@ namespace yy {
   case 152: // node_expr_if: IF paren_expr cat_expression ELSE cat_expression
 #line 660 "gen/parser.y"
                                                                      {
-        yylhs.value.as < cynth::ast::node::ExprIf > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::ExprIf > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3015 "src/parser.cpp"
     break;
@@ -3017,7 +3017,7 @@ namespace yy {
   case 153: // node_expr_for: FOR paren_range_decl cat_expression
 #line 665 "gen/parser.y"
                                                     {
-        yylhs.value.as < cynth::ast::node::ExprFor > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::ExprFor > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::syn::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3023 "src/parser.cpp"
     break;
@@ -3025,7 +3025,7 @@ namespace yy {
   case 154: // node_definition: cat_declaration ASSGN cat_expression
 #line 672 "gen/parser.y"
                                                       {
-        yylhs.value.as < cynth::ast::node::Definition > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Declaration > ()), .value = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Definition > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Declaration > ()), .value = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3031 "src/parser.cpp"
     break;
@@ -3033,7 +3033,7 @@ namespace yy {
   case 155: // node_assignment: expr_assgn_target ASSGN cat_expression
 #line 677 "gen/parser.y"
                                                         {
-        yylhs.value.as < cynth::ast::node::Assignment > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), .value = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Assignment > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .value = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3039 "src/parser.cpp"
     break;
@@ -3041,7 +3041,7 @@ namespace yy {
   case 156: // node_type_def: TYPE node_type_name ASSGN cat_type
 #line 682 "gen/parser.y"
                                                      {
-        yylhs.value.as < cynth::ast::node::TypeDef > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::ast::node::TypeName > ()), .type = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < cynth::syn::node::TypeDef > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::syn::node::TypeName > ()), .type = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
 #line 3047 "src/parser.cpp"
     break;
@@ -3049,7 +3049,7 @@ namespace yy {
   case 157: // node_function_def: cat_type node_name paren_decl cat_expression
 #line 687 "gen/parser.y"
                                                                       {
-        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3055 "src/parser.cpp"
     break;
@@ -3057,7 +3057,7 @@ namespace yy {
   case 158: // node_function_def: void_type node_name paren_decl cat_expression
 #line 690 "gen/parser.y"
                                                                        {
-        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3063 "src/parser.cpp"
     break;
@@ -3065,7 +3065,7 @@ namespace yy {
   case 159: // node_function_def: cat_type node_name void_decl cat_expression
 #line 693 "gen/parser.y"
                                                                      {
-        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3071 "src/parser.cpp"
     break;
@@ -3073,7 +3073,7 @@ namespace yy {
   case 160: // node_function_def: void_type node_name void_decl cat_expression
 #line 696 "gen/parser.y"
                                                                       {
-        yylhs.value.as < cynth::ast::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::ast::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3079 "src/parser.cpp"
     break;
@@ -3081,7 +3081,7 @@ namespace yy {
   case 161: // node_return: RETURN cat_expression
 #line 701 "gen/parser.y"
                                {
-        yylhs.value.as < cynth::ast::node::Return > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Return > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3087 "src/parser.cpp"
     break;
@@ -3089,7 +3089,7 @@ namespace yy {
   case 162: // node_return: RETURN void
 #line 704 "gen/parser.y"
                      {
-        yylhs.value.as < cynth::ast::node::Return > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::Return > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3095 "src/parser.cpp"
     break;
@@ -3097,7 +3097,7 @@ namespace yy {
   case 163: // node_return: RETURN
 #line 707 "gen/parser.y"
            {
-        yylhs.value.as < cynth::ast::node::Return > () = {cynth::ast::category::Expression{cynth::ast::node::Tuple{}}};
+        yylhs.value.as < cynth::syn::node::Return > () = {cynth::syn::category::Expression{cynth::syn::node::Tuple{}}};
     }
 #line 3103 "src/parser.cpp"
     break;
@@ -3105,7 +3105,7 @@ namespace yy {
   case 164: // node_if: IF paren_expr pure ELSE pure
 #line 712 "gen/parser.y"
                                                  {
-        yylhs.value.as < cynth::ast::node::If > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[2].value.as < cynth::ast::category::Statement > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < cynth::syn::node::If > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Statement > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
 #line 3111 "src/parser.cpp"
     break;
@@ -3113,7 +3113,7 @@ namespace yy {
   case 165: // node_if: IF paren_expr pure SEMI ELSE pure
 #line 715 "gen/parser.y"
                                                       {
-        yylhs.value.as < cynth::ast::node::If > () = {.condition = YY_MOVE (yystack_[4].value.as < cynth::ast::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[3].value.as < cynth::ast::category::Statement > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < cynth::syn::node::If > () = {.condition = YY_MOVE (yystack_[4].value.as < cynth::syn::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Statement > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
 #line 3119 "src/parser.cpp"
     break;
@@ -3121,7 +3121,7 @@ namespace yy {
   case 166: // node_when: WHEN paren_expr cat_statement
 #line 720 "gen/parser.y"
                                              {
-        yylhs.value.as < cynth::ast::node::When > () = {.condition = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ()), .branch = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < cynth::syn::node::When > () = {.condition = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
 #line 3127 "src/parser.cpp"
     break;
@@ -3129,7 +3129,7 @@ namespace yy {
   case 167: // node_for: FOR paren_range_decl pure
 #line 725 "gen/parser.y"
                                           {
-        yylhs.value.as < cynth::ast::node::For > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::ast::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < cynth::syn::node::For > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::syn::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
 #line 3135 "src/parser.cpp"
     break;
@@ -3137,7 +3137,7 @@ namespace yy {
   case 168: // node_while: WHILE paren_expr cat_statement
 #line 730 "gen/parser.y"
                                                {
-        yylhs.value.as < cynth::ast::node::While > () = {.condition = YY_MOVE (yystack_[1].value.as < cynth::ast::category::Expression > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < cynth::syn::node::While > () = {.condition = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
 #line 3143 "src/parser.cpp"
     break;
@@ -3145,7 +3145,7 @@ namespace yy {
   case 169: // array_elem_list: cat_array_elem
 #line 737 "gen/parser.y"
                           {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::ArrayElement> > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::ArrayElement > ())};
+        yylhs.value.as < esl::component_vector<cynth::syn::category::ArrayElement> > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::ArrayElement > ())};
     }
 #line 3151 "src/parser.cpp"
     break;
@@ -3153,7 +3153,7 @@ namespace yy {
   case 170: // array_elem_list: array_elem_list COMMA cat_array_elem
 #line 740 "gen/parser.y"
                                                      {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::ArrayElement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::ArrayElement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::ArrayElement> > ()));
+        yylhs.value.as < esl::component_vector<cynth::syn::category::ArrayElement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::ArrayElement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ()));
     }
 #line 3159 "src/parser.cpp"
     break;
@@ -3161,7 +3161,7 @@ namespace yy {
   case 171: // stmt_list: cat_statement
 #line 745 "gen/parser.y"
                          {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Statement> > () = {YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ())};
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Statement> > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
 #line 3167 "src/parser.cpp"
     break;
@@ -3169,7 +3169,7 @@ namespace yy {
   case 172: // stmt_list: stmt_list SEMI cat_statement
 #line 748 "gen/parser.y"
                                              {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Statement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Statement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Statement> > ()));
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Statement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Statement> > ()));
     }
 #line 3175 "src/parser.cpp"
     break;
@@ -3177,7 +3177,7 @@ namespace yy {
   case 173: // type_list: cat_type COMMA cat_type
 #line 753 "gen/parser.y"
                                            {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Type> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Type > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ())};
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Type> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Type > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
 #line 3183 "src/parser.cpp"
     break;
@@ -3185,7 +3185,7 @@ namespace yy {
   case 174: // type_list: type_list COMMA cat_type
 #line 756 "gen/parser.y"
                                          {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Type> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Type > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Type> > ()));
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Type> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Type> > ()));
     }
 #line 3191 "src/parser.cpp"
     break;
@@ -3193,7 +3193,7 @@ namespace yy {
   case 175: // expr_list: cat_expression COMMA cat_expression
 #line 761 "gen/parser.y"
                                                        {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Expression> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ())};
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Expression> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
 #line 3199 "src/parser.cpp"
     break;
@@ -3201,7 +3201,7 @@ namespace yy {
   case 176: // expr_list: expr_list COMMA cat_expression
 #line 764 "gen/parser.y"
                                                {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Expression> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Expression > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Expression> > ()));
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Expression> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Expression> > ()));
     }
 #line 3207 "src/parser.cpp"
     break;
@@ -3209,7 +3209,7 @@ namespace yy {
   case 177: // decl_list: cat_declaration COMMA cat_declaration
 #line 769 "gen/parser.y"
                                                          {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Declaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::Declaration > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ())};
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Declaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Declaration > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Declaration > ())};
     }
 #line 3215 "src/parser.cpp"
     break;
@@ -3217,7 +3217,7 @@ namespace yy {
   case 178: // decl_list: decl_list COMMA cat_declaration
 #line 772 "gen/parser.y"
                                                 {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::Declaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::Declaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::Declaration> > ()));
+        yylhs.value.as < esl::component_vector<cynth::syn::category::Declaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Declaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Declaration> > ()));
     }
 #line 3223 "src/parser.cpp"
     break;
@@ -3225,7 +3225,7 @@ namespace yy {
   case 179: // range_decl_list: cat_range_decl COMMA cat_range_decl
 #line 777 "gen/parser.y"
                                                        {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::ast::category::RangeDeclaration > ()), YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDeclaration > ())};
+        yylhs.value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::RangeDeclaration > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::RangeDeclaration > ())};
     }
 #line 3231 "src/parser.cpp"
     break;
@@ -3233,7 +3233,7 @@ namespace yy {
   case 180: // range_decl_list: range_decl_list COMMA cat_range_decl
 #line 780 "gen/parser.y"
                                                      {
-        yylhs.value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::ast::category::RangeDeclaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::ast::category::RangeDeclaration> > ()));
+        yylhs.value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::RangeDeclaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > ()));
     }
 #line 3239 "src/parser.cpp"
     break;

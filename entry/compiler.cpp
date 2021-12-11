@@ -1,4 +1,4 @@
-#include "ast.hpp"
+#include "syn.hpp"
 #include "sem.hpp"
 #include "parser.hpp"
 #include "interpreter.hpp"
@@ -11,14 +11,14 @@
 using namespace cynth;
 
 int main () {
-    ast::node::Block ast;
+    syn::node::Block syn;
 
-    yy::parser parse{ast};
+    yy::parser parse{syn};
     parse();
 
     std::cout <<
         "INPUT:\n" <<
-        util::pretty(display(ast)) << '\n';
+        util::pretty(display(syn)) << '\n';
 
     sem::context ctx;
 
@@ -28,7 +28,7 @@ int main () {
     ctx.define_type("Float",  {sem::type::Float{}});
     ctx.define_type("String", {sem::type::String{}});
 
-    auto result = util::unite_results(ast.evaluate<false>(ctx));
+    auto result = util::unite_results(syn.evaluate<false>(ctx));
 
     if (!result) {
         std::cout << "eval error:" << result.error().message << '\n';

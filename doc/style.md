@@ -5,17 +5,25 @@ I will specify them all once this project reaches the potential for collaboratio
 but for now, the following list of conventions are just some explicit coding style notes for me,
 to keep consistent and stop changing my style during development.
 
+* header files should not (in general) have incomplete dependencies in type declarations (not even in pointers)  
+    in case that types really cannot be complete (e.g. circular dependencies):  
+    * files with incomplete circular dependencies should be explicitly marked as such (placed in a directory `incomplete/` or prefixed with `incomplete_`)
+    * additional file with full declarations of the circular dependencies should be provided
+    update: what about types in declared (to be defined in an implementation file) function signatures?
+    (e.g. `context/forward`, `interface/forward`)
+    I guess I'll allow that for now and see if it introduces any maintanance issues
+
 * in functions, prefer explicit return type with generic initializer return over auto return type with explicit initializer return  
     i.e. `-> result` and `return {value}` instead of `-> auto` and `return result{value}`  
     explicit specification of output types instead of auto just feels more selfdocumenting
     and avoids the need to specify the type on every return  
-* `detail` namespaces began to collide. specify them locally as e.g. `detail::lift`, `detail::iterator` etc.
+* `detail` namespaces began to collide. specify them locally as e.g. `detail::lift`, `detail::iterator` etc.  
     right now, I'm using the file name in `detail::{filename}` and I'll probably stick with it
 * keeping track of noexcept could be nice i guess
 
 * specify namespaces explicitly, except for:
     * the top-level `cynth::` namespace
-    * the `sem::` and `ast::` namespaces
+    * the `sem::` and `syn::` namespaces
     * `detail::*` namespaces
     * when refering to a struct inside its declaration
 * in esl implementation as well as in code refering to it, also specify the top-level `esl::` namespace  
@@ -60,25 +68,7 @@ to keep consistent and stop changing my style during development.
     same goes for `t<>` and `t <>`  
     `a[]` everywhere
 * `requires ()` with explicit parentheses
-* `CTH_` prefix for macros and `cth_` prefix for C code  
-    I chose it to be something shorter than `cynth` since it can't be omited
+* `CTH_` (and `ESL_`) prefix for non-local macros and `cth_` prefix for global C code
 * avoid creating unnecessary abbreviations and acronyms  
     where abbreviations are ok:
-    * `ast::node::*` (e.g. `ast::node::Gt`, `ast::node::ExprIf`, `ast::node::TypeDef`)
-
-in C code...
-* `cth_` prefix for global declarations followed by some semantic prefixes...
-* `cth_t_` for simple cynth types
-* `cth_c_` for context types of cynth functions  
-    follwed by a unique id `cth_c_{id}`  
-    and for non-anonymous functions, its user-given name `cth_c_{id}_{name}`
-* `[cth_]u_` for explicitly user defined values (simple types, arrays and buffers)  
-    local variables do not need the global `cth_` prefix
-* no declarations for compilation constants  
-    instead, inserted directly on every use  
-    an additional comment might be useful though (e.g. `256 /* compconst bufferSize */`)
-* no prefix for implementatinos of builtin cynth operations (e.g. `cth_add`)
-* specifically typed alternatives generated on demand with types specified in a postfix  
-    postfixed with a `$` separator and multiple types separated with `$`  
-    e.g. `cth_t_int cth_add$int (cth_t_int, cth_t_int)`,
-    `cth_t_int cth_convert$int$float (cth_t_float)`
+    * `syn::node::*` (e.g. `syn::node::Gt`, `syn::node::ExprIf`, `syn::node::TypeDef`)

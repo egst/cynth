@@ -53,7 +53,7 @@
     #include "esl/string.hpp"
     #include "esl/containers.hpp"
 
-    #include "bundle_ast.hpp"
+    #include "ast/all.hpp"
     #include "sem/numeric_types.hpp"
 
 
@@ -384,12 +384,12 @@ namespace yy {
     union union_type
     {
       // cat_array_elem
-      char dummy1[sizeof (cynth::ast::category::ArrayElement)];
+      char dummy1[sizeof (cynth::syn::category::ArrayElement)];
 
       // cat_declaration
       // paren_decl
       // void_decl
-      char dummy2[sizeof (cynth::ast::category::Declaration)];
+      char dummy2[sizeof (cynth::syn::category::Declaration)];
 
       // cat_expression
       // expr_or
@@ -406,197 +406,197 @@ namespace yy {
       // expr_assgn_target
       // paren_expr
       // void
-      char dummy3[sizeof (cynth::ast::category::Expression)];
+      char dummy3[sizeof (cynth::syn::category::Expression)];
 
       // cat_range_decl
       // paren_range_decl
-      char dummy4[sizeof (cynth::ast::category::RangeDeclaration)];
+      char dummy4[sizeof (cynth::syn::category::RangeDeclaration)];
 
       // cat_statement
       // pure
-      char dummy5[sizeof (cynth::ast::category::Statement)];
+      char dummy5[sizeof (cynth::syn::category::Statement)];
 
       // cat_type
       // paren_type
       // void_type
-      char dummy6[sizeof (cynth::ast::category::Type)];
+      char dummy6[sizeof (cynth::syn::category::Type)];
 
       // node_add
-      char dummy7[sizeof (cynth::ast::node::Add)];
+      char dummy7[sizeof (cynth::syn::node::Add)];
 
       // node_and
-      char dummy8[sizeof (cynth::ast::node::And)];
+      char dummy8[sizeof (cynth::syn::node::And)];
 
       // node_application
-      char dummy9[sizeof (cynth::ast::node::Application)];
+      char dummy9[sizeof (cynth::syn::node::Application)];
 
       // node_array
-      char dummy10[sizeof (cynth::ast::node::Array)];
+      char dummy10[sizeof (cynth::syn::node::Array)];
 
       // node_array_type
-      char dummy11[sizeof (cynth::ast::node::ArrayType)];
+      char dummy11[sizeof (cynth::syn::node::ArrayType)];
 
       // node_assignment
-      char dummy12[sizeof (cynth::ast::node::Assignment)];
+      char dummy12[sizeof (cynth::syn::node::Assignment)];
 
       // node_auto
-      char dummy13[sizeof (cynth::ast::node::Auto)];
+      char dummy13[sizeof (cynth::syn::node::Auto)];
 
       // node_block
-      char dummy14[sizeof (cynth::ast::node::Block)];
+      char dummy14[sizeof (cynth::syn::node::Block)];
 
       // node_bool
-      char dummy15[sizeof (cynth::ast::node::Bool)];
+      char dummy15[sizeof (cynth::syn::node::Bool)];
 
       // node_buffer_type
-      char dummy16[sizeof (cynth::ast::node::BufferType)];
+      char dummy16[sizeof (cynth::syn::node::BufferType)];
 
       // node_const_type
-      char dummy17[sizeof (cynth::ast::node::ConstType)];
+      char dummy17[sizeof (cynth::syn::node::ConstType)];
 
       // node_conversion
-      char dummy18[sizeof (cynth::ast::node::Conversion)];
+      char dummy18[sizeof (cynth::syn::node::Conversion)];
 
       // node_declaration
-      char dummy19[sizeof (cynth::ast::node::Declaration)];
+      char dummy19[sizeof (cynth::syn::node::Declaration)];
 
       // node_definition
-      char dummy20[sizeof (cynth::ast::node::Definition)];
+      char dummy20[sizeof (cynth::syn::node::Definition)];
 
       // node_div
-      char dummy21[sizeof (cynth::ast::node::Div)];
+      char dummy21[sizeof (cynth::syn::node::Div)];
 
       // node_eq
-      char dummy22[sizeof (cynth::ast::node::Eq)];
+      char dummy22[sizeof (cynth::syn::node::Eq)];
 
       // node_expr_for
-      char dummy23[sizeof (cynth::ast::node::ExprFor)];
+      char dummy23[sizeof (cynth::syn::node::ExprFor)];
 
       // node_expr_if
-      char dummy24[sizeof (cynth::ast::node::ExprIf)];
+      char dummy24[sizeof (cynth::syn::node::ExprIf)];
 
       // node_float
-      char dummy25[sizeof (cynth::ast::node::Float)];
+      char dummy25[sizeof (cynth::syn::node::Float)];
 
       // node_for
-      char dummy26[sizeof (cynth::ast::node::For)];
+      char dummy26[sizeof (cynth::syn::node::For)];
 
       // node_function_def
-      char dummy27[sizeof (cynth::ast::node::FunDef)];
+      char dummy27[sizeof (cynth::syn::node::FunDef)];
 
       // node_function
-      char dummy28[sizeof (cynth::ast::node::Function)];
+      char dummy28[sizeof (cynth::syn::node::Function)];
 
       // node_function_type
-      char dummy29[sizeof (cynth::ast::node::FunctionType)];
+      char dummy29[sizeof (cynth::syn::node::FunctionType)];
 
       // node_ge
-      char dummy30[sizeof (cynth::ast::node::Ge)];
+      char dummy30[sizeof (cynth::syn::node::Ge)];
 
       // node_gt
-      char dummy31[sizeof (cynth::ast::node::Gt)];
+      char dummy31[sizeof (cynth::syn::node::Gt)];
 
       // node_if
-      char dummy32[sizeof (cynth::ast::node::If)];
+      char dummy32[sizeof (cynth::syn::node::If)];
 
       // node_in_type
-      char dummy33[sizeof (cynth::ast::node::InType)];
+      char dummy33[sizeof (cynth::syn::node::InType)];
 
       // node_int
-      char dummy34[sizeof (cynth::ast::node::Int)];
+      char dummy34[sizeof (cynth::syn::node::Int)];
 
       // node_le
-      char dummy35[sizeof (cynth::ast::node::Le)];
+      char dummy35[sizeof (cynth::syn::node::Le)];
 
       // node_lt
-      char dummy36[sizeof (cynth::ast::node::Lt)];
+      char dummy36[sizeof (cynth::syn::node::Lt)];
 
       // node_minus
-      char dummy37[sizeof (cynth::ast::node::Minus)];
+      char dummy37[sizeof (cynth::syn::node::Minus)];
 
       // node_mod
-      char dummy38[sizeof (cynth::ast::node::Mod)];
+      char dummy38[sizeof (cynth::syn::node::Mod)];
 
       // node_mul
-      char dummy39[sizeof (cynth::ast::node::Mul)];
+      char dummy39[sizeof (cynth::syn::node::Mul)];
 
       // node_name
-      char dummy40[sizeof (cynth::ast::node::Name)];
+      char dummy40[sizeof (cynth::syn::node::Name)];
 
       // node_ne
-      char dummy41[sizeof (cynth::ast::node::Ne)];
+      char dummy41[sizeof (cynth::syn::node::Ne)];
 
       // node_not
-      char dummy42[sizeof (cynth::ast::node::Not)];
+      char dummy42[sizeof (cynth::syn::node::Not)];
 
       // node_or
-      char dummy43[sizeof (cynth::ast::node::Or)];
+      char dummy43[sizeof (cynth::syn::node::Or)];
 
       // node_out_type
-      char dummy44[sizeof (cynth::ast::node::OutType)];
+      char dummy44[sizeof (cynth::syn::node::OutType)];
 
       // node_plus
-      char dummy45[sizeof (cynth::ast::node::Plus)];
+      char dummy45[sizeof (cynth::syn::node::Plus)];
 
       // node_pow
-      char dummy46[sizeof (cynth::ast::node::Pow)];
+      char dummy46[sizeof (cynth::syn::node::Pow)];
 
       // node_range_decl
-      char dummy47[sizeof (cynth::ast::node::RangeDecl)];
+      char dummy47[sizeof (cynth::syn::node::RangeDecl)];
 
       // node_range_to
-      char dummy48[sizeof (cynth::ast::node::RangeTo)];
+      char dummy48[sizeof (cynth::syn::node::RangeTo)];
 
       // node_range_to_by
-      char dummy49[sizeof (cynth::ast::node::RangeToBy)];
+      char dummy49[sizeof (cynth::syn::node::RangeToBy)];
 
       // node_return
-      char dummy50[sizeof (cynth::ast::node::Return)];
+      char dummy50[sizeof (cynth::syn::node::Return)];
 
       // node_spread
-      char dummy51[sizeof (cynth::ast::node::Spread)];
+      char dummy51[sizeof (cynth::syn::node::Spread)];
 
       // node_string
-      char dummy52[sizeof (cynth::ast::node::String)];
+      char dummy52[sizeof (cynth::syn::node::String)];
 
       // node_sub
-      char dummy53[sizeof (cynth::ast::node::Sub)];
+      char dummy53[sizeof (cynth::syn::node::Sub)];
 
       // node_subscript
-      char dummy54[sizeof (cynth::ast::node::Subscript)];
+      char dummy54[sizeof (cynth::syn::node::Subscript)];
 
       // node_type_decl
-      char dummy55[sizeof (cynth::ast::node::TypeDecl)];
+      char dummy55[sizeof (cynth::syn::node::TypeDecl)];
 
       // node_type_def
-      char dummy56[sizeof (cynth::ast::node::TypeDef)];
+      char dummy56[sizeof (cynth::syn::node::TypeDef)];
 
       // node_type_name
-      char dummy57[sizeof (cynth::ast::node::TypeName)];
+      char dummy57[sizeof (cynth::syn::node::TypeName)];
 
       // node_when
-      char dummy58[sizeof (cynth::ast::node::When)];
+      char dummy58[sizeof (cynth::syn::node::When)];
 
       // node_while
-      char dummy59[sizeof (cynth::ast::node::While)];
+      char dummy59[sizeof (cynth::syn::node::While)];
 
       // array_elem_list
-      char dummy60[sizeof (esl::component_vector<cynth::ast::category::ArrayElement>)];
+      char dummy60[sizeof (esl::component_vector<cynth::syn::category::ArrayElement>)];
 
       // decl_list
-      char dummy61[sizeof (esl::component_vector<cynth::ast::category::Declaration>)];
+      char dummy61[sizeof (esl::component_vector<cynth::syn::category::Declaration>)];
 
       // expr_list
-      char dummy62[sizeof (esl::component_vector<cynth::ast::category::Expression>)];
+      char dummy62[sizeof (esl::component_vector<cynth::syn::category::Expression>)];
 
       // range_decl_list
-      char dummy63[sizeof (esl::component_vector<cynth::ast::category::RangeDeclaration>)];
+      char dummy63[sizeof (esl::component_vector<cynth::syn::category::RangeDeclaration>)];
 
       // stmt_list
-      char dummy64[sizeof (esl::component_vector<cynth::ast::category::Statement>)];
+      char dummy64[sizeof (esl::component_vector<cynth::syn::category::Statement>)];
 
       // type_list
-      char dummy65[sizeof (esl::component_vector<cynth::ast::category::Type>)];
+      char dummy65[sizeof (esl::component_vector<cynth::syn::category::Type>)];
 
       // start
       char dummy66[sizeof (int)];
@@ -890,13 +890,13 @@ namespace yy {
         switch (this->kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElement > (std::move (that.value));
+        value.move< cynth::syn::category::ArrayElement > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.move< cynth::ast::category::Declaration > (std::move (that.value));
+        value.move< cynth::syn::category::Declaration > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -914,259 +914,259 @@ namespace yy {
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.move< cynth::ast::category::Expression > (std::move (that.value));
+        value.move< cynth::syn::category::Expression > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDeclaration > (std::move (that.value));
+        value.move< cynth::syn::category::RangeDeclaration > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.move< cynth::ast::category::Statement > (std::move (that.value));
+        value.move< cynth::syn::category::Statement > (std::move (that.value));
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.move< cynth::ast::category::Type > (std::move (that.value));
+        value.move< cynth::syn::category::Type > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.move< cynth::ast::node::Add > (std::move (that.value));
+        value.move< cynth::syn::node::Add > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.move< cynth::ast::node::And > (std::move (that.value));
+        value.move< cynth::syn::node::And > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.move< cynth::ast::node::Application > (std::move (that.value));
+        value.move< cynth::syn::node::Application > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.move< cynth::ast::node::Array > (std::move (that.value));
+        value.move< cynth::syn::node::Array > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.move< cynth::ast::node::ArrayType > (std::move (that.value));
+        value.move< cynth::syn::node::ArrayType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.move< cynth::ast::node::Assignment > (std::move (that.value));
+        value.move< cynth::syn::node::Assignment > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.move< cynth::ast::node::Auto > (std::move (that.value));
+        value.move< cynth::syn::node::Auto > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.move< cynth::ast::node::Block > (std::move (that.value));
+        value.move< cynth::syn::node::Block > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.move< cynth::ast::node::Bool > (std::move (that.value));
+        value.move< cynth::syn::node::Bool > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.move< cynth::ast::node::BufferType > (std::move (that.value));
+        value.move< cynth::syn::node::BufferType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.move< cynth::ast::node::ConstType > (std::move (that.value));
+        value.move< cynth::syn::node::ConstType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.move< cynth::ast::node::Conversion > (std::move (that.value));
+        value.move< cynth::syn::node::Conversion > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.move< cynth::ast::node::Declaration > (std::move (that.value));
+        value.move< cynth::syn::node::Declaration > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.move< cynth::ast::node::Definition > (std::move (that.value));
+        value.move< cynth::syn::node::Definition > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.move< cynth::ast::node::Div > (std::move (that.value));
+        value.move< cynth::syn::node::Div > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.move< cynth::ast::node::Eq > (std::move (that.value));
+        value.move< cynth::syn::node::Eq > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.move< cynth::ast::node::ExprFor > (std::move (that.value));
+        value.move< cynth::syn::node::ExprFor > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.move< cynth::ast::node::ExprIf > (std::move (that.value));
+        value.move< cynth::syn::node::ExprIf > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.move< cynth::ast::node::Float > (std::move (that.value));
+        value.move< cynth::syn::node::Float > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.move< cynth::ast::node::For > (std::move (that.value));
+        value.move< cynth::syn::node::For > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunDef > (std::move (that.value));
+        value.move< cynth::syn::node::FunDef > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (std::move (that.value));
+        value.move< cynth::syn::node::Function > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.move< cynth::ast::node::FunctionType > (std::move (that.value));
+        value.move< cynth::syn::node::FunctionType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.move< cynth::ast::node::Ge > (std::move (that.value));
+        value.move< cynth::syn::node::Ge > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.move< cynth::ast::node::Gt > (std::move (that.value));
+        value.move< cynth::syn::node::Gt > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.move< cynth::ast::node::If > (std::move (that.value));
+        value.move< cynth::syn::node::If > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.move< cynth::ast::node::InType > (std::move (that.value));
+        value.move< cynth::syn::node::InType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.move< cynth::ast::node::Int > (std::move (that.value));
+        value.move< cynth::syn::node::Int > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.move< cynth::ast::node::Le > (std::move (that.value));
+        value.move< cynth::syn::node::Le > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.move< cynth::ast::node::Lt > (std::move (that.value));
+        value.move< cynth::syn::node::Lt > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.move< cynth::ast::node::Minus > (std::move (that.value));
+        value.move< cynth::syn::node::Minus > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.move< cynth::ast::node::Mod > (std::move (that.value));
+        value.move< cynth::syn::node::Mod > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.move< cynth::ast::node::Mul > (std::move (that.value));
+        value.move< cynth::syn::node::Mul > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.move< cynth::ast::node::Name > (std::move (that.value));
+        value.move< cynth::syn::node::Name > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.move< cynth::ast::node::Ne > (std::move (that.value));
+        value.move< cynth::syn::node::Ne > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.move< cynth::ast::node::Not > (std::move (that.value));
+        value.move< cynth::syn::node::Not > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.move< cynth::ast::node::Or > (std::move (that.value));
+        value.move< cynth::syn::node::Or > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.move< cynth::ast::node::OutType > (std::move (that.value));
+        value.move< cynth::syn::node::OutType > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.move< cynth::ast::node::Plus > (std::move (that.value));
+        value.move< cynth::syn::node::Plus > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.move< cynth::ast::node::Pow > (std::move (that.value));
+        value.move< cynth::syn::node::Pow > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.move< cynth::ast::node::RangeDecl > (std::move (that.value));
+        value.move< cynth::syn::node::RangeDecl > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.move< cynth::ast::node::RangeTo > (std::move (that.value));
+        value.move< cynth::syn::node::RangeTo > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.move< cynth::ast::node::RangeToBy > (std::move (that.value));
+        value.move< cynth::syn::node::RangeToBy > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.move< cynth::ast::node::Return > (std::move (that.value));
+        value.move< cynth::syn::node::Return > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.move< cynth::ast::node::Spread > (std::move (that.value));
+        value.move< cynth::syn::node::Spread > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.move< cynth::ast::node::String > (std::move (that.value));
+        value.move< cynth::syn::node::String > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.move< cynth::ast::node::Sub > (std::move (that.value));
+        value.move< cynth::syn::node::Sub > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.move< cynth::ast::node::Subscript > (std::move (that.value));
+        value.move< cynth::syn::node::Subscript > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::ast::node::TypeDecl > (std::move (that.value));
+        value.move< cynth::syn::node::TypeDecl > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.move< cynth::ast::node::TypeDef > (std::move (that.value));
+        value.move< cynth::syn::node::TypeDef > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.move< cynth::ast::node::TypeName > (std::move (that.value));
+        value.move< cynth::syn::node::TypeName > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.move< cynth::ast::node::When > (std::move (that.value));
+        value.move< cynth::syn::node::When > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.move< cynth::ast::node::While > (std::move (that.value));
+        value.move< cynth::syn::node::While > (std::move (that.value));
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::syn::category::ArrayElement> > (std::move (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< esl::component_vector<cynth::ast::category::Declaration> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Declaration> > (std::move (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< esl::component_vector<cynth::ast::category::Expression> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Expression> > (std::move (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::syn::category::RangeDeclaration> > (std::move (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< esl::component_vector<cynth::ast::category::Statement> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Statement> > (std::move (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< esl::component_vector<cynth::ast::category::Type> > (std::move (that.value));
+        value.move< esl::component_vector<cynth::syn::category::Type> > (std::move (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -1202,716 +1202,716 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::ArrayElement&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::category::ArrayElement&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::ArrayElement& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::category::ArrayElement& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::Declaration&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::category::Declaration&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Declaration& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::category::Declaration& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::Expression&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::category::Expression&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Expression& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::category::Expression& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::RangeDeclaration&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::category::RangeDeclaration&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::RangeDeclaration& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::category::RangeDeclaration& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::Statement&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::category::Statement&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Statement& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::category::Statement& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::category::Type&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::category::Type&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::category::Type& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::category::Type& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Add&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Add&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Add& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Add& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::And&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::And&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::And& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::And& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Application&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Application&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Application& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Application& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Array&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Array&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Array& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Array& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::ArrayType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::ArrayType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::ArrayType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::ArrayType& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Assignment&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Assignment&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Assignment& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Assignment& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Auto&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Auto&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Auto& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Auto& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Block&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Block&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Block& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Block& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Bool&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Bool&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Bool& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Bool& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::BufferType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::BufferType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::BufferType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::BufferType& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::ConstType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::ConstType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::ConstType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::ConstType& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Conversion&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Conversion&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Conversion& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Conversion& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Declaration&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Declaration&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Declaration& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Declaration& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Definition&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Definition&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Definition& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Definition& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Div&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Div&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Div& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Div& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Eq&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Eq&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Eq& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Eq& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::ExprFor&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::ExprFor&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::ExprFor& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::ExprFor& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::ExprIf&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::ExprIf&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::ExprIf& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::ExprIf& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Float&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Float&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Float& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Float& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::For&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::For&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::For& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::For& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::FunDef&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::FunDef&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::FunDef& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::FunDef& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Function&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Function&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Function& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Function& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::FunctionType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::FunctionType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::FunctionType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::FunctionType& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Ge&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Ge&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Ge& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Ge& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Gt&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Gt&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Gt& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Gt& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::If&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::If&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::If& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::If& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::InType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::InType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::InType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::InType& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Int&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Int&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Int& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Int& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Le&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Le&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Le& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Le& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Lt&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Lt&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Lt& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Lt& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Minus&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Minus&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Minus& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Minus& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Mod&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Mod&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Mod& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Mod& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Mul&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Mul&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Mul& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Mul& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Name&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Name&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Name& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Name& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Ne&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Ne&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Ne& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Ne& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Not&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Not&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Not& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Not& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Or&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Or&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Or& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Or& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::OutType&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::OutType&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::OutType& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::OutType& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Plus&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Plus&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Plus& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Plus& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Pow&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Pow&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Pow& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Pow& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::RangeDecl&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::RangeDecl&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::RangeDecl& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::RangeDecl& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::RangeTo&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::RangeTo&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::RangeTo& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::RangeTo& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::RangeToBy&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::RangeToBy&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::RangeToBy& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::RangeToBy& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Return&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Return&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Return& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Return& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Spread&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Spread&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Spread& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Spread& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::String&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::String&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::String& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::String& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Sub&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Sub&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Sub& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Sub& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::Subscript&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::Subscript&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::Subscript& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::Subscript& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::TypeDecl&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::TypeDecl&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::TypeDecl& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::TypeDecl& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::TypeDef&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::TypeDef&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::TypeDef& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::TypeDef& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::TypeName&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::TypeName&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::TypeName& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::TypeName& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::When&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::When&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::When& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::When& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::ast::node::While&& v)
+      basic_symbol (typename Base::kind_type t, cynth::syn::node::While&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const cynth::ast::node::While& v)
+      basic_symbol (typename Base::kind_type t, const cynth::syn::node::While& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::ArrayElement>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::syn::category::ArrayElement>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::ArrayElement>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::syn::category::ArrayElement>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Declaration>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::syn::category::Declaration>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Declaration>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::syn::category::Declaration>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Expression>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::syn::category::Expression>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Expression>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::syn::category::Expression>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::RangeDeclaration>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::syn::category::RangeDeclaration>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::RangeDeclaration>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::syn::category::RangeDeclaration>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Statement>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::syn::category::Statement>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Statement>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::syn::category::Statement>& v)
         : Base (t)
         , value (v)
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::ast::category::Type>&& v)
+      basic_symbol (typename Base::kind_type t, esl::component_vector<cynth::syn::category::Type>&& v)
         : Base (t)
         , value (std::move (v))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::ast::category::Type>& v)
+      basic_symbol (typename Base::kind_type t, const esl::component_vector<cynth::syn::category::Type>& v)
         : Base (t)
         , value (v)
       {}
@@ -1962,13 +1962,13 @@ namespace yy {
 switch (yykind)
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.template destroy< cynth::ast::category::ArrayElement > ();
+        value.template destroy< cynth::syn::category::ArrayElement > ();
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.template destroy< cynth::ast::category::Declaration > ();
+        value.template destroy< cynth::syn::category::Declaration > ();
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -1986,259 +1986,259 @@ switch (yykind)
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.template destroy< cynth::ast::category::Expression > ();
+        value.template destroy< cynth::syn::category::Expression > ();
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.template destroy< cynth::ast::category::RangeDeclaration > ();
+        value.template destroy< cynth::syn::category::RangeDeclaration > ();
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.template destroy< cynth::ast::category::Statement > ();
+        value.template destroy< cynth::syn::category::Statement > ();
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.template destroy< cynth::ast::category::Type > ();
+        value.template destroy< cynth::syn::category::Type > ();
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.template destroy< cynth::ast::node::Add > ();
+        value.template destroy< cynth::syn::node::Add > ();
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.template destroy< cynth::ast::node::And > ();
+        value.template destroy< cynth::syn::node::And > ();
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.template destroy< cynth::ast::node::Application > ();
+        value.template destroy< cynth::syn::node::Application > ();
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.template destroy< cynth::ast::node::Array > ();
+        value.template destroy< cynth::syn::node::Array > ();
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.template destroy< cynth::ast::node::ArrayType > ();
+        value.template destroy< cynth::syn::node::ArrayType > ();
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.template destroy< cynth::ast::node::Assignment > ();
+        value.template destroy< cynth::syn::node::Assignment > ();
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.template destroy< cynth::ast::node::Auto > ();
+        value.template destroy< cynth::syn::node::Auto > ();
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.template destroy< cynth::ast::node::Block > ();
+        value.template destroy< cynth::syn::node::Block > ();
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.template destroy< cynth::ast::node::Bool > ();
+        value.template destroy< cynth::syn::node::Bool > ();
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.template destroy< cynth::ast::node::BufferType > ();
+        value.template destroy< cynth::syn::node::BufferType > ();
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.template destroy< cynth::ast::node::ConstType > ();
+        value.template destroy< cynth::syn::node::ConstType > ();
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.template destroy< cynth::ast::node::Conversion > ();
+        value.template destroy< cynth::syn::node::Conversion > ();
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.template destroy< cynth::ast::node::Declaration > ();
+        value.template destroy< cynth::syn::node::Declaration > ();
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.template destroy< cynth::ast::node::Definition > ();
+        value.template destroy< cynth::syn::node::Definition > ();
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.template destroy< cynth::ast::node::Div > ();
+        value.template destroy< cynth::syn::node::Div > ();
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.template destroy< cynth::ast::node::Eq > ();
+        value.template destroy< cynth::syn::node::Eq > ();
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.template destroy< cynth::ast::node::ExprFor > ();
+        value.template destroy< cynth::syn::node::ExprFor > ();
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.template destroy< cynth::ast::node::ExprIf > ();
+        value.template destroy< cynth::syn::node::ExprIf > ();
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.template destroy< cynth::ast::node::Float > ();
+        value.template destroy< cynth::syn::node::Float > ();
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.template destroy< cynth::ast::node::For > ();
+        value.template destroy< cynth::syn::node::For > ();
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.template destroy< cynth::ast::node::FunDef > ();
+        value.template destroy< cynth::syn::node::FunDef > ();
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.template destroy< cynth::ast::node::Function > ();
+        value.template destroy< cynth::syn::node::Function > ();
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.template destroy< cynth::ast::node::FunctionType > ();
+        value.template destroy< cynth::syn::node::FunctionType > ();
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.template destroy< cynth::ast::node::Ge > ();
+        value.template destroy< cynth::syn::node::Ge > ();
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.template destroy< cynth::ast::node::Gt > ();
+        value.template destroy< cynth::syn::node::Gt > ();
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.template destroy< cynth::ast::node::If > ();
+        value.template destroy< cynth::syn::node::If > ();
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.template destroy< cynth::ast::node::InType > ();
+        value.template destroy< cynth::syn::node::InType > ();
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.template destroy< cynth::ast::node::Int > ();
+        value.template destroy< cynth::syn::node::Int > ();
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.template destroy< cynth::ast::node::Le > ();
+        value.template destroy< cynth::syn::node::Le > ();
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.template destroy< cynth::ast::node::Lt > ();
+        value.template destroy< cynth::syn::node::Lt > ();
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.template destroy< cynth::ast::node::Minus > ();
+        value.template destroy< cynth::syn::node::Minus > ();
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.template destroy< cynth::ast::node::Mod > ();
+        value.template destroy< cynth::syn::node::Mod > ();
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.template destroy< cynth::ast::node::Mul > ();
+        value.template destroy< cynth::syn::node::Mul > ();
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.template destroy< cynth::ast::node::Name > ();
+        value.template destroy< cynth::syn::node::Name > ();
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.template destroy< cynth::ast::node::Ne > ();
+        value.template destroy< cynth::syn::node::Ne > ();
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.template destroy< cynth::ast::node::Not > ();
+        value.template destroy< cynth::syn::node::Not > ();
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.template destroy< cynth::ast::node::Or > ();
+        value.template destroy< cynth::syn::node::Or > ();
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.template destroy< cynth::ast::node::OutType > ();
+        value.template destroy< cynth::syn::node::OutType > ();
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.template destroy< cynth::ast::node::Plus > ();
+        value.template destroy< cynth::syn::node::Plus > ();
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.template destroy< cynth::ast::node::Pow > ();
+        value.template destroy< cynth::syn::node::Pow > ();
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.template destroy< cynth::ast::node::RangeDecl > ();
+        value.template destroy< cynth::syn::node::RangeDecl > ();
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.template destroy< cynth::ast::node::RangeTo > ();
+        value.template destroy< cynth::syn::node::RangeTo > ();
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.template destroy< cynth::ast::node::RangeToBy > ();
+        value.template destroy< cynth::syn::node::RangeToBy > ();
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.template destroy< cynth::ast::node::Return > ();
+        value.template destroy< cynth::syn::node::Return > ();
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.template destroy< cynth::ast::node::Spread > ();
+        value.template destroy< cynth::syn::node::Spread > ();
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.template destroy< cynth::ast::node::String > ();
+        value.template destroy< cynth::syn::node::String > ();
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.template destroy< cynth::ast::node::Sub > ();
+        value.template destroy< cynth::syn::node::Sub > ();
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.template destroy< cynth::ast::node::Subscript > ();
+        value.template destroy< cynth::syn::node::Subscript > ();
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.template destroy< cynth::ast::node::TypeDecl > ();
+        value.template destroy< cynth::syn::node::TypeDecl > ();
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.template destroy< cynth::ast::node::TypeDef > ();
+        value.template destroy< cynth::syn::node::TypeDef > ();
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.template destroy< cynth::ast::node::TypeName > ();
+        value.template destroy< cynth::syn::node::TypeName > ();
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.template destroy< cynth::ast::node::When > ();
+        value.template destroy< cynth::syn::node::When > ();
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.template destroy< cynth::ast::node::While > ();
+        value.template destroy< cynth::syn::node::While > ();
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.template destroy< esl::component_vector<cynth::ast::category::ArrayElement> > ();
+        value.template destroy< esl::component_vector<cynth::syn::category::ArrayElement> > ();
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.template destroy< esl::component_vector<cynth::ast::category::Declaration> > ();
+        value.template destroy< esl::component_vector<cynth::syn::category::Declaration> > ();
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.template destroy< esl::component_vector<cynth::ast::category::Expression> > ();
+        value.template destroy< esl::component_vector<cynth::syn::category::Expression> > ();
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.template destroy< esl::component_vector<cynth::ast::category::RangeDeclaration> > ();
+        value.template destroy< esl::component_vector<cynth::syn::category::RangeDeclaration> > ();
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.template destroy< esl::component_vector<cynth::ast::category::Statement> > ();
+        value.template destroy< esl::component_vector<cynth::syn::category::Statement> > ();
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.template destroy< esl::component_vector<cynth::ast::category::Type> > ();
+        value.template destroy< esl::component_vector<cynth::syn::category::Type> > ();
         break;
 
       case symbol_kind::S_start: // start
@@ -2368,7 +2368,7 @@ switch (yykind)
     };
 
     /// Build a parser object.
-    parser (cynth::ast::node::Block & result_yyarg);
+    parser (cynth::syn::node::Block & result_yyarg);
     virtual ~parser ();
 
 #if 201103L <= YY_CPLUSPLUS
@@ -3506,7 +3506,7 @@ switch (yykind)
 
 
     // User arguments.
-    cynth::ast::node::Block & result;
+    cynth::syn::node::Block & result;
 
   };
 
@@ -3572,13 +3572,13 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.copy< cynth::ast::category::ArrayElement > (YY_MOVE (that.value));
+        value.copy< cynth::syn::category::ArrayElement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.copy< cynth::ast::category::Declaration > (YY_MOVE (that.value));
+        value.copy< cynth::syn::category::Declaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -3596,259 +3596,259 @@ switch (yykind)
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.copy< cynth::ast::category::Expression > (YY_MOVE (that.value));
+        value.copy< cynth::syn::category::Expression > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.copy< cynth::ast::category::RangeDeclaration > (YY_MOVE (that.value));
+        value.copy< cynth::syn::category::RangeDeclaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.copy< cynth::ast::category::Statement > (YY_MOVE (that.value));
+        value.copy< cynth::syn::category::Statement > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.copy< cynth::ast::category::Type > (YY_MOVE (that.value));
+        value.copy< cynth::syn::category::Type > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.copy< cynth::ast::node::Add > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Add > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.copy< cynth::ast::node::And > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::And > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.copy< cynth::ast::node::Application > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Application > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.copy< cynth::ast::node::Array > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Array > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.copy< cynth::ast::node::ArrayType > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::ArrayType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.copy< cynth::ast::node::Assignment > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Assignment > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.copy< cynth::ast::node::Auto > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Auto > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.copy< cynth::ast::node::Block > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Block > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.copy< cynth::ast::node::Bool > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Bool > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.copy< cynth::ast::node::BufferType > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::BufferType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.copy< cynth::ast::node::ConstType > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::ConstType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.copy< cynth::ast::node::Conversion > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Conversion > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.copy< cynth::ast::node::Declaration > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Declaration > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.copy< cynth::ast::node::Definition > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Definition > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.copy< cynth::ast::node::Div > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Div > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.copy< cynth::ast::node::Eq > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Eq > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.copy< cynth::ast::node::ExprFor > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::ExprFor > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.copy< cynth::ast::node::ExprIf > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::ExprIf > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.copy< cynth::ast::node::Float > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Float > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.copy< cynth::ast::node::For > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::For > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.copy< cynth::ast::node::FunDef > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::FunDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.copy< cynth::ast::node::Function > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Function > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.copy< cynth::ast::node::FunctionType > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::FunctionType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.copy< cynth::ast::node::Ge > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Ge > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.copy< cynth::ast::node::Gt > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Gt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.copy< cynth::ast::node::If > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::If > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.copy< cynth::ast::node::InType > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::InType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.copy< cynth::ast::node::Int > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Int > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.copy< cynth::ast::node::Le > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Le > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.copy< cynth::ast::node::Lt > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Lt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.copy< cynth::ast::node::Minus > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Minus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.copy< cynth::ast::node::Mod > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Mod > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.copy< cynth::ast::node::Mul > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Mul > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.copy< cynth::ast::node::Name > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Name > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.copy< cynth::ast::node::Ne > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Ne > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.copy< cynth::ast::node::Not > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Not > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.copy< cynth::ast::node::Or > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Or > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.copy< cynth::ast::node::OutType > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::OutType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.copy< cynth::ast::node::Plus > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Plus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.copy< cynth::ast::node::Pow > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Pow > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.copy< cynth::ast::node::RangeDecl > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::RangeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.copy< cynth::ast::node::RangeTo > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::RangeTo > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.copy< cynth::ast::node::RangeToBy > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::RangeToBy > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.copy< cynth::ast::node::Return > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Return > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.copy< cynth::ast::node::Spread > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Spread > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.copy< cynth::ast::node::String > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::String > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.copy< cynth::ast::node::Sub > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Sub > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.copy< cynth::ast::node::Subscript > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::Subscript > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.copy< cynth::ast::node::TypeDecl > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::TypeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.copy< cynth::ast::node::TypeDef > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::TypeDef > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.copy< cynth::ast::node::TypeName > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::TypeName > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.copy< cynth::ast::node::When > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::When > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.copy< cynth::ast::node::While > (YY_MOVE (that.value));
+        value.copy< cynth::syn::node::While > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.copy< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::syn::category::ArrayElement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.copy< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::syn::category::Declaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.copy< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::syn::category::Expression> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.copy< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::syn::category::RangeDeclaration> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.copy< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::syn::category::Statement> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.copy< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (that.value));
+        value.copy< esl::component_vector<cynth::syn::category::Type> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_start: // start
@@ -3893,13 +3893,13 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_cat_array_elem: // cat_array_elem
-        value.move< cynth::ast::category::ArrayElement > (YY_MOVE (s.value));
+        value.move< cynth::syn::category::ArrayElement > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_declaration: // cat_declaration
       case symbol_kind::S_paren_decl: // paren_decl
       case symbol_kind::S_void_decl: // void_decl
-        value.move< cynth::ast::category::Declaration > (YY_MOVE (s.value));
+        value.move< cynth::syn::category::Declaration > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_expression: // cat_expression
@@ -3917,259 +3917,259 @@ switch (yykind)
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
       case symbol_kind::S_void: // void
-        value.move< cynth::ast::category::Expression > (YY_MOVE (s.value));
+        value.move< cynth::syn::category::Expression > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_range_decl: // cat_range_decl
       case symbol_kind::S_paren_range_decl: // paren_range_decl
-        value.move< cynth::ast::category::RangeDeclaration > (YY_MOVE (s.value));
+        value.move< cynth::syn::category::RangeDeclaration > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_statement: // cat_statement
       case symbol_kind::S_pure: // pure
-        value.move< cynth::ast::category::Statement > (YY_MOVE (s.value));
+        value.move< cynth::syn::category::Statement > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_cat_type: // cat_type
       case symbol_kind::S_paren_type: // paren_type
       case symbol_kind::S_void_type: // void_type
-        value.move< cynth::ast::category::Type > (YY_MOVE (s.value));
+        value.move< cynth::syn::category::Type > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_add: // node_add
-        value.move< cynth::ast::node::Add > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Add > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
-        value.move< cynth::ast::node::And > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::And > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_application: // node_application
-        value.move< cynth::ast::node::Application > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Application > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_array: // node_array
-        value.move< cynth::ast::node::Array > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Array > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_array_type: // node_array_type
-        value.move< cynth::ast::node::ArrayType > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::ArrayType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_assignment: // node_assignment
-        value.move< cynth::ast::node::Assignment > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Assignment > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_auto: // node_auto
-        value.move< cynth::ast::node::Auto > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Auto > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_block: // node_block
-        value.move< cynth::ast::node::Block > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Block > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_bool: // node_bool
-        value.move< cynth::ast::node::Bool > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Bool > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_buffer_type: // node_buffer_type
-        value.move< cynth::ast::node::BufferType > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::BufferType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_const_type: // node_const_type
-        value.move< cynth::ast::node::ConstType > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::ConstType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_conversion: // node_conversion
-        value.move< cynth::ast::node::Conversion > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Conversion > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_declaration: // node_declaration
-        value.move< cynth::ast::node::Declaration > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Declaration > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_definition: // node_definition
-        value.move< cynth::ast::node::Definition > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Definition > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_div: // node_div
-        value.move< cynth::ast::node::Div > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Div > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
-        value.move< cynth::ast::node::Eq > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Eq > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_expr_for: // node_expr_for
-        value.move< cynth::ast::node::ExprFor > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::ExprFor > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_expr_if: // node_expr_if
-        value.move< cynth::ast::node::ExprIf > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::ExprIf > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_float: // node_float
-        value.move< cynth::ast::node::Float > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Float > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_for: // node_for
-        value.move< cynth::ast::node::For > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::For > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_function_def: // node_function_def
-        value.move< cynth::ast::node::FunDef > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::FunDef > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_function: // node_function
-        value.move< cynth::ast::node::Function > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Function > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_function_type: // node_function_type
-        value.move< cynth::ast::node::FunctionType > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::FunctionType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_ge: // node_ge
-        value.move< cynth::ast::node::Ge > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Ge > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
-        value.move< cynth::ast::node::Gt > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Gt > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_if: // node_if
-        value.move< cynth::ast::node::If > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::If > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_in_type: // node_in_type
-        value.move< cynth::ast::node::InType > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::InType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_int: // node_int
-        value.move< cynth::ast::node::Int > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Int > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_le: // node_le
-        value.move< cynth::ast::node::Le > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Le > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
-        value.move< cynth::ast::node::Lt > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Lt > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
-        value.move< cynth::ast::node::Minus > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Minus > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
-        value.move< cynth::ast::node::Mod > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Mod > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
-        value.move< cynth::ast::node::Mul > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Mul > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_name: // node_name
-        value.move< cynth::ast::node::Name > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Name > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_ne: // node_ne
-        value.move< cynth::ast::node::Ne > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Ne > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
-        value.move< cynth::ast::node::Not > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Not > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
-        value.move< cynth::ast::node::Or > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Or > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_out_type: // node_out_type
-        value.move< cynth::ast::node::OutType > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::OutType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_plus: // node_plus
-        value.move< cynth::ast::node::Plus > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Plus > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
-        value.move< cynth::ast::node::Pow > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Pow > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_range_decl: // node_range_decl
-        value.move< cynth::ast::node::RangeDecl > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::RangeDecl > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_range_to: // node_range_to
-        value.move< cynth::ast::node::RangeTo > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::RangeTo > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_range_to_by: // node_range_to_by
-        value.move< cynth::ast::node::RangeToBy > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::RangeToBy > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_return: // node_return
-        value.move< cynth::ast::node::Return > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Return > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_spread: // node_spread
-        value.move< cynth::ast::node::Spread > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Spread > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_string: // node_string
-        value.move< cynth::ast::node::String > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::String > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_sub: // node_sub
-        value.move< cynth::ast::node::Sub > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Sub > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_subscript: // node_subscript
-        value.move< cynth::ast::node::Subscript > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::Subscript > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::ast::node::TypeDecl > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::TypeDecl > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
-        value.move< cynth::ast::node::TypeDef > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::TypeDef > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_type_name: // node_type_name
-        value.move< cynth::ast::node::TypeName > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::TypeName > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_when: // node_when
-        value.move< cynth::ast::node::When > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::When > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_while: // node_while
-        value.move< cynth::ast::node::While > (YY_MOVE (s.value));
+        value.move< cynth::syn::node::While > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_array_elem_list: // array_elem_list
-        value.move< esl::component_vector<cynth::ast::category::ArrayElement> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::syn::category::ArrayElement> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_decl_list: // decl_list
-        value.move< esl::component_vector<cynth::ast::category::Declaration> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::syn::category::Declaration> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_expr_list: // expr_list
-        value.move< esl::component_vector<cynth::ast::category::Expression> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::syn::category::Expression> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_range_decl_list: // range_decl_list
-        value.move< esl::component_vector<cynth::ast::category::RangeDeclaration> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::syn::category::RangeDeclaration> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_stmt_list: // stmt_list
-        value.move< esl::component_vector<cynth::ast::category::Statement> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::syn::category::Statement> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_type_list: // type_list
-        value.move< esl::component_vector<cynth::ast::category::Type> > (YY_MOVE (s.value));
+        value.move< esl::component_vector<cynth::syn::category::Type> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_start: // start

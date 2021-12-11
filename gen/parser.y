@@ -5,7 +5,7 @@
     #include "esl/string.hpp"
     #include "esl/containers.hpp"
 
-    #include "bundle_ast.hpp"
+    #include "syn/all.hpp"
     #include "sem/numeric_types.hpp"
 
 }
@@ -28,7 +28,7 @@
 %define api.token.constructor
 %define api.value.type variant
 %define api.value.automove
-%parse-param { cynth::ast::node::Block & result }
+%parse-param { cynth::syn::node::Block & result }
 
 %token <std::string> NAME
 %token <std::string> TYPENAME
@@ -80,121 +80,123 @@
 %token LT
 %token ILLEGAL
 
-/*  Naming convention:
-    Non-terminals representing an AST node or category directly are prefixed with `node_` or `cat_` respectively.
-    Oter non-terminals have no such prefix. Such terminals include:
-    * Temporary structures that will form a part of an AST node. E.g. expr_list, stmt_list.
-    * Purely syntactic categories. E.g. pure, expr_or.
-    * Elements that may be represented by a single AST node as well as the tuple equivalent thereof depending on the number of elements. E.g. paren_expr, paren_type.
-    * Elements representing a node with specific properties. E.g. void, void_type. */
+/**
+ *  Naming convention:
+ *  Non-terminals representing an AST node or category directly are prefixed with `node_` or `cat_` respectively.
+ *  Oter non-terminals have no such prefix. Such terminals include:
+ *  * Temporary structures that will form a part of an AST node. E.g. expr_list, stmt_list.
+ *  * Purely syntactic categories. E.g. pure, expr_or.
+ *  * Elements that may be represented by a single AST node as well as the tuple equivalent thereof depending on the number of elements. E.g. paren_expr, paren_type.
+ *  * Elements representing a node with specific properties. E.g. void, void_type.
+ */
 
 %nterm <int> start
 
 /* [categories] */
-%nterm <cynth::ast::category::Type>             cat_type
-%nterm <cynth::ast::category::Declaration>      cat_declaration
-%nterm <cynth::ast::category::RangeDeclaration> cat_range_decl
-%nterm <cynth::ast::category::ArrayElement>     cat_array_elem
-%nterm <cynth::ast::category::Expression>       cat_expression
-%nterm <cynth::ast::category::Statement>        cat_statement
+%nterm <cynth::syn::category::Type>             cat_type
+%nterm <cynth::syn::category::Declaration>      cat_declaration
+%nterm <cynth::syn::category::RangeDeclaration> cat_range_decl
+%nterm <cynth::syn::category::ArrayElement>     cat_array_elem
+%nterm <cynth::syn::category::Expression>       cat_expression
+%nterm <cynth::syn::category::Statement>        cat_statement
 
 /* [syntactic categories] */
-%nterm <cynth::ast::category::Statement>   pure
-%nterm <cynth::ast::category::Expression>  expr_or
-%nterm <cynth::ast::category::Expression>  expr_and
-%nterm <cynth::ast::category::Expression>  expr_eq
-%nterm <cynth::ast::category::Expression>  expr_ord
-%nterm <cynth::ast::category::Expression>  expr_add
-%nterm <cynth::ast::category::Expression>  expr_mul
-%nterm <cynth::ast::category::Expression>  expr_pow
-%nterm <cynth::ast::category::Expression>  expr_pre
-%nterm <cynth::ast::category::Expression>  expr_post
-%nterm <cynth::ast::category::Expression>  expr_atom
-%nterm <cynth::ast::category::Expression>  expr_right
-%nterm <cynth::ast::category::Expression>  expr_assgn_target
+%nterm <cynth::syn::category::Statement>   pure
+%nterm <cynth::syn::category::Expression>  expr_or
+%nterm <cynth::syn::category::Expression>  expr_and
+%nterm <cynth::syn::category::Expression>  expr_eq
+%nterm <cynth::syn::category::Expression>  expr_ord
+%nterm <cynth::syn::category::Expression>  expr_add
+%nterm <cynth::syn::category::Expression>  expr_mul
+%nterm <cynth::syn::category::Expression>  expr_pow
+%nterm <cynth::syn::category::Expression>  expr_pre
+%nterm <cynth::syn::category::Expression>  expr_post
+%nterm <cynth::syn::category::Expression>  expr_atom
+%nterm <cynth::syn::category::Expression>  expr_right
+%nterm <cynth::syn::category::Expression>  expr_assgn_target
 
 /* [types] */
-%nterm <cynth::ast::category::Type>        paren_type
-%nterm <cynth::ast::category::Type>        void_type
-%nterm <cynth::ast::node::Auto>            node_auto
-%nterm <cynth::ast::node::TypeName>        node_type_name
-%nterm <cynth::ast::node::ConstType>       node_const_type
-%nterm <cynth::ast::node::InType>          node_in_type
-%nterm <cynth::ast::node::OutType>         node_out_type
-%nterm <cynth::ast::node::FunctionType>    node_function_type
-%nterm <cynth::ast::node::ArrayType>       node_array_type
-%nterm <cynth::ast::node::BufferType>      node_buffer_type
-%nterm <cynth::ast::node::TypeDecl>        node_type_decl
+%nterm <cynth::syn::category::Type>        paren_type
+%nterm <cynth::syn::category::Type>        void_type
+%nterm <cynth::syn::node::Auto>            node_auto
+%nterm <cynth::syn::node::TypeName>        node_type_name
+%nterm <cynth::syn::node::ConstType>       node_const_type
+%nterm <cynth::syn::node::InType>          node_in_type
+%nterm <cynth::syn::node::OutType>         node_out_type
+%nterm <cynth::syn::node::FunctionType>    node_function_type
+%nterm <cynth::syn::node::ArrayType>       node_array_type
+%nterm <cynth::syn::node::BufferType>      node_buffer_type
+%nterm <cynth::syn::node::TypeDecl>        node_type_decl
 
 /* [declarations] */
-%nterm <cynth::ast::category::Declaration>      paren_decl
-%nterm <cynth::ast::category::RangeDeclaration> paren_range_decl
-%nterm <cynth::ast::category::Declaration>      void_decl
-%nterm <cynth::ast::node::Declaration>          node_declaration
-%nterm <cynth::ast::node::RangeDecl>            node_range_decl
+%nterm <cynth::syn::category::Declaration>      paren_decl
+%nterm <cynth::syn::category::RangeDeclaration> paren_range_decl
+%nterm <cynth::syn::category::Declaration>      void_decl
+%nterm <cynth::syn::node::Declaration>          node_declaration
+%nterm <cynth::syn::node::RangeDecl>            node_range_decl
 
 /* [array elements] */
-%nterm <cynth::ast::node::RangeTo>         node_range_to
-%nterm <cynth::ast::node::RangeToBy>       node_range_to_by
-%nterm <cynth::ast::node::Spread>          node_spread
+%nterm <cynth::syn::node::RangeTo>         node_range_to
+%nterm <cynth::syn::node::RangeToBy>       node_range_to_by
+%nterm <cynth::syn::node::Spread>          node_spread
 
 /* [expressions] */
-%nterm <cynth::ast::category::Expression>  paren_expr
+%nterm <cynth::syn::category::Expression>  paren_expr
 /*
-%nterm <cynth::ast::category::Expression>  paren_assgn_target
+%nterm <cynth::syn::category::Expression>  paren_assgn_target
 */
-%nterm <cynth::ast::category::Expression>  void
-%nterm <cynth::ast::node::Name>            node_name
-%nterm <cynth::ast::node::Block>           node_block
+%nterm <cynth::syn::category::Expression>  void
+%nterm <cynth::syn::node::Name>            node_name
+%nterm <cynth::syn::node::Block>           node_block
 /* (literals) */
-%nterm <cynth::ast::node::Bool>            node_bool
-%nterm <cynth::ast::node::Int>             node_int
-%nterm <cynth::ast::node::Float>           node_float
-%nterm <cynth::ast::node::String>          node_string
-%nterm <cynth::ast::node::Function>        node_function
-%nterm <cynth::ast::node::Array>           node_array
+%nterm <cynth::syn::node::Bool>            node_bool
+%nterm <cynth::syn::node::Int>             node_int
+%nterm <cynth::syn::node::Float>           node_float
+%nterm <cynth::syn::node::String>          node_string
+%nterm <cynth::syn::node::Function>        node_function
+%nterm <cynth::syn::node::Array>           node_array
 /* (operators) */
-%nterm <cynth::ast::node::Or>              node_or
-%nterm <cynth::ast::node::And>             node_and
-%nterm <cynth::ast::node::Eq>              node_eq
-%nterm <cynth::ast::node::Ne>              node_ne
-%nterm <cynth::ast::node::Ge>              node_ge
-%nterm <cynth::ast::node::Le>              node_le
-%nterm <cynth::ast::node::Gt>              node_gt
-%nterm <cynth::ast::node::Lt>              node_lt
-%nterm <cynth::ast::node::Add>             node_add
-%nterm <cynth::ast::node::Sub>             node_sub
-%nterm <cynth::ast::node::Mul>             node_mul
-%nterm <cynth::ast::node::Div>             node_div
-%nterm <cynth::ast::node::Mod>             node_mod
-%nterm <cynth::ast::node::Pow>             node_pow
-%nterm <cynth::ast::node::Plus>            node_plus
-%nterm <cynth::ast::node::Minus>           node_minus
-%nterm <cynth::ast::node::Not>             node_not
-%nterm <cynth::ast::node::Application>     node_application
-%nterm <cynth::ast::node::Conversion>      node_conversion
-%nterm <cynth::ast::node::Subscript>       node_subscript
-%nterm <cynth::ast::node::ExprIf>          node_expr_if
-%nterm <cynth::ast::node::ExprFor>         node_expr_for
+%nterm <cynth::syn::node::Or>              node_or
+%nterm <cynth::syn::node::And>             node_and
+%nterm <cynth::syn::node::Eq>              node_eq
+%nterm <cynth::syn::node::Ne>              node_ne
+%nterm <cynth::syn::node::Ge>              node_ge
+%nterm <cynth::syn::node::Le>              node_le
+%nterm <cynth::syn::node::Gt>              node_gt
+%nterm <cynth::syn::node::Lt>              node_lt
+%nterm <cynth::syn::node::Add>             node_add
+%nterm <cynth::syn::node::Sub>             node_sub
+%nterm <cynth::syn::node::Mul>             node_mul
+%nterm <cynth::syn::node::Div>             node_div
+%nterm <cynth::syn::node::Mod>             node_mod
+%nterm <cynth::syn::node::Pow>             node_pow
+%nterm <cynth::syn::node::Plus>            node_plus
+%nterm <cynth::syn::node::Minus>           node_minus
+%nterm <cynth::syn::node::Not>             node_not
+%nterm <cynth::syn::node::Application>     node_application
+%nterm <cynth::syn::node::Conversion>      node_conversion
+%nterm <cynth::syn::node::Subscript>       node_subscript
+%nterm <cynth::syn::node::ExprIf>          node_expr_if
+%nterm <cynth::syn::node::ExprFor>         node_expr_for
 
 /* [statements] */
-%nterm <cynth::ast::node::Definition>      node_definition
-%nterm <cynth::ast::node::Assignment>      node_assignment
-%nterm <cynth::ast::node::FunDef>          node_function_def
-%nterm <cynth::ast::node::TypeDef>         node_type_def
-%nterm <cynth::ast::node::Return>          node_return
-%nterm <cynth::ast::node::If>              node_if
-%nterm <cynth::ast::node::When>            node_when
-%nterm <cynth::ast::node::For>             node_for
-%nterm <cynth::ast::node::While>           node_while
+%nterm <cynth::syn::node::Definition>      node_definition
+%nterm <cynth::syn::node::Assignment>      node_assignment
+%nterm <cynth::syn::node::FunDef>          node_function_def
+%nterm <cynth::syn::node::TypeDef>         node_type_def
+%nterm <cynth::syn::node::Return>          node_return
+%nterm <cynth::syn::node::If>              node_if
+%nterm <cynth::syn::node::When>            node_when
+%nterm <cynth::syn::node::For>             node_for
+%nterm <cynth::syn::node::While>           node_while
 
 /* [temporary structures] */
-%nterm <esl::component_vector<cynth::ast::category::Type>>             type_list
-%nterm <esl::component_vector<cynth::ast::category::Declaration>>      decl_list
-%nterm <esl::component_vector<cynth::ast::category::RangeDeclaration>> range_decl_list
-%nterm <esl::component_vector<cynth::ast::category::ArrayElement>>     array_elem_list
-%nterm <esl::component_vector<cynth::ast::category::Expression>>       expr_list
-%nterm <esl::component_vector<cynth::ast::category::Statement>>        stmt_list
+%nterm <esl::component_vector<cynth::syn::category::Type>>             type_list
+%nterm <esl::component_vector<cynth::syn::category::Declaration>>      decl_list
+%nterm <esl::component_vector<cynth::syn::category::RangeDeclaration>> range_decl_list
+%nterm <esl::component_vector<cynth::syn::category::ArrayElement>>     array_elem_list
+%nterm <esl::component_vector<cynth::syn::category::Expression>>       expr_list
+%nterm <esl::component_vector<cynth::syn::category::Statement>>        stmt_list
 
 %%
 
@@ -331,18 +333,18 @@ paren_type:
         $$ = $single;
     } |
     OPAREN type_list[list] CPAREN {
-        $$ = cynth::ast::node::TupleType{$list};
+        $$ = cynth::syn::node::TupleType{$list};
     } |
     OPAREN type_list[list] COMMA CPAREN {
-        $$ = cynth::ast::node::TupleType{$list};
+        $$ = cynth::syn::node::TupleType{$list};
     }
 
 void_type:
     OPAREN CPAREN {
-        $$ = cynth::ast::node::TupleType{};
+        $$ = cynth::syn::node::TupleType{};
     } |
     VOID {
-        $$ = cynth::ast::node::TupleType{};
+        $$ = cynth::syn::node::TupleType{};
     }
 
 node_auto:
@@ -386,16 +388,16 @@ node_function_type:
 
 node_array_type:
     cat_type[type] OBRACK cat_expression[size] CBRACK {
-        $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size}};
+        $$ = {.type = $type, .size = cynth::syn::category::Pattern{$size}};
     } |
     cat_type[type] OBRACK AUTO CBRACK {
-        $$ = {.type = $type, .size = esl::optional_component<cynth::ast::category::Pattern>{}};
+        $$ = {.type = $type, .size = esl::optional_component<cynth::syn::category::Pattern>{}};
     } |
     cat_type[type] OBRACK CBRACK {
-        $$ = {.type = $type, .size = esl::optional_component<cynth::ast::category::Pattern>{}};
+        $$ = {.type = $type, .size = esl::optional_component<cynth::syn::category::Pattern>{}};
     } |
     cat_type[type] OBRACK cat_declaration[size_decl] CBRACK {
-        $$ = {.type = $type, .size = cynth::ast::category::Pattern{$size_decl}};
+        $$ = {.type = $type, .size = cynth::syn::category::Pattern{$size_decl}};
     }
 
 node_buffer_type:
@@ -415,10 +417,10 @@ paren_range_decl:
         $$ = $single;
     } |
     OPAREN range_decl_list[list] CPAREN {
-        $$ = cynth::ast::node::TupleRangeDecl{$list};
+        $$ = cynth::syn::node::TupleRangeDecl{$list};
     } |
     OPAREN range_decl_list[list] COMMA CPAREN {
-        $$ = cynth::ast::node::TupleRangeDecl{$list};
+        $$ = cynth::syn::node::TupleRangeDecl{$list};
     }
 
 paren_decl:
@@ -426,15 +428,15 @@ paren_decl:
         $$ = $single;
     } |
     OPAREN decl_list[list] CPAREN {
-        $$ = cynth::ast::node::TupleDecl{$list};
+        $$ = cynth::syn::node::TupleDecl{$list};
     } |
     OPAREN decl_list[list] COMMA CPAREN {
-        $$ = cynth::ast::node::TupleDecl{$list};
+        $$ = cynth::syn::node::TupleDecl{$list};
     }
 
 void_decl:
     OPAREN CPAREN {
-        $$ = cynth::ast::node::TupleDecl{};
+        $$ = cynth::syn::node::TupleDecl{};
     }
 
 node_declaration:
@@ -471,15 +473,15 @@ paren_expr:
         $$ = $single;
     } |
     OPAREN expr_list[list] CPAREN {
-        $$ = cynth::ast::node::Tuple{$list};
+        $$ = cynth::syn::node::Tuple{$list};
     } |
     OPAREN expr_list[list] COMMA CPAREN {
-        $$ = cynth::ast::node::Tuple{$list};
+        $$ = cynth::syn::node::Tuple{$list};
     }
 
 void:
     OPAREN CPAREN {
-        $$ = cynth::ast::node::Tuple{};
+        $$ = cynth::syn::node::Tuple{};
     }
 
 node_name:
@@ -510,7 +512,7 @@ node_bool:
 
 node_int:
     INT {
-        $$ = {esl::stoi<cynth::sem::Integral>($1)}; // TODO: The sem::Integral type should be obtainable from ast::node::Int
+        $$ = {esl::stoi<cynth::sem::Integral>($1)}; // TODO: The sem::Integral type should be obtainable from syn::node::Int
     }
 
 node_float:
@@ -705,7 +707,7 @@ node_return:
         $$ = {$val};
     } |
     RETURN {
-        $$ = {cynth::ast::category::Expression{cynth::ast::node::Tuple{}}};
+        $$ = {cynth::syn::category::Expression{cynth::syn::node::Tuple{}}};
     }
 
 node_if:

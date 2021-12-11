@@ -1,4 +1,4 @@
-#include "ast.hpp"
+#include "syn.hpp"
 #include "sem.hpp"
 #include "parser.hpp"
 #include "interpreter.hpp"
@@ -21,12 +21,12 @@ void handle_return (U const & value) {
 }
 
 int main () {
-    ast::node::Block ast;
-    parser parse{ast};
+    syn::node::Block syn;
+    parser parse{syn};
 
     parse();
 
-    std::cout << util::pretty(display(ast)) << '\n';
+    std::cout << util::pretty(display(syn)) << '\n';
 
     sem::context ctx;
 
@@ -36,7 +36,7 @@ int main () {
     ctx.define_type("Float",  {sem::type::Float{}});
     ctx.define_type("String", {sem::type::String{}});
 
-    auto result = util::unite_results(ast::evaluate(ctx)(ast));
+    auto result = util::unite_results(syn::evaluate(ctx)(syn));
 
     if (!result) {
         std::cout << "eval error:" << result.error().message << '\n';

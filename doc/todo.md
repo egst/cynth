@@ -36,6 +36,7 @@
 # Structure
 
 * sort out no longer relevant test files
+* maybe unite `syn/interface` and `sem/interface`?
 
 # Implementation
 
@@ -44,6 +45,7 @@
     c++20 std libraries should implement constrexr std::string, but no compiler besides MSVC does that right now  
     string views are not really usable out of the box in this case  
     the simplest solution would be to store constexpr char const * values for every possible error message
+* not only strings (a major issue at the top), but other nodes should be held directly with no `component` indirection
 
 # Semantics
 

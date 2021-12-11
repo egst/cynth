@@ -4,11 +4,11 @@
 #if 0
 namespace cynth {
 
-    result<std::pair<integral, sem::range_vector>> sem::for_decls (sem::context & ctx, ast::category::RangeDecl declarations) {
+    result<std::pair<integral, sem::range_vector>> sem::for_decls (sem::context & ctx, syn::category::RangeDecl declarations) {
         integral size = 0;
         range_vector iter_decls;
 
-        auto decls_result = util::unite_results(sem::complete(ctx)(ast::eval_range_decl(ctx)(declarations)));
+        auto decls_result = util::unite_results(sem::complete(ctx)(syn::eval_range_decl(ctx)(declarations)));
         if (!decls_result)
             return {decls_result.error()};
         auto decls = *std::move(decls_result);
@@ -53,7 +53,7 @@ namespace cynth {
 
     result<std::pair<sem::array_vector, sem::array_type>> sem::array_elems (
         sem::context & ctx,
-        component_vector<ast::category::ArrayElem> const & elements
+        component_vector<syn::category::ArrayElem> const & elements
     ) {
         std::optional<sem::array_type> result_type;
         sem::array_vector              result_values; // component_vector<component_vector<value::complete>>
@@ -61,20 +61,20 @@ namespace cynth {
 
         for (auto & element : elements) {
             auto result = lift::category{util::overload {
-                [] (ast::node::RangeTo const &) -> cynth::result<void> {
+                [] (syn::node::RangeTo const &) -> cynth::result<void> {
                     // TODO
                     return result_error{"Range array elements are not supported yet."};
                 },
-                [] (ast::node::RangeToBy const &) -> cynth::result<void> {
+                [] (syn::node::RangeToBy const &) -> cynth::result<void> {
                     // TODO
                     return result_error{"Range array elements are not supported yet."};
                 },
-                [] (ast::node::Spread const &) -> cynth::result<void> {
+                [] (syn::node::Spread const &) -> cynth::result<void> {
                     // TODO
                     return result_error{"Spread array elements are not supported yet."};
                 },
-                [&ctx, &result_type, &result_values] <ast::interface::expression T> (T const & e) -> cynth::result<void> {
-                    auto result = util::unite_results(ast::evaluate(ctx)(e)); // evaluation_result aka tuple_vector<result<value::complete>> -> result<tuple_vector<value::complete>>
+                [&ctx, &result_type, &result_values] <syn::interface::expression T> (T const & e) -> cynth::result<void> {
+                    auto result = util::unite_results(syn::evaluate(ctx)(e)); // evaluation_result aka tuple_vector<result<value::complete>> -> result<tuple_vector<value::complete>>
                     if (!result)
                         return result.error();
                     auto & value = *result;                // tuple_vector<value::complete> &
@@ -124,7 +124,7 @@ namespace cynth {
 
     sem::context sem::function_capture (
         component_vector <sem::complete_decl>        const & parameters,
-        component        <ast::category::Expression> const & body
+        component        <syn::category::Expression> const & body
     ) {
         auto r = sem::declaration_names(parameters);
         return {};

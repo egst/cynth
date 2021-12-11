@@ -5,14 +5,15 @@
 #include "esl/category.hpp"
 #include "esl/component.hpp"
 
-#include "sem/interface_types.hpp"
+#include "interface/forward.hpp"
+#include "sem/compound.hpp"
 #include "sem/values.hpp"
 
 //#include "sem/types.hpp"
 
 // Note: No macros escape this file.
 #define TARGET_INTERFACE \
-    TargetResolutionResult resolveTarget (bool) const
+    interface::TargetResolutionResult resolveTarget (bool) const
 
 namespace cynth::sem {
 

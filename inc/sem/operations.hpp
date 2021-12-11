@@ -1,8 +1,8 @@
 #pragma once
 
-#include "sem/numeric_types.hpp"
-
 #include <cmath>
+
+#include "sem/numeric_types.hpp"
 
 namespace cynth::sem {
 

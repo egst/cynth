@@ -4,13 +4,13 @@
 
 namespace cynth::sem {
 
-    struct Context;
-    struct TranslationContext;
+    // Compound:
 
-    struct TranslatedExpression;
-
+    struct TranslatedValue;
     struct TypedValue;
     struct TypedTargetValue;
+
+    // Declarations:
 
     struct CompleteDeclaration;
     struct IncompleteDeclaration;
@@ -34,6 +34,8 @@ namespace cynth::sem {
         IncompleteRangeDeclaration
     >;
 
+    // Targets:
+
     namespace target {
 
         struct DirectTarget;
@@ -42,6 +44,8 @@ namespace cynth::sem {
     }
 
     struct Target;
+
+    // Values:
 
     namespace value {
 
@@ -78,6 +82,8 @@ namespace cynth::sem {
         IncompleteValue
     >;
 
+    // Types:
+
     namespace type {
 
         struct Bool;
@@ -88,7 +94,6 @@ namespace cynth::sem {
         struct In;
         struct Out;
         struct Const;
-        struct Static;
         struct Array;
         struct Buffer;
         struct Function;
@@ -96,7 +101,6 @@ namespace cynth::sem {
         struct IncompleteIn;
         struct IncompleteOut;
         struct IncompleteConst;
-        struct IncompleteStatic;
         struct IncompleteArray;
         struct IncompleteBuffer;
         struct IncompleteFunction;

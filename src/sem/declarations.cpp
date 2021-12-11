@@ -2,8 +2,6 @@
 
 #include "esl/component.hpp"
 
-#include "sem/declarations.hpp"
-
 namespace esl {
 
     using cynth::sem::CompleteDeclaration;

@@ -12,6 +12,7 @@
 #include <utility>
 #include <algorithm>
 #include <type_traits>
+#include <functional>
 
 namespace esl {
 

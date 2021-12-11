@@ -1,10 +1,10 @@
 #pragma once
 
-#include "esl/string.hpp"
-#include "esl/ranges.hpp"
-#include "esl/containers.hpp"
-
 #include <string>
+
+#include "esl/containers.hpp"
+#include "esl/ranges.hpp"
+#include "esl/string.hpp"
 
 // TODO: Come up with a better name. (And rename the file acordingly.)
 // Note: This was actually a config file before all of the other configuration items
@@ -14,21 +14,21 @@ namespace cynth {
     namespace str {
 
         // Strings used to construct names:
+        constexpr char const * array    = "arr";
+        constexpr char const * boolean  = "bool";
+        constexpr char const * buffer   = "buff";
+        constexpr char const * constant = "const";
+        constexpr char const * context  = "ctx";
+        constexpr char const * elem     = "e";
+        constexpr char const * floating = "float";
         constexpr char const * global   = "cth";
+        constexpr char const * input    = "in";
+        constexpr char const * integral = "int";
+        constexpr char const * output   = "out";
+        constexpr char const * string   = "str";
         constexpr char const * tuple    = "tup";
         constexpr char const * value    = "val";
         constexpr char const * variable = "var";
-        constexpr char const * boolean  = "bool";
-        constexpr char const * integral = "int";
-        constexpr char const * floating = "float";
-        constexpr char const * string   = "str";
-        constexpr char const * array    = "arr";
-        constexpr char const * buffer   = "buff";
-        constexpr char const * elem     = "e";
-        constexpr char const * constant = "const";
-        constexpr char const * output   = "out";
-        constexpr char const * input    = "in";
-        constexpr char const * context  = "ctx";
 
         // Indentation:
         //constexpr char const * indent = "\t";

@@ -2,18 +2,19 @@
 
 #include <utility>
 
-#include "esl/type_manip.hpp"
-#include "esl/ranges.hpp"
+#include "esl/component.hpp"
 #include "esl/functional.hpp"
 #include "esl/lift.hpp"
+#include "esl/ranges.hpp"
 #include "esl/result.hpp"
 #include "esl/tiny_vector.hpp"
-#include "esl/component.hpp"
+#include "esl/type_manip.hpp"
 
+#include "context/cynth.hpp"
+#include "interface/forward.hpp"
+#include "interface/values.hpp"
 #include "sem/numeric_types.hpp"
-#include "sem/forward.hpp"
-#include "sem/context.hpp"
-#include "sem/interface.hpp"
+#include "sem/values.hpp"
 
 namespace cynth::sem {
 
@@ -23,16 +24,16 @@ namespace cynth::sem {
     >>;
 
     esl::result<std::pair<Integral, RangeVector>> for_decls (
-        Context &,
-        ast::category::RangeDeclaration
+        context::Cynth &,
+        syn::category::RangeDeclaration
     );
 
     using ArrayVector = value::Array::Vector;
     using ArrayType   = esl::tiny_vector<CompleteType>;
 
     esl::result<std::pair<ArrayVector, ArrayType>> arrayElems (
-        Context &,
-        esl::component_vector<ast::category::ArrayElement> const & // TODO: or maybe tiny_component_vector?
+        context::Cynth &,
+        esl::component_vector<syn::category::ArrayElement> const & // TODO: or maybe tiny_component_vector?
     );
 
     namespace detail::misc {
@@ -43,9 +44,6 @@ namespace cynth::sem {
             },
             [] (type::Out const &) -> esl::result<void> {
                 return esl::result_error{"Arrays cannot contain output values."};
-            },
-            [] (type::Static const &) -> esl::result<void> {
-                return esl::result_error{"Arrays cannot contain static values."};
             },
             [] (type::Array const &) -> esl::result<void> {
                 return esl::result_error{"Nested (multidimensional) arrays are not supported yet."};
@@ -84,7 +82,7 @@ namespace cynth::sem {
         }
     );
 
-    constexpr auto copy (Context & ctx) {
+    constexpr auto copy (context::Cynth & ctx) {
         return esl::overload(
             [&ctx] (value::Array const & a) -> esl::result<CompleteValue> {
                 auto stored = ctx.storeValue(*a.value);
@@ -118,9 +116,9 @@ namespace cynth::sem {
         }
     );
 
-    Context functionCapture (
+    context::Cynth functionCapture (
         esl::component_vector<CompleteDeclaration> const & parameters,
-        esl::component<ast::category::Expression>  const & body
+        esl::component<syn::category::Expression>  const & body
     );
 
 }
