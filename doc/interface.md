@@ -46,15 +46,15 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 <interface::node T> Result<Tuple<ResolvedTarget>> resolveTarget (Context &) (T)
 
 // Operations on types and compile-time values in intermediate structures:
-<interface::type T, interface::type U> Result<Type> commonType (Context &) (T, U)
-<interface::type T, interface::type U> bool sameType (Context &) (T, U)
 // Only simple types have a name given directly with a constant. (e.g. `bool`)
 <interface::type T> String directTypeName (Context &) (T)
 // More complex types - currently only simple const types. (e.g. `bool` or `bool_const`)
 <interface::type T> String typeName (Context &) (T)
+<interface::type T, interface::type U> bool sameType (Context &) (T, U)
+<interface::type T, interface::type U> Result<Type> commonType (Context &) (T, U)
 <interface::value T> Result<Out> get <Out> (Context &) (T)
-<interface::value T, interface::type U> Result<Value> convertValue (Context &) (T, U)
 <interface::value T> Result<Type> valueType (Context &) (T)
+<interface::value T, interface::type U> Result<Value> convertValue (Context &) (T, U)
 
 // Translation from intermediate structures:
 <interface::value T> Result<String> translateValue (Context &) (T)
@@ -62,12 +62,12 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 
 // Constructing translated C code from intermediate structures:
 // The last curried parameters expect strings of C expressions.
-// Results in a C expression.
-<interface::type T, interface::type U> Result<String> translateConversion (Context &) (T, U) (String from)
 // Results in a C variable name.
 <interface::type T> Result<String> translateDefinition (Context &) (T) (Optional<Sting> definition)
 // Results in an expression refering to the allocated data. (e.g. `global_var.data`)
 <interface::type T> Result<String> translateAllocation (Context &) (T) (Optional<Sting> initialization)
+// Results in a C expression.
+<interface::type T, interface::type U> Result<String> translateConversion (Context &) (T, U) (String from)
 ```
 
 ## Implementation:
@@ -84,27 +84,27 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 // Nodes:
 <interface::node T> Result<Tuple<ResolvedValue>> T::resolveExpression (Context &, bool translate)
 <interface::node T> Result<Vector<Tuple<ResolvedValue>>> T::resolveArrayElement (Context &, bool translate)
+<interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
 <interface::node T> Result<void> T::resolveStatement (Context &)
 <interface::node T> Result<Tuple<CompleteDeclaration>> T::resolveDeclaration (Context &)
 <interface::node T> Result<Tuple<CompleteRangeDeclaration>> T::resolveRangeDeclaration (Context &)
 <interface::node T> Result<Tuple<ResolvedTarget>> T::resolveTarget (Context &)
-<interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
 
 // Types:
-<interface::type T, interface::type U> Result<Type> T::commonType (Context &, U) // or the other way around: T::commonType (..., T)
-<interface::type T, interface::type U> bool T::sameType (Context &, U) // or the other way around: T::sameType (..., T)
 <interface::type T> char const * T::directTypeName // ideally constexpr
 <interface::type T> String T::typeName (Context &)
+<interface::type T, interface::type U> bool T::sameType (Context &, U) // or the other way around: T::sameType (..., T)
+<interface::type T, interface::type U> Result<Type> T::commonType (Context &, U) // or the other way around: T::commonType (..., T)
 // Translation:
-<interface::type T, interface::type U> Result<String> T::translateConversion (Context &, U, String from) // or the other way around: U::translateConversion (..., T, ...)
+<interface::type T> Result<String> T::translateType (Context &)
 <interface::type T> Result<String> T::translateDefinition (Context &, Optional<Sting> definition)
 <interface::type T> Result<String> T::translateAllocation (Context &, Optional<Sting> initialization)
-<interface::type T> Result<String> T::translateType (Context &)
+<interface::type T, interface::type U> Result<String> T::translateConversion (Context &, U, String from) // or the other way around: U::translateConversion (..., T, ...)
 
 // Values:
 <interface::value T> Result<Out> T::get <Out> (Context &)
-<interface::value T, interface::type U> Result<Value> T::convertValue (Context &, U)
 <interface::value T> Result<Type> T::valueType (Context &)
+<interface::value T, interface::type U> Result<Value> T::convertValue (Context &, U)
 // Translation
 <interface::value T> Result<String> T::translateValue (Context &)
 ```

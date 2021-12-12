@@ -28,8 +28,8 @@ namespace cynth::context {
     }
 
     esl::result<void> C::define (
-        sem::CompleteDeclaration          const & decl,
-        esl::tiny_vector<sem::TypedValue> const & tuple
+        sem::CompleteDeclaration             const & decl,
+        esl::tiny_vector<sem::ResolvedValue> const & tuple
     ) {
         return esl::result_error{"TODO"};
 #if 0

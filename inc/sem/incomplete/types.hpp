@@ -17,42 +17,35 @@
 #include "sem/forward.hpp"
 
 // Note: No macros escape this file.
-#define TYPE \
+#define DIRECT_TYPE_NAME(name) \
+    constexpr static interface::TypeNameConstant directTypeName = name
+#define TYPE_NAME \
+    interface::TypeNameResult typeName () const
+#define SAME(type) \
+    interface::SameTypeResult sameType (type const &) const
+#define COMMON(type) \
+    interface::CommonTypeResult commonType (type const &) const
+#define TYPE_INTERFACE \
     interface::DisplayResult display () const; \
     interface::DefinitionTranslationResult translateDefinition ( \
         context::C &, \
         std::optional<std::string> const & definition, \
         bool compval \
     ) const
-
-//interface::TypeTranslationResult translateType () const
-
-#define DIRECT_TYPE_NAME(name) \
-    constexpr static interface::TypeNameConstant directTypeName = name
-
-#define TYPE_NAME() \
-    interface::TypeNameResult typeName () const
-
-#define COMMON(type) \
-    interface::CommonTypeResult commonType (type const &) const
-
-#define SAME(type) \
-    interface::SameTypeResult sameType (type const &) const
+#define INCOMPLETE_TYPE_INTERFACE \
+    interface::TypeCompletionResult completeType (context::Cynth &) const
 
 /*
-#define DECAY() \
+#define DECAY \
     interface::TypeDecayResult decayType () const
 */
-
-#define INCOMPLETE_TYPE \
-    interface::TypeCompletionResult completeType (context::Cynth &) const
 
 namespace cynth::sem {
 
     namespace type {
 
         struct Bool {
-            TYPE;
+            TYPE_INTERFACE;
 
             DIRECT_TYPE_NAME(str::boolean);
 
@@ -69,7 +62,7 @@ namespace cynth::sem {
         };
 
         struct Int {
-            TYPE;
+            TYPE_INTERFACE;
 
             DIRECT_TYPE_NAME(str::integral);
 
@@ -83,7 +76,7 @@ namespace cynth::sem {
         };
 
         struct Float {
-            TYPE;
+            TYPE_INTERFACE;
 
             DIRECT_TYPE_NAME(str::floating);
 
@@ -98,7 +91,7 @@ namespace cynth::sem {
 
         /** Strings will not be used in the first versions. */
         struct String {
-            TYPE;
+            TYPE_INTERFACE;
 
             DIRECT_TYPE_NAME(str::string);
 
@@ -154,7 +147,7 @@ namespace cynth::sem {
         struct In: detail::types::In<true> {
             using detail::types::In<true>::type;
 
-            TYPE;
+            TYPE_INTERFACE;
 
             // implicit common(Bool)
             // implicit common(Int)
@@ -162,21 +155,21 @@ namespace cynth::sem {
 
             SAME(type::In);
 
-            DECAY();
+            //DECAY;
         };
 
         struct Out: detail::types::Out<true> {
-            TYPE;
+            TYPE_INTERFACE;
 
             SAME(type::Out);
 
-            DECAY();
+            //DECAY;
         };
 
         struct Const: detail::types::Const<true> {
-            TYPE;
+            TYPE_INTERFACE;
 
-            TYPE_NAME();
+            TYPE_NAME;
 
             // implicit common(Bool)
             // implicit common(Int)
@@ -186,11 +179,11 @@ namespace cynth::sem {
 
             SAME(type::Const);
 
-            DECAY();
+            //DECAY;
         };
 
         struct Array: detail::types::Array<true> {
-            TYPE;
+            TYPE_INTERFACE;
 
             // implicit coomon(Const)
             COMMON(type::Array);
@@ -201,7 +194,7 @@ namespace cynth::sem {
         };
 
         struct Buffer: detail::types::Buffer<true> {
-            TYPE;
+            TYPE_INTERFACE;
 
             COMMON(type::Buffer);
 
@@ -211,7 +204,7 @@ namespace cynth::sem {
         };
 
         struct Function: detail::types::Function<true> {
-            TYPE;
+            TYPE_INTERFACE;
 
             COMMON(type::Function);
 
@@ -219,27 +212,27 @@ namespace cynth::sem {
         };
 
         struct IncompleteIn: detail::types::In<false> {
-            INCOMPLETE_TYPE;
+            INCOMPLETE_TYPE_INTERFACE;
         };
 
         struct IncompleteOut: detail::types::Out<false> {
-            INCOMPLETE_TYPE;
+            INCOMPLETE_TYPE_INTERFACE;
         };
 
         struct IncompleteConst: detail::types::Const<false> {
-            INCOMPLETE_TYPE;
+            INCOMPLETE_TYPE_INTERFACE;
         };
 
         struct IncompleteArray: detail::types::Array<false> {
-            INCOMPLETE_TYPE;
+            INCOMPLETE_TYPE_INTERFACE;
         };
 
         struct IncompleteBuffer: detail::types::Buffer<false> {
-            INCOMPLETE_TYPE;
+            INCOMPLETE_TYPE_INTERFACE;
         };
 
         struct IncompleteFunction: detail::types::Function<false> {
-            INCOMPLETE_TYPE;
+            INCOMPLETE_TYPE_INTERFACE;
         };
 
         struct Unknown {
@@ -292,8 +285,11 @@ namespace cynth::sem {
 
 }
 
-#undef TYPE
-#undef COMMON
+#undef DIRECT_TYPE_NAME
+#undef TYPE_NAME
 #undef SAME
-#undef DECAY
-#undef INCOMPLETE_TYPE
+#undef COMMON
+#undef TYPE_INTERFACE
+#undef INCOMPLETE_TYPE_INTERFACE
+
+//#undef DECAY

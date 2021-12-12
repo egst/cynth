@@ -13,7 +13,6 @@
 #include "sem/declarations.hpp"
 #include "sem/targets.hpp"
 #include "sem/types.hpp"
-#include "sem/values.hpp"
 
 namespace cynth::interface {
 
@@ -21,49 +20,63 @@ namespace cynth::interface {
 
     /** Any AST node. */
     template <typename T>
-    concept node = true; // Unconstrained for now. (Could be implemented with esl::variant_member for every category.)
-    // Probably won't be used, but I'll keep it for documentation purposes.
+    concept node = true;
+    // variant_member<T, syn::category::ArrayElement::variant> || ... || variant_member<T, syn::category::Type::variant>
+    // syn::category::* would introduce unnecessary dependencies,
+    // so I'll keep this requirement purely informative for now.
 
     namespace has {
 
         template <typename T>
-        concept resolveExpression = requires (T node, context::Cynth & ctx) {
+        concept resolveExpression = node<T> && requires (T node, context::Cynth & ctx) {
             { node.resolveExpression(ctx) } -> std::same_as<ExpressionResolutionResult>;
         };
 
         template <typename T>
-        concept resolveStatement = requires (T node, context::Cynth & ctx, bool translate) {
-            { node.resolveStatement(ctx, translate) } -> std::same_as<StatementResolutionResult>;
-        };
-
-        template <typename T>
-        concept resolveType = requires (T node, context::Cynth & ctx) {
-            { node.resolveType(ctx) } -> std::same_as<TypeResolutionResult>;
-        };
-
-        template <typename T>
-        concept resolveArrayElement = requires (T node, context::Cynth & ctx) {
+        concept resolveArrayElement = node<T> && requires (T node, context::Cynth & ctx) {
             { node.resolveArrayElement(ctx) } -> std::same_as<ExpressionResolutionResult>;
         };
 
         template <typename T>
-        concept resolveDeclaration = requires (T node, context::Cynth & ctx) {
+        concept resolveStatement = node<T> && requires (T node, context::Cynth & ctx, bool translate) {
+            { node.resolveStatement(ctx, translate) } -> std::same_as<StatementResolutionResult>;
+        };
+
+        template <typename T>
+        concept resolveType = node<T> && requires (T node, context::Cynth & ctx) {
+            { node.resolveType(ctx) } -> std::same_as<TypeResolutionResult>;
+        };
+
+        template <typename T>
+        concept resolveDeclaration = node<T> && requires (T node, context::Cynth & ctx) {
             { node.resolveDeclaration(ctx) } -> std::same_as<DeclarationResolutionResult>;
         };
 
         template <typename T>
-        concept resolveRangeDeclaration = requires (T node, context::Cynth & ctx) {
+        concept resolveRangeDeclaration = node<T> && requires (T node, context::Cynth & ctx) {
             { node.resolveRangeDeclaration(ctx) } -> std::same_as<RangeDeclarationResolutionResult>;
         };
 
         template <typename T>
-        concept resolveTarget = requires (T node, context::Cynth & ctx) {
+        concept resolveTarget = node<T> && requires (T node, context::Cynth & ctx) {
             { node.resolveTarget(ctx) } -> std::same_as<TargetResolutionResult>;
         };
 
     }
 
     // Functions:
+
+    constexpr auto resolveExpression (context::Cynth & ctx, bool translate) {
+        return [&ctx, translate] <has::resolveExpression T> (T const & node) {
+            return node.resolveExpression(ctx, translate);
+        };
+    }
+
+    constexpr auto resolveArrayElement (context::Cynth & ctx) {
+        return [&ctx] (has::resolveArrayElement auto const & node) {
+            return node.resolveArrayElement(ctx);
+        };
+    }
 
     constexpr auto resolveStatement (context::Cynth & ctx) {
         return esl::overload(
@@ -79,21 +92,9 @@ namespace cynth::interface {
         );
     }
 
-    constexpr auto resolveExpression (context::Cynth & ctx, bool translate) {
-        return [&ctx, translate] <has::resolveExpression T> (T const & node) {
-            return node.resolveExpression(ctx, translate);
-        };
-    }
-
     constexpr auto resolveType (context::Cynth & ctx) {
         return [&ctx] (has::resolveType auto const & node) {
             return node.resolveType(ctx);
-        };
-    }
-
-    constexpr auto resolveArrayElement (context::Cynth & ctx) {
-        return [&ctx] (has::resolveArrayElement auto const & node) {
-            return node.resolveArrayElement(ctx);
         };
     }
 
@@ -119,28 +120,5 @@ namespace cynth::interface {
             }
         );
     }
-
-    // TODO?
-    /*
-    constexpr auto names =
-        [] <typename T> (T const & node)
-        requires (
-            has::resolveExpression <T> ||
-            has::resolveStatement  <T> ||
-            has::resolveType       <T>
-        ) {
-            return node.names();
-        };
-
-    constexpr auto type_names =
-        [] <typename T> (T const & node)
-        requires (
-            has::resolveExpression <T> ||
-            has::resolveStatement  <T> ||
-            has::resolveType       <T>
-        ) {
-            return node.typeNames();
-        };
-    */
 
 }

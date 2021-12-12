@@ -21,15 +21,13 @@
 #include "sem/forward.hpp"
 
 // Note: No macros escape this file.
-#define VALUE \
-    interface::DisplayResult display () const; \
-    interface::ValueTypeResult valueType () const
-
 #define GET(type) \
     interface::GetResult<type> get () const
-
-#define CONVERSION(type) \
+#define CONVERT(type) \
     interface::ConversionResult convert (context::Cynth &, type const &) const
+#define VALUE_INTERFACE \
+    interface::DisplayResult display () const; \
+    interface::ValueTypeResult valueType () const
 
 namespace cynth::sem {
 
@@ -38,14 +36,14 @@ namespace cynth::sem {
         struct Bool {
             bool value;
 
-            VALUE;
+            VALUE_INTERFACE;
 
             GET(bool);
 
-            CONVERSION(type::Bool);
-            CONVERSION(type::Int);
-            CONVERSION(type::Float);
-            CONVERSION(type::Const);
+            CONVERT(type::Bool);
+            CONVERT(type::Int);
+            CONVERT(type::Float);
+            CONVERT(type::Const);
 
             constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
         };
@@ -53,14 +51,14 @@ namespace cynth::sem {
         struct Int {
             Integral value;
 
-            VALUE;
+            VALUE_INTERFACE;
 
             GET(Integral);
 
-            CONVERSION(type::Bool);
-            CONVERSION(type::Int);
-            CONVERSION(type::Float);
-            CONVERSION(type::Const);
+            CONVERT(type::Bool);
+            CONVERT(type::Int);
+            CONVERT(type::Float);
+            CONVERT(type::Const);
 
             constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
         };
@@ -68,14 +66,14 @@ namespace cynth::sem {
         struct Float {
             Floating value;
 
-            VALUE;
+            VALUE_INTERFACE;
 
             GET(Floating);
 
-            CONVERSION(type::Bool);
-            CONVERSION(type::Int);
-            CONVERSION(type::Float);
-            CONVERSION(type::Const);
+            CONVERT(type::Bool);
+            CONVERT(type::Int);
+            CONVERT(type::Float);
+            CONVERT(type::Const);
 
             constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
         };
@@ -83,7 +81,7 @@ namespace cynth::sem {
         struct String {
             std::string value;
 
-            VALUE;
+            VALUE_INTERFACE;
 
             GET(std::string);
 
@@ -94,13 +92,13 @@ namespace cynth::sem {
         struct Const {
             esl::component<CompleteValue> value;
 
-            VALUE;
+            VALUE_INTERFACE;
 
-            CONVERSION(type::Bool);
-            CONVERSION(type::Int);
-            CONVERSION(type::Float);
-            CONVERSION(type::Const);
-            CONVERSION(type::Array);
+            CONVERT(type::Bool);
+            CONVERT(type::Int);
+            CONVERT(type::Float);
+            CONVERT(type::Const);
+            CONVERT(type::Array);
         };
 
         struct InValue {
@@ -111,14 +109,14 @@ namespace cynth::sem {
             InValue * value;
             esl::component<CompleteValue> type;
 
-            VALUE;
+            VALUE_INTERFACE;
 
-            CONVERSION(type::Bool);
-            CONVERSION(type::Int);
-            CONVERSION(type::Float);
-            CONVERSION(type::In);
-            CONVERSION(type::Const);
-            CONVERSION(type::Buffer);
+            CONVERT(type::Bool);
+            CONVERT(type::Int);
+            CONVERT(type::Float);
+            CONVERT(type::In);
+            CONVERT(type::Const);
+            CONVERT(type::Buffer);
         };
 
         struct OutValue {
@@ -129,9 +127,9 @@ namespace cynth::sem {
             OutValue * value;
             esl::component<CompleteValue> type;
 
-            VALUE;
+            VALUE_INTERFACE;
 
-            CONVERSION(type::Out);
+            CONVERT(type::Out);
         };
 
         template <template <typename...> typename Base>
@@ -159,12 +157,12 @@ namespace cynth::sem {
             esl::component_vector<CompleteType> type;
             Integral size;
 
-            VALUE;
+            VALUE_INTERFACE;
 
             GET(std::vector<esl::tiny_vector<CompleteValue>>);
 
-            CONVERSION(type::Array);
-            CONVERSION(type::Const);
+            CONVERT(type::Array);
+            CONVERT(type::Const);
 
             static esl::result<CompleteValue> make (
                 value::ArrayValue *,
@@ -192,9 +190,9 @@ namespace cynth::sem {
             BufferValue * value;
             Integral size;
 
-            VALUE;
+            VALUE_INTERFACE;
 
-            CONVERSION(type::Buffer);
+            CONVERT(type::Buffer);
 
             constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
         };
@@ -211,12 +209,12 @@ namespace cynth::sem {
         struct Function {
             FunctionValue * value;
 
-            VALUE;
+            VALUE_INTERFACE;
 
             GET(Function);
 
-            CONVERSION(type::Function);
-            CONVERSION(type::Buffer);
+            CONVERT(type::Function);
+            CONVERT(type::Buffer);
         };
 
         struct Unknown {
@@ -263,6 +261,6 @@ namespace cynth::sem {
 
 }
 
-#undef VALUE
 #undef GET
-#undef CONVERSION
+#undef CONVERT
+#undef VALUE_INTERFACE

@@ -31,7 +31,7 @@ namespace cynth::context {
 
     Cynth::Cynth (): parent{nullptr} {}
 
-    esl::result<void> Cynth::define_value (std::string name, sem::TypedValue const & v) {
+    esl::result<void> Cynth::define_value (std::string name, sem::ResolvedValue const & v) {
         /*
         if (find_value_inside(name))
             return esl::result_error{"Cannot redefine a value in the same scope."};
@@ -223,7 +223,7 @@ namespace cynth::context {
             if (!init_result)
                 return init_result.error();
 
-            auto define_result = define_value(decl.name, sem::TypedValue{.type = decl.type, .value = *std::move(init_result)});
+            auto define_result = define_value(decl.name, sem::ResolvedValue{.type = decl.type, .value = *std::move(init_result)});
             if (!define_result)
                 return define_result.error();
         }
@@ -240,7 +240,7 @@ namespace cynth::context {
     }
 
     /*
-    sem::TypedValue * Cynth::find_value_inside (std::string const & name) {
+    sem::LocalValue * Cynth::find_value_inside (std::string const & name) {
         auto iter = values.find(name);
         return iter != values.end()
             ? &iter->second
@@ -254,7 +254,7 @@ namespace cynth::context {
             : nullptr;
     }
 
-    sem::TypedValue * Cynth::find_value (std::string const & name) {
+    sem::LocalValue * Cynth::find_value (std::string const & name) {
         auto inside = find_value_inside(name);
         if (!parent || inside)
             return inside;

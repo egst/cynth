@@ -12,7 +12,7 @@
 #include "esl/result.hpp"
 #include "esl/type_manip.hpp"
 
-#include "context/cynth.hpp"
+#include "context/c.hpp"
 #include "interface/forward.hpp"
 
 // Completing forward declarations:
@@ -37,41 +37,62 @@ namespace cynth::interface {
     namespace has {
 
         template <typename T>
-        concept directTypeName = requires {
+        concept directTypeName = simpleType<T> && requires {
             { T::directTypeName } -> std::same_as<TypeNameConstant>;
         };
 
         template <typename T>
-        concept typeName = requires (T type) {
+        concept typeName = type<T> && requires (T type) {
             { type.typeName() } -> std::same_as<TypeNameResult>;
         };
 
+        template <typename T, typename U>
+        concept commonType = type<T> && requires (T type, U const & other) {
+            { type.commonType(other) } -> std::same_as<CommonTypeResult>;
+        };
+
+        template <typename T, typename U>
+        concept sameType = type<T> && requires (T type, U const & other) {
+            { type.sameType(other) } -> std::same_as<SameTypeResult>;
+        };
+
         template <typename T>
-        concept translateType = requires (T type) {
-            { type.translateType() } -> std::same_as<TypeTranslationResult>;
+        concept translateType = type<T> && requires (T type, context::C & ctx) {
+            { type.translateType(ctx) } -> std::same_as<TypeTranslationResult>;
+        };
+
+        template <typename T>
+        concept completeType = incompleteType<T> && requires (T type, context::Cynth & ctx) {
+            { type.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
+        };
+
+        template <typename T>
+        concept translateDefinition = type<T> && requires (
+            T type, context::C & ctx, std::optional<std::string> definition
+        ) {
+            { type.translateDefinition(ctx, definition) } -> std::same_as<DefinitionTranslationResult>;
+        };
+
+        template <typename T>
+        concept translateAllocation = type<T> && requires (
+            T type, context::C & ctx, std::optional<std::string> initialization
+        ) {
+            { type.translateAllocation(ctx, initialization) } -> std::same_as<AllocationTranslationResult>;
+        };
+
+        template <typename T>
+        concept translateConversion = type<T> && requires (
+            T type, context::C & ctx, std::string from
+        ) {
+            { type.translateConversion(ctx, from) } -> std::same_as<ConversionTranslationResult>;
         };
 
         /*
         template <typename T>
-        concept decayType = requires (T type) {
+        concept decayType = type<T> && requires (T type) {
             { type.decayType() } -> std::same_as<TypeDecayResult>;
         };
         */
-
-        template <typename T, typename U>
-        concept sameType = requires (T type, U const & other) {
-            { type.sameType(other) } -> std::same_as<SameTypeResult>;
-        };
-
-        template <typename T, typename U>
-        concept commonType = requires (T type, U const & other) {
-            { type.commonType(other) } -> std::same_as<CommonTypeResult>;
-        };
-
-        template <typename T>
-        concept completeType = requires (T type, context::Cynth & ctx) {
-            { type.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
-        };
 
     }
 
@@ -98,19 +119,6 @@ namespace cynth::interface {
         }
     );
 
-    // TODO
-    constexpr auto translateType = esl::overload(
-        [] <has::translateType T> (T const & type) -> TypeNameResult {
-            return std::string{T::typeName};
-        },
-        [] <has::typeName T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
-            return type.getTypeName();
-        },
-        [] <type T> (T const & type) -> TypeNameResult requires (!has::typeName<T> && !has::directTypeName<T>) {
-            return esl::result_error{"This type does not have a name."};
-        }
-    );
-
     constexpr auto sameType = esl::overload(
         [] <type T, type U> (T const & type, U const & as) -> SameTypeResult
         requires (has::sameType<T, U>) {
@@ -121,36 +129,6 @@ namespace cynth::interface {
         }
     );
 
-    /*
-    // TODO: Maybe it would be better to return the same type for non-decaying types?
-    // TODO: Rethink this whole decaying mechanism. Maybe it's useless.
-    // (As if they decay into themselves.)
-    constexpr auto decayType = esl::overload(
-        [] <type T> (T const & type) -> TypeDecayResult
-        requires (has::decayType<T>) {
-            return {type.decayType()};
-        },
-        [] (type auto const &) -> TypeDecayResult {
-            return {};
-        }
-    );
-
-    constexpr auto decaysTo = esl::overload(
-        [] <type T, type To> (T const & type, To const & to) -> bool
-        requires (has::decayType<T>) {
-            auto result = esl::lift<esl::target::optional>(esl::curry(sameType)(to))(type.decayType());
-            return result && *result; // i.e. decays && decays to the same type
-        },
-        [] (type auto const &, type auto const &) -> bool {
-            return false;
-        }
-    );
-    */
-
-    /**
-     *  This operation is symetric.
-     *  It is enough to only provide one implementation for both directions.
-     */
     constexpr auto commonType = esl::overload(
         [] <type T> (T const & type, T const & with) -> CommonTypeResult
         requires (has::commonType<T, T>) {
@@ -189,6 +167,62 @@ namespace cynth::interface {
         }
     );
 
+    constexpr auto translateType (context::C & ctx) {
+        return esl::overload(
+            [&ctx] <has::translateType T> (T const & type) -> TypeTranslationResult {
+                return type.translateType(ctx);
+            },
+            [] (auto const &) -> TypeTranslationResult {
+                return esl::result_error{"This type cannot be translated."};
+            }
+        );
+    }
+
+    constexpr auto translateDefinition (context::C & ctx) {
+        return esl::overload(
+            [&ctx] <has::translateDefinition T> (T const & type) {
+                return [&type, &ctx] (std::optional<std::string> const & def) -> DefinitionTranslationResult {
+                    return type.translateDefinition(ctx, def);
+                };
+            },
+            [] (auto const &) {
+                return [] (std::optional<std::string> const &) -> DefinitionTranslationResult {
+                    return esl::result_error{"A definition of this type cannot be translated."};
+                };
+            }
+        );
+    }
+
+    constexpr auto translateAllocation (context::C & ctx) {
+        return esl::overload(
+            [&ctx] <has::translateAllocation T> (T const & type) {
+                return [&type, &ctx] (std::optional<std::string> const & init) -> AllocationTranslationResult {
+                    return type.translateAllocation(ctx, init);
+                };
+            },
+            [] (auto const &) {
+                return [] (std::optional<std::string> const &) -> AllocationTranslationResult {
+                    return esl::result_error{"An allocation of this type cannot be translated."};
+                };
+            }
+        );
+    }
+
+    constexpr auto translateConversion (context::C & ctx) {
+        return esl::overload(
+            [&ctx] <has::translateConversion T> (T const & type) {
+                return [&type, &ctx] (std::optional<std::string> const & init) -> ConversionTranslationResult {
+                    return type.translateConversion(ctx, init);
+                };
+            },
+            [] (auto const &) {
+                return [] (std::optional<std::string> const &) -> ConversionTranslationResult {
+                    return esl::result_error{"An allocation of this type cannot be translated."};
+                };
+            }
+        );
+    }
+
     constexpr auto completeType (context::Cynth & ctx) {
         return esl::overload(
             [] <type T> (T && type) -> TypeCompletionResult {
@@ -223,8 +257,33 @@ namespace cynth::interface {
         // ... declaration?
     */
 
-#if 0 // TODO: Move to interface/declarations?
+# if 0
+    // TODO: Maybe it would be better to return the same type for non-decaying types?
+    // TODO: Rethink this whole decaying mechanism. Maybe it's useless.
+    // (As if they decay into themselves.)
+    constexpr auto decayType = esl::overload(
+        [] <type T> (T const & type) -> TypeDecayResult
+        requires (has::decayType<T>) {
+            return {type.decayType()};
+        },
+        [] (type auto const &) -> TypeDecayResult {
+            return {};
+        }
+    );
 
+    constexpr auto decaysTo = esl::overload(
+        [] <type T, type To> (T const & type, To const & to) -> bool
+        requires (has::decayType<T>) {
+            auto result = esl::lift<esl::target::optional>(esl::curry(sameType)(to))(type.decayType());
+            return result && *result; // i.e. decays && decays to the same type
+        },
+        [] (type auto const &, type auto const &) -> bool {
+            return false;
+        }
+    );
+#endif
+
+#if 0 // TODO: Move to interface/declarations?
     constexpr auto declarationType = esl::overload(
         [] <esl::same_but_cvref<sem::CompleteDeclaration> Decl> (Decl && decl) -> esl::tiny_vector<sem::CompleteType> {
             return esl::forward_like<Decl>(decl.type);
@@ -296,7 +355,6 @@ namespace cynth::interface {
         };
 
     }
-
 #endif
 
 }

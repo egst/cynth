@@ -16,14 +16,12 @@
 namespace cynth::context {
 
     struct Cynth {
-        using Value       = sem::LocalValue;
-        //using ValueVector = esl::tiny_vector<Value>;
-        using ValueVector = std::vector<Value>; // TODO: Some problems with tiny_vector in unordered_map.
-        using Type        = sem::CompleteType;
-        using TypeVector  = esl::tiny_vector<Type>;
+        template <typename T>
+        using RefvalContainer = std::forward_list<T>;
 
-        std::unordered_map<std::string, ValueVector> values;
-        std::unordered_map<std::string, TypeVector>  types;
+        std::unordered_map<std::string, esl::tiny_vector<sem::LocalValue>> values;
+        //std::unordered_map<std::string, std::vector<sem::LocalValue>> values;
+        std::unordered_map<std::string, esl::tiny_vector<sem::CompleteValue>>  types;
 
         Cynth * parent;
 
@@ -32,8 +30,8 @@ namespace cynth::context {
         Cynth (Cynth const &) = default;
         Cynth (Cynth &&)      = default;
 
-        esl::result<Value      *> defineValue (std::string, Value const &);
-        esl::result<TypeVector *> defineType  (std::string, Type  const &);
+        esl::result<sem::LocalValue                     *> defineValue (std::string, sem::ResolvedValue const &);
+        esl::result<esl::tiny_vector<sem::CompleteType> *> defineType  (std::string, sem::CompleteType  const &);
 
         // TODO?
         esl::result<void> defineValue (
@@ -44,17 +42,13 @@ namespace cynth::context {
             esl::tiny_vector<sem::CompleteDeclaration> const &
         );
 
-        Value      * findValueInside (std::string const &);
-        TypeVector * findTypeInside  (std::string const &);
-        Value      * findValue       (std::string const &);
-        TypeVector * findType        (std::string const &);
+        sem::LocalValue                     * findValueInside (std::string const &);
+        esl::tiny_vector<sem::CompleteType> * findTypeInside  (std::string const &);
+        sem::LocalValue                     * findValue       (std::string const &);
+        esl::tiny_vector<sem::CompleteType> * findType        (std::string const &);
 
         template <typename Value>
         void initStorage ();
-
-        // TODO: Is this needed anywhere else? If not, just write it out directly.
-        template <typename T>
-        using RefvalContainer = std::forward_list<T>;
 
         template <typename Value>
         RefvalContainer<Value> & storedValues ();

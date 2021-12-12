@@ -20,7 +20,7 @@ namespace cynth::sem {
     namespace target {
 
         struct Direct {
-            TypedValue & value;
+            LocalValue & value;
 
             TARGET_INTERFACE;
         };

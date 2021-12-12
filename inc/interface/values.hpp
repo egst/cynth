@@ -9,14 +9,14 @@
 #include "esl/ranges.hpp"
 
 #include "context/cynth.hpp"
+#include "interface/forward.hpp"
 #include "interface/types.hpp"
 #include "sem/declarations.hpp"
 #include "sem/values.hpp"
-#include "interface/forward.hpp"
 
 // Completing declarations:
-#include "sem/compound.hpp"
 #include "sem/types.hpp"
+#include "sem/values.hpp"
 
 namespace cynth::interface {
 
@@ -28,18 +28,23 @@ namespace cynth::interface {
     namespace has {
 
         template <typename T, typename Out>
-        concept get = requires (T value) {
+        concept get = value<T> && requires (T value) {
             { value.get() } -> std::same_as<GetResult<Out>>;
         };
 
         template <typename T>
-        concept valueType = requires (T value) {
+        concept valueType = value<T> && requires (T value) {
             { value.valueType() } -> std::same_as<ValueTypeResult>;
         };
 
-        template <typename T, typename To>
-        concept convertValue = requires (T value, context::Cynth & ctx, To const & to) {
-            { value.convertValue(ctx, to) } -> std::same_as<ConversionResult>;
+        template <typename T, typename U>
+        concept convertValue = value<T> && requires (T value, context::Cynth & ctx, U const & other) {
+            { value.convertValue(ctx, other) } -> std::same_as<ConversionResult>;
+        };
+
+        template <typename T, typename U>
+        concept translateValue = value<T> && requires (T value, context::Cynth & ctx, U const & other) {
+            { value.translateValue(ctx, other) } -> std::same_as<ValueTranslationResult>;
         };
 
     }
@@ -70,6 +75,18 @@ namespace cynth::interface {
             },
             [] (value auto const &, type auto const &) -> ConversionResult {
                 return {esl::result_error{"No conversion available."}};
+            }
+        );
+    };
+
+    constexpr auto translateValue = [] (context::Cynth & ctx) {
+        return esl::overload(
+            [&ctx] <value T, type To> (T const & value, To const & to) -> ValueTranslationResult
+            requires (has::translateValue<T, To>) {
+                return value.translateValue(ctx, to);
+            },
+            [] (value auto const &, type auto const &) -> ValueTranslationResult {
+                return {esl::result_error{"This value cannot be translated."}};
             }
         );
     };

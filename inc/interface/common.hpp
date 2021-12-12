@@ -12,12 +12,14 @@ namespace cynth::interface {
     // Concepts:
 
     template <typename T>
-    concept any = true; // This will probably stay unconstrained, but I'll keep it for documentation purposes.
+    concept any = true; // node<T> || value<T> || type<T>
+    // node, value and type would introduce unnecessary dependencies,
+    // so I'll keep this requirement purely informative for now.
 
     namespace has {
 
         template <typename T>
-        concept display = requires (T target) {
+        concept display = any<T> && requires (T target) {
             { target.display() } -> std::same_as<DisplayResult>;
         };
 

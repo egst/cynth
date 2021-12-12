@@ -48,6 +48,7 @@ namespace cynth::context {
      *  operation that needs the nesting.
      */
     struct C {
+
         struct Global {
             std::size_t nextId ();
 
@@ -71,8 +72,8 @@ namespace cynth::context {
          *  (T, U, V) a = (1, x, y)
          */
         esl::result<void> define (
-            sem::CompleteDeclaration          const & decl,
-            esl::tiny_vector<sem::TypedValue> const & tuple
+            sem::CompleteDeclaration             const & decl,
+            esl::tiny_vector<sem::ResolvedValue> const & tuple
         );
 
         /**
@@ -81,7 +82,7 @@ namespace cynth::context {
          */
         esl::result<void> define (
             esl::tiny_vector<sem::CompleteDeclaration> const & decls,
-            esl::tiny_vector<sem::TypedValue>          const & tuple
+            esl::tiny_vector<sem::ResolvedValue>       const & tuple
         );
 
         /*
@@ -92,13 +93,13 @@ namespace cynth::context {
 
         esl::result<void> initValue (
             std::string const &,
-            esl::component_vector<TypedValue> const & // TODO: or maybe tiny_component_vector?
+            esl::component_vector<ResolvedValue> const & // TODO: or maybe tiny_component_vector?
         );
         */
 
         esl::result<void> assign (
             std::string const &,
-            esl::tiny_vector<sem::TypedValue> const &
+            esl::tiny_vector<sem::ResolvedValue> const &
         );
 
         esl::result<void> beginFunction ();
