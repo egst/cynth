@@ -6,7 +6,8 @@
 #include "esl/string.hpp"
 #include "esl/tiny_vector.hpp"
 #include "esl/view.hpp"
-//#include "esl/containers.hpp" // unite_results, single, init
+#include "esl/zip.hpp"
+//#include "esl/containers.hpp" // unite_results, single, init (from old code)
 
 #include "interface/common.hpp"
 #include "interface/nodes.hpp"
@@ -182,44 +183,34 @@ namespace cynth {
     }
 
     interface::StatementResolutionResult syn::node::Assignment::resolveStatement (context::C & ctx) const {
-#if 0
-        auto targets_result = interface::resolveTarget(ctx)(target);
-        if (!targets_result)
-            return syn::make_execution_result(targets_result.error());
-        auto targets = *std::move(targets_result);
-
-        // TODO: What about .size() == 0? And elsewhere as well...
-        if (targets.size() > 1)
-            return syn::make_execution_result(result_error{"Assigning to tuples is not supported yet."});
+        auto targetsResult = lift<target::component, target::category>(interface::resolveTarget(ctx))(target);
+        if (!targetsResult) return targetsResult.error();
+        auto targets = *std::move(targetsResult);
 
         auto target = std::move(targets.front());
 
-        auto values_result = esl::unite_results(syn::evaluate(ctx)(value));
-        if (!values_result)
-            return syn::make_execution_result(values_result.error());
-        auto values = *std::move(values_result);
+        auto valuesResult = lift<target::component, target::category>(interface::resolveExpression(ctx))(value);
+        if (!valuesResult) return valuesResult.error();
+        auto values = *std::move(valuesResult);
 
-        auto target_ref_result = sem::resolve_target(target);
-        if (!target_ref_result)
-            return syn::make_execution_result(target_ref_result.error());
-        auto target_ref = *std::move(target_ref_result);
+        // TODO: What about .size() == 0? And elsewhere as well...
+        // I guess techincally it shouldn't be a problem semantically and it should also be impossible syntactically,
+        // so maybe it's not a problem, but I should check it once I get back to testing again.
 
-        if (values.size() > target_ref.type.size())
-            return result_error{"More values than targets in an assignment."};
-        if (values.size() < target_ref.type.size())
-            return result_error{"More targets than values in an assignment."};
-        auto converted_results = sem::convert(ctx)(values, target_ref.type);
-        if (!converted_results)
-            return converted_results.error();
-        auto converted_result = esl::unite_results(*converted_results);
-        if (!converted_result)
-            return converted_result.error();
-        auto assign_result = target_ref.assign(*std::move(converted_result));
-        if (!assign_result)
-            return assign_result.error();
+        if (values.size() > targets.size())
+            return esl::result_error{"More values than targets in an assignment."};
+        if (targets.size() > values.size())
+            return esl::result_error{"More targets than values in an assignment."};
+
+        for (auto const & [target, value]: esl::zip(targets, values)) {
+            auto conversionResult = lift<target::category>(interface::translateConversion(ctx, value))(target.type);
+            if (!conversionResult) return conversionResult.error();
+
+            auto assignmentResult = target.assign(ctx, *conversionResult);
+            if (!assignmentResult) return assignmentResult.error();
+        }
 
         return {};
-#endif
     }
 
     //// Definition ////
@@ -242,6 +233,8 @@ namespace cynth {
         for (auto const & decl: decls) {
             esl::tiny_vector<sem::TypedResolvedValue> vars;
             auto count = decl.type.size();
+            if (count > values.end() - valueIterator)
+                return esl::result_error{"More values than targets in a definition."};
 
             for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
                 auto defResult = lift<target::category>(interface::translateDefinition(ctx, value))(type);
@@ -255,6 +248,9 @@ namespace cynth {
             if (!varResult) return varResult.error();
             valueIterator += count;
         }
+
+        if (valueIterator != values.end())
+            return esl::result_error{"More targets than values in a definition."};
 
         return {};
     }

@@ -3,6 +3,9 @@
 #include <string>
 #include <variant>
 
+#include "esl/lift.hpp"
+
+#include "context/forward.hpp"
 #include "sem/types.hpp"
 #include "sem/values.hpp"
 
@@ -34,22 +37,10 @@ namespace cynth::sem {
     struct TypedResolvedTarget {
         CompleteType type;
         ResolvedTarget::Variant target;
-    };
 
-    /* TODO?
-    struct ResolvedTargetValue {
-        CompleteType               type;
-        CompleteValue *            value; // Might be null on purpose.
-        std::optional<std::string> variable;
-
-        esl::result<void> assign (ValueVector && values) {
-            return esl::lift<esl::target::tiny_vector>(
-                [] (CompleteValue * target, CompleteValue && value) {
-                    *target = std::move(value);
-                }
-            )(value, std::move(values));
-        }
+        /** This assumes already checked and converted type of the value. */
+        esl::result<void> assign (context::C &, ResolvedValue const &);
+        // TODO: Or maybe the conversion should happen here?
     };
-    */
 
 }

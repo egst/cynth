@@ -61,6 +61,7 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 
 // Translation from intermediate structures:
 <interface::value T> Result<String> translateValue (Context &) (T)
+<interface::value T> Result<String> translateTarget (Context &) (T)
 <interface::type T> Result<String> translateType (Context &) (T)
 
 // Constructing translated C code from intermediate structures:
@@ -98,7 +99,6 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 <interface::type T> String T::typeName ()
 <interface::type T, interface::type U> bool T::sameType (U) // or the other way around: T::sameType (T)
 <interface::type T, interface::type U> Result<Type> T::commonType (U) // or the other way around: T::commonType (T)
-// Translation:
 <interface::type T> Result<String> T::translateType (Context &)
 <interface::type T> Result<ResolvedValue> T::translateDefinition (Context &, Optional<Sting> definition)
 <interface::type T> Result<String> T::translateAllocation (Context &, Optional<Sting> initialization)
@@ -108,8 +108,8 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 <interface::value T> Result<Out> T::get <Out> (Context &)
 <interface::value T> Result<Type> T::valueType (Context &)
 <interface::value T, interface::type U> Result<Value> T::convertValue (Context &, U)
-// Translation
 <interface::value T> Result<String> T::translateValue (Context &)
+<interface::value T> Result<String> T::translateTarget (Context &)
 ```
 
 ## File structure:

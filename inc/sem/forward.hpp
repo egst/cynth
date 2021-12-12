@@ -35,6 +35,7 @@ namespace cynth::sem {
         IncompleteRangeDeclaration
     >;
 
+#if 0 // TODO: targets probably won't be needed anymore
     // Targets:
 
     namespace target {
@@ -45,6 +46,7 @@ namespace cynth::sem {
     }
 
     struct Target;
+#endif
 
     // Values:
 

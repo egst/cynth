@@ -5,13 +5,16 @@
 #include "esl/containers.hpp"
 #include "esl/functional.hpp"
 #include "esl/result.hpp"
+#include "esl/concepts.hpp" // variant_member
 
 #include "context/c.hpp"
 #include "interface/forward.hpp"
 
+// This might introduce some problematic circular dependencies, but I'll give it a try:
+#include "syn/categories/all.hpp"
+
 // Completing forward declarations:
 #include "sem/declarations.hpp"
-#include "sem/targets.hpp"
 #include "sem/types.hpp"
 
 namespace cynth::interface {
@@ -20,10 +23,19 @@ namespace cynth::interface {
 
     /** Any AST node. */
     template <typename T>
-    concept node = true;
-    // variant_member<T, syn::category::ArrayElement::variant> || ... || variant_member<T, syn::category::Type::variant>
-    // syn::category::* would introduce unnecessary dependencies,
-    // so I'll keep this requirement purely informative for now.
+    concept node =
+        esl::variant_member<T, syn::category::ArrayElement::variant>     ||
+        esl::variant_member<T, syn::category::Declaration::variant>      ||
+        esl::variant_member<T, syn::category::Expression::variant>       ||
+        esl::variant_member<T, syn::category::Pattern::variant>          ||
+        esl::variant_member<T, syn::category::RangeDeclaration::variant> ||
+        esl::variant_member<T, syn::category::Statement::variant>        ||
+        esl::variant_member<T, syn::category::Type::variant>;
+    // syn::category::* could introduce unnecessary dependencies,
+    // so maybe I'll need to keep this requirement purely informative, i.e.:
+    // concept node = true;
+    // or maybe at least enforce some category in general, i.e.:
+    // concept node = esl::categorial<T>;
 
     namespace has {
 
@@ -115,7 +127,7 @@ namespace cynth::interface {
             [&ctx] (has::resolveTarget auto const & node) -> TargetResolutionResult {
                 return node.resolveTarget(ctx);
             },
-            [] (auto const &) -> TargetResolutionResult {
+            [] (node auto const &) -> TargetResolutionResult {
                 return esl::result_error{"Assignment target may only be a name, a subscript or any tuple thereof."};
             }
         );

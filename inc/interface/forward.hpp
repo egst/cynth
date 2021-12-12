@@ -25,6 +25,11 @@ namespace cynth::interface {
     using DeclarationResolutionResult      = esl::result<esl::tiny_vector<sem::CompleteDeclaration>>;
     using RangeDeclarationResolutionResult = esl::result<esl::tiny_vector<sem::CompleteRangeDeclaration>>;
     using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::TypedResolvedTarget>>;
+    // TODO: Do I really need a TypedResolvedValue for exrpession resolution?
+    // Maybe it should be more like variant<struct { CompleteType type; string expression }, CompleteValue>,
+    // not struct { CompleteType type; variant<CompleteValue, string> }
+    // The first option more represents the information more precisely (more tightly) and saves a little bit of space
+    // while the second one needs a little more space, but might save some time by caching the type.
 
     // Types:
     // For full declarations, #include "interface/types.hpp"
@@ -37,14 +42,16 @@ namespace cynth::interface {
     using TypeTranslationResult       = esl::result<std::string>;
     using DefinitionTranslationResult = esl::result<sem::ResolvedValue>;
     using AllocationTranslationResult = esl::result<std::string>;
-    using ConversionTranslationResult = esl::result<std::string>;
+    using ConversionTranslationResult = esl::result<sem::ResolvedValue>;
+    // TODO: Will `translateAllocation` only translate C allocations, or the compile-time ones as well?
 
     // Values:
     // For full declarations, #include "interface/values.hpp"
     template <typename T>
-    using GetResult              = esl::result<T>;
-    using ConversionResult       = esl::result<sem::CompleteValue>;
-    using ValueTypeResult        = sem::CompleteType;
-    using ValueTranslationResult = esl::result<std::string>;
+    using GetResult               = esl::result<T>;
+    using ConversionResult        = esl::result<sem::CompleteValue>;
+    using ValueTypeResult         = sem::CompleteType;
+    using ValueTranslationResult  = esl::result<std::string>;
+    using TargetTranslationResult = esl::result<std::string>;
 
 }

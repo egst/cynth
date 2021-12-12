@@ -12,24 +12,32 @@
 //#include "sem/types.hpp"
 
 // Note: No macros escape this file.
+/*
 #define TARGET_INTERFACE \
     interface::TargetResolutionResult resolveTarget (bool) const
+*/
 
+static_assert(false, "This header will probably be deprecated.");
+#if 0
 namespace cynth::sem {
+    // TODO: These intermediate stuctures might not be needed.
+    // There used to be two interface functions:
+    // eval_target (syn::node::* -> sem::target::*) and
+    // resolve_target (sem::target::* -> sem::TypedResolvedTarget)
 
     namespace target {
 
         struct Direct {
             TypedResolvedValue & value;
 
-            TARGET_INTERFACE;
+            //TARGET_INTERFACE;
         };
 
         struct Subscript {
             esl::component<Target> container;
             esl::component_vector<CompleteValue> location;
 
-            TARGET_INTERFACE;
+            //TARGET_INTERFACE;
         };
 
     }
@@ -49,5 +57,6 @@ namespace cynth::sem {
     };
 
 }
+#endif
 
-#undef TARGET_INTERFACE
+//#undef TARGET_INTERFACE

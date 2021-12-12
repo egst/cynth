@@ -42,9 +42,14 @@ namespace cynth::interface {
             { value.convertValue(ctx, other) } -> std::same_as<ConversionResult>;
         };
 
-        template <typename T, typename U>
-        concept translateValue = value<T> && requires (T value, context::C & ctx, U const & other) {
-            { value.translateValue(ctx, other) } -> std::same_as<ValueTranslationResult>;
+        template <typename T>
+        concept translateValue = value<T> && requires (T value, context::C & ctx) {
+            { value.translateValue(ctx) } -> std::same_as<ValueTranslationResult>;
+        };
+
+        template <typename T>
+        concept translateTarget = value<T> && requires (T value, context::C & ctx) {
+            { value.translateTarget(ctx) } -> std::same_as<TargetTranslationResult>;
         };
 
     }
@@ -67,6 +72,8 @@ namespace cynth::interface {
             return value.valueType();
         };
 
+    // TODO: Do I need this?
+    // Or perhaps `convertValue`'s functionality could be included in `translateConversion` (in interface/types)?
     constexpr auto convertValue = [] (context::C & ctx) {
         return esl::overload(
             [&ctx] <value T, type To> (T const & value, To const & to) -> ConversionResult
@@ -81,12 +88,24 @@ namespace cynth::interface {
 
     constexpr auto translateValue = [] (context::C & ctx) {
         return esl::overload(
-            [&ctx] <value T, type To> (T const & value, To const & to) -> ValueTranslationResult
-            requires (has::translateValue<T, To>) {
-                return value.translateValue(ctx, to);
+            [&ctx] <value T> (T const & value) -> ValueTranslationResult
+            requires (has::translateValue<T>) {
+                return value.translateValue(ctx);
             },
-            [] (value auto const &, type auto const &) -> ValueTranslationResult {
+            [] (value auto const &) -> ValueTranslationResult {
                 return {esl::result_error{"This value cannot be translated."}};
+            }
+        );
+    };
+
+    constexpr auto translateTarget = [] (context::C & ctx) {
+        return esl::overload(
+            [&ctx] <value T> (T const & value) -> TargetTranslationResult
+            requires (has::translateTarget<T>) {
+                return value.translateTarget(ctx);
+            },
+            [] (value auto const &) -> TargetTranslationResult {
+                return {esl::result_error{"This value cannot be translated into a target."}};
             }
         );
     };

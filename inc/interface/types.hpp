@@ -193,6 +193,17 @@ namespace cynth::interface {
         );
     }
 
+    // TODO: I´m not sure if I like the names of the following three functions...
+    // "Translation" should probably only refer to the final translasion to C,
+    // while these three might perform both "translation" and "evaluation".
+    // Other functions that might perform either "translation"
+    // (when the argument is an AST node refering to some run-time values) and "evaluation"
+    // (when the argument is an AST node refering only to compile-time values) are called "resolve{Something}".
+    // What should I call these? "Resolve" will be probably better kept limited to the AST nodes.
+    // Maybe "process"? `processDefinition` etc.
+    // Actually, even "evaluation" is not really a thing they do - e.g. definitions are not evaluated,
+    // they're either translated to some C strings or just "proccessed" directly at compile time.
+
     constexpr auto translateDefinition (context::C & ctx, std::optional<sem::TypedResolvedValue> const & definition) {
         return esl::overload(
             [&ctx, &definition] <has::translateDefinition T> (T const & type) -> DefinitionTranslationResult {
@@ -221,7 +232,7 @@ namespace cynth::interface {
                 return type.translateConversion(ctx, from);
             },
             [] (auto const &) -> ConversionTranslationResult {
-                return esl::result_error{"An allocation of this type cannot be translated."};
+                return esl::result_error{"A conversion to this type cannot be translated."};
             }
         );
     }

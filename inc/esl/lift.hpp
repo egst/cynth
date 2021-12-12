@@ -97,13 +97,7 @@ namespace esl {
         using result_type = decltype(functor.invoke(std::declval<first_type>(), std::declval<second_type>()));
         using final_type  = std::conditional_t<std::same_as<result_type, void>, void, V<result_type>>;
         if (first.size() != second.size())
-            return esl::result<final_type>{esl::result_error{
-                "Binary tuple operation values count mismatch. -- " +
-                std::to_string(first.size()) +
-                " and " +
-                std::to_string(second.size()) +
-                "."
-            }};
+            return esl::result<final_type>{esl::result_error{"Binary tuple operation values count mismatch."}};
         if constexpr (std::same_as<result_type, void>) {
             for (auto && [a, b]: esl::zip(std::forward<T>(first), std::forward<U>(second)))
                 functor.invoke(std::forward<first_type>(a), std::forward<second_type>(b));
