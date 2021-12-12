@@ -14,21 +14,17 @@
 #include "syn/categories/forward.hpp"
 
 // Note: No macros escape this file.
-#define DISPLAY_INTERFACE() \
+#define DISPLAY_INTERFACE \
     interface::DisplayResult display () const
 
-#define EVALUATE_INTERFACE() \
-    interface::ExpressionEvaluationResult evaluateExpression (context::Cynth &) const
-
-#define EXECUTE_INTERFACE() \
-    interface::StatementExecutionResult executeSatement (context::Cynth &) const
-
-#define EVALUATE_TARGET_INTERFACE() \
-    interface::TargetResolutionResult resolveTarget (context::Cynth &) const
-
 #define EXPRESSION_INTERFACE \
-    DISPLAY_INTERFACE(); \
-    EVALUATE_INTERFACE()
+    interface::ExpressionResolutionResult resolveExpression (context::Cynth &) const
+
+#define STATEMENT_INTERFACE \
+    interface::StatementResolutionResult resolveStatement (context::Cynth &) const
+
+#define TARGET_INTERFACE \
+    interface::TargetResolutionResult resolveTarget (context::Cynth &) const
 
 namespace cynth::syn::node {
 
@@ -38,6 +34,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a && b */
@@ -46,6 +43,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** f(in) */
@@ -54,6 +52,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> arguments;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** [a, ...] */
@@ -61,17 +60,18 @@ namespace cynth::syn::node {
         esl::component_vector<category::ArrayElement> elements;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** { stmt; ... } */
     struct Block {
         esl::component_vector<category::Statement> statements;
 
-        DISPLAY_INTERFACE();
-        EVALUATE_INTERFACE();
-        EXECUTE_INTERFACE();
+        DISPLAY_INTERFACE;
+        EXPRESSION_INTERFACE;
+        STATEMENT_INTERFACE;
 
-        template <bool = true> interface::ExpressionEvaluationResult evaluate (context::Cynth &) const;
+        template <bool = true> interface::ExpressionResolutionResult resolveExpression (context::Cynth &) const;
     };
 
     /**
@@ -82,6 +82,7 @@ namespace cynth::syn::node {
         bool value;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** T(a) */
@@ -90,6 +91,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a / b */
@@ -98,6 +100,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a == b */
@@ -106,6 +109,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** for (T e in a) x */
@@ -114,7 +118,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression>       body;
 
         EXPRESSION_INTERFACE;
-        EXECUTE_INTERFACE();
+        DISPLAY_INTERFACE;
+        STATEMENT_INTERFACE;
     };
 
     /** if (cond) a else b */
@@ -124,7 +129,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> negative_branch;
 
         EXPRESSION_INTERFACE;
-        EXECUTE_INTERFACE();
+        DISPLAY_INTERFACE;
+        STATEMENT_INTERFACE;
     };
 
     /** 12.34e-56 */
@@ -132,6 +138,7 @@ namespace cynth::syn::node {
         sem::Floating value;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** Out fn (In a) */
@@ -141,6 +148,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression>  body;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a >= b */
@@ -149,6 +157,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a > b */
@@ -157,6 +166,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** 12e-34 */
@@ -164,6 +174,7 @@ namespace cynth::syn::node {
         sem::Integral value;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a <= b */
@@ -172,6 +183,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a < b */
@@ -180,6 +192,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a - b */
@@ -187,6 +200,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a % b */
@@ -195,6 +209,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a * b */
@@ -203,6 +218,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a */
@@ -211,7 +227,8 @@ namespace cynth::syn::node {
         esl::component<std::string> name;
 
         EXPRESSION_INTERFACE;
-        EVALUATE_TARGET_INTERFACE();
+        DISPLAY_INTERFACE;
+        TARGET_INTERFACE;
     };
 
     /** a != b */
@@ -220,6 +237,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** !a */
@@ -227,6 +245,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a || b */
@@ -235,6 +254,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a + b */
@@ -242,6 +262,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a ** b */
@@ -250,6 +271,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** "abc" */
@@ -258,6 +280,7 @@ namespace cynth::syn::node {
         esl::component<std::string> value;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a - b */
@@ -266,6 +289,7 @@ namespace cynth::syn::node {
         esl::component<category::Expression> right_argument;
 
         EXPRESSION_INTERFACE;
+        DISPLAY_INTERFACE;
     };
 
     /** a[b] */
@@ -274,7 +298,8 @@ namespace cynth::syn::node {
         esl::component_vector<category::ArrayElement> location;
 
         EXPRESSION_INTERFACE;
-        EVALUATE_TARGET_INTERFACE();
+        DISPLAY_INTERFACE;
+        TARGET_INTERFACE;
     };
 
     /** (a, ...) */
@@ -283,13 +308,13 @@ namespace cynth::syn::node {
         esl::component_vector<category::Expression> values;
 
         EXPRESSION_INTERFACE;
-        EVALUATE_TARGET_INTERFACE();
+        DISPLAY_INTERFACE;
+        TARGET_INTERFACE;
     };
 
 }
 
 #undef DISPLAY_INTERFACE
-#undef EVALUATE_INTERFACE
-#undef EXECUTE_INTERFACE
-#undef EVALUATE_TARGET_INTERFACE
 #undef EXPRESSION_INTERFACE
+#undef STATEMENT_INTERFACE
+#undef TARGET_INTERFACE

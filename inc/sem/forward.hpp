@@ -6,9 +6,9 @@ namespace cynth::sem {
 
     // Compound:
 
-    struct TranslatedValue;
-    struct TypedValue;
-    struct TypedTargetValue;
+    struct ResolvedValue;
+    struct LocalValue;
+    struct ResolvedTargetValue;
 
     // Declarations:
 

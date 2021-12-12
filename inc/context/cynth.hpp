@@ -16,10 +16,14 @@
 namespace cynth::context {
 
     struct Cynth {
-        /*
-        std::unordered_map<std::string, esl::tiny_vector<sem::TypedValue>>   values;
-        std::unordered_map<std::string, esl::tiny_vector<sem::CompleteType>> types;
-        */
+        using Value       = sem::LocalValue;
+        //using ValueVector = esl::tiny_vector<Value>;
+        using ValueVector = std::vector<Value>; // TODO: Some problems with tiny_vector in unordered_map.
+        using Type        = sem::CompleteType;
+        using TypeVector  = esl::tiny_vector<Type>;
+
+        std::unordered_map<std::string, ValueVector> values;
+        std::unordered_map<std::string, TypeVector>  types;
 
         Cynth * parent;
 
@@ -28,10 +32,8 @@ namespace cynth::context {
         Cynth (Cynth const &) = default;
         Cynth (Cynth &&)      = default;
 
-        using TypeVector = esl::tiny_vector<sem::CompleteType>;
-
-        esl::result<sem::TypedValue *> defineValue (std::string, sem::TypedValue   const &);
-        esl::result<TypeVector      *> defineType  (std::string, sem::CompleteType const &);
+        esl::result<Value      *> defineValue (std::string, Value const &);
+        esl::result<TypeVector *> defineType  (std::string, Type  const &);
 
         // TODO?
         esl::result<void> defineValue (
@@ -42,10 +44,10 @@ namespace cynth::context {
             esl::tiny_vector<sem::CompleteDeclaration> const &
         );
 
-        sem::TypedValue * findValueInside (std::string const &);
-        TypeVector      * findTypeInside  (std::string const &);
-        sem::TypedValue * findValue       (std::string const &);
-        TypeVector      * findType        (std::string const &);
+        Value      * findValueInside (std::string const &);
+        TypeVector * findTypeInside  (std::string const &);
+        Value      * findValue       (std::string const &);
+        TypeVector * findType        (std::string const &);
 
         template <typename Value>
         void initStorage ();

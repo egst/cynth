@@ -22,41 +22,11 @@ namespace cynth::interface {
 
     // Concepts:
 
-    template <typename Node>
-    concept type = esl::variant_member<Node, sem::CompleteType::variant>;
+    template <typename T>
+    concept type = esl::variant_member<T, sem::CompleteType::variant>;
 
-    template <typename Node>
-    concept directlyNamedType = requires {
-        { Node::typeName } -> std::same_as<TypeNameConstant>;
-    };
-
-    template <typename Node>
-    concept namedType = requires (Node node) {
-        { node.getTypeName() } -> std::same_as<TypeNameResult>;
-    };
-
-    template <typename Node>
-    concept decaying = requires (Node node) {
-        { node.decayType() } -> std::same_as<TypeDecayResult>;
-    };
-
-    template <typename Node, typename As>
-    concept same = requires (Node node, As const & as) {
-        { node.sameType(as) } -> std::same_as<SameTypeResult>;
-    };
-
-    template <typename Node, typename With>
-    concept common = requires (Node node, With const & type) {
-        { node.commonType(type) } -> std::same_as<CommonTypeResult>;
-    };
-
-    template <typename Node>
-    concept incompleteType = esl::variant_member<Node, sem::IncompleteType::variant>;
-
-    template <typename Node>
-    concept completableType = requires (Node node, context::Cynth & ctx) {
-        { node.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
-    };
+    template <typename T>
+    concept incompleteType = esl::variant_member<T, sem::IncompleteType::variant>;
 
     template <typename T>
     concept simpleType =
@@ -64,135 +34,190 @@ namespace cynth::interface {
         std::same_as<T, sem::type::Int>  ||
         std::same_as<T, sem::type::Float>;
 
+    namespace has {
+
+        template <typename T>
+        concept directTypeName = requires {
+            { T::directTypeName } -> std::same_as<TypeNameConstant>;
+        };
+
+        template <typename T>
+        concept typeName = requires (T type) {
+            { type.typeName() } -> std::same_as<TypeNameResult>;
+        };
+
+        template <typename T>
+        concept translateType = requires (T type) {
+            { type.translateType() } -> std::same_as<TypeTranslationResult>;
+        };
+
+        /*
+        template <typename T>
+        concept decayType = requires (T type) {
+            { type.decayType() } -> std::same_as<TypeDecayResult>;
+        };
+        */
+
+        template <typename T, typename U>
+        concept sameType = requires (T type, U const & other) {
+            { type.sameType(other) } -> std::same_as<SameTypeResult>;
+        };
+
+        template <typename T, typename U>
+        concept commonType = requires (T type, U const & other) {
+            { type.commonType(other) } -> std::same_as<CommonTypeResult>;
+        };
+
+        template <typename T>
+        concept completeType = requires (T type, context::Cynth & ctx) {
+            { type.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
+        };
+
+    }
+
     // Functions:
 
     constexpr auto directTypeName = esl::overload(
-        [] <interface::directlyNamedType T> (T const & node) -> TypeNameResult {
+        [] <has::directTypeName T> (T const & type) -> TypeNameResult {
             return std::string{T::typeName};
         },
-        [] <interface::type T> (T const & node) -> TypeNameResult requires (!interface::directlyNamedType<T>) {
+        [] <type T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
             return esl::result_error{"This type it not directly named."};
         }
     );
 
-    // TODO: Might not be needed.
     constexpr auto typeName = esl::overload(
-        [] <interface::directlyNamedType T> (T const & node) -> TypeNameResult {
+        [] <has::directTypeName T> (T const & type) -> TypeNameResult {
             return std::string{T::typeName};
         },
-        [] <interface::namedType T> (T const & node) -> TypeNameResult requires (!interface::directlyNamedType<T>) {
-            return node.getTypeName();
+        [] <has::typeName T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
+            return type.getTypeName();
         },
-        [] <interface::type T> (T const & node) -> TypeNameResult requires (!interface::namedType<T> && !interface::directlyNamedType<T>) {
+        [] <type T> (T const & type) -> TypeNameResult requires (!has::typeName<T> && !has::directTypeName<T>) {
+            return esl::result_error{"This type does not have a name."};
+        }
+    );
+
+    // TODO
+    constexpr auto translateType = esl::overload(
+        [] <has::translateType T> (T const & type) -> TypeNameResult {
+            return std::string{T::typeName};
+        },
+        [] <has::typeName T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
+            return type.getTypeName();
+        },
+        [] <type T> (T const & type) -> TypeNameResult requires (!has::typeName<T> && !has::directTypeName<T>) {
             return esl::result_error{"This type does not have a name."};
         }
     );
 
     constexpr auto sameType = esl::overload(
-        [] <interface::type Node, interface::type As> (Node const & node, As const & as) -> SameTypeResult
-        requires (interface::same<Node, As>) {
-            return node.sameType(as);
+        [] <type T, type U> (T const & type, U const & as) -> SameTypeResult
+        requires (has::sameType<T, U>) {
+            return type.sameType(as);
         },
-        [] (interface::type auto const &, interface::type auto const &) -> SameTypeResult {
+        [] (type auto const &, type auto const &) -> SameTypeResult {
             return false;
         }
     );
 
+    /*
     // TODO: Maybe it would be better to return the same type for non-decaying types?
+    // TODO: Rethink this whole decaying mechanism. Maybe it's useless.
     // (As if they decay into themselves.)
     constexpr auto decayType = esl::overload(
-        [] <interface::type Node> (Node const & node) -> TypeDecayResult
-        requires (interface::decaying<Node>) {
-            return {node.decayType()};
+        [] <type T> (T const & type) -> TypeDecayResult
+        requires (has::decayType<T>) {
+            return {type.decayType()};
         },
-        [] (interface::type auto const &) -> TypeDecayResult {
+        [] (type auto const &) -> TypeDecayResult {
             return {};
         }
     );
 
     constexpr auto decaysTo = esl::overload(
-        [] <interface::type Node, interface::type To> (Node const & node, To const & to) -> bool
-        requires (interface::decaying<Node>) {
-            auto result = esl::lift<esl::target::optional>(esl::curry(sameType)(to))(node.decayType());
+        [] <type T, type To> (T const & type, To const & to) -> bool
+        requires (has::decayType<T>) {
+            auto result = esl::lift<esl::target::optional>(esl::curry(sameType)(to))(type.decayType());
             return result && *result; // i.e. decays && decays to the same type
         },
-        [] (interface::type auto const &, interface::type auto const &) -> bool {
+        [] (type auto const &, type auto const &) -> bool {
             return false;
         }
     );
+    */
 
     /**
      *  This operation is symetric.
      *  It is enough to only provide one implementation for both directions.
      */
     constexpr auto commonType = esl::overload(
-        [] <interface::type Node> (Node const & node, Node const & with) -> CommonTypeResult
-        requires (interface::common<Node, Node>) {
-            return node.commonType(with);
+        [] <type T> (T const & type, T const & with) -> CommonTypeResult
+        requires (has::commonType<T, T>) {
+            return type.commonType(with);
         },
-        [] <interface::type Node, interface::type With> (Node const & node, With const & with) -> CommonTypeResult
+        [] <type T, type With> (T const & type, With const & with) -> CommonTypeResult
         requires (
-            !std::same_as<Node, With> &&
-            interface::common<Node, With> &&
-            !interface::common<With, Node>
+            !std::same_as<T, With> &&
+            has::commonType<T, With> &&
+            !has::commonType<With, T>
         ) {
-            return node.commonType(with);
+            return type.commonType(with);
         },
-        [] <interface::type Node, interface::type With> (Node const & node, With const & with) -> CommonTypeResult
+        [] <type T, type With> (T const & type, With const & with) -> CommonTypeResult
         requires (
-            !std::same_as<Node, With> &&
-            !interface::common<Node, With> &&
-            interface::common<With, Node>
+            !std::same_as<T, With> &&
+            !has::commonType<T, With> &&
+            has::commonType<With, T>
         ) {
-            return with.commonType(node);
+            return with.commonType(type);
         },
-        [] <interface::type Node, interface::type With> (Node const &, With const &) -> CommonTypeResult
+        [] <type T, type With> (T const &, With const &) -> CommonTypeResult
         requires (
-            !interface::common<Node, With> &&
-            !interface::common<With, Node>
+            !has::commonType<T, With> &&
+            !has::commonType<With, T>
         ) {
             return {esl::result_error{"No comomn type."}};
         },
         // TODO: This problem should be caught at compile-time.
-        [] <interface::type Node, interface::type With> (Node const &, With const &) -> CommonTypeResult
+        [] <type T, type With> (T const &, With const &) -> CommonTypeResult
         requires (
-            interface::common<Node, With> &&
-            interface::common<With, Node>
+            has::commonType<T, With> &&
+            has::commonType<With, T>
         ) {
-            return {esl::result_error{"Two-way node.commonType(with) implementation found."}};
+            return {esl::result_error{"Two-way type.commonType(with) implementation found."}};
         }
     );
 
-
     constexpr auto completeType (context::Cynth & ctx) {
         return esl::overload(
-            [] <interface::type Node> (Node && node) -> TypeCompletionResult {
-                return sem::CompleteType{std::forward<Node>(node)};
+            [] <type T> (T && type) -> TypeCompletionResult {
+                return sem::CompleteType{std::forward<T>(type)};
             },
-            [&ctx] <interface::incompleteType Node> (Node const & node) -> TypeCompletionResult
-            requires interface::completableType<Node> {
-                return node.completeType(ctx);
+            [&ctx] <incompleteType T> (T const & type) -> TypeCompletionResult
+            requires has::completeType<T> {
+                return type.completeType(ctx);
             },
             [] (sem::type::Unknown const &) -> TypeCompletionResult {
                 return {esl::result_error{"An unknown type ($ or type T) is not complete."}};
             }
-            /*[] <interface::incompleteType Node> (Node const &) -> TypeCompletionResult
-            requires (!interface::completableType<Node>) {
+            /*[] <incompleteType T> (T const &) -> TypeCompletionResult
+            requires (!has::completeType<T>) {
                 return {esl::result_error{"Complete type expected."}};
             }*/
         );
     };
 
     constexpr auto uncompleteType = esl::overload(
-        [] <interface::type Type> (Type && type) -> esl::result<sem::IncompleteType> {
+        [] <type Type> (Type && type) -> esl::result<sem::IncompleteType> {
             return sem::IncompleteType{sem::CompleteType{std::forward<Type>(type)}};
         }
-        /*[] <interface::incompleteType Type> (Type && type) -> esl::result<sem::IncompleteType> {
+        /*[] <incompleteType Type> (Type && type) -> esl::result<sem::IncompleteType> {
             return sem::IncompleteType{std::forward<Type>(type)};
         }*/
     );
     /*
-        [] <interface::value Type> (Type && type) -> esl::result<IncompleteValue> {
+        [] <value Type> (Type && type) -> esl::result<IncompleteValue> {
             return IncompleteValue{std::forward<Type>(type)};
         }
         // ... declaration?

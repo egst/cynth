@@ -28,10 +28,10 @@
 //interface::TypeTranslationResult translateType () const
 
 #define DIRECT_TYPE_NAME(name) \
-    constexpr static interface::TypeNameConstant typeName = name
+    constexpr static interface::TypeNameConstant directTypeName = name
 
 #define TYPE_NAME() \
-    interface::TypeNameResult getTypeName () const
+    interface::TypeNameResult typeName () const
 
 #define COMMON(type) \
     interface::CommonTypeResult commonType (type const &) const
@@ -39,8 +39,10 @@
 #define SAME(type) \
     interface::SameTypeResult sameType (type const &) const
 
+/*
 #define DECAY() \
     interface::TypeDecayResult decayType () const
+*/
 
 #define INCOMPLETE_TYPE \
     interface::TypeCompletionResult completeType (context::Cynth &) const

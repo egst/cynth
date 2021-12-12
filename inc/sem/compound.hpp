@@ -9,21 +9,24 @@
 
 namespace cynth::sem {
 
-    struct TranslatedValue {
+    struct ResolvedValue {
         CompleteType type;
         std::optional<CompleteValue> value;      // Compilation constant value.
         std::optional<std::string>   expression; // Translated C expression - a name or a literal or something...
     };
 
-    struct TypedValue {
+    struct LocalValue {
         CompleteType type;
         std::optional<CompleteValue> value;    // Compilation constant value.
         std::optional<std::string>   variable; // Runtime variable name.
     };
 
-    struct TypedTargetValue {
-        CompleteValue * value;
-        CompleteType    type;
+    // TODO: AllocatedValue/StaticValue/GlobalValue?
+
+    struct ResolvedTargetValue {
+        CompleteType               type;
+        CompleteValue *            value; // Might be null on purpose.
+        std::optional<std::string> variable;
 
         /*
         esl::result<void> assign (ValueVector && values) {

@@ -22,49 +22,53 @@ namespace cynth::interface {
 
     // Concepts:
 
-    template <typename Node>
-    concept value = esl::variant_member<Node, sem::CompleteValue::variant>;
+    template <typename T>
+    concept value = esl::variant_member<T, sem::CompleteValue::variant>;
 
-    template <typename Node>
-    concept typed = requires (Node node) {
-        { node.type() } -> std::same_as<ValueTypeResult>;
-    };
+    namespace has {
 
-    template <typename Node, typename Out>
-    concept valueOf = requires (Node node) {
-        { node.get() } -> std::same_as<GetResult<Out>>;
-    };
+        template <typename T, typename Out>
+        concept get = requires (T value) {
+            { value.get() } -> std::same_as<GetResult<Out>>;
+        };
 
-    template <typename Node, typename To>
-    concept convertible = requires (Node node, context::Cynth & ctx, To const & to) {
-        { node.convert(ctx, to) } -> std::same_as<ConversionResult>;
-    };
+        template <typename T>
+        concept valueType = requires (T value) {
+            { value.valueType() } -> std::same_as<ValueTypeResult>;
+        };
+
+        template <typename T, typename To>
+        concept convertValue = requires (T value, context::Cynth & ctx, To const & to) {
+            { value.convertValue(ctx, to) } -> std::same_as<ConversionResult>;
+        };
+
+    }
 
     // Functions:
 
-    constexpr auto valueType =
-        [] (interface::typed auto const & node) -> ValueTypeResult {
-            return node.valueType();
-        };
-
     template <typename Out>
     constexpr auto get = esl::overload(
-        [] <interface::valueOf<Out> T> (T const & node) -> GetResult<Out> {
-            return node.get();
+        [] <has::get<Out> T> (T const & value) -> GetResult<Out> {
+            return value.get();
         },
         // TODO: Why is this ambiguout without `requires (!...)` while other similar functions are ok?
-        [] <interface::value T> (T const &) -> GetResult<Out> requires (!interface::valueOf<T, Out>) {
+        [] <value T> (T const &) -> GetResult<Out> requires (!has::get<T, Out>) {
             return esl::result_error{"Value does not contain the requested type."};
         }
     );
 
-    constexpr auto convert = [] (context::Cynth & ctx) {
+    constexpr auto valueType =
+        [] (has::valueType auto const & value) -> ValueTypeResult {
+            return value.valueType();
+        };
+
+    constexpr auto convertValue = [] (context::Cynth & ctx) {
         return esl::overload(
-            [&ctx] <interface::value Node, interface::type To> (Node const & node, To const & to) -> ConversionResult
-            requires (interface::convertible<Node, To>) {
-                return node.convert(ctx, to);
+            [&ctx] <value T, type To> (T const & value, To const & to) -> ConversionResult
+            requires (has::convertValue<T, To>) {
+                return value.convertValue(ctx, to);
             },
-            [] (interface::value auto const &, interface::type auto const &) -> ConversionResult {
+            [] (value auto const &, type auto const &) -> ConversionResult {
                 return {esl::result_error{"No conversion available."}};
             }
         );

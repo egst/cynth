@@ -19,50 +19,59 @@ namespace cynth::interface {
 
     // Concepts:
 
-    template <typename Node>
-    concept evaluatableExpression = requires (Node node, context::Cynth & ctx) {
-        { node.evaluateExpression(ctx) } -> std::same_as<ExpressionEvaluationResult>;
-    };
+    /** Any AST node. */
+    template <typename T>
+    concept node = true; // Unconstrained for now. (Could be implemented with esl::variant_member for every category.)
+    // Probably won't be used, but I'll keep it for documentation purposes.
 
-    template <typename Node>
-    concept executableStatement = requires (Node node, context::Cynth & ctx) {
-        { node.executeStatement(ctx) } -> std::same_as<StatementExecutionResult>;
-    };
+    namespace has {
 
-    template <typename Node>
-    concept resolvableType = requires (Node node, context::Cynth & ctx) {
-        { node.resolveType(ctx) } -> std::same_as<TypeResolutionResult>;
-    };
+        template <typename T>
+        concept resolveExpression = requires (T node, context::Cynth & ctx) {
+            { node.resolveExpression(ctx) } -> std::same_as<ExpressionResolutionResult>;
+        };
 
-    template <typename Node>
-    concept evaluatableArrayElement = requires (Node node, context::Cynth & ctx) {
-        { node.evaluateArrayElement(ctx) } -> std::same_as<ExpressionEvaluationResult>; // TODO: Decide on the result type.
-    };
+        template <typename T>
+        concept resolveStatement = requires (T node, context::Cynth & ctx, bool translate) {
+            { node.resolveStatement(ctx, translate) } -> std::same_as<StatementResolutionResult>;
+        };
 
-    template <typename Node>
-    concept resolvableDeclaration = requires (Node node, context::Cynth & ctx) {
-        { node.resolveDeclaration(ctx) } -> std::same_as<DeclarationResolutionResult>;
-    };
+        template <typename T>
+        concept resolveType = requires (T node, context::Cynth & ctx) {
+            { node.resolveType(ctx) } -> std::same_as<TypeResolutionResult>;
+        };
 
-    template <typename Node>
-    concept resolvableRangeDeclaration = requires (Node node, context::Cynth & ctx) {
-        { node.resolveRangeDeclaration(ctx) } -> std::same_as<RangeDeclarationResolutionResult>;
-    };
+        template <typename T>
+        concept resolveArrayElement = requires (T node, context::Cynth & ctx) {
+            { node.resolveArrayElement(ctx) } -> std::same_as<ExpressionResolutionResult>;
+        };
 
-    template <typename Node>
-    concept resolvableTarget = requires (Node node, context::Cynth & ctx) {
-        { node.resolveTarget(ctx) } -> std::same_as<TargetResolutionResult>;
-    };
+        template <typename T>
+        concept resolveDeclaration = requires (T node, context::Cynth & ctx) {
+            { node.resolveDeclaration(ctx) } -> std::same_as<DeclarationResolutionResult>;
+        };
+
+        template <typename T>
+        concept resolveRangeDeclaration = requires (T node, context::Cynth & ctx) {
+            { node.resolveRangeDeclaration(ctx) } -> std::same_as<RangeDeclarationResolutionResult>;
+        };
+
+        template <typename T>
+        concept resolveTarget = requires (T node, context::Cynth & ctx) {
+            { node.resolveTarget(ctx) } -> std::same_as<TargetResolutionResult>;
+        };
+
+    }
 
     // Functions:
 
-    constexpr auto executeStatement (context::Cynth & ctx) {
+    constexpr auto resolveStatement (context::Cynth & ctx) {
         return esl::overload(
-            [&ctx] (interface::executableStatement auto const & node) {
-                return node.executeStatement(ctx);
+            [&ctx] (has::resolveStatement auto const & node) {
+                return node.resolveStatement(ctx);
             },
-            [&ctx] (interface::evaluatableExpression auto const & node) -> StatementExecutionResult {
-                auto result = esl::unite_results(node.evaluateExpression(ctx));
+            [&ctx] (has::resolveExpression auto const & node) -> StatementResolutionResult {
+                auto result = esl::unite_results(node.resolveExpression(ctx));
                 if (!result)
                     return result.error();
                 return {};
@@ -70,59 +79,39 @@ namespace cynth::interface {
         );
     }
 
-    constexpr auto evaluateExpression (context::Cynth & ctx) {
-        return [&ctx] <interface::evaluatableExpression Node> (Node const & node) {
-            return node.evaluateExpression(ctx);
+    constexpr auto resolveExpression (context::Cynth & ctx, bool translate) {
+        return [&ctx, translate] <has::resolveExpression T> (T const & node) {
+            return node.resolveExpression(ctx, translate);
         };
     }
 
-    constexpr auto names =
-        [] <typename Node> (Node const & node)
-        requires (
-            interface::evaluatableExpression <Node> ||
-            interface::executableStatement   <Node> ||
-            interface::resolvableType        <Node>
-        ) {
-            return node.names();
-        };
-
-    constexpr auto type_names =
-        [] <typename Node> (Node const & node)
-        requires (
-            interface::evaluatableExpression <Node> ||
-            interface::executableStatement   <Node> ||
-            interface::resolvableType        <Node>
-        ) {
-            return node.typeNames();
-        };
-
     constexpr auto resolveType (context::Cynth & ctx) {
-        return [&ctx] (interface::resolvableType auto const & node) {
+        return [&ctx] (has::resolveType auto const & node) {
             return node.resolveType(ctx);
         };
     }
 
-    constexpr auto evaluateArrayElement (context::Cynth & ctx) {
-        return [&ctx] (interface::evaluatableArrayElement auto const & node) {
-            return node.evaluateArrayElement(ctx);
+    constexpr auto resolveArrayElement (context::Cynth & ctx) {
+        return [&ctx] (has::resolveArrayElement auto const & node) {
+            return node.resolveArrayElement(ctx);
         };
     }
 
     constexpr auto resolveDeclaration (context::Cynth & ctx) {
-        return [&ctx] (interface::resolvableDeclaration auto const & node) {
+        return [&ctx] (has::resolveDeclaration auto const & node) {
             return node.resolveDeclaration(ctx);
         };
     }
 
     constexpr auto resolveRangeDeclaration (context::Cynth & ctx) {
-        return [&ctx] (interface::resolvableRangeDeclaration auto const & node) {
+        return [&ctx] (has::resolveRangeDeclaration auto const & node) {
             return node.resolveRangeDeclaration(ctx);
         };
     }
 
     constexpr auto resolveTarget (context::Cynth & ctx) {
         return esl::overload(
-            [&ctx] (interface::resolvableTarget auto const & node) -> TargetResolutionResult {
+            [&ctx] (has::resolveTarget auto const & node) -> TargetResolutionResult {
                 return node.resolveTarget(ctx);
             },
             [] (auto const &) -> TargetResolutionResult {
@@ -130,5 +119,28 @@ namespace cynth::interface {
             }
         );
     }
+
+    // TODO?
+    /*
+    constexpr auto names =
+        [] <typename T> (T const & node)
+        requires (
+            has::resolveExpression <T> ||
+            has::resolveStatement  <T> ||
+            has::resolveType       <T>
+        ) {
+            return node.names();
+        };
+
+    constexpr auto type_names =
+        [] <typename T> (T const & node)
+        requires (
+            has::resolveExpression <T> ||
+            has::resolveStatement  <T> ||
+            has::resolveType       <T>
+        ) {
+            return node.typeNames();
+        };
+    */
 
 }
