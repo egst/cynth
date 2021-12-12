@@ -1,8 +1,7 @@
 #pragma once
 
-#include <forward_list>
-#include <optional>
 #include <string>
+#include <variant>
 
 #include "sem/types.hpp"
 #include "sem/values.hpp"
@@ -10,25 +9,39 @@
 namespace cynth::sem {
 
     struct ResolvedValue {
-        CompleteType type;
-        std::optional<CompleteValue> value;      // Compilation constant value.
-        std::optional<std::string>   expression; // Translated C expression - a name or a literal or something...
+        using Variant = std::variant<
+            CompleteValue, // Value known at compile time
+            std::string    // C expression
+        >;
+
+        Variant value;
     };
 
-    struct LocalValue {
+    struct TypedResolvedValue {
         CompleteType type;
-        std::optional<CompleteValue> value;    // Compilation constant value.
-        std::optional<std::string>   variable; // Runtime variable name.
+        ResolvedValue::Variant value;
     };
 
-    // TODO: AllocatedValue/StaticValue/GlobalValue?
+    struct ResolvedTarget {
+        using Variant = std::variant<
+            CompleteValue *, // Compconst variable only available at compile time
+            std::string      // C variable name or other lvalue expression
+        >;
 
+        Variant target;
+    };
+
+    struct TypedResolvedTarget {
+        CompleteType type;
+        ResolvedTarget::Variant target;
+    };
+
+    /* TODO?
     struct ResolvedTargetValue {
         CompleteType               type;
         CompleteValue *            value; // Might be null on purpose.
         std::optional<std::string> variable;
 
-        /*
         esl::result<void> assign (ValueVector && values) {
             return esl::lift<esl::target::tiny_vector>(
                 [] (CompleteValue * target, CompleteValue && value) {
@@ -36,7 +49,7 @@ namespace cynth::sem {
                 }
             )(value, std::move(values));
         }
-        */
     };
+    */
 
 }

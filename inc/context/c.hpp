@@ -67,41 +67,6 @@ namespace cynth::context {
         ):  globalCtx{global},
             compCtx{&comp} {}
 
-        /**
-         *  ---decl----   --tuple--
-         *  (T, U, V) a = (1, x, y)
-         */
-        esl::result<void> define (
-            sem::CompleteDeclaration             const & decl,
-            esl::tiny_vector<sem::ResolvedValue> const & tuple
-        );
-
-        /**
-         *  -----decls-----   --tuple--
-         *  (T a, (U, V) b) = (1, x, y)
-         */
-        esl::result<void> define (
-            esl::tiny_vector<sem::CompleteDeclaration> const & decls,
-            esl::tiny_vector<sem::ResolvedValue>       const & tuple
-        );
-
-        /*
-        esl::result<void> declareValue (
-            std::string const &,
-            esl::tiny_vector<CompleteType> const &
-        );
-
-        esl::result<void> initValue (
-            std::string const &,
-            esl::component_vector<ResolvedValue> const & // TODO: or maybe tiny_component_vector?
-        );
-        */
-
-        esl::result<void> assign (
-            std::string const &,
-            esl::tiny_vector<sem::ResolvedValue> const &
-        );
-
         esl::result<void> beginFunction ();
         esl::result<void> endFunction   ();
         esl::result<void> beginScope    ();

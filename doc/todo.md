@@ -16,6 +16,7 @@
 
 # C++ details
 
+* I keep forgetting to do std::move when defererencing results
 * check places where return std::move could mess with copy elision
 * check if everything is ok with stuff that uses `std::vector<bool>`  
     or i could use char instead of bool (using cynth::boolean = char) - `std::vector<char>` is no special case
@@ -49,6 +50,9 @@
 
 # Semantics
 
+* do I really need `component_vector`s? wouldn't `std::vector`/`esl::tiny_vector` be enough?  
+    there definitely was a reason why I used `component_vector`s,
+    but could it have be related to the currently resolved circular dependecy issues?
 * encapsulation
 * type.complete() returns result, but optional makes more sense  
     i think there were complications with `vector<optional<result<...>>>` kind of thing though  

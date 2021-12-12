@@ -70,7 +70,7 @@ namespace esl {
         using value_type  = decltype(*esl::make_forwarding_iterator<T>(target.begin()));
         using result_type = decltype(functor.invoke(std::declval<value_type>()));
         if constexpr (std::same_as<result_type, void>) {
-            for (auto && val : std::forward<T>(target))
+            for (auto && val: std::forward<T>(target))
                 functor.invoke(std::forward<value_type>(val));
             return esl::result<void>{};
         } else {
@@ -105,7 +105,7 @@ namespace esl {
                 "."
             }};
         if constexpr (std::same_as<result_type, void>) {
-            for (auto && [a, b] : esl::zip(std::forward<T>(first), std::forward<U>(second)))
+            for (auto && [a, b]: esl::zip(std::forward<T>(first), std::forward<U>(second)))
                 functor.invoke(std::forward<first_type>(a), std::forward<second_type>(b));
             return esl::result<void>{};
         } else {
@@ -132,7 +132,7 @@ namespace esl {
         using result_type = decltype(functor.invoke(std::declval<value_type>()));
         using nested_type = esl::range_value_type<result_type>;
         if constexpr (std::same_as<result_type, void>) {
-            for (auto && val : std::forward<T>(target))
+            for (auto && val: std::forward<T>(target))
                 functor.invoke(std::forward<value_type>(val));
             return esl::result<void>{};
         } else {
@@ -140,8 +140,8 @@ namespace esl {
             vector result;
             if constexpr (esl::reservable_range<vector>)
                 result.reserve(target.size()); // It could need more though, but this is the known minimum.
-            for (auto && val : std::forward<T>(target))
-                for (auto && nested : functor.invoke(std::forward<value_type>(val)))
+            for (auto && val: std::forward<T>(target))
+                for (auto && nested: functor.invoke(std::forward<value_type>(val)))
                     result.push_back(esl::forward_like<result_type>(nested));
             return result;
         }

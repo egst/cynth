@@ -91,7 +91,7 @@ namespace cynth {
 
     syn::range_decl_eval_result syn::node::TupleRangeDecl::eval_range_decl (sem::context & ctx) const {
         syn::range_decl_eval_result result;
-        for (auto & value_tuple : syn::eval_range_decl(ctx)(declarations)) for (auto & value : value_tuple) {
+        for (auto & value_tuple: syn::eval_range_decl(ctx)(declarations)) for (auto & value: value_tuple) {
             result.push_back(std::move(value));
         }
         return result;

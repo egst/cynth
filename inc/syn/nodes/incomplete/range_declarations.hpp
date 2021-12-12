@@ -11,7 +11,7 @@
 // Note: No macros escape this file.
 #define RANGE_DECLARATION_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::RangeDeclarationResolutionResult resolveRangeDeclaration (context::Cynth &) const
+    interface::RangeDeclarationResolutionResult resolveRangeDeclaration (context::C &) const
 
 namespace cynth::syn::node {
 

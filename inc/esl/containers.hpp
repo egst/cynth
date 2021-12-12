@@ -131,7 +131,7 @@ namespace esl {
         using result_type = typename value_type::value_type;
 
         if constexpr (std::same_as<result_type, void>) {
-            for (auto & item : items)
+            for (auto & item: items)
                 if (!item.has_value())
                     return esl::result<void>{item.error()};
             return esl::result<void>{};
@@ -141,7 +141,7 @@ namespace esl {
             container_type values;
             if constexpr (esl::sized_range<Container> && esl::reservable_range<container_type>)
                 values.reserve(items.size());
-            for (auto & item : items)
+            for (auto & item: items)
                 if (item.has_value())
                     values.push_back(esl::forward_like<Container>(*item));
                 else
@@ -165,7 +165,7 @@ namespace esl {
         container_type values;
         if constexpr (esl::sized_range<Container> && esl::reservable_range<container_type>)
             values.reserve(items.size());
-        for (auto & item : items)
+        for (auto & item: items)
             if (item.has_value())
                 values.push_back(esl::forward_like<Container>(*item));
             else if (item.empty())
@@ -191,7 +191,7 @@ namespace esl {
         container_type values;
         if constexpr (esl::sized_range<Container> && esl::reservable_range<container_type>)
             values.reserve(items.size());
-        for (auto & item : items)
+        for (auto & item: items)
             if (item.has_value())
                 values.push_back(esl::forward_like<Container>(*item));
             else if (item.empty())
@@ -215,7 +215,7 @@ namespace esl {
         container_type values;
         if constexpr (esl::sized_range<Container> && esl::reservable_range<container_type>)
             values.reserve(items.size());
-        for (auto & item : items)
+        for (auto & item: items)
             if (item.has_value())
                 values.push_back(esl::forward_like<Container>(*item));
             else

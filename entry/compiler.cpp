@@ -46,12 +46,12 @@ int main () {
     std::cout << "CONTEXT:\n";
 
     // TODO
-    /*for (auto && [name, val] : ctx.values)
+    /*for (auto && [name, val]: ctx.values)
         std::cout << display_tuple(val.value) << '\n';*/
 
     std::cout << "STORED:\n";
 
-    for (auto && val : ctx.stored_values<sem::value::BufferValue>())
+    for (auto && val: ctx.stored_values<sem::value::BufferValue>())
         std::cout << "buff..." << '\n';
 
     sem::translation_context tctx;

@@ -1,17 +1,20 @@
 # Interface
 
 ```c++ pseudo code
-Vector          = std::vector
-Optional        = std::optional
-String          = std::string
-Result          = esl::result
-Tuple           = esl::tiny_vector
-Context         = context::C
-Value           = sem::CompleteValue
-Type            = sem::CompleteVector
-ResolvedValue   = sem::ResolvedValue
-ResolvedTarget  = sem::ResolvedTarget
-LocalValue      = sem::LocalValue
+Vector              = std::vector
+Optional            = std::optional
+String              = std::string
+Result              = esl::result
+OptionalResult      = esl::optional_result
+Tuple               = esl::tiny_vector
+Context             = context::C
+Value               = sem::CompleteValue
+Type                = sem::CompleteVector
+ResolvedValue       = sem::ResolvedValue
+TypedResolvedValue  = sem::TypedResolvedValue
+ResolvedTarget      = sem::ResolvedTarget
+TypedResolvedTarget = sem::TypedResolvedTarget
+
 interface::any  = /* any ast node or a semantic structure */
 interface::node = /* any ast node */
 ```
@@ -34,24 +37,24 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 // Direct translation or compile-time evaluation of AST nodes:
 // The `translate` parameter forces translation instead of evaluation.
 // Results in a tuple vector containing intermediate structures of compile-time values or strings of C expressions.
-<interface::node T> Result<Tuple<ResolvedValue>> resolveExpression (Context &, bool translate) (T)
+<interface::node T> Result<Tuple<TypedResolvedValue>> resolveExpression (Context &, bool translate) (T)
 // Results in a vector of tuple vectors containing the same values as resolveExpression.
-<interface::node T> Result<Vector<Tuple<ResolvedValue>>> resolveArrayElement (Context &, bool translate) (T)
+<interface::node T> Result<Vector<Tuple<TypedResolvedValue>>> resolveArrayElement (Context &, bool translate) (T)
 <interface::node T> Result<void> resolveStatement (Context &) (T)
 <interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
 
 // Resolution of other AST nodes to intermediate structures:
 <interface::node T> Result<Tuple<CompleteDeclaration>> resolveDeclaration (Context &) (T)
 <interface::node T> Result<Tuple<CompleteRangeDeclaration>> resolveRangeDeclaration (Context &) (T)
-<interface::node T> Result<Tuple<ResolvedTarget>> resolveTarget (Context &) (T)
+<interface::node T> Result<Tuple<TypedResolvedTarget>> resolveTarget (Context &) (T)
 
 // Operations on types and compile-time values in intermediate structures:
 // Only simple types have a name given directly with a constant. (e.g. `bool`)
 <interface::type T> String directTypeName (Context &) (T)
 // More complex types - currently only simple const types. (e.g. `bool` or `bool_const`)
-<interface::type T> String typeName (Context &) (T)
-<interface::type T, interface::type U> bool sameType (Context &) (T, U)
-<interface::type T, interface::type U> Result<Type> commonType (Context &) (T, U)
+<interface::type T> String typeName (T)
+<interface::type T, interface::type U> bool sameType (T, U)
+<interface::type T, interface::type U> Result<Type> commonType (T, U)
 <interface::value T> Result<Out> get <Out> (Context &) (T)
 <interface::value T> Result<Type> valueType (Context &) (T)
 <interface::value T, interface::type U> Result<Value> convertValue (Context &) (T, U)
@@ -61,13 +64,13 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 <interface::type T> Result<String> translateType (Context &) (T)
 
 // Constructing translated C code from intermediate structures:
-// The last curried parameters expect strings of C expressions.
-// Results in a C variable name.
-<interface::type T> Result<String> translateDefinition (Context &) (T) (Optional<Sting> definition)
+// --The last curried parameters expect strings of C expressions.-- Nope, that's unnecessarily complicated.
+// Results in a C variable name, or nothing (nullopt) when no declaration was made. (Compconst values are not declared in the C code.)
+<interface::type T> Result<ResolvedValue> translateDefinition (Context &, Optional<Sting> definition) (T)
 // Results in an expression refering to the allocated data. (e.g. `global_var.data`)
-<interface::type T> Result<String> translateAllocation (Context &) (T) (Optional<Sting> initialization)
+<interface::type T> Result<String> translateAllocation (Context &, Optional<Sting> initialization) (T)
 // Results in a C expression.
-<interface::type T, interface::type U> Result<String> translateConversion (Context &) (T, U) (String from)
+<interface::type T, interface::type U> Result<String> translateConversion (Context &, String from) (T, U)
 ```
 
 ## Implementation:
@@ -82,8 +85,8 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 <interface::any T> String T::display ()
 
 // Nodes:
-<interface::node T> Result<Tuple<ResolvedValue>> T::resolveExpression (Context &, bool translate)
-<interface::node T> Result<Vector<Tuple<ResolvedValue>>> T::resolveArrayElement (Context &, bool translate)
+<interface::node T> Result<Tuple<TypedResolvedValue>> T::resolveExpression (Context &, bool translate)
+<interface::node T> Result<Vector<Tuple<TypedResolvedValue>>> T::resolveArrayElement (Context &, bool translate)
 <interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
 <interface::node T> Result<void> T::resolveStatement (Context &)
 <interface::node T> Result<Tuple<CompleteDeclaration>> T::resolveDeclaration (Context &)
@@ -92,12 +95,12 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 
 // Types:
 <interface::type T> char const * T::directTypeName // ideally constexpr
-<interface::type T> String T::typeName (Context &)
-<interface::type T, interface::type U> bool T::sameType (Context &, U) // or the other way around: T::sameType (..., T)
-<interface::type T, interface::type U> Result<Type> T::commonType (Context &, U) // or the other way around: T::commonType (..., T)
+<interface::type T> String T::typeName ()
+<interface::type T, interface::type U> bool T::sameType (U) // or the other way around: T::sameType (T)
+<interface::type T, interface::type U> Result<Type> T::commonType (U) // or the other way around: T::commonType (T)
 // Translation:
 <interface::type T> Result<String> T::translateType (Context &)
-<interface::type T> Result<String> T::translateDefinition (Context &, Optional<Sting> definition)
+<interface::type T> Result<ResolvedValue> T::translateDefinition (Context &, Optional<Sting> definition)
 <interface::type T> Result<String> T::translateAllocation (Context &, Optional<Sting> initialization)
 <interface::type T, interface::type U> Result<String> T::translateConversion (Context &, U, String from) // or the other way around: U::translateConversion (..., T, ...)
 

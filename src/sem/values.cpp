@@ -278,7 +278,7 @@ namespace cynth {
     sem::get_result<std::vector<tuple_vector<sem::value::complete>>> sem::value::Array::get () const {
         std::vector<tuple_vector<sem::value::complete>> result;
         result.reserve(size);
-        for (auto & elem : trimmed_value()) {
+        for (auto & elem: trimmed_value()) {
             result.push_back(elem);
         }
         return result;

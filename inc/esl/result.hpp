@@ -1,10 +1,11 @@
 #pragma once
 
-#include <utility>
 #include <concepts>
 #include <optional>
-#include <variant>
 #include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
 
 namespace esl {
 
@@ -98,6 +99,7 @@ namespace esl {
     struct result: detail::result::result_base<result<T>, T> {
         using value_type = T;
 
+        constexpr result () requires (std::is_default_constructible_v<T>): content{T{}} {}
         constexpr result (result_error const & e): content{e}            {}
         constexpr result (result_error &&      e): content{std::move(e)} {}
         constexpr result (value_type   const & v): content{v}            {}
@@ -251,10 +253,10 @@ namespace esl {
         using value_type = T;
 
         constexpr optional_result () {}
-        constexpr optional_result (result_error    const & e): content{e}            {}
+        constexpr optional_result (result_error    const & e): content{e} {}
         constexpr optional_result (result_error    &&      e): content{std::move(e)} {}
-        constexpr optional_result (value_type      const & v): content{v}            {}
-        constexpr optional_result (value_type      &&      v): content{std::move(v)} {}
+        constexpr optional_result (value_type      const & v): content{std::make_optional(v)} {}
+        constexpr optional_result (value_type      &&      v): content{std::move(std::make_optional(v))} {}
         constexpr optional_result (optional_result const &) = default;
         constexpr optional_result (optional_result &&)      = default;
         constexpr optional_result (result<T>       const & r): content{r.content}            {}

@@ -47,13 +47,18 @@ namespace cynth::interface {
         };
 
         template <typename T, typename U>
+        concept sameType = type<T> && requires (T type, U const & other) {
+            { type.sameType(other) } -> std::same_as<SameTypeResult>;
+        };
+
+        template <typename T, typename U>
         concept commonType = type<T> && requires (T type, U const & other) {
             { type.commonType(other) } -> std::same_as<CommonTypeResult>;
         };
 
-        template <typename T, typename U>
-        concept sameType = type<T> && requires (T type, U const & other) {
-            { type.sameType(other) } -> std::same_as<SameTypeResult>;
+        template <typename T>
+        concept constType = type<T> && requires (T type) {
+            { type.constType() } -> std::same_as<ConstTypeResult>;
         };
 
         template <typename T>
@@ -62,27 +67,27 @@ namespace cynth::interface {
         };
 
         template <typename T>
-        concept completeType = incompleteType<T> && requires (T type, context::Cynth & ctx) {
+        concept completeType = incompleteType<T> && requires (T type, context::C & ctx) {
             { type.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
         };
 
         template <typename T>
         concept translateDefinition = type<T> && requires (
-            T type, context::C & ctx, std::optional<std::string> definition
+            T type, context::C & ctx, std::optional<sem::TypedResolvedValue> definition
         ) {
             { type.translateDefinition(ctx, definition) } -> std::same_as<DefinitionTranslationResult>;
         };
 
         template <typename T>
         concept translateAllocation = type<T> && requires (
-            T type, context::C & ctx, std::optional<std::string> initialization
+            T type, context::C & ctx, std::optional<sem::TypedResolvedValue> initialization
         ) {
             { type.translateAllocation(ctx, initialization) } -> std::same_as<AllocationTranslationResult>;
         };
 
         template <typename T>
         concept translateConversion = type<T> && requires (
-            T type, context::C & ctx, std::string from
+            T type, context::C & ctx, sem::TypedResolvedValue from
         ) {
             { type.translateConversion(ctx, from) } -> std::same_as<ConversionTranslationResult>;
         };
@@ -167,6 +172,16 @@ namespace cynth::interface {
         }
     );
 
+    constexpr auto constType = esl::overload(
+        [] <type T> (T const & type) -> ConstTypeResult
+        requires (has::constType<T>) {
+            return type.constType();
+        },
+        [] (type auto const &) -> ConstTypeResult {
+            return false;
+        }
+    );
+
     constexpr auto translateType (context::C & ctx) {
         return esl::overload(
             [&ctx] <has::translateType T> (T const & type) -> TypeTranslationResult {
@@ -178,52 +193,40 @@ namespace cynth::interface {
         );
     }
 
-    constexpr auto translateDefinition (context::C & ctx) {
+    constexpr auto translateDefinition (context::C & ctx, std::optional<sem::TypedResolvedValue> const & definition) {
         return esl::overload(
-            [&ctx] <has::translateDefinition T> (T const & type) {
-                return [&type, &ctx] (std::optional<std::string> const & def) -> DefinitionTranslationResult {
-                    return type.translateDefinition(ctx, def);
-                };
+            [&ctx, &definition] <has::translateDefinition T> (T const & type) -> DefinitionTranslationResult {
+                return type.translateDefinition(ctx, definition);
             },
-            [] (auto const &) {
-                return [] (std::optional<std::string> const &) -> DefinitionTranslationResult {
-                    return esl::result_error{"A definition of this type cannot be translated."};
-                };
+            [] (auto const &) -> DefinitionTranslationResult {
+                return esl::result_error{"A definition of this type cannot be translated."};
             }
         );
     }
 
-    constexpr auto translateAllocation (context::C & ctx) {
+    constexpr auto translateAllocation (context::C & ctx, std::optional<sem::TypedResolvedValue> const & initialization) {
         return esl::overload(
-            [&ctx] <has::translateAllocation T> (T const & type) {
-                return [&type, &ctx] (std::optional<std::string> const & init) -> AllocationTranslationResult {
-                    return type.translateAllocation(ctx, init);
-                };
+            [&ctx, &initialization] <has::translateAllocation T> (T const & type) -> AllocationTranslationResult {
+                return type.translateAllocation(ctx, initialization);
             },
-            [] (auto const &) {
-                return [] (std::optional<std::string> const &) -> AllocationTranslationResult {
-                    return esl::result_error{"An allocation of this type cannot be translated."};
-                };
+            [] (auto const &) -> AllocationTranslationResult {
+                return esl::result_error{"An allocation of this type cannot be translated."};
             }
         );
     }
 
-    constexpr auto translateConversion (context::C & ctx) {
+    constexpr auto translateConversion (context::C & ctx, sem::TypedResolvedValue const & from) {
         return esl::overload(
-            [&ctx] <has::translateConversion T> (T const & type) {
-                return [&type, &ctx] (std::optional<std::string> const & init) -> ConversionTranslationResult {
-                    return type.translateConversion(ctx, init);
-                };
+            [&ctx, &from] <has::translateConversion T> (T const & type) -> ConversionTranslationResult {
+                return type.translateConversion(ctx, from);
             },
-            [] (auto const &) {
-                return [] (std::optional<std::string> const &) -> ConversionTranslationResult {
-                    return esl::result_error{"An allocation of this type cannot be translated."};
-                };
+            [] (auto const &) -> ConversionTranslationResult {
+                return esl::result_error{"An allocation of this type cannot be translated."};
             }
         );
     }
 
-    constexpr auto completeType (context::Cynth & ctx) {
+    constexpr auto completeType (context::C & ctx) {
         return esl::overload(
             [] <type T> (T && type) -> TypeCompletionResult {
                 return sem::CompleteType{std::forward<T>(type)};
@@ -295,14 +298,14 @@ namespace cynth::interface {
         /*
         [] <esl::range_of<sem::CompleteDeclaration> Decls> (Decls && decls) -> esl::tiny_vector<sem::CompleteType> {
             esl::tiny_vector<sem::CompleteType> result;
-            for (auto & decl : decls) for (auto & type : decl.type) {
+            for (auto & decl: decls) for (auto & type: decl.type) {
                 result.push_back(esl::forward_like<Decls>(type));
             }
             return result;
         },
         [] <esl::range_of<sem::IncompleteRangeDeclaration> Decls> (Decls && decls) -> esl::tiny_vector<sem::IncompleteType> {
             esl::tiny_vector<sem::IncompleteType> result;
-            for (auto & decl : decls) for (auto & type : decl.type) {
+            for (auto & decl: decls) for (auto & type: decl.type) {
                 result.push_back(esl::forward_like<Decls>(type));
             }
             return result;
@@ -312,7 +315,7 @@ namespace cynth::interface {
 
     namespace detail {
 
-        constexpr auto makeDeclComplete = [] (context::Cynth & ctx) {
+        constexpr auto makeDeclComplete = [] (context::C & ctx) {
             return esl::overload(
                 [&ctx] <esl::same_but_cvref<sem::IncompleteDeclaration> Decl> (Decl && decl)
                 -> esl::result<sem::CompleteDeclaration> {
@@ -333,7 +336,7 @@ namespace cynth::interface {
             );
         };
 
-        constexpr auto makeRangeDeclComplete = [] (context::Cynth & ctx) {
+        constexpr auto makeRangeDeclComplete = [] (context::C & ctx) {
             return esl::overload(
                 [&ctx] <esl::same_but_cvref<sem::IncompleteRangeDeclaration> Decl> (Decl && decl)
                 -> esl::result<sem::CompleteRangeDeclaration> {

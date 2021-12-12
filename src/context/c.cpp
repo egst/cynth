@@ -18,6 +18,7 @@
 #include "esl/macros.hpp"
 
 namespace cynth::context {
+#if 0 // TODO
 
     std::size_t C::Global::nextId () {
         return id++;
@@ -46,7 +47,7 @@ namespace cynth::context {
         auto compDefinition = *compDefResult;
 
         // runtime definition: (this assumes type correctness)
-        for (auto const & [type, value] : esl::zip(decl.type, converted)) {
+        for (auto const & [type, value]: esl::zip(decl.type, converted)) {
             auto expressionResult = value.getExpression(*this);
             if (!expressionResult)
                 return expressionResult.error();
@@ -66,8 +67,8 @@ namespace cynth::context {
 #endif
     }
 
-// TODO
-#if 0
+#endif
+#if 0 // TODO
 
     /**
      *  -----decls-----   --tuple--
@@ -79,7 +80,7 @@ namespace cynth::context {
     ) {
         auto value_begin = tuple.begin();
 
-        for (auto & decl : decls) {
+        for (auto & decl: decls) {
             if (static_cast<std::size_t>(tuple.end() - value_begin) < decl.type.size())
                 return result_error{"Less values than types in a definition."};
 
@@ -104,7 +105,7 @@ namespace cynth::context {
             //     f,
             //     g
             // }
-
+NAIPO MGPC-101MM
             // Convert to the correct type:
             // TODO: Only check the types instead
             /*
@@ -141,7 +142,7 @@ namespace cynth::context {
         return {};
         /*
         bool compconst = true;
-        for (auto && value : values) {
+        for (auto && value: values) {
             if (!value.value)
                 compconst = false;
             // declare arrays to keep their sizes

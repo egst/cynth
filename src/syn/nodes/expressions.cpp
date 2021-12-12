@@ -846,7 +846,7 @@ namespace cynth {
             sem::context & ctx,
             component_vector<category::Statement> const & statements
         ) -> syn::evaluation_result {
-            for (auto & statement : statements) {
+            for (auto & statement: statements) {
                 auto returned = syn::execute(ctx)(statement);
                 if (returned)
                     return lift::tuple_vector{make_result}(*returned);
@@ -872,7 +872,7 @@ namespace cynth {
     syn::execution_result syn::node::Block::execute (sem::context & ctx) const {
         auto block_scope = make_child_context(ctx);
 
-        for (auto & statement : statements) {
+        for (auto & statement: statements) {
             auto returned = syn::execute(block_scope)(statement);
             if (returned)
                 return *returned;
@@ -966,7 +966,7 @@ namespace cynth {
             auto iter_scope = make_child_context(ctx);
 
             // Define iteration elements:
-            for (auto & [decl, value] : iter_decls)
+            for (auto & [decl, value]: iter_decls)
                 iter_scope.define_value(decl, value.value->value[i]);
 
             // Evaluate the loop body:
@@ -1019,7 +1019,7 @@ namespace cynth {
             auto iter_scope = make_child_context(ctx);
 
             // Define iteration elements:
-            for (auto & [decl, value] : iter_decls)
+            for (auto & [decl, value]: iter_decls)
                 iter_scope.define_value(decl, value.value->value[i]);
 
             // Execute the loop body:
@@ -1412,7 +1412,7 @@ namespace cynth {
 
     syn::evaluation_result syn::node::Tuple::evaluate (sem::context & ctx) const {
         syn::evaluation_result result;
-        for (auto & value_tuple : syn::evaluate(ctx)(values)) for (auto & value : value_tuple) {
+        for (auto & value_tuple: syn::evaluate(ctx)(values)) for (auto & value: value_tuple) {
             result.push_back(std::move(value));
         }
         return result;
@@ -1423,7 +1423,7 @@ namespace cynth {
         auto values_result = util::unite_results(syn::eval_target(ctx)(values));
         if (!values_result)
             return syn::make_target_eval_result(values_result.error());
-        for (auto & value_tuple : *values_result) for (auto & value : value_tuple) {
+        for (auto & value_tuple: *values_result) for (auto & value: value_tuple) {
             result.push_back(std::move(value));
         }
         return result;

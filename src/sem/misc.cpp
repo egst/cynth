@@ -16,7 +16,7 @@ namespace cynth {
         iter_decls.reserve(decls.size());
 
         // TODO: Clean this up...
-        for (auto & range_decl : decls) {
+        for (auto & range_decl: decls) {
             auto range_result = lift::category_component{util::overload {
                 [] (sem::value::Array && value) -> result<sem::value::Array> {
                     return std::move(value);
@@ -59,7 +59,7 @@ namespace cynth {
         sem::array_vector              result_values; // component_vector<component_vector<value::complete>>
         result_values.reserve(elements.size());       // Reserve at least the lowest size estimate.
 
-        for (auto & element : elements) {
+        for (auto & element: elements) {
             auto result = lift::category{util::overload {
                 [] (syn::node::RangeTo const &) -> cynth::result<void> {
                     // TODO

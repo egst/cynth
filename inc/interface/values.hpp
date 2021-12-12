@@ -8,7 +8,7 @@
 #include "esl/functional.hpp"
 #include "esl/ranges.hpp"
 
-#include "context/cynth.hpp"
+#include "context/c.hpp"
 #include "interface/forward.hpp"
 #include "interface/types.hpp"
 #include "sem/declarations.hpp"
@@ -38,12 +38,12 @@ namespace cynth::interface {
         };
 
         template <typename T, typename U>
-        concept convertValue = value<T> && requires (T value, context::Cynth & ctx, U const & other) {
+        concept convertValue = value<T> && requires (T value, context::C & ctx, U const & other) {
             { value.convertValue(ctx, other) } -> std::same_as<ConversionResult>;
         };
 
         template <typename T, typename U>
-        concept translateValue = value<T> && requires (T value, context::Cynth & ctx, U const & other) {
+        concept translateValue = value<T> && requires (T value, context::C & ctx, U const & other) {
             { value.translateValue(ctx, other) } -> std::same_as<ValueTranslationResult>;
         };
 
@@ -67,7 +67,7 @@ namespace cynth::interface {
             return value.valueType();
         };
 
-    constexpr auto convertValue = [] (context::Cynth & ctx) {
+    constexpr auto convertValue = [] (context::C & ctx) {
         return esl::overload(
             [&ctx] <value T, type To> (T const & value, To const & to) -> ConversionResult
             requires (has::convertValue<T, To>) {
@@ -79,7 +79,7 @@ namespace cynth::interface {
         );
     };
 
-    constexpr auto translateValue = [] (context::Cynth & ctx) {
+    constexpr auto translateValue = [] (context::C & ctx) {
         return esl::overload(
             [&ctx] <value T, type To> (T const & value, To const & to) -> ValueTranslationResult
             requires (has::translateValue<T, To>) {

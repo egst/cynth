@@ -1,6 +1,13 @@
 #include "syn/nodes/declarations.hpp"
 
+#include "esl/category.hpp"
 #include "esl/component.hpp"
+#include "esl/containers.hpp"
+#include "esl/string.hpp"
+
+#include "interface/common.hpp"
+#include "interface/nodes.hpp"
+#include "interface/types.hpp"
 
 namespace esl {
 
@@ -39,21 +46,33 @@ namespace esl {
 
 }
 
-// TODO
-#if 0
 namespace cynth {
+
+    namespace target = esl::target;
+    using esl::lift;
 
     namespace {
 
-        syn::execution_result decl_execute (auto const & node, sem::context & ctx) {
-            auto decls_result = util::unite_results(sem::complete(ctx)(syn::eval_decl(ctx)(node)));
-            if (!decls_result)
-                return syn::make_execution_result(decls_result.error());
-            auto decls = *std::move(decls_result);
+        interface::StatementResolutionResult resolveStatementImpl (context::C & ctx, interface::node auto const & decl) {
+            auto declsResult = interface::resolveDeclaration(ctx)(decl);
+            if (!declsResult)
+                return declsResult.error();
+            auto decls = *std::move(declsResult);
 
-            auto decl_result = ctx.declare(decls);
-            if (!decl_result)
-                return syn::make_execution_result(decl_result.error());
+            for (auto const & decl : decls) {
+                auto defResult = esl::unite_results(lift<target::component_vector_tiny_result, target::category>(
+                    [&ctx] (auto const & type) -> esl::result<sem::TypedResolvedValue> {
+                        auto result = interface::translateDefinition(ctx, std::nullopt)(type);
+                        if (!result) return result.error();
+                        return sem::TypedResolvedValue{type, result->value};
+                    }
+                )(decl.type));
+                if (!defResult) return defResult.error();
+                auto vars = *std::move(defResult);
+
+                auto varResult = ctx.compCtx->insertValue(decl.name, vars);
+                if (!varResult) return varResult.error();
+            }
 
             return {};
         }
@@ -62,43 +81,50 @@ namespace cynth {
 
     //// Declaration ////
 
-    display_result syn::node::Declaration::display () const {
-        return cynth::display(type) + " " + cynth::display(name);
+    interface::DisplayResult syn::node::Declaration::display () const {
+        return lift<target::component, target::category>(interface::display)(type) + " " + interface::display(name);
     }
 
-    syn::decl_eval_result syn::node::Declaration::eval_decl (sem::context & ctx) const {
-        auto type_result = util::unite_results(syn::eval_type(ctx)(type)); // tuple_vector<result<type::incomplete>>
-        if (!type_result)
-            return syn::make_decl_eval_result(type_result.error());
-        auto type = *std::move(type_result); // tuple_vector<type::incomplete>
-        auto decl = sem::incomplete_decl {
-            .type = std::move(type),
-            .name = *name->name
-        };
-        return syn::make_decl_eval_result(decl);
+    interface::DeclarationResolutionResult syn::node::Declaration::resolveDeclaration (context::C & ctx) const {
+        auto typeResult = lift<target::component, target::category>(
+            interface::resolveType(ctx)
+        )(type);
+        if (!typeResult) return typeResult.error();
+        auto type = *std::move(typeResult);
+        return esl::init<esl::tiny_vector>(sem::CompleteDeclaration{
+            esl::make_component_vector(std::move(type)),
+            *name.name
+        });
     }
 
-    syn::execution_result syn::node::Declaration::execute (sem::context & ctx) const {
-        return decl_execute(*this, ctx);
+    interface::StatementResolutionResult syn::node::Declaration::resolveStatement (context::C & ctx) const {
+        return resolveStatementImpl(ctx, *this);
     }
 
     //// TupleDecl ////
 
-    display_result syn::node::TupleDecl::display () const {
-        return "(" + util::join(", ", cynth::display(declarations)) + ")";
+    interface::DisplayResult syn::node::TupleDecl::display () const {
+        return
+            "(" +
+            esl::join(", ", lift<target::component_vector, target::category>(interface::display)(declarations)) +
+            ")";
     }
 
-    syn::decl_eval_result syn::node::TupleDecl::eval_decl (sem::context & ctx) const {
-        syn::decl_eval_result result;
-        for (auto & value_tuple : syn::eval_decl(ctx)(declarations)) for (auto & value : value_tuple) {
+    interface::DeclarationResolutionResult syn::node::TupleDecl::resolveDeclaration (context::C & ctx) const {
+        interface::DeclarationResolutionResult::value_type result;
+        auto declsResult = esl::unite_results(lift<target::component_vector, target::category>(
+            interface::resolveDeclaration(ctx)
+        )(declarations));
+        if (!declsResult) return declsResult.error();
+        auto decls = *std::move(declsResult);
+        for (auto const & tuple: decls) for (auto const & value: tuple) {
             result.push_back(std::move(value));
         }
         return result;
     }
 
-    syn::execution_result syn::node::TupleDecl::execute (sem::context & ctx) const {
-        return decl_execute(*this, ctx);
+    interface::StatementResolutionResult syn::node::TupleDecl::resolveStatement (context::C & ctx) const {
+        return resolveStatementImpl(ctx, *this);
     }
 
 }
-#endif

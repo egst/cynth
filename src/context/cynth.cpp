@@ -47,7 +47,7 @@ namespace cynth::context {
         /*
         auto value_begin = values.begin();
 
-        for (auto & decl : decls) {
+        for (auto & dec: decls) {
             if (static_cast<std::size_t>(values.end() - value_begin) < decl.type.size())
                 return esl::result_error{"Less values than types in a definition."};
 
@@ -194,7 +194,7 @@ namespace cynth::context {
 
     esl::result<void> Cynth::declare (tuple_vector<sem::CompleteDeclaration> const & decls) {
         /*
-        for (auto & decl : decls) {
+        for (auto & decl: decls) {
             auto const_check = esl::unite_results(lift::category_component{esl::overload {
                 [] (sem::type::Const const &) -> esl::result<void> {
                     return esl::result_error{"Cannot declare a const value with no definition."};
@@ -240,7 +240,7 @@ namespace cynth::context {
     }
 
     /*
-    sem::LocalValue * Cynth::find_value_inside (std::string const & name) {
+    sem::TypedValue * Cynth::find_value_inside (std::string const & name) {
         auto iter = values.find(name);
         return iter != values.end()
             ? &iter->second
@@ -254,7 +254,7 @@ namespace cynth::context {
             : nullptr;
     }
 
-    sem::LocalValue * Cynth::find_value (std::string const & name) {
+    sem::TypedValue * Cynth::find_value (std::string const & name) {
         auto inside = find_value_inside(name);
         if (!parent || inside)
             return inside;

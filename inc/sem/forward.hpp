@@ -7,8 +7,9 @@ namespace cynth::sem {
     // Compound:
 
     struct ResolvedValue;
-    struct LocalValue;
-    struct ResolvedTargetValue;
+    struct TypedResolvedValue;
+    struct ResolvedTarget;
+    struct TypedResolvedTarget;
 
     // Declarations:
 

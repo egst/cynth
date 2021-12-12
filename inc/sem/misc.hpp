@@ -16,6 +16,7 @@
 #include "sem/numeric_types.hpp"
 #include "sem/values.hpp"
 
+// TODO: Some of these algorithms might not be relevant anymore.
 namespace cynth::sem {
 
     using RangeVector = esl::tiny_vector<std::pair<
@@ -110,7 +111,7 @@ namespace cynth::sem {
         },
         [] (esl::range_of<CompleteDeclaration> auto const & declarations) -> std::vector<std::string> {
             std::vector<std::string> result;
-            for (auto & decl : declarations) for (auto names : detail::misc::declNames(decl))
+            for (auto & decl: declarations) for (auto names: detail::misc::declNames(decl))
                 result.push_back(std::move(names));
             return result;
         }

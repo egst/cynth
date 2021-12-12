@@ -18,13 +18,13 @@ namespace cynth::interface {
 
     // Nodes:
     // For full declarations, #include "interface/nodes.hpp"
-    using ExpressionResolutionResult       = esl::result<esl::tiny_vector<sem::ResolvedValue>>;
-    using ArrayElementResolutionResult     = esl::result<std::vector<esl::tiny_vector<sem::ResolvedValue>>>;
+    using ExpressionResolutionResult       = esl::result<esl::tiny_vector<sem::TypedResolvedValue>>;
+    using ArrayElementResolutionResult     = esl::result<std::vector<esl::tiny_vector<sem::TypedResolvedValue>>>;
     using TypeResolutionResult             = esl::result<esl::tiny_vector<sem::CompleteType>>;
     using StatementResolutionResult        = esl::result<void>;
     using DeclarationResolutionResult      = esl::result<esl::tiny_vector<sem::CompleteDeclaration>>;
     using RangeDeclarationResolutionResult = esl::result<esl::tiny_vector<sem::CompleteRangeDeclaration>>;
-    using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::ResolvedTargetValue>>;
+    using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::TypedResolvedTarget>>;
 
     // Types:
     // For full declarations, #include "interface/types.hpp"
@@ -32,9 +32,10 @@ namespace cynth::interface {
     using TypeNameResult              = esl::result<std::string>;
     using SameTypeResult              = bool;
     using CommonTypeResult            = esl::result<sem::CompleteType>;
+    using ConstTypeResult             = bool;
     using TypeCompletionResult        = esl::result<sem::CompleteType>;
     using TypeTranslationResult       = esl::result<std::string>;
-    using DefinitionTranslationResult = esl::result<std::string>;
+    using DefinitionTranslationResult = esl::result<sem::ResolvedValue>;
     using AllocationTranslationResult = esl::result<std::string>;
     using ConversionTranslationResult = esl::result<std::string>;
 

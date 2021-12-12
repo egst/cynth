@@ -1,5 +1,22 @@
 #include "syn/nodes/statements.hpp"
 
+#include "esl/category.hpp"
+#include "esl/component.hpp"
+#include "esl/lift.hpp"
+#include "esl/string.hpp"
+#include "esl/tiny_vector.hpp"
+#include "esl/view.hpp"
+//#include "esl/containers.hpp" // unite_results, single, init
+
+#include "interface/common.hpp"
+#include "interface/nodes.hpp"
+#include "interface/types.hpp"
+#include "sem/compound.hpp"
+
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
+
 namespace esl {
 
     using cynth::syn::node::Assignment;
@@ -151,18 +168,22 @@ namespace esl {
 
 }
 
-// TODO
-#if 0
 namespace cynth {
+
+    namespace target = esl::target;
+    using esl::lift;
 
     //// Assignment ////
 
-    display_result syn::node::Assignment::display () const {
-        return cynth::display(target) + " = " + cynth::display(value);
+    interface::DisplayResult syn::node::Assignment::display () const {
+        return
+            lift<target::component, target::category>(interface::display)(target) + " = " +
+            lift<target::component, target::category>(interface::display)(value);
     }
 
-    syn::execution_result syn::node::Assignment::execute (sem::context & ctx) const {
-        auto targets_result = syn::eval_target(ctx)(target);
+    interface::StatementResolutionResult syn::node::Assignment::resolveStatement (context::C & ctx) const {
+#if 0
+        auto targets_result = interface::resolveTarget(ctx)(target);
         if (!targets_result)
             return syn::make_execution_result(targets_result.error());
         auto targets = *std::move(targets_result);
@@ -173,7 +194,7 @@ namespace cynth {
 
         auto target = std::move(targets.front());
 
-        auto values_result = util::unite_results(syn::evaluate(ctx)(value));
+        auto values_result = esl::unite_results(syn::evaluate(ctx)(value));
         if (!values_result)
             return syn::make_execution_result(values_result.error());
         auto values = *std::move(values_result);
@@ -190,7 +211,7 @@ namespace cynth {
         auto converted_results = sem::convert(ctx)(values, target_ref.type);
         if (!converted_results)
             return converted_results.error();
-        auto converted_result = util::unite_results(*converted_results);
+        auto converted_result = esl::unite_results(*converted_results);
         if (!converted_result)
             return converted_result.error();
         auto assign_result = target_ref.assign(*std::move(converted_result));
@@ -198,59 +219,57 @@ namespace cynth {
             return assign_result.error();
 
         return {};
+#endif
     }
 
     //// Definition ////
 
-    display_result syn::node::Definition::display () const {
-        return cynth::display(target) + " = " + cynth::display(value);
+    interface::DisplayResult syn::node::Definition::display () const {
+        return
+            lift<target::component, target::category>(interface::display)(target) + " = " +
+            lift<target::component, target::category>(interface::display)(value);
     }
 
-    syn::execution_result syn::node::Definition::execute (sem::context & ctx) const {
-        auto decls_result = util::unite_results(sem::complete(ctx)(syn::eval_decl(ctx)(target)));
-        if (!decls_result)
-            return syn::make_execution_result(decls_result.error());
-        auto decls = *std::move(decls_result);
+    interface::StatementResolutionResult syn::node::Definition::resolveStatement (context::C & ctx) const {
+        auto declsResult  = lift<target::component, target::category>(interface::resolveDeclaration(ctx))(target);
+        auto valuesResult = lift<target::component, target::category>(interface::resolveExpression(ctx))(value);
+        if (!declsResult)  return declsResult.error();
+        if (!valuesResult) return valuesResult.error();
+        auto decls  = *declsResult;
+        auto values = *valuesResult;
 
-        auto values_result = util::unite_results(syn::evaluate(ctx)(value));
-        if (!values_result)
-            return syn::make_execution_result(values_result.error());
-        auto values = *std::move(values_result);
+        auto valueIterator = values.begin();
+        for (auto const & decl: decls) {
+            esl::tiny_vector<sem::TypedResolvedValue> vars;
+            auto count = decl.type.size();
 
-        auto define_result = ctx.define_value(decls, values);
-        if (!define_result)
-            return syn::make_execution_result(define_result.error());
+            for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
+                auto defResult = lift<target::category>(interface::translateDefinition(ctx, value))(type);
+                if (!defResult) return defResult.error();
+                auto def = *defResult;
+
+                vars.push_back(sem::TypedResolvedValue{value.type, def.value});
+            }
+
+            auto varResult = ctx.compCtx->insertValue(decl.name, vars);
+            if (!varResult) return varResult.error();
+            valueIterator += count;
+        }
 
         return {};
-    }
-
-    syn::translation_result syn::node::Definition::translate (sem::translation_context & ctx) const {
-        return {};
-
-        auto decls_result = util::unite_results(sem::complete(ctx.compconst_context)(eval_decl(ctx.compconst_context)(target)));
-        if (!decls_result)
-            return syn::make_translation_result(decls_result.error());
-        auto decls = *std::move(decls_result);
-
-        auto values_result = util::unite_results(syn::translate(ctx)(value));
-        if (!values_result)
-            return syn::make_translation_result(values_result.error());
-        auto values = *std::move(values_result);
-
-        ctx.define(decls, values);
-
-        // TODO...
     }
 
     //// For ////
 
-    display_result syn::node::For::display () const {
+    interface::DisplayResult syn::node::For::display () const {
         return
-            "for " + util::parenthesized(cynth::display(declarations)) +
-            " "    + cynth::display(body);
+            "for " + esl::parenthesized(lift<target::component, target::category>(interface::display)(declarations)) +
+            " "    + lift<target::component, target::category>(interface::display)(body);
     }
 
-    syn::execution_result syn::node::For::execute (sem::context & ctx) const {
+    interface::StatementResolutionResult syn::node::For::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
         auto decls_result = sem::for_decls(ctx, *declarations);
         if (!decls_result)
             return syn::make_execution_result(decls_result.error());
@@ -261,11 +280,11 @@ namespace cynth {
             auto iter_scope = make_child_context(ctx);
 
             // Define iteration elements:
-            for (auto & [decl, value] : iter_decls)
+            for (auto & [decl, value]: iter_decls)
                 iter_scope.define_value(decl, value.value->value[i]);
 
             // Execute the loop body:
-            auto returned = syn::execute(iter_scope)(body);
+            auto returned = interface::resolveStatement(iter_scope)(body);
 
             if (returned)
                 return *returned;
@@ -274,21 +293,28 @@ namespace cynth {
         }
 
         return {};
+#endif
     }
 
-    //// FunctionDef ////
+    //// FunDef ////
 
-    display_result syn::node::FunctionDef::display () const {
-        return cynth::display(output) + " " + cynth::display(name) + " " + util::parenthesized(cynth::display(input)) + " " + cynth::display(body);
+    interface::DisplayResult syn::node::FunDef::display () const {
+        return
+            lift<target::component, target::category>(interface::display)(output) + " " +
+            interface::display(name) + " " +
+            esl::parenthesized(lift<target::component, target::category>(interface::display)(input)) + " " +
+            lift<target::component, target::category>(interface::display)(body);
     }
 
-    syn::execution_result syn::node::FunctionDef::execute (sem::context & ctx) const {
-        auto output_result = util::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(output)));
+    interface::StatementResolutionResult syn::node::FunDef::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
+        auto output_result = esl::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(output)));
         if (!output_result)
             return syn::make_execution_result(output_result.error());
         auto output = *std::move(output_result);
 
-        auto input_result = util::unite_results(sem::complete(ctx)(syn::eval_decl(ctx)(input)));
+        auto input_result = esl::unite_results(sem::complete(ctx)(syn::eval_decl(ctx)(input)));
         if (!input_result)
             return syn::make_execution_result(input_result.error());
         auto input = *std::move(input_result);
@@ -302,7 +328,7 @@ namespace cynth {
         if (!stored)
             return syn::make_execution_result(stored.error());
 
-        auto value = util::init<tuple_vector>(sem::value::complete{sem::value::Function {
+        auto value = esl::init<tuple_vector>(sem::value::complete{sem::value::Function {
             .value = stored.get()
         }});
 
@@ -314,52 +340,63 @@ namespace cynth {
 #endif
 
         return {};
+#endif
     }
 
     //// If ////
 
-    display_result syn::node::If::display () const {
+    interface::DisplayResult syn::node::If::display () const {
         return
-            "if "    + util::parenthesized(cynth::display(condition)) +
-            " "      + cynth::display(positive_branch) +
-            " else " + cynth::display(negative_branch);
+            "if "    + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
+            " "      + lift<target::component, target::category>(interface::display)(positive_branch) +
+            " else " + lift<target::component, target::category>(interface::display)(negative_branch);
     }
 
-    syn::execution_result syn::node::If::execute (sem::context & ctx) const {
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(syn::evaluate(ctx)(condition))));
+    interface::StatementResolutionResult syn::node::If::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(syn::evaluate(ctx)(condition))));
         if (!result)
             return syn::make_execution_result(result.error());
         if (*result)
-            return syn::execute(ctx)(positive_branch);
+            return interface::resolveStatement(ctx)(positive_branch);
         else
-            return syn::execute(ctx)(negative_branch);
+            return interface::resolveStatement(ctx)(negative_branch);
+#endif
     }
 
     //// Return ////
 
-    display_result syn::node::Return::display () const {
-        return "return " + cynth::display(value);
+    interface::DisplayResult syn::node::Return::display () const {
+        return "return " + lift<target::component, target::category>(interface::display)(value);
     }
 
-    syn::execution_result syn::node::Return::execute (sem::context & ctx) const {
-        auto value_result = util::unite_results(syn::evaluate(ctx)(value));
+    interface::StatementResolutionResult syn::node::Return::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
+        auto value_result = esl::unite_results(syn::evaluate(ctx)(value));
         if (!value_result)
             return syn::make_execution_result(value_result.error());
         auto value = *std::move(value_result);
 
         return value;
+#endif
     }
 
     //// TypeDef ////
 
-    display_result syn::node::TypeDef::display () const {
-        return "type " + cynth::display(target) + " = " + cynth::display(type);
+    interface::DisplayResult syn::node::TypeDef::display () const {
+        return
+            "type " + interface::display(target) +
+            " = "   + lift<target::component, target::category>(interface::display)(type);
     }
 
-    syn::execution_result syn::node::TypeDef::execute (sem::context & ctx) const {
+    interface::StatementResolutionResult syn::node::TypeDef::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
         std::string name = *target->name;
 
-        auto type_result = util::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(type)));
+        auto type_result = esl::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(type)));
         if (!type_result)
             return syn::make_execution_result(type_result.error());
         auto type = *std::move(type_result);
@@ -369,24 +406,27 @@ namespace cynth {
             return syn::make_execution_result(define_result.error());
 
         return {};
+#endif
     }
 
     //// While ////
 
-    display_result syn::node::While::display () const {
+    interface::DisplayResult syn::node::While::display () const {
         return
-            "while " + util::parenthesized(cynth::display(condition)) +
-            " "      + cynth::display(body);
+            "while " + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
+            " "      + lift<target::component, target::category>(interface::display)(body);
     }
 
-    syn::execution_result syn::node::While::execute (sem::context & ctx) const {
+    interface::StatementResolutionResult syn::node::While::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
         while (true) {
-            auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(syn::evaluate(ctx)(condition))));
+            auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(syn::evaluate(ctx)(condition))));
             if (!result)
                 return syn::make_execution_result(result.error());
             if (*result) {
                 auto branch_scope = make_child_context(ctx);
-                auto returned = syn::execute(branch_scope)(body);
+                auto returned = interface::resolveStatement(branch_scope)(body);
                 if (returned)
                     return *returned;
                 if (returned.has_error())
@@ -394,26 +434,29 @@ namespace cynth {
             } else
                 return {};
         }
+#endif
     }
 
     //// When ////
 
-    display_result syn::node::When::display () const {
+    interface::DisplayResult syn::node::When::display () const {
         return
-            "when " + util::parenthesized(cynth::display(condition)) +
-            " "     + cynth::display(branch);
+            "when " + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
+            " "     + lift<target::component, target::category>(interface::display)(branch);
     }
 
-    syn::execution_result syn::node::When::execute (sem::context & ctx) const {
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(syn::evaluate(ctx)(condition))));
+    interface::StatementResolutionResult syn::node::When::resolveStatement (context::C & ctx) const {
+        return {};
+#if 0 // TODO
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(syn::evaluate(ctx)(condition))));
         if (!result)
             return syn::make_execution_result(result.error());
         if (*result) {
             auto branch_scope = make_child_context(ctx);
-            return syn::execute(branch_scope)(branch);
+            return interface::resolveStatement(branch_scope)(branch);
         }
         return {};
+#endif
     }
 
 }
-#endif

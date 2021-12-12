@@ -60,7 +60,7 @@ namespace esl {
 
             std::size_t size = 1;
             ((size += piece_vals.size()), ...);
-            for (auto const & piece : pieces_range)
+            for (auto const & piece: pieces_range)
                 size += piece.size();
             size += (count - 1) * delim.size();
 

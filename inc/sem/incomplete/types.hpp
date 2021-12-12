@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <variant>
+#include <optional>
 
 #include "esl/category.hpp"
 #include "esl/component.hpp"
@@ -23,17 +24,26 @@
     interface::TypeNameResult typeName () const
 #define SAME(type) \
     interface::SameTypeResult sameType (type const &) const
+#define CONST(type) \
+    interface::ConstTypeResult constType () const
 #define COMMON(type) \
     interface::CommonTypeResult commonType (type const &) const
 #define TYPE_INTERFACE \
     interface::DisplayResult display () const; \
     interface::DefinitionTranslationResult translateDefinition ( \
         context::C &, \
-        std::optional<std::string> const & definition, \
-        bool compval \
-    ) const
+        std::optional<TypedResolvedValue> const & definition \
+    ) const; \
+    interface::AllocationTranslationResult translateAllocation ( \
+        context::C &, \
+        std::optional<TypedResolvedValue> const & definition \
+    ) const; \
+    interface::ConversionTranslationResult translateConversion ( \
+        context::C &, \
+        TypedResolvedValue const & from \
+    ) const;
 #define INCOMPLETE_TYPE_INTERFACE \
-    interface::TypeCompletionResult completeType (context::Cynth &) const
+    interface::TypeCompletionResult completeType (context::C &) const
 
 /*
 #define DECAY \
@@ -179,6 +189,8 @@ namespace cynth::sem {
 
             SAME(type::Const);
 
+            CONST();
+
             //DECAY;
         };
 
@@ -200,6 +212,8 @@ namespace cynth::sem {
 
             SAME(type::Buffer);
 
+            CONST();
+
             static esl::result<type::Buffer> make (Integral);
         };
 
@@ -209,6 +223,8 @@ namespace cynth::sem {
             COMMON(type::Function);
 
             SAME(type::Function);
+
+            CONST();
         };
 
         struct IncompleteIn: detail::types::In<false> {

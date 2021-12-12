@@ -62,6 +62,7 @@ namespace esl {
 }
 
 namespace cynth::sem {
+#if 0 // TODO
 
     namespace {
 
@@ -86,11 +87,11 @@ namespace cynth::sem {
             /***
             var_<i>
             ***/
-            return std::make_optional(varName);
+            return varName;
         }
 
         template <typename... Ts>
-        esl::result<std::string> translateArrayAllocation (
+        interface::AllocationTranslationResult translateArrayAllocation (
             context::C & ctx,
             std::optional<std::string> init,
             std::string size,
@@ -122,6 +123,7 @@ namespace cynth::sem {
             );
         }
 
+        // TODO: Not used yet.
         bool arrayTypesConst (type::Array const & type) {
             return esl::all(esl::lift<esl::target::component_vector, esl::target::category>(
                 [] (type::Const const &) {
@@ -186,7 +188,7 @@ namespace cynth::sem {
             /***
             var_<j>
             ***/
-            return std::make_optional(varName);
+            return varName;
         };
 
     }
@@ -195,6 +197,10 @@ namespace cynth::sem {
 
     interface::DisplayResult type::Bool::display () const {
         return "Bool";
+    }
+
+    interface::SameTypeResult type::Bool::sameType (type::Bool const &) const {
+        return true;
     }
 
     interface::CommonTypeResult type::Bool::commonType (type::Bool const &) const {
@@ -219,22 +225,22 @@ namespace cynth::sem {
         return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
     }
 
-    bool type::Bool::sameType (type::Bool const &) const {
-        return true;
-    }
-
     interface::DefinitionTranslationResult type::Bool::translateDefinition (
         context::C & ctx,
         std::optional<std::string> const & definition,
         bool
     ) const {
-        return translateSimpleDefinition(ctx, definition, type::Bool::typeName);
+        return translateSimpleDefinition(ctx, definition, type::Bool::directTypeName);
     }
 
     //// Int ////
 
     interface::DisplayResult type::Int::display () const {
         return "Int";
+    }
+
+    interface::SameTypeResult type::Int::sameType (type::Int const &) const {
+        return true;
     }
 
     interface::CommonTypeResult type::Int::commonType (type::Int const &) const {
@@ -255,22 +261,22 @@ namespace cynth::sem {
         return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
     }
 
-    bool type::Int::sameType (type::Int const &) const {
-        return true;
-    }
-
     interface::DefinitionTranslationResult type::Int::translateDefinition (
         context::C & ctx,
         std::optional<std::string> const & definition,
         bool
     ) const {
-        return translateSimpleDefinition(ctx, definition, type::Int::typeName);
+        return translateSimpleDefinition(ctx, definition, type::Int::directTypeName);
     }
 
     //// Float ////
 
     interface::DisplayResult type::Float::display () const {
         return "Float";
+    }
+
+    interface::SameTypeResult type::Float::sameType (type::Float const &) const {
+        return true;
     }
 
     interface::CommonTypeResult type::Float::commonType (type::Float const &) const {
@@ -287,16 +293,12 @@ namespace cynth::sem {
         return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
     }
 
-    bool type::Float::sameType (type::Float const &) const {
-        return true;
-    }
-
     interface::DefinitionTranslationResult type::Float::translateDefinition (
         context::C & ctx,
         std::optional<std::string> const & definition,
         bool
     ) const {
-        return translateSimpleDefinition(ctx, definition, type::Float::typeName);
+        return translateSimpleDefinition(ctx, definition, type::Float::directTypeName);
     }
 
     //// String ////
@@ -305,12 +307,12 @@ namespace cynth::sem {
         return "String";
     }
 
-    interface::CommonTypeResult type::String::commonType (type::String const &) const {
-        return {type::String{}};
+    interface::SameTypeResult type::String::sameType (type::String const &) const {
+        return true;
     }
 
-    bool type::String::sameType (type::String const &) const {
-        return true;
+    interface::CommonTypeResult type::String::commonType (type::String const &) const {
+        return {type::String{}};
     }
 
     interface::DefinitionTranslationResult type::String::translateDefinition (
@@ -327,11 +329,13 @@ namespace cynth::sem {
         return "T in"; // TODO
     }
 
+    /*
     interface::TypeDecayResult type::In::decayType () const {
         return *type;
     }
+    */
 
-    bool type::In::sameType (type::In const & other) const {
+    interface::SameTypeResult type::In::sameType (type::In const & other) const {
         return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
     }
 
@@ -391,7 +395,7 @@ namespace cynth::sem {
         /***
         var_<j>
         ***/
-        return std::make_optional(varName);
+        return varName;
     }
 
     //// Out ////
@@ -400,11 +404,13 @@ namespace cynth::sem {
         return "T out"; // TODO
     }
 
+    /*
     interface::TypeDecayResult type::Out::decayType () const {
         return *type;
     }
+    */
 
-    bool type::Out::sameType (type::Out const & other) const {
+    interface::SameTypeResult type::Out::sameType (type::Out const & other) const {
         return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
     }
 
@@ -465,7 +471,7 @@ namespace cynth::sem {
         /***
         var_<j>
         ***/
-        return std::make_optional(varName);
+        return varName;
     }
 
     //// Const ////
@@ -476,15 +482,21 @@ namespace cynth::sem {
 
     // TODO: This should be somehow linked with the strings configured in sem/translation.hpp
     /** `T_const` */
-    interface::TypeNameResult type::Const::getTypeName () const {
+    interface::TypeNameResult type::Const::typeName () const {
         auto result = esl::lift<esl::target::component, esl::target::category>(interface::typeName)(type);
         if (!result)
             return result.error();
         return *result + "_const";
     }
 
+    /*
     interface::TypeDecayResult type::Const::decayType () const {
         return *type;
+    }
+    */
+
+    interface::SameTypeResult type::Const::sameType (type::Const const & other) const {
+        return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
     }
 
     interface::CommonTypeResult type::Const::commonType (type::Const const & other) const {
@@ -510,10 +522,6 @@ namespace cynth::sem {
         )(type);
     }
 
-    bool type::Const::sameType (type::Const const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
-    }
-
     interface::TypeCompletionResult type::IncompleteConst::completeType (context::Cynth & ctx) const {
         auto result = esl::lift<esl::target::component, esl::target::category>(interface::completeType(ctx))(type);
         if (!result)
@@ -528,7 +536,7 @@ namespace cynth::sem {
         std::optional<std::string> const & definition,
         bool compval
     ) const {
-        if (compval) return {std::nullopt}; // Skip compconst values.
+        if (compval) return {}; // Skip compconst values.
         return esl::lift<esl::target::component, esl::target::category>(
             [&ctx, &definition] (type::Array const & type) -> interface::DefinitionTranslationResult {
                 /***
@@ -540,7 +548,7 @@ namespace cynth::sem {
                 /***
                 struct cth_<type>_const var_<nextId()> = <definition>;
                 ***/
-                return translateSimpleDefinition(ctx, definition, c::constType(T::typeName));
+                return translateSimpleDefinition(ctx, definition, c::constType(T::directTypeName));
             },
             [] (auto const &) -> interface::DefinitionTranslationResult {
                 return esl::result_error{"Only simple types and arrays may be marked const."};
@@ -550,6 +558,7 @@ namespace cynth::sem {
 
     //// Array ////
 
+    // TODO?
     esl::result<type::Array> type::Array::make (esl::component_vector<CompleteType> && type, sem::Integral size) {
         if (size <= 0)
             return esl::result_error{"Array must have a positive size."};
@@ -565,6 +574,11 @@ namespace cynth::sem {
 
     interface::DisplayResult type::Array::display () const {
         return "T [n]"; // TODO
+    }
+
+    interface::SameTypeResult type::Array::sameType (type::Array const & other) const {
+        auto result = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(type, other.type);
+        return result && size == other.size && esl::all(*result);
     }
 
     interface::CommonTypeResult type::Array::commonType (type::Array const & other) const {
@@ -606,14 +620,7 @@ namespace cynth::sem {
         return {*arrayResult};
     }
 
-    bool type::Array::sameType (type::Array const & other) const {
-        auto result = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(type, other.type);
-        return result && size == other.size && esl::all(*result);
-    }
-
     interface::TypeCompletionResult type::IncompleteArray::completeType (context::Cynth & ctx) const {
-        return esl::result_error{"TODO"};
-        /*
         auto typeResult = esl::unite_results(
             esl::lift<esl::target::component_vector, esl::target::category>(interface::completeType(ctx))(type)
         );
@@ -625,10 +632,10 @@ namespace cynth::sem {
                 return esl::result_error{"Unknown array size."};
             },
             [&ctx] <interface::value Value> (Value const & value) -> esl::result<int> {
-                auto x = interface::convert(ctx)(value, type::Int{});
+                auto x = interface::convertValue(ctx)(value, type::Int{});
                 ESL_INSPECT(x);
                 return esl::lift<esl::target::result, esl::target::category>(interface::get<sem::Integral>)(
-                    interface::convert(ctx)(value, type::Int{})
+                    interface::convertValue(ctx)(value, type::Int{})
                 );
             }
         )(size);
@@ -642,7 +649,6 @@ namespace cynth::sem {
         if (!arrayResult)
             return arrayResult.error();
         return {*arrayResult};
-        */
     }
 
     interface::DefinitionTranslationResult type::Array::translateDefinition (
@@ -651,6 +657,19 @@ namespace cynth::sem {
         bool
     ) const {
         return translateArrayDefinition(ctx, false, *this, definition);
+    }
+
+    interface::AllocationTranslationResult type::Array::translateAllocation (
+        context::C & ctx,
+        std::optional<std::string> const & initialization
+    ) const {
+        // TODO: compval?
+        auto typeNamesResult = arrayTypeNames(*this);
+        if (!typeNamesResult)
+            return typeNamesResult.error();
+        auto typeNames = *typeNamesResult;
+        auto types = c::templateArguments(typeNames);
+        return translateArrayAllocation(ctx, initialization, std::to_string(size), types);
     }
 
     //// Buffer ////
@@ -673,20 +692,18 @@ namespace cynth::sem {
         return {*this};
     }
 
-    bool type::Buffer::sameType (type::Buffer const & other) const {
+    interface::SameTypeResult type::Buffer::sameType (type::Buffer const & other) const {
         return size == other.size;
     }
 
     interface::TypeCompletionResult type::IncompleteBuffer::completeType (context::Cynth & ctx) const {
-        return esl::result_error{"TODO"};
-        /*
         auto sizeResult = esl::lift<esl::target::component, esl::target::category>(
             [] (value::Unknown const &) -> esl::result<sem::Integral> {
                 return esl::result_error{"Unknown array size."};
             },
             [&ctx] <interface::value Value> (Value const & value) -> esl::result<sem::Integral> {
                 return esl::lift<esl::target::result, esl::target::category>(interface::get<sem::Integral>)(
-                    interface::convert(ctx)(value, type::Int{})
+                    interface::convertValue(ctx)(value, type::Int{})
                 );
             }
         )(size);
@@ -698,7 +715,6 @@ namespace cynth::sem {
             return bufferResult.error();
 
         return {*bufferResult};
-        */
     }
 
     namespace {
@@ -769,7 +785,7 @@ namespace cynth::sem {
         /***
         var_<i>
         ***/
-        return std::make_optional(varName);
+        return varName;
     }
 
     //// Function ////
@@ -792,7 +808,7 @@ namespace cynth::sem {
         return {*this};
     }
 
-    bool type::Function::sameType (type::Function const & other) const {
+    interface::SameTypeResult type::Function::sameType (type::Function const & other) const {
         auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(out, other.out);
         auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(in, other.in);
         return
@@ -830,7 +846,7 @@ namespace cynth::sem {
     ) const {
         // TODO: Can I really skip declating the contexts?
         // Inserting the compconst function value would need to handle declaring the context in-place as a literal constant.
-        if (compval) return {std::nullopt}; // Skip compconst values.
+        if (compval) return {}; // Skip compconst values.
 
         if (!definition)
             return esl::result_error{"Functions must be initialized explicitly."};
@@ -847,7 +863,8 @@ namespace cynth::sem {
         if (!result)
             return result.error();
 
-        return std::make_optional(varName);
+        return varName;
     }
 
+#endif
 }

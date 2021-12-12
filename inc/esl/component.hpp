@@ -300,7 +300,7 @@ namespace esl {
                 constexpr static component_vector make (V && other) {
                     component_vector v;
                     v.reserve(other.size());
-                    for (auto & item : other)
+                    for (auto & item: other)
                         //v.push_back(component<value_type>{std::move(item)});
                         //v.push_back(std::move(item));
                         v.push_back(std::move(static_cast<value_type>(item)));
@@ -312,7 +312,7 @@ namespace esl {
                 constexpr operator V () const {
                     V copy;
                     copy.reserve(size());
-                    for (auto & item : *this)
+                    for (auto & item: *this)
                         //copy.push_back(*item);
                         //copy.push_back(item);
                         copy.push_back(static_cast<typename V::value_type>(item));
@@ -390,12 +390,16 @@ namespace esl {
         concept matching_template = matching_template_impl<T, Tpl>::value;
         */
 
-        template <template <typename...> typename C>
+        template <template <typename...> typename C, bool TinyResult = false>
         struct lift_component_vector {
             template <typename Derived, typename F>
             struct impl {
                 template <typename T>
-                using vector_type = typename C<T>::base;
+                using vector_type = std::conditional_t<
+                    TinyResult,
+                    esl::tiny_vector<T>,
+                    typename C<T>::base
+                >;
 
                 //template <matching_template<esl::basic_component_vector> T>
                 template <esl::same_template<C> T>
@@ -422,6 +426,7 @@ namespace esl {
         struct optional_component {};
         struct component_vector {};
         struct tiny_component_vector {};
+        struct component_vector_tiny_result {};
 
     }
 
@@ -436,5 +441,8 @@ namespace esl {
 
     template <> struct lift_specialization_map<target::tiny_component_vector>:
         lift_implementation<esl::detail::component::lift_component_vector<esl::component_vector>::impl> {};
+
+    template <> struct lift_specialization_map<target::component_vector_tiny_result>:
+        lift_implementation<esl::detail::component::lift_component_vector<esl::component_vector, true>::impl> {};
 
 }

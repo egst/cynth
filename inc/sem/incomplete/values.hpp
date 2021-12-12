@@ -24,7 +24,7 @@
 #define GET(type) \
     interface::GetResult<type> get () const
 #define CONVERT(type) \
-    interface::ConversionResult convert (context::Cynth &, type const &) const
+    interface::ConversionResult convert (context::C &, type const &) const
 #define VALUE_INTERFACE \
     interface::DisplayResult display () const; \
     interface::ValueTypeResult valueType () const
