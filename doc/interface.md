@@ -1,19 +1,17 @@
 # Interface
 
 ```c++ pseudo code
-Vector              = std::vector
-Optional            = std::optional
-String              = std::string
-Result              = esl::result
-OptionalResult      = esl::optional_result
-Tuple               = esl::tiny_vector
-Context             = context::C
-Value               = sem::CompleteValue
-Type                = sem::CompleteVector
-ResolvedValue       = sem::ResolvedValue
-TypedResolvedValue  = sem::TypedResolvedValue
-ResolvedTarget      = sem::ResolvedTarget
-TypedResolvedTarget = sem::TypedResolvedTarget
+Vector         = std::vector
+Optional       = std::optional
+String         = std::string
+Result         = esl::result
+OptionalResult = esl::optional_result
+Tuple          = esl::tiny_vector
+Context        = context::C
+Value          = sem::CompleteValue
+Type           = sem::CompleteVector
+ResolvedValue  = sem::ResolvedValue
+ResolvedTarget = sem::ResolvedTarget
 
 interface::any  = /* any ast node or a semantic structure */
 interface::node = /* any ast node */
@@ -37,9 +35,9 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 // Direct translation or compile-time evaluation of AST nodes:
 // The `translate` parameter forces translation instead of evaluation.
 // Results in a tuple vector containing intermediate structures of compile-time values or strings of C expressions.
-<interface::node T> Result<Tuple<TypedResolvedValue>> resolveExpression (Context &, bool translate) (T)
+<interface::node T> Result<Tuple<ResolvedValue>> resolveExpression (Context &, bool translate) (T)
 // Results in a vector of tuple vectors containing the same values as resolveExpression.
-<interface::node T> Result<Vector<Tuple<TypedResolvedValue>>> resolveArrayElement (Context &, bool translate) (T)
+<interface::node T> Result<Vector<Tuple<ResolvedValue>>> resolveArrayElement (Context &, bool translate) (T)
 <interface::node T> Result<void> resolveStatement (Context &) (T)
 <interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
 <interface::node T> Result<Vector<String>> extractNames (T)
@@ -48,7 +46,7 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 // Resolution of other AST nodes to intermediate structures:
 <interface::node T> Result<Tuple<CompleteDeclaration>> resolveDeclaration (Context &) (T)
 <interface::node T> Result<Tuple<CompleteRangeDeclaration>> resolveRangeDeclaration (Context &) (T)
-<interface::node T> Result<Tuple<TypedResolvedTarget>> resolveTarget (Context &) (T)
+<interface::node T> Result<Tuple<ResolvedTarget>> resolveTarget (Context &) (T)
 
 // Operations on types and compile-time values in intermediate structures:
 // Only simple types have a name given directly with a constant. (e.g. `bool`)
@@ -88,8 +86,8 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 <interface::any T> String T::display ()
 
 // Nodes:
-<interface::node T> Result<Tuple<TypedResolvedValue>> T::resolveExpression (Context &, bool translate)
-<interface::node T> Result<Vector<Tuple<TypedResolvedValue>>> T::resolveArrayElement (Context &, bool translate)
+<interface::node T> Result<Tuple<ResolvedValue>> T::resolveExpression (Context &, bool translate)
+<interface::node T> Result<Vector<Tuple<ResolvedValue>>> T::resolveArrayElement (Context &, bool translate)
 <interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
 <interface::node T> Result<void> T::resolveStatement (Context &)
 <interface::node T> Result<Tuple<CompleteDeclaration>> T::resolveDeclaration (Context &)

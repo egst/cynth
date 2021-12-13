@@ -61,10 +61,10 @@ namespace cynth {
 
             for (auto const & decl : decls) {
                 auto defResult = esl::unite_results(lift<target::component_vector_tiny_result, target::category>(
-                    [&ctx] (auto const & type) -> esl::result<sem::TypedResolvedValue> {
+                    [&ctx] (auto const & type) -> esl::result<sem::Variable> {
                         auto result = interface::translateDefinition(ctx, std::nullopt)(type);
                         if (!result) return result.error();
-                        return sem::TypedResolvedValue{type, result->value};
+                        return sem::Variable{result->value};
                     }
                 )(decl.type));
                 if (!defResult) return defResult.error();

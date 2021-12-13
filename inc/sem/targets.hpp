@@ -23,12 +23,12 @@ namespace cynth::sem {
     // TODO: These intermediate stuctures might not be needed.
     // There used to be two interface functions:
     // eval_target (syn::node::* -> sem::target::*) and
-    // resolve_target (sem::target::* -> sem::TypedResolvedTarget)
+    // resolve_target (sem::target::* -> sem::ResolvedTarget)
 
     namespace target {
 
         struct Direct {
-            TypedResolvedValue & value;
+            ResolvedValue & value;
 
             //TARGET_INTERFACE;
         };

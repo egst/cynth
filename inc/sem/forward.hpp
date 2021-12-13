@@ -6,14 +6,16 @@ namespace cynth::sem {
 
     // Compound:
 
+    struct TypedExpression;
+    struct TypedName;
+    struct TypedTargetExpression;
     struct Variable;
-    struct RuntimeValue;
     struct ResolvedValue;
-    struct TypedResolvedValue;
     struct ResolvedTarget;
-    struct TypedResolvedTarget;
     struct Capture;
-    struct KnownCapture;
+    struct ResolvedCapture;
+    struct CapturedContext;
+    struct ResolvedCapturedContext;
 
     // Declarations:
 
@@ -54,15 +56,14 @@ namespace cynth::sem {
 
     // Values:
 
+    struct ArrayAllocation;
+
     namespace value {
 
         struct Bool;
         struct Int;
         struct Float;
         struct String;
-
-        struct ArrayValue;
-        //struct FunctionValue;
 
         struct In;
         struct Out;

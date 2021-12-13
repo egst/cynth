@@ -60,8 +60,9 @@ namespace cynth::context {
 
     protected:
         std::tuple<
-            std::optional<RefvalContainer<sem::value::ArrayValue>>
-            //std::optional<RefvalContainer<sem::value::FunctionValue>>
+            std::optional<RefvalContainer<sem::ArrayAllocation>>
+            // ...
+            // For now, only arrays are allocated at compile time.
         > referential;
     };
 

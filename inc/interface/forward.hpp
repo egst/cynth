@@ -18,20 +18,15 @@ namespace cynth::interface {
 
     // Nodes:
     // For full declarations, #include "interface/nodes.hpp"
-    using ExpressionResolutionResult       = esl::result<esl::tiny_vector<sem::TypedResolvedValue>>;
-    using ArrayElementResolutionResult     = esl::result<std::vector<esl::tiny_vector<sem::TypedResolvedValue>>>;
+    using ExpressionResolutionResult       = esl::result<esl::tiny_vector<sem::ResolvedValue>>;
+    using ArrayElementResolutionResult     = esl::result<std::vector<esl::tiny_vector<sem::ResolvedValue>>>;
     using TypeResolutionResult             = esl::result<esl::tiny_vector<sem::CompleteType>>;
     using StatementResolutionResult        = esl::result<void>;
     using DeclarationResolutionResult      = esl::result<esl::tiny_vector<sem::CompleteDeclaration>>;
     using RangeDeclarationResolutionResult = esl::result<esl::tiny_vector<sem::CompleteRangeDeclaration>>;
-    using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::TypedResolvedTarget>>;
+    using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::ResolvedTarget>>;
     using NameExtractionResult             = esl::result<std::vector<std::string>>;
     using TypeNameExtractionResult         = esl::result<std::vector<std::string>>;
-    // TODO: Do I really need a TypedResolvedValue for exrpession resolution?
-    // Maybe it should be more like variant<struct { CompleteType type; string expression }, CompleteValue>,
-    // not struct { CompleteType type; variant<CompleteValue, string> }
-    // The first option more represents the information more precisely (more tightly) and saves a little bit of space
-    // while the second one needs a little more space, but might save some time by caching the type.
 
     // Types:
     // For full declarations, #include "interface/types.hpp"

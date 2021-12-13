@@ -33,6 +33,16 @@ namespace cynth::interface {
         };
 
         template <typename T>
+        concept staticValueType = value<T> && requires () {
+            { T::valueType } -> type;
+        };
+
+        template <typename T>
+        concept directValueType = value<T> && requires (T value) {
+            { value.valueType } -> type;
+        };
+
+        template <typename T>
         concept valueType = value<T> && requires (T value) {
             { value.valueType() } -> std::same_as<ValueTypeResult>;
         };
@@ -67,10 +77,20 @@ namespace cynth::interface {
         }
     );
 
-    constexpr auto valueType =
-        [] (has::valueType auto const & value) -> ValueTypeResult {
+    constexpr auto valueType = esl::overload(
+        [] <has::staticValueType T> (T const &) -> ValueTypeResult
+        requires (!has::directValueType<T> && !has::valueType<T>) {
+            return sem::CompleteType{T::valueType};
+        },
+        [] <has::directValueType T> (T const & value) -> ValueTypeResult
+        requires (!has::staticValueType<T> && !has::valueType<T>) {
+            return sem::CompleteType{value.valueType};
+        },
+        [] <has::valueType T> (T const & value) -> ValueTypeResult
+        requires (!has::staticValueType<T> && !has::directValueType<T>) {
             return value.valueType();
-        };
+        }
+    );
 
     // TODO: Do I need this?
     // Or perhaps `convertValue`'s functionality could be included in `translateConversion` (in interface/types)?

@@ -1167,7 +1167,10 @@ namespace cynth {
                     */
                 },
                 [] (sem::CompleteValue const & value) -> esl::result<sem::ResolvedValue> {
-                    // TODO: Don't forget about functions. They occur in this branch.
+                    // static types and compvals are straightforward
+
+                    // functions:
+
                     return {{value}};
                 }
             )(capture.value);

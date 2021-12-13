@@ -15,72 +15,74 @@
 
 namespace cynth::sem {
 
-    struct Variable {
-        CompleteType                 type;
-        // TODO: Can I statically enforce presence of a value in at least one of the optionals?
-        std::optional<CompleteValue> value;
-        std::optional<std::string>   variable;
-    };
+    // Note: The following three have the same structure.
+    // They are used in related but still pretty different contexts,
+    // so I'd like to keep them separated to better describe their semantic intent.
 
-    // TODO: Probably won't be needed.
-    struct RuntimeValue {
+    struct TypedExpression {
         CompleteType type;
         std::string  expression;
     };
 
-    struct ResolvedValue {
+    struct TypedName {
+        CompleteType type;
+        std::string  name;
+    };
+
+    /** E.g. `var`, `*var`, `var[2]` */
+    struct TypedTargetExpression {
+        CompleteType type;
+        std::string  expression;
+    };
+
+    struct Variable {
         using Variant = std::variant<
             CompleteValue, // Value known at compile time
-            std::string    // C expression
+            TypedName      // Corresponding runtime C variable
         >;
         Variant value;
     };
 
-    struct TypedResolvedValue {
-        CompleteType type;
-        ResolvedValue::Variant value;
+    struct ResolvedValue {
+        using Variant = std::variant<
+            CompleteValue,  // Value known at compile time
+            TypedExpression // C expression
+        >;
+        Variant value;
     };
 
     struct ResolvedTarget {
         using Variant = std::variant<
-            CompleteValue *, // Compconst variable only available at compile time
-            std::string      // C variable name or other lvalue expression
+            CompleteValue *,      // Compconst variable only available at compile time
+            TypedTargetExpression // C variable name or other lvalue expression
         >;
-
         Variant target;
     };
 
-    struct TypedResolvedTarget {
-        CompleteType type;
-        ResolvedTarget::Variant target;
-    };
-
-    struct CapturedValue {
+    struct Capture {
         using Variant = std::variant<
-            CompleteValue, // comp-time or static value => capture the value
-            CompleteType   // run-time non-static value => capture the type only
+            CompleteValue, // Comp-time or static value => Capture the value
+            CompleteType   // Run-time non-static value => Capture the type only
         >;
         Variant value;
     };
 
-    /**
-     *  values:
-     *  * comp-time or static value => capture the value
-     *  * run-time non-static value => capture the type only
-     */
-    struct Capture {
-        std::unordered_map<std::string, esl::tiny_vector<CompleteType>>  types;
-        std::unordered_map<std::string, esl::tiny_vector<CapturedValue>> values;
+    struct ResolvedCapture {
+        using Variant = std::variant<
+            CompleteValue, // Comp-time or static value => The captured value
+            TypedName      // Run-time non-static value => Typed name of a runtime context member
+        >;
+        Variant value;
     };
 
-    /**
-     *  values:
-     *  * comp-time or static value => the captured value
-     *  * run-time non-static value => name of a runtime context member
-     */
-    struct KnownCapture {
-        std::unordered_map<std::string, esl::tiny_vector<CompleteType>>  types;
-        std::unordered_map<std::string, esl::tiny_vector<ResolvedValue>> values;
+    struct CapturedContext {
+        std::unordered_map<std::string, esl::tiny_vector<CompleteType>> types;
+        std::unordered_map<std::string, esl::tiny_vector<Capture>>      values;
+    };
+
+    struct ResolvedCapturedContext {
+        std::unordered_map<std::string, esl::tiny_vector<CompleteType>>    types;
+        std::unordered_map<std::string, esl::tiny_vector<ResolvedCapture>> values;
     };
 
 }

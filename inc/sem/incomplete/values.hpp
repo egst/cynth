@@ -3,6 +3,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <optional>
 
 #include "esl/category.hpp"
 #include "esl/component.hpp"
@@ -20,15 +21,25 @@
 // Circular dependencies:
 #include "sem/forward.hpp"
 // TODO: sem/compound
+// TODO:
+// * values should be fully dependent on types.
+// * types should only need incomplete values
+// * compound should need both types and values, while nither types nor values should need compound
+// * what about declarations?
 
 // Note: No macros escape this file.
-#define GET(type) \
-    interface::GetResult<type> get () const
-#define CONVERT(type) \
-    interface::ConversionResult convert (context::C &, type const &) const
+#define GET(Type) \
+    interface::GetResult<Type> get () const
+#define CONVERT(Type) \
+    interface::ConversionResult convert (context::C &, Type const &) const
+#define STATIC_VALUE_TYPE(Type, init) \
+    constexpr static Type valueType = init
+#define DIRECT_VALUE_TYPE(Type) \
+    Type valueType
+#define VALUE_TYPE \
+    interface::ValueTypeResult valueType () const
 #define VALUE_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::ValueTypeResult valueType () const; \
     interface::ValueTranslationResult translateValue () const
 
 namespace cynth::sem {
@@ -36,192 +47,153 @@ namespace cynth::sem {
     namespace value {
 
         struct Bool {
-            bool value;
+            std::optional<bool> value;
 
             VALUE_INTERFACE;
+
+            STATIC_VALUE_TYPE(type::Bool, {});
 
             GET(bool);
 
             CONVERT(type::Bool);
             CONVERT(type::Int);
             CONVERT(type::Float);
-            CONVERT(type::Const);
 
             constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
         };
 
         struct Int {
-            Integral value;
+            std::optional<Integral> value;
 
             VALUE_INTERFACE;
+
+            STATIC_VALUE_TYPE(type::Int, {});
 
             GET(Integral);
 
             CONVERT(type::Bool);
             CONVERT(type::Int);
             CONVERT(type::Float);
-            CONVERT(type::Const);
 
             constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
         };
 
         struct Float {
-            Floating value;
+            std::optional<Floating> value;
 
             VALUE_INTERFACE;
+
+            STATIC_VALUE_TYPE(type::Float, {});
 
             GET(Floating);
 
             CONVERT(type::Bool);
             CONVERT(type::Int);
             CONVERT(type::Float);
-            CONVERT(type::Const);
 
             constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
         };
 
         struct String {
-            std::string value;
+            std::optional<std::string> value;
 
             VALUE_INTERFACE;
+
+            STATIC_VALUE_TYPE(type::String, {});
 
             GET(std::string);
 
             constexpr static CompleteValue make (std::string); //return sem::value::Sting{.value = value};
         };
 
-        /** Constant values will not be used in the first versions. */
-        struct Const {
-            esl::component<CompleteValue> value;
-
-            VALUE_INTERFACE;
-
-            CONVERT(type::Bool);
-            CONVERT(type::Int);
-            CONVERT(type::Float);
-            CONVERT(type::Const);
-            CONVERT(type::Array);
-        };
-
-        struct InAlloc {
-            esl::component<std::string>  data;
-            esl::component<CompleteType> type;
-        };
-
         struct In {
-            InAlloc                      alloc;
-            esl::component<CompleteType> type;
+            std::optional<std::string> allocation; // run-time allocation variable name
 
             VALUE_INTERFACE;
+
+            DIRECT_VALUE_TYPE(type::In);
 
             CONVERT(type::Bool);
             CONVERT(type::Int);
             CONVERT(type::Float);
             CONVERT(type::In);
-            CONVERT(type::Const);
             CONVERT(type::Buffer);
         };
 
-        struct OutAlloc {
-            esl::component<std::string>  data;
-            esl::component<CompleteType> type;
-        };
-
         struct Out {
-            OutAlloc                     alloc;
-            esl::component<CompleteType> type;
+            std::optional<std::string> allocation; // run-time allocation variable name
 
             VALUE_INTERFACE;
+
+            DIRECT_VALUE_TYPE(type::Out);
 
             CONVERT(type::Out);
         };
 
-        template <template <typename...> typename Base>
-        struct vector_param {
-            template <typename T>
-            struct test_vector: Base<T> {};
-        };
+    }
 
-        template <typename T, template <typename...> typename Base>
-        using basic_test_vector = typename vector_param<Base>::template test_vector<T>;
+    /** For compile-time allocated arrays. */
+    struct ArrayAllocation {
+        using Vector = esl::component_vector<CompleteValue>;
+        Vector value;
+    };
 
-        template <typename T> using test_vector      = basic_test_vector<T, std::vector>;
-        template <typename T> using tiny_test_vector = basic_test_vector<T, esl::tiny_vector>;
+    namespace value {
 
-        struct ArrayValue {
-            using Vector = esl::component_vector<esl::tiny_vector<CompleteValue>>;
-            Vector value;
-        };
-
-        struct ArrayAlloc {
-            esl::component<std::string>  data;
-            esl::component<CompleteType> type;
-            Integral                     size;
-        };
-
+        // TODO: Figure out a way to work with arrays containing tuples.
         struct Array {
-            using Vector = ArrayValue::Vector;
-            using Variant = std::variant<
-                ArrayValue *,
-                ArrayAlloc
+            using Allocation = std::variant<
+                ArrayAllocation *, // compile-time allocation structure
+                std::string        // run-time allocation variable name
             >;
 
-            Variant                             value;
-            esl::component_vector<CompleteType> type;
-            Integral                            size;
+            std::optional<Allocation> allocation;
 
             VALUE_INTERFACE;
+
+            DIRECT_VALUE_TYPE(type::Array);
 
             GET(std::vector<esl::tiny_vector<CompleteValue>>);
 
             CONVERT(type::Array);
-            CONVERT(type::Const);
 
-            // TODO: allow lvalues and different vector types here
+            /* TODO?
             static esl::result<CompleteValue> make (
                 value::ArrayValue *,
                 esl::component_vector<CompleteType> &&,
                 Integral
             );
+            */
 
-            esl::view<Vector::iterator> trimmed_value () const;
+            esl::view<ArrayAllocation::Vector::iterator> trimmed_value () const;
         };
 
-        struct BufferAlloc {
-            esl::component<std::string> data;
-            esl::component<std::string> generator;
-            Integral                    size;
-        };
-
+        // TODO: Do I need to store the generator here?
         struct Buffer {
-            BufferAlloc alloc;
-            Integral    size;
+            esl::component<std::string> allocation;
 
             VALUE_INTERFACE;
+
+            DIRECT_VALUE_TYPE(type::Buffer);
 
             CONVERT(type::Buffer);
 
             //constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
         };
 
-        /*
-        struct FunctionValue {};
-        */
-
         struct Function {
             // TODO: Which of these really need to be in a component?
-            // TODO: Will optional strings still cause the unfixed segfault problem?
-            esl::component<sem::KnownCapture>          capture;
-            esl::component_vector<CompleteType>        outType;
-            esl::component_vector<CompleteDeclaration> parameters;
-            esl::component<syn::category::Expression>  body;
-            std::optional<std::string>                 functionName; // corresponding C function (generated on demand)
-            std::optional<std::string>                 captureName;  // corresponding C variable containing the captured context
-
-            // TODO: I'm not sure if this would be a good idea or not...
-            //FunctionValue * value;
+            // TODO: Will optional strings also cause the still unfixed segfault problem?
+            esl::component<sem::ResolvedCapturedContext> context;
+            esl::component_vector<CompleteType>          outType;
+            esl::component_vector<CompleteDeclaration>   parameters;
+            esl::component<syn::category::Expression>    body;
+            std::optional<std::string>                   functionName; // corresponding C function (generated on demand)
+            std::optional<std::string>                   contextData;  // corresponding C variable containing the captured context
 
             VALUE_INTERFACE;
+
+            VALUE_TYPE;
 
             GET(Function);
 
@@ -248,7 +220,6 @@ namespace cynth::sem {
             Simple,
             value::In,
             value::Out,
-            value::Const,
             value::Array,
             value::Buffer,
             value::Function
@@ -275,4 +246,7 @@ namespace cynth::sem {
 
 #undef GET
 #undef CONVERT
+#undef STATIC_VALUE_TYPE
+#undef DIRECT_VALUE_TYPE
+#undef VALUE_TYPE
 #undef VALUE_INTERFACE

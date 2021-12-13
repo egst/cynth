@@ -6,9 +6,6 @@
 #include "esl/ranges.hpp"
 #include "esl/string.hpp"
 
-// TODO: Come up with a better name. (And rename the file acordingly.)
-// Note: This was actually a config file before all of the other configuration items
-// were narrowed down to esl-specific stuff only.
 namespace cynth {
 
     namespace str {
@@ -32,17 +29,37 @@ namespace cynth {
         constexpr char const * variable = "var";
 
         // Indentation:
-        //constexpr char const * indent = "\t";
         constexpr char const * indent = "    ";
+        //constexpr char const * indent = "\t";
+
+        // GNU extensions and their alternate keywords:
+        constexpr char const * gnuTypeof = "typeof";
+        //constexpr char const * gnuTypeof = "__typeof__";
 
     }
 
     namespace def {
 
-        // Strings refering to names of implementation helpers:
-        constexpr char const * arrayCopy   = "arr_copy";
-        constexpr char const * arrayCopyTo = "arr_copy_to";
-        constexpr char const * dataMember  = "data";
+        // Strings refering to names of internal implementation declarations:
+
+        // Conversions:
+        constexpr char const * convert      = "convert";
+
+        // Arrays:
+        constexpr char const * arrayCopy    = "arr_copy";
+        constexpr char const * arrayCopyTo  = "arr_copy_to";
+
+        // Builtin operations:
+        constexpr char const * neg          = "neg";
+        constexpr char const * add          = "add";
+        constexpr char const * sub          = "sub";
+        constexpr char const * mul          = "mul";
+        constexpr char const * div          = "div";
+        constexpr char const * mod          = "mod";
+
+        // Buffers:
+        constexpr char const * dataMember   = "data";
+        constexpr char const * offsetMember = "offset";
 
     }
 
@@ -88,16 +105,23 @@ namespace cynth {
             return std::string{} + "structure " + name;
         }
 
-        /** A GNU typeof extension - `typeof(<value>)` */
-        inline std::string infer (std::string const & value) {
-            return std::string{} + "typeof" + "(" + value + ")";
+        /** `{\n\t<stmt1>;\n\t<stmt2>;\n\t...;\n\t<stmtN>;\n}` */
+        template <typename... Ts>
+        inline std::string block (Ts const &... stmts) {
+            return std::string{} +
+                "{\n" + str::indent + esl::join(std::string{} + ";\n" + str::indent, stmts...) + ";\n}";
         }
 
         /** A GNU statement expression extension - `({\n\t<stmt1>;\n\t<stmt2>;\n\t...;\n\t<stmtN>;\n})` */
         template <typename... Ts>
-        inline std::string infer (Ts const &... stmts) {
+        inline std::string blockExpression (Ts const &... stmts) {
             return std::string{} +
                 "({\n" + str::indent + esl::join(std::string{} + ";\n" + str::indent, stmts...) + ";\n})";
+        }
+
+        /** A GNU typeof extension - `typeof(<value>)` */
+        inline std::string infer (std::string const & value) {
+            return std::string{} + str::gnuTypeof + "(" + value + ")";
         }
 
         /** `<type> <name>` */
@@ -165,9 +189,16 @@ namespace cynth {
         }
 
         /** `struct cth_arr$<size>$<type1>$<type2>$...` */
+        /* TODO: This probably won't be needed anymore.
         template <typename... Ts>
         std::string arrayValueType (std::string const & size, Ts const &... types) {
             return c::structure(c::global(c::templateArguments(std::string{} + str::array, size, types...)));
+        }
+        */
+
+        /** `typeof({type} [{size}])` */
+        inline std::string arrayValueType (std::string const & size, std::string const & type) {
+            return std::string{} + str::gnuTypeof + "(" + type + " " + "[" + size + "])";
         }
 
         /** `struct cth_tup$<type1>$<type2>$... *` */
@@ -238,11 +269,13 @@ namespace cynth {
         }
 
         /** Array wrapper raw data - `<structure>.data` */
+        /* TODO: This probably won't be needed anymore.
         inline std::string arrayData (std::string const & structure) {
             return structure + "." + def::dataMember;
         }
+        */
 
-        /** Array wrapper raw data - `<structure>.data` */
+        /** Buffer wrapper raw data - `<structure>.data` */
         inline std::string bufferData (std::string const & structure) {
             return structure + "." + def::dataMember;
         }

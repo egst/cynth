@@ -18,8 +18,8 @@
 #include "sem/forward.hpp"
 
 // Note: No macros escape this file.
-#define DIRECT_TYPE_NAME(name) \
-    constexpr static interface::TypeNameConstant directTypeName = name
+#define STATIC_TYPE_NAME(name) \
+    constexpr static interface::TypeNameConstant typeName = name
 #define TYPE_NAME \
     interface::TypeNameResult typeName () const
 #define SAME(type) \
@@ -32,15 +32,15 @@
     interface::DisplayResult display () const; \
     interface::DefinitionTranslationResult translateDefinition ( \
         context::C &, \
-        std::optional<TypedResolvedValue> const & definition \
+        std::optional<ResolvedValue> const & definition \
     ) const; \
     interface::AllocationTranslationResult translateAllocation ( \
         context::C &, \
-        std::optional<TypedResolvedValue> const & definition \
+        std::optional<ResolvedValue> const & definition \
     ) const; \
     interface::ConversionTranslationResult translateConversion ( \
         context::C &, \
-        TypedResolvedValue const & from \
+        ResolvedValue const & from \
     ) const;
 #define INCOMPLETE_TYPE_INTERFACE \
     interface::TypeCompletionResult completeType (context::C &) const
@@ -55,9 +55,11 @@ namespace cynth::sem {
     namespace type {
 
         struct Bool {
+            bool constant;
+
             TYPE_INTERFACE;
 
-            DIRECT_TYPE_NAME(str::boolean);
+            STATIC_TYPE_NAME(str::boolean);
 
             COMMON(type::Bool);
             COMMON(type::Int);
@@ -72,9 +74,11 @@ namespace cynth::sem {
         };
 
         struct Int {
+            bool constant;
+
             TYPE_INTERFACE;
 
-            DIRECT_TYPE_NAME(str::integral);
+            STATIC_TYPE_NAME(str::integral);
 
             // implicit common(Bool)
             COMMON(type::Int);
@@ -86,9 +90,11 @@ namespace cynth::sem {
         };
 
         struct Float {
+            bool constant;
+
             TYPE_INTERFACE;
 
-            DIRECT_TYPE_NAME(str::floating);
+            STATIC_TYPE_NAME(str::floating);
 
             // implicit common(Bool)
             // implicit common(Int)
@@ -103,7 +109,7 @@ namespace cynth::sem {
         struct String {
             TYPE_INTERFACE;
 
-            DIRECT_TYPE_NAME(str::string);
+            STATIC_TYPE_NAME(str::string);
 
             COMMON(type::String);
 
@@ -123,11 +129,6 @@ namespace cynth::sem {
             };
 
             template <bool Complete>
-            struct Const {
-                esl::component<Type<Complete>> type;
-            };
-
-            template <bool Complete>
             using Size = std::conditional_t <
                 Complete,
                 Integral,
@@ -138,11 +139,12 @@ namespace cynth::sem {
             struct Array {
                 esl::component_vector<Type<Complete>> type;
                 Size<Complete> size;
+                bool constval;
+                bool constref;
             };
 
             template <bool Complete>
             struct Buffer {
-                constexpr static char const * sampleType = "float"; // TODO?
                 Size<Complete> size;
             };
 
@@ -176,28 +178,9 @@ namespace cynth::sem {
             //DECAY;
         };
 
-        struct Const: detail::types::Const<true> {
-            TYPE_INTERFACE;
-
-            TYPE_NAME;
-
-            // implicit common(Bool)
-            // implicit common(Int)
-            // implicit common(Float)
-            COMMON(type::Const);
-            COMMON(type::Array);
-
-            SAME(type::Const);
-
-            CONST();
-
-            //DECAY;
-        };
-
         struct Array: detail::types::Array<true> {
             TYPE_INTERFACE;
 
-            // implicit coomon(Const)
             COMMON(type::Array);
 
             SAME(type::Array);
@@ -235,10 +218,6 @@ namespace cynth::sem {
             INCOMPLETE_TYPE_INTERFACE;
         };
 
-        struct IncompleteConst: detail::types::Const<false> {
-            INCOMPLETE_TYPE_INTERFACE;
-        };
-
         struct IncompleteArray: detail::types::Array<false> {
             INCOMPLETE_TYPE_INTERFACE;
         };
@@ -268,7 +247,6 @@ namespace cynth::sem {
 
         using Complete = esl::extend<
             Simple,
-            type::Const,
             type::In,
             type::Out,
             type::Array,
@@ -278,7 +256,6 @@ namespace cynth::sem {
 
         using Incomplete = esl::extend<
             Complete,
-            type::IncompleteConst,
             type::IncompleteIn,
             type::IncompleteOut,
             type::IncompleteArray,
@@ -301,7 +278,7 @@ namespace cynth::sem {
 
 }
 
-#undef DIRECT_TYPE_NAME
+#undef STATIC_TYPE_NAME
 #undef TYPE_NAME
 #undef SAME
 #undef COMMON
