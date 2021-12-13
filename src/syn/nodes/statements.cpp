@@ -1,5 +1,8 @@
 #include "syn/nodes/statements.hpp"
 
+#include <string>
+#include <utility>
+
 #include "esl/category.hpp"
 #include "esl/component.hpp"
 #include "esl/lift.hpp"
@@ -9,10 +12,13 @@
 #include "esl/zip.hpp"
 //#include "esl/containers.hpp" // unite_results, single, init (from old code)
 
+#include "context/c.hpp"
 #include "interface/common.hpp"
 #include "interface/nodes.hpp"
 #include "interface/types.hpp"
+#include "interface/values.hpp"
 #include "sem/compound.hpp"
+#include "sem/translation.hpp"
 
 // TMP
 #include "esl/debug.hpp"
@@ -205,9 +211,29 @@ namespace cynth {
         for (auto const & [target, value]: esl::zip(targets, values)) {
             auto conversionResult = lift<target::category>(interface::translateConversion(ctx, value))(target.type);
             if (!conversionResult) return conversionResult.error();
+            auto converted = *std::move(conversionResult);
 
-            auto assignmentResult = target.assign(ctx, *conversionResult);
-            if (!assignmentResult) return assignmentResult.error();
+            return lift<target::variant>(
+                [] (sem::CompleteValue * target, sem::CompleteValue const & value) -> esl::result<void> {
+                    if (!target) return esl::result_error{"Missing target."};
+                    *target = value;
+                    return {};
+                },
+                [&ctx] (sem::CompleteValue * target, std::string const & value) -> esl::result<void> {
+                    if (!target) return esl::result_error{"Missing target."};
+                    auto translatoinResult = lift<target::category>(interface::translateTarget(ctx))(*target);
+                    if (!translatoinResult) return translatoinResult.error();
+                    return {};
+                },
+                [&ctx] (std::string const & target, sem::CompleteValue const & value) -> esl::result<void> {
+                    auto translatoinResult = lift<target::category>(interface::translateValue(ctx))(value);
+                    if (!translatoinResult) return translatoinResult.error();
+                    return ctx.insertStatement(c::assignment(*translatoinResult, target));
+                },
+                [&ctx] (std::string const & target, std::string const & value) -> esl::result<void> {
+                    return ctx.insertStatement(c::assignment(value, target));
+                }
+            )(target.target, converted.value);
         }
 
         return {};
@@ -231,7 +257,7 @@ namespace cynth {
 
         auto valueIterator = values.begin();
         for (auto const & decl: decls) {
-            esl::tiny_vector<sem::TypedResolvedValue> vars;
+            esl::tiny_vector<sem::Variable> vars;
             auto count = decl.type.size();
             if (count > values.end() - valueIterator)
                 return esl::result_error{"More values than targets in a definition."};
@@ -241,7 +267,11 @@ namespace cynth {
                 if (!defResult) return defResult.error();
                 auto def = *defResult;
 
-                vars.push_back(sem::TypedResolvedValue{value.type, def.value});
+                vars.push_back(sem::Variable{
+                    .type     = value.type,
+                    .value    = def.value,
+                    .variable = std::nullopt
+                });
             }
 
             auto varResult = ctx.compCtx->insertValue(decl.name, vars);
@@ -303,19 +333,37 @@ namespace cynth {
     }
 
     interface::StatementResolutionResult syn::node::FunDef::resolveStatement (context::C & ctx) const {
-        return {};
-#if 0 // TODO
-        auto output_result = esl::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(output)));
-        if (!output_result)
-            return syn::make_execution_result(output_result.error());
-        auto output = *std::move(output_result);
 
-        auto input_result = esl::unite_results(sem::complete(ctx)(syn::eval_decl(ctx)(input)));
-        if (!input_result)
-            return syn::make_execution_result(input_result.error());
-        auto input = *std::move(input_result);
+        auto outResult = lift<target::component, target::category>(interface::resolveType(ctx))(output);
+        if (!outResult) return outResult.error();
+        auto outTypes = *std::move(outResult);
 
-        auto stored = ctx.store_value(sem::value::FunctionValue {
+        auto inResult = lift<target::component, target::category>(interface::resolveDeclaration(ctx))(input);
+        if (!inResult) return inResult.error();
+        auto inDecls = *std::move(inResult);
+
+        auto namesResult = lift<target::component, target::category>(interface::extractNames)(body);
+        if (!namesResult) return namesResult.error();
+        auto typeNamesResult = lift<target::component, target::category>(interface::extractTypeNames)(body);
+        if (!typeNamesResult) return typeNamesResult.error();
+        auto capture = ctx.compCtx->capture(*namesResult, *typeNamesResult);
+
+        sem::value::Function value{
+            .capture      = std::move(capture), // TODO
+            .outType      = esl::make_component_vector(outTypes),
+            .parameters   = esl::make_component_vector(inDecls),
+            .body         = body,
+            .functionName = {},
+            .captureName  = {},
+        };
+
+        auto translated = value.translateValue();
+
+        auto varResult = ctx.compCtx->insertValue(*name.name, {/* TODO */});
+        if (!varResult) return varResult.error();
+
+        /*
+        auto stored = ctx.compCtx->storeValue(sem::value::FunctionValue {
             .out_type   = make_component_vector(output),
             .parameters = make_component_vector(input),
             .body       = body,
@@ -327,16 +375,16 @@ namespace cynth {
         auto value = esl::init<tuple_vector>(sem::value::complete{sem::value::Function {
             .value = stored.get()
         }});
+        */
 
         // TODO
-#if 0
+        /*
         auto define_result = ctx.define_value(*name->name, value);
         if (!define_result)
             return syn::make_execution_result(define_result.error());
-#endif
+        */
 
         return {};
-#endif
     }
 
     //// If ////

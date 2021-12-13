@@ -81,8 +81,8 @@ namespace cynth::context {
 
         std::size_t nextId ();
 
-        Cynth * compCtx;
-
+        // TODO: Make these protected and provide referential accessors for unified interface.
+        Cynth     * compCtx;
         C::Global & globalCtx;
 
     protected:

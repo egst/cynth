@@ -74,6 +74,16 @@ namespace cynth::interface {
             { node.resolveTarget(ctx) } -> std::same_as<TargetResolutionResult>;
         };
 
+        template <typename T>
+        concept extractNames = node<T> && requires (T node) {
+            { node.extractNames() } -> std::same_as<NameExtractionResult>;
+        };
+
+        template <typename T>
+        concept extractTypeNames = node<T> && requires (T node) {
+            { node.extractTypeNames() } -> std::same_as<TypeNameExtractionResult>;
+        };
+
     }
 
     // Functions:
@@ -132,5 +142,23 @@ namespace cynth::interface {
             }
         );
     }
+
+    constexpr auto extractNames = esl::overload(
+        [] (has::extractNames auto const & node) -> NameExtractionResult {
+            return node.extractNames();
+        },
+        [] (node auto const &) -> NameExtractionResult {
+            return {}; // No names captured.
+        }
+    );
+
+    constexpr auto extractTypeNames = esl::overload(
+        [] (has::extractTypeNames auto const & node) -> TypeNameExtractionResult {
+            return node.extractTypeNames();
+        },
+        [] (node auto const &) -> TypeNameExtractionResult {
+            return {}; // No names captured.
+        }
+    );
 
 }

@@ -73,6 +73,8 @@
 
 # Cynth
 
+* `self` keyword refering to the current function (from within its body) for recursion  
+    with the current semantics, a function's name is not in context inside of its body
 * decide about implicit conversions
 * negative indices?
 * lambda capture (just copy the whole context for now)

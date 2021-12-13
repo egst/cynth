@@ -19,6 +19,7 @@
 
 // Circular dependencies:
 #include "sem/forward.hpp"
+// TODO: sem/compound
 
 // Note: No macros escape this file.
 #define GET(type) \
@@ -27,7 +28,8 @@
     interface::ConversionResult convert (context::C &, type const &) const
 #define VALUE_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::ValueTypeResult valueType () const
+    interface::ValueTypeResult valueType () const; \
+    interface::ValueTranslationResult translateValue () const
 
 namespace cynth::sem {
 
@@ -101,13 +103,14 @@ namespace cynth::sem {
             CONVERT(type::Array);
         };
 
-        struct InValue {
-            esl::component<CompleteValue> value;
+        struct InAlloc {
+            esl::component<std::string>  data;
+            esl::component<CompleteType> type;
         };
 
         struct In {
-            InValue * value;
-            esl::component<CompleteValue> type;
+            InAlloc                      alloc;
+            esl::component<CompleteType> type;
 
             VALUE_INTERFACE;
 
@@ -119,13 +122,14 @@ namespace cynth::sem {
             CONVERT(type::Buffer);
         };
 
-        struct OutValue {
-            esl::component<CompleteValue> value;
+        struct OutAlloc {
+            esl::component<std::string>  data;
+            esl::component<CompleteType> type;
         };
 
         struct Out {
-            OutValue * value;
-            esl::component<CompleteValue> type;
+            OutAlloc                     alloc;
+            esl::component<CompleteType> type;
 
             VALUE_INTERFACE;
 
@@ -146,16 +150,25 @@ namespace cynth::sem {
 
         struct ArrayValue {
             using Vector = esl::component_vector<esl::tiny_vector<CompleteValue>>;
-
             Vector value;
+        };
+
+        struct ArrayAlloc {
+            esl::component<std::string>  data;
+            esl::component<CompleteType> type;
+            Integral                     size;
         };
 
         struct Array {
             using Vector = ArrayValue::Vector;
+            using Variant = std::variant<
+                ArrayValue *,
+                ArrayAlloc
+            >;
 
-            ArrayValue * value;
+            Variant                             value;
             esl::component_vector<CompleteType> type;
-            Integral size;
+            Integral                            size;
 
             VALUE_INTERFACE;
 
@@ -164,50 +177,49 @@ namespace cynth::sem {
             CONVERT(type::Array);
             CONVERT(type::Const);
 
+            // TODO: allow lvalues and different vector types here
             static esl::result<CompleteValue> make (
                 value::ArrayValue *,
-                esl::component_vector<CompleteType> &&, // TODO: allow lvalues here
+                esl::component_vector<CompleteType> &&,
                 Integral
             );
 
             esl::view<Vector::iterator> trimmed_value () const;
         };
 
-        struct FunctionValue;
-
-        struct BufferValue {
-            using Sample = Floating;
-            using Vector = std::vector<Floating>;
-
-            Vector value;
-            FunctionValue * generator;
+        struct BufferAlloc {
+            esl::component<std::string> data;
+            esl::component<std::string> generator;
+            Integral                    size;
         };
 
         struct Buffer {
-            using Sample = BufferValue::Sample;
-            using Vector = std::vector<Sample>;
-
-            BufferValue * value;
-            Integral size;
+            BufferAlloc alloc;
+            Integral    size;
 
             VALUE_INTERFACE;
 
             CONVERT(type::Buffer);
 
-            constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
+            //constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
         };
 
-        struct FunctionValue {
-            using Body = syn::category::Expression;
-
-            esl::component_vector<CompleteType> out_type;
-            esl::component_vector<CompleteDeclaration> parameters;
-            esl::component<Body> body;
-            esl::component<context::Cynth> capture;
-        };
+        /*
+        struct FunctionValue {};
+        */
 
         struct Function {
-            FunctionValue * value;
+            // TODO: Which of these really need to be in a component?
+            // TODO: Will optional strings still cause the unfixed segfault problem?
+            esl::component<sem::KnownCapture>          capture;
+            esl::component_vector<CompleteType>        outType;
+            esl::component_vector<CompleteDeclaration> parameters;
+            esl::component<syn::category::Expression>  body;
+            std::optional<std::string>                 functionName; // corresponding C function (generated on demand)
+            std::optional<std::string>                 captureName;  // corresponding C variable containing the captured context
+
+            // TODO: I'm not sure if this would be a good idea or not...
+            //FunctionValue * value;
 
             VALUE_INTERFACE;
 

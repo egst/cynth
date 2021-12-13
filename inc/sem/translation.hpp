@@ -24,6 +24,7 @@ namespace cynth {
         constexpr char const * global   = "cth";
         constexpr char const * input    = "in";
         constexpr char const * integral = "int";
+        constexpr char const * member   = "m";
         constexpr char const * output   = "out";
         constexpr char const * string   = "str";
         constexpr char const * tuple    = "tup";
@@ -117,6 +118,11 @@ namespace cynth {
         /** `*<dst> = <src>` */
         inline std::string valueAssignment (std::string const & src, std::string const & dst) {
             return c::assignment(c::dereference(dst), src);
+        }
+
+        /** `.<dst> = <src>` */
+        inline std::string desigatedInitialization (std::string const & src, std::string const & dst) {
+            return "." + dst + " = " + src;
         }
 
         /** Brace initialization - `{<arg1>, <arg2>, ...}` */
@@ -219,6 +225,11 @@ namespace cynth {
         /** Local variable - `var_<id>` */
         inline std::string variableName (std::string const & id) {
             return std::string{} + str::variable + "_" + id;
+        }
+
+        /** Struct member - `m_<id>` */
+        inline std::string memberName (std::string const & id) {
+            return std::string{} + str::member + "_" + id;
         }
 
         /** Local variable holding a function's context - `ctxvar_<id>` */

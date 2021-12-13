@@ -25,6 +25,8 @@ namespace cynth::interface {
     using DeclarationResolutionResult      = esl::result<esl::tiny_vector<sem::CompleteDeclaration>>;
     using RangeDeclarationResolutionResult = esl::result<esl::tiny_vector<sem::CompleteRangeDeclaration>>;
     using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::TypedResolvedTarget>>;
+    using NameExtractionResult             = esl::result<std::vector<std::string>>;
+    using TypeNameExtractionResult         = esl::result<std::vector<std::string>>;
     // TODO: Do I really need a TypedResolvedValue for exrpession resolution?
     // Maybe it should be more like variant<struct { CompleteType type; string expression }, CompleteValue>,
     // not struct { CompleteType type; variant<CompleteValue, string> }
@@ -40,7 +42,7 @@ namespace cynth::interface {
     using ConstTypeResult             = bool;
     using TypeCompletionResult        = esl::result<sem::CompleteType>;
     using TypeTranslationResult       = esl::result<std::string>;
-    using DefinitionTranslationResult = esl::result<sem::ResolvedValue>;
+    using DefinitionTranslationResult = esl::result<sem::Variable>;
     using AllocationTranslationResult = esl::result<std::string>;
     using ConversionTranslationResult = esl::result<sem::ResolvedValue>;
     // TODO: Will `translateAllocation` only translate C allocations, or the compile-time ones as well?

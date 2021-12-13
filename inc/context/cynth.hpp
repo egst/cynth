@@ -17,7 +17,7 @@
 namespace cynth::context {
 
     struct Cynth {
-        using ValueEntry = esl::tiny_vector<sem::TypedResolvedValue>;
+        using ValueEntry = esl::tiny_vector<sem::Variable>;
         using TypeEntry  = esl::tiny_vector<sem::CompleteType>;
 
         template <typename T>
@@ -41,6 +41,12 @@ namespace cynth::context {
         ValueEntry * findValue       (std::string const & name);
         TypeEntry  * findType        (std::string const & name);
 
+        sem::Capture capture (
+            std::vector<std::string> const & names,
+            std::vector<std::string> const & typeNames
+        ) const;
+        // TODO: Implement...
+
         template <typename Value>
         void initStorage ();
 
@@ -54,11 +60,8 @@ namespace cynth::context {
 
     protected:
         std::tuple<
-            std::optional<RefvalContainer<sem::value::InValue>>,
-            std::optional<RefvalContainer<sem::value::OutValue>>,
-            std::optional<RefvalContainer<sem::value::ArrayValue>>,
-            std::optional<RefvalContainer<sem::value::BufferValue>>,
-            std::optional<RefvalContainer<sem::value::FunctionValue>>
+            std::optional<RefvalContainer<sem::value::ArrayValue>>
+            //std::optional<RefvalContainer<sem::value::FunctionValue>>
         > referential;
     };
 

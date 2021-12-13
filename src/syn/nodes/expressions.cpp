@@ -1,6 +1,18 @@
 #include "syn/nodes/expressions.hpp"
 
+#include <string>
+
+#include "esl/category.hpp"
 #include "esl/component.hpp"
+#include "esl/lift.hpp"
+#include "esl/result.hpp"
+#include "esl/string.hpp"
+
+#include "context/c.hpp"
+#include "interface/common.hpp"
+#include "interface/nodes.hpp"
+#include "interface/types.hpp"
+#include "sem/translation.hpp"
 
 namespace esl {
 
@@ -503,10 +515,13 @@ namespace esl {
 
 }
 
-// TODO
-#if 0
 namespace cynth {
 
+    using esl::lift;
+    namespace target = esl::target;
+
+// TODO
+#if 0
     //// Implementation helpers ////
 
     namespace {
@@ -1075,35 +1090,106 @@ namespace cynth {
     syn::evaluation_result syn::node::Float::evaluate (sem::context &) const {
         return syn::make_evaluation_result(sem::value::make_float(value));
     }
+#endif
 
     //// Function ////
 
-    display_result syn::node::Function::display () const {
-        return cynth::display(output) + " fn " + util::parenthesized(cynth::display(input)) + " " + cynth::display(body);
+    interface::DisplayResult syn::node::Function::display () const {
+        return
+            lift<target::component, target::category>(interface::display)(output) + " fn " +
+            esl::parenthesized(lift<target::component, target::category>(interface::display)(input)) + " " +
+            lift<target::component, target::category>(interface::display)(body);
     }
 
-    syn::evaluation_result syn::node::Function::evaluate (sem::context & ctx) const {
-        auto out_type = util::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(output)));
-        if (!out_type)
-            return syn::make_evaluation_result(out_type.error());
-        auto parameters = util::unite_results(sem::complete(ctx)(syn::eval_decl(ctx)(input)));
-        if (!parameters)
-            return syn::make_evaluation_result(parameters.error());
+    interface::ExpressionResolutionResult syn::node::Function::resolveExpression (context::C & ctx, bool translate) const {
+        // TODO: translate?
 
-        auto stored = ctx.store_value(sem::value::FunctionValue {
-            .out_type   = component_vector<sem::type::complete> {*std::move(out_type)},
-            .parameters = component_vector<sem::complete_decl>  {*std::move(parameters)},
-            .body       = body,
-            .capture    = ctx // TODO
-        });
-        if (!stored)
-            return syn::make_evaluation_result(stored.error());
+        auto outResult = lift<target::component, target::category>(interface::resolveType(ctx))(output);
+        if (!outResult) return outResult.error();
+        auto outTypes = *std::move(outResult);
+
+        auto inResult = lift<target::component, target::category>(interface::resolveDeclaration(ctx))(input);
+        if (!inResult) return inResult.error();
+        auto inDecls = *std::move(inResult);
+
+        auto namesResult = lift<target::component, target::category>(interface::extractNames)(body);
+        if (!namesResult) return namesResult.error();
+        auto typeNamesResult = lift<target::component, target::category>(interface::extractTypeNames)(body);
+        if (!typeNamesResult) return typeNamesResult.error();
+        auto capture = ctx.compCtx->capture(*namesResult, *typeNamesResult);
+
+        sem::KnownCapture knownCapture;
+
+        for (auto const & [name, tuple]: capture.values) for (auto const & capture: tuple) {
+
+            std::vector<std::string> vals; // allocations
+            std::vector<std::string> vars; // variables
+            std::vector<std::string> init; // initializations
+            std::vector<std::string> post; // post-initialization actions
+
+            lift<target::variant>(
+                [&ctx, &name = name] (sem::CompleteType const & type) -> esl::result<sem::ResolvedValue> {
+                    auto nameResult = lift<target::category>(
+                        [] (interface::simpleType auto const & type) -> esl::result<std::string> {
+                            return esl::result_error{"TODO"};
+                        },
+                        [] (sem::type::Const const & type) -> esl::result<std::string> {
+                            return esl::result_error{"TODO"};
+                        },
+                        [] (sem::type::Array const & type) -> esl::result<std::string> {
+                            return esl::result_error{"TODO"};
+                        },
+                        [] (auto const & type) -> esl::result<std::string> {
+                            return esl::result_error{"TODO"};
+                        }
+                    )(type);
+                    if (!nameResult)
+                        return nameResult.error();
+                    return {*nameResult};
+
+                    // basic and basic const types:
+                    // vars:  {translateType(type)} {varName};
+                    // init:  .vars.{varName} = {name}
+
+                    // array types:
+                    // vals:  cth_arr$size$type1$type2$... {valName};
+                    // vars:  {translateType(type)} {varName};
+                    // init:  .vals.{varName} = {0}
+                    // init:  .vars.{varName} = 0
+                    // post:  {ctxName}.vars.{varName} = {ctxName}.vals.{valName}.data;
+                    // post:  cth_arr_copy({name}, {ctxName}.vals.{valName}.data);
+
+                    // The simple case:
+                    /*
+                    auto memberName = c::memberName(std::to_string(ctx.nextId()));
+                    auto memberDecl = c::statement(c::declaration("TODO", name));
+                    auto memberInit = c::desigatedInitialization(name, memberName);
+                    */
+                },
+                [] (sem::CompleteValue const & value) -> esl::result<sem::ResolvedValue> {
+                    // TODO: Don't forget about functions. They occur in this branch.
+                    return {{value}};
+                }
+            )(capture.value);
+
+
+        }
+
+        auto value = sem::value::Function {
+            .capture      = knownCapture,
+            .outType      = esl::make_component_vector(outTypes),
+            .parameters   = esl::make_component_vector(inDecls),
+            .body         = body,
+            .functionName = {},
+            .captureName  = {}
+        };
 
         return syn::make_evaluation_result(sem::value::complete{sem::value::Function {
             .value = stored.get()
         }});
     }
 
+#if 0 // TODO
     //// Ge ////
 
     display_result syn::node::Ge::display () const {
@@ -1429,5 +1515,5 @@ namespace cynth {
         return result;
     }
 
-}
 #endif
+}

@@ -42,6 +42,8 @@ E.g. `lift<target>(f(context, config...))(targets...)(args...)`
 <interface::node T> Result<Vector<Tuple<TypedResolvedValue>>> resolveArrayElement (Context &, bool translate) (T)
 <interface::node T> Result<void> resolveStatement (Context &) (T)
 <interface::node T> Result<Tuple<Type>> resolveType (Context &) (T)
+<interface::node T> Result<Vector<String>> extractNames (T)
+<interface::node T> Result<Vector<String>> extractTypeNames (T)
 
 // Resolution of other AST nodes to intermediate structures:
 <interface::node T> Result<Tuple<CompleteDeclaration>> resolveDeclaration (Context &) (T)
@@ -93,6 +95,8 @@ In case of two different targets, e.g. `convertValue`, the one choosen staticall
 <interface::node T> Result<Tuple<CompleteDeclaration>> T::resolveDeclaration (Context &)
 <interface::node T> Result<Tuple<CompleteRangeDeclaration>> T::resolveRangeDeclaration (Context &)
 <interface::node T> Result<Tuple<ResolvedTarget>> T::resolveTarget (Context &)
+<interface::node T> Result<Vector<String>> T::extractNames ()
+<interface::node T> Result<Vector<String>> T::extractTypeNames ()
 
 // Types:
 <interface::type T> char const * T::directTypeName // ideally constexpr

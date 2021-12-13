@@ -18,23 +18,24 @@ typeName [A-Z][a-zA-Z0-9_]*
 int      [0-9]+([eE][+-]?[0-9]+)?
 float    ([0-9]+\.[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?
 string   (\"([^"\\]|\\.)*\"|'([^'\\]|\\.)*')
-return   (?i:return)
-if       (?i:if)
+buffer   (?i:buffer)
+by       (?i:by)
+const    (?i:const)
 else     (?i:else)
-when     (?i:when)
-while    (?i:while)
+false    (?i:false)
+fn       (?i:fn)
 for      (?i:for)
+if       (?i:if)
 in       (?i:in)
 out      (?i:out)
+return   (?i:return)
+self     (?i:self)
 to       (?i:to)
-by       (?i:by)
-type     (?i:type)
-buffer   (?i:buffer)
-fn       (?i:fn)
 true     (?i:true)
-false    (?i:false)
-const    (?i:const)
+type     (?i:type)
 void     (?i:void)
+when     (?i:when)
+while    (?i:while)
 
 %%
 
@@ -42,23 +43,24 @@ void     (?i:void)
 {endl}+
 {comment}
 
-{return}   return parser::make_RETURN();
-{if}       return parser::make_IF();
+{buffer}   return parser::make_BUFFER();
+{by}       return parser::make_BY();
+{const}    return parser::make_CONST();
 {else}     return parser::make_ELSE();
-{when}     return parser::make_WHEN();
-{while}    return parser::make_WHILE();
+{false}    return parser::make_FALSE();
+{fn}       return parser::make_FN();
 {for}      return parser::make_FOR();
+{if}       return parser::make_IF();
 {in}       return parser::make_IN();
 {out}      return parser::make_OUT();
+{return}   return parser::make_RETURN();
+{self}     return parser::make_WHILE();
 {to}       return parser::make_TO();
-{by}       return parser::make_BY();
-{type}     return parser::make_TYPE();
-{buffer}   return parser::make_BUFFER();
-{fn}       return parser::make_FN();
 {true}     return parser::make_TRUE();
-{false}    return parser::make_FALSE();
-{const}    return parser::make_CONST();
+{type}     return parser::make_TYPE();
 {void}     return parser::make_VOID();
+{when}     return parser::make_WHEN();
+{while}    return parser::make_WHILE();
 
 {name}     return parser::make_NAME(yytext);
 {typeName} return parser::make_TYPENAME(yytext);
