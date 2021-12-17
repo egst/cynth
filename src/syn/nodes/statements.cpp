@@ -8,6 +8,7 @@
 #include "esl/containers.hpp"
 #include "esl/lift.hpp"
 #include "esl/string.hpp"
+#include "esl/sugar.hpp"
 #include "esl/tiny_vector.hpp"
 #include "esl/view.hpp"
 #include "esl/zip.hpp"
@@ -181,25 +182,29 @@ namespace esl {
 
 namespace cynth::syn {
 
+    using namespace esl::sugar;
+
     namespace target = esl::target;
-    using esl::lift;
+
+    using sem::Returned;
+    using sem::NoReturn;
+    using sem::Variable;
 
     //// Assignment ////
 
     interface::DisplayResult node::Assignment::display () const {
         return
-            lift<target::component, target::category>(interface::display)(target) + " = " +
-            lift<target::component, target::category>(interface::display)(value);
+            (*target >>= target::category{} && interface::display) + " = " +
+            (*value >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::Assignment::processStatement (context::C & ctx) const {
-        auto targetsResult = lift<target::component, target::category>(interface::resolveTarget(ctx))(target);
+        auto targetsResult = *target >>= target::category{} && interface::resolveTarget(ctx);
+        auto valuesResult  = *value  >>= target::category{} && interface::processExpression(ctx);
+        if (!valuesResult)  return valuesResult.error();
         if (!targetsResult) return targetsResult.error();
         auto targets = *std::move(targetsResult);
-
-        auto valuesResult = lift<target::component, target::category>(interface::processExpression(ctx))(value);
-        if (!valuesResult) return valuesResult.error();
-        auto values = *std::move(valuesResult);
+        auto values  = *std::move(valuesResult);
 
         // TODO: What about .size() == 0? And elsewhere as well...
         // I guess techincally it shouldn't be a problem semantically and it should also be impossible syntactically,
@@ -225,13 +230,13 @@ namespace cynth::syn {
 
     interface::DisplayResult node::Definition::display () const {
         return
-            lift<target::component, target::category>(interface::display)(target) + " = " +
-            lift<target::component, target::category>(interface::display)(value);
+            (*target >>= target::category{} && interface::display) + " = " +
+            (*value >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::Definition::processStatement (context::C & ctx) const {
-        auto declsResult  = lift<target::component, target::category>(interface::resolveDeclaration(ctx))(target);
-        auto valuesResult = lift<target::component, target::category>(interface::processExpression(ctx))(value);
+        auto declsResult  = *target >>= target::category{} && interface::resolveDeclaration(ctx);
+        auto valuesResult = *value  >>= target::category{} && interface::processExpression(ctx);
         if (!declsResult)  return declsResult.error();
         if (!valuesResult) return valuesResult.error();
         auto decls  = *declsResult;
@@ -245,7 +250,7 @@ namespace cynth::syn {
                 return esl::result_error{"More values than targets in a definition."};
 
             for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                auto definitionResult = lift<target::category>(interface::processDefinition(ctx)(value))(type);
+                auto definitionResult = type >>= target::category{} && interface::processDefinition(ctx)(value);
                 if (!definitionResult) return definitionResult.error();
 
                 vars.push_back(*definitionResult);
@@ -266,8 +271,8 @@ namespace cynth::syn {
 
     interface::DisplayResult node::For::display () const {
         return
-            "for " + esl::parenthesized(lift<target::component, target::category>(interface::display)(declarations)) +
-            " "    + lift<target::component, target::category>(interface::display)(body);
+            "for " + esl::parenthesized(*declarations >>= target::category{} && interface::display) +
+            " "    + (*body >>= target::category{} && interface::display);
     }
 
     // TODO: Maybe check if some optimizations could be done for some simple iteration cases.
@@ -276,6 +281,14 @@ namespace cynth::syn {
         if (!declsResult) return declsResult.error();
         auto [size, iterDecls] = *std::move(declsResult);
 
+        /***
+        for (cth_int itervar_i = 0; itervar_i < <size>; ++itervar_i) {
+            <decl> = <array>[i]; ...
+            <body>
+        }
+        ***/
+
+#if 0 // TODO
         for (sem::Integral index = 0; index < size; ++index) {
             // Init inner scope:
             auto scope = ctx.makeScopeChild();
@@ -286,9 +299,8 @@ namespace cynth::syn {
                 if (!elementResult) return elementResult.error();
                 auto element = *std::move(elementResult);
 
-                auto definitionResult = lift<target::result, target::category>(
-                    interface::processDefinition(ctx)(element)
-                )(esl::single(decl.type)); // Note: Arrays of tuples are not supported yet.
+                auto definitionResult = esl::single(decl.type) >>= target::result{} && target::category{} &&
+                    interface::processDefinition(ctx)(element); // Note: Arrays of tuples are not supported yet.
                 if (!definitionResult) return definitionResult.error();
                 auto variable = *std::move(definitionResult);
 
@@ -296,7 +308,7 @@ namespace cynth::syn {
             }
 
             // Execute the loop body:
-            auto returned = lift<target::component, target::category>(interface::processStatement(scope))(body);
+            auto returned = *body >>= target::category{} && interface::processStatement(scope);
             if (returned.has_error()) return returned.error();
 
             auto returnKind = returned.kind();
@@ -312,29 +324,29 @@ namespace cynth::syn {
             if (returned)
                 return *returned;
         }
+#endif
 
-        return {};
+        return {sem::NoReturn{}};
     }
 
     //// FunDef ////
 
     interface::DisplayResult node::FunDef::display () const {
         return
-            lift<target::component, target::category>(interface::display)(output) + " " +
-            interface::display(name) + " " +
-            esl::parenthesized(lift<target::component, target::category>(interface::display)(input)) + " " +
-            lift<target::component, target::category>(interface::display)(body);
+            (*output >>= target::category{} && interface::display) + " " +
+            (name >>= interface::display) + " " +
+            esl::parenthesized(*input >>= target::category{} && interface::display) + " " +
+            (*body >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::FunDef::processStatement (context::C & ctx) const {
 
-        auto outResult = lift<target::component, target::category>(interface::resolveType(ctx))(output);
+        auto outResult = *output >>= target::category{} && interface::resolveType(ctx);
+        auto inResult  = *input  >>= target::category{} && interface::resolveDeclaration(ctx);
         if (!outResult) return outResult.error();
+        if (!inResult)  return inResult.error();
         auto outTypes = *std::move(outResult);
-
-        auto inResult = lift<target::component, target::category>(interface::resolveDeclaration(ctx))(input);
-        if (!inResult) return inResult.error();
-        auto inDecls = *std::move(inResult);
+        auto inDecls  = *std::move(inResult);
 
 #if 0 // TODO
         auto namesResult = lift<target::component, target::category>(interface::extractNames)(body);
@@ -380,20 +392,20 @@ namespace cynth::syn {
             return make_execution_result(define_result.error());
         */
 
-        return {};
+        return {sem::NoReturn{}};
     }
 
     //// If ////
 
     interface::DisplayResult node::If::display () const {
         return
-            "if "    + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
-            " "      + lift<target::component, target::category>(interface::display)(positive_branch) +
-            " else " + lift<target::component, target::category>(interface::display)(negative_branch);
+            "if "    + esl::parenthesized(*condition >>= target::category{} && interface::display) +
+            " "      + (*positiveBranch >>= target::category{} && interface::display) +
+            " else " + (*negativeBranch >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::If::processStatement (context::C & ctx) const {
-        return {};
+        return {sem::NoReturn{}};
 #if 0 // TODO
         auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
         if (!result)
@@ -408,11 +420,11 @@ namespace cynth::syn {
     //// Return ////
 
     interface::DisplayResult node::Return::display () const {
-        return "return " + lift<target::component, target::category>(interface::display)(value);
+        return "return " + (*value >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::Return::processStatement (context::C & ctx) const {
-        return {};
+        return {sem::NoReturn{}};
 #if 0 // TODO
         auto value_result = esl::unite_results(evaluate(ctx)(value));
         if (!value_result)
@@ -427,12 +439,12 @@ namespace cynth::syn {
 
     interface::DisplayResult node::TypeDef::display () const {
         return
-            "type " + interface::display(target) +
-            " = "   + lift<target::component, target::category>(interface::display)(type);
+            "type " + (target >>= interface::display) +
+            " = "   + (*type >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::TypeDef::processStatement (context::C & ctx) const {
-        return {};
+        return {sem::NoReturn{}};
 #if 0 // TODO
         std::string name = *target->name;
 
@@ -453,12 +465,12 @@ namespace cynth::syn {
 
     interface::DisplayResult node::While::display () const {
         return
-            "while " + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
-            " "      + lift<target::component, target::category>(interface::display)(body);
+            "while " + esl::parenthesized(*condition >>= target::category{} && interface::display) +
+            " "      + (*body >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::While::processStatement (context::C & ctx) const {
-        return {};
+        return {sem::NoReturn{}};
 #if 0 // TODO
         while (true) {
             auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
@@ -481,12 +493,12 @@ namespace cynth::syn {
 
     interface::DisplayResult node::When::display () const {
         return
-            "when " + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
-            " "     + lift<target::component, target::category>(interface::display)(branch);
+            "when " + esl::parenthesized(*condition >>= target::category{} && interface::display) +
+            " "     + (*branch >>= target::category{} && interface::display);
     }
 
     interface::StatementProcessingResult node::When::processStatement (context::C & ctx) const {
-        return {};
+        return {sem::NoReturn{}};
 #if 0 // TODO
         auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
         if (!result)

@@ -329,8 +329,8 @@ namespace esl {
 
     namespace target {
 
-        struct tiny_vector {};
-        struct nested_tiny_vector_cat {};
+        struct tiny_vector            { constexpr static lift_target_tag tag = {}; };
+        struct nested_tiny_vector_cat { constexpr static lift_target_tag tag = {}; };
 
     }
 

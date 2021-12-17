@@ -37,7 +37,6 @@
 # Structure
 
 * sort out no longer relevant test files
-* maybe unite `syn/interface` and `sem/interface`?
 
 # Implementation
 
@@ -48,7 +47,7 @@
     the simplest solution would be to store constexpr char const * values for every possible error message
 * not only strings (a major issue at the top), but other nodes should be held directly with no `component` indirection
 
-# Semantics
+## Semantics
 
 * do I really need `component_vector`s? wouldn't `std::vector`/`esl::tiny_vector` be enough?  
     there definitely was a reason why I used `component_vector`s,
@@ -70,6 +69,15 @@
     while the buffer value should contain the actual values and the generator function  
     this way, the buffers may be passed by references that might refer to a smaller buffer
 * is skipping compconst values always ok? what about referential types?
+
+## Syntax
+
+* I don't like the deeply nested lambdas to branch out on different variant alternatives  
+    I usually get rid of nested branches by structuring my code like `if (a) { ...; return; } ...;`
+    instead of `if (a) { ...; } else { ...; }` but that is not applicable to the lambdas.
+    One thing that comes to mind would be some overloaded operators to be used like syntax sugar over `esl::lift`.
+* I should stop using lift over `target::component`. It's a lot more verbose, than just dereferencing the component.  
+    lift over `target::optional_component` or `target::component_vector` does make sense though.
 
 # Cynth
 

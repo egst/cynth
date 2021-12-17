@@ -59,8 +59,8 @@ namespace cynth::syn::node {
     /** if (cond) a else b */
     struct If {
         esl::component<category::Expression> condition;
-        esl::component<category::Statement>  positive_branch;
-        esl::component<category::Statement>  negative_branch;
+        esl::component<category::Statement>  positiveBranch;
+        esl::component<category::Statement>  negativeBranch;
 
         STATEMENT_INTERFACE;
     };

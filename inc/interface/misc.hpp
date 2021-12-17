@@ -49,6 +49,8 @@ namespace cynth::interface {
 
         SingleExpressionProcessingResult processStaticSubscript (sem::Integral, sem::ResolvedValue const &);
 
+        SingleExpressionProcessingResult processSubscript (sem::ResolvedValue const &, sem::ResolvedValue const &);
+
     }
 
     /***
@@ -59,5 +61,15 @@ namespace cynth::interface {
             return detail::misc::processStaticSubscript(index, array);
         };
     }
+
+    /***
+    Int i = 1;
+    a[i]; # run-time index
+    ***/
+    SingleExpressionProcessingResult processSubscript (
+        context::C &,
+        sem::ResolvedValue const & index,
+        sem::ResolvedValue const & array
+    );
 
 }

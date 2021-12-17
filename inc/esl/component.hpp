@@ -422,11 +422,11 @@ namespace esl {
 
     namespace target {
 
-        struct component {};
-        struct optional_component {};
-        struct component_vector {};
-        struct tiny_component_vector {};
-        struct component_vector_tiny_result {};
+        struct component                    { constexpr static lift_target_tag tag = {}; };
+        struct optional_component           { constexpr static lift_target_tag tag = {}; };
+        struct component_vector             { constexpr static lift_target_tag tag = {}; };
+        struct tiny_component_vector        { constexpr static lift_target_tag tag = {}; };
+        struct component_vector_tiny_result { constexpr static lift_target_tag tag = {}; };
 
     }
 

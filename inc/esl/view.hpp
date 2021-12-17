@@ -80,7 +80,7 @@ namespace esl {
 
     namespace target {
 
-        struct view;
+        struct view { constexpr static lift_target_tag tag = {}; };
 
     }
 

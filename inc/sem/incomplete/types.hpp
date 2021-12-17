@@ -18,14 +18,16 @@
 #include "sem/forward.hpp"
 
 // Note: No macros escape this file.
+#define VALUE(Type) \
+    using Value = Type;
 #define STATIC_TYPE_NAME(name) \
     constexpr static interface::TypeNameConstant typeName = name
 #define TYPE_NAME \
     interface::TypeNameResult typeName () const
-#define SAME(type) \
-    interface::SameTypeResult sameType (type const &) const
-#define COMMON(type) \
-    interface::CommonTypeResult commonType (type const &) const
+#define SAME(Type) \
+    interface::SameTypeResult sameType (Type const &) const
+#define COMMON(Type) \
+    interface::CommonTypeResult commonType (Type const &) const
 #define TYPE_INTERFACE \
     interface::DisplayResult display () const; \
     interface::DefinitionProcessingResult processDefinition ( \
@@ -59,6 +61,8 @@ namespace cynth::sem {
 
             TYPE_INTERFACE;
 
+            VALUE(value::Bool);
+
             STATIC_TYPE_NAME(str::boolean);
 
             COMMON(type::Bool);
@@ -78,6 +82,8 @@ namespace cynth::sem {
 
             TYPE_INTERFACE;
 
+            VALUE(value::Int);
+
             STATIC_TYPE_NAME(str::integral);
 
             // implicit common(Bool)
@@ -94,6 +100,8 @@ namespace cynth::sem {
 
             TYPE_INTERFACE;
 
+            VALUE(value::Float);
+
             STATIC_TYPE_NAME(str::floating);
 
             // implicit common(Bool)
@@ -108,6 +116,8 @@ namespace cynth::sem {
         /** Strings will not be used in the first versions. */
         struct String {
             TYPE_INTERFACE;
+
+            VALUE(value::String);
 
             STATIC_TYPE_NAME(str::string);
 
@@ -162,6 +172,8 @@ namespace cynth::sem {
 
             TYPE_INTERFACE;
 
+            VALUE(value::In);
+
             // implicit common(Bool)
             // implicit common(Int)
             // implicit common(Float)
@@ -174,6 +186,8 @@ namespace cynth::sem {
         struct Out: detail::types::Out<true> {
             TYPE_INTERFACE;
 
+            VALUE(value::Out);
+
             SAME(type::Out);
 
             //DECAY;
@@ -181,6 +195,8 @@ namespace cynth::sem {
 
         struct Array: detail::types::Array<true> {
             TYPE_INTERFACE;
+
+            VALUE(value::Array);
 
             COMMON(type::Array);
 
@@ -192,6 +208,8 @@ namespace cynth::sem {
         struct Buffer: detail::types::Buffer<true> {
             TYPE_INTERFACE;
 
+            VALUE(value::Buffer);
+
             COMMON(type::Buffer);
 
             SAME(type::Buffer);
@@ -201,6 +219,8 @@ namespace cynth::sem {
 
         struct Function: detail::types::Function<true> {
             TYPE_INTERFACE;
+
+            VALUE(value::Function);
 
             COMMON(type::Function);
 
@@ -275,6 +295,7 @@ namespace cynth::sem {
 
 }
 
+#undef VALUE
 #undef STATIC_TYPE_NAME
 #undef TYPE_NAME
 #undef SAME

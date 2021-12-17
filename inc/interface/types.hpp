@@ -38,6 +38,11 @@ namespace cynth::interface {
     namespace has {
 
         template <typename T>
+        concept typeValue = type<T> && requires () {
+            typename T::Value;
+        };
+
+        template <typename T>
         concept directTypeName = simpleType<T> && requires (T value) {
             // Note: This potentially also accepts a non-static member.
             //{ T::typeName } -> std::same_as<TypeNameConstant>;
@@ -107,6 +112,9 @@ namespace cynth::interface {
     }
 
     // Functions:
+
+    template <interface::has::typeValue T>
+    using TypeValue = typename T::TypeValue;
 
     constexpr auto directTypeName = esl::overload(
         [] <has::directTypeName T> (T const & type) -> TypeNameResult {

@@ -72,6 +72,8 @@ namespace cynth::context {
 
         // TODO: Don't forget that these must completely ignore empty strings.
         // Update: I don't think it's needed anywhere anymore, but it still could be useful.
+        // TODO: Do these really need to return a result? There's nothing exprected to go wrong.
+        // Change to void and modify all calling code accordingly.
         esl::result<void> insertStatement          (std::string);
         esl::result<void> insertFunctionAllocation (std::string);
         esl::result<void> insertStaticAllocation   (std::string);

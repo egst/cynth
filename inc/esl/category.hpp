@@ -1,17 +1,29 @@
 #pragma once
 
-#include "esl/debug.hpp"
-#include "esl/concepts.hpp"
-#include "esl/type_manip.hpp"
-#include "esl/variant.hpp"
-#include "esl/lift.hpp"
-
-#include <type_traits>
 #include <concepts>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
+#include "esl/concepts.hpp"
+#include "esl/debug.hpp"
+#include "esl/lift.hpp"
+#include "esl/result.hpp"
+#include "esl/type_manip.hpp"
+#include "esl/variant.hpp"
+
 namespace esl {
+
+    namespace detail::category {
+
+        template <typename Alt, typename Result, typename Cat>
+        Result get (Cat && cat) {
+            return std::holds_alternative<Alt>(cat.value)
+                ? std::get<Alt>(std::forward<Cat>(cat).value)
+                : esl::result_error{"Invalid category alternative requested."};
+        }
+
+    }
 
     // Note: Most categories are kept non-copyable mostly just to make sure, that the copy/move semantics distinction works as expected.
     template <typename Derived, typename Variant, bool COPYABLE = true>
@@ -47,6 +59,23 @@ namespace esl {
             std::visit([this] <esl::temporary U> (U && other_value) { value = esl::forward_like<T>(other_value); }, esl::forward_like<T>(other.value));
             return *static_cast<Derived *>(this);
         }
+
+        template <typename U>
+        auto get () const & {
+            return detail::category::get<U, esl::reference_result<std::add_const_t<U>>>(*this);
+        }
+
+        template <typename U>
+        auto get () & {
+            return detail::category::get<U, esl::reference_result<U>>(*this);
+        }
+
+        template <typename U>
+        auto get () && {
+            return detail::category::get<U, esl::result<U>>(*this);
+        }
+
+    private:
     };
 
     namespace detail::category {
@@ -85,7 +114,7 @@ namespace esl {
 
     namespace target {
 
-        struct category {};
+        struct category { constexpr static lift_target_tag tag = {}; };
 
     }
 

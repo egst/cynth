@@ -157,6 +157,7 @@ namespace esl {
     template <typename T> requires (!std::same_as<T, result_error>)
     struct reference_result: detail::result::result_base<reference_result<T>, T> {
         using value_type = T;
+        using const_type = std::add_const<T>;
 
         constexpr reference_result (result_error     const & e): content{e}            {}
         constexpr reference_result (result_error     &&      e): content{std::move(e)} {}
@@ -175,7 +176,7 @@ namespace esl {
             return !has_value();
         }
 
-        constexpr value_type const * get () const {
+        constexpr const_type * get () const {
             return has_value() ? std::get<value_type *>(content) : nullptr;
         }
 
@@ -183,17 +184,22 @@ namespace esl {
             return has_value() ? std::get<value_type *>(content) : nullptr;
         }
 
-        constexpr value_type const & value () const & {
+        constexpr const_type & value () const /*&*/ {
             return *std::get<value_type *>(content);
         }
 
-        constexpr value_type & value () & {
+        constexpr value_type & value () /*&*/ {
             return *std::get<value_type *>(content);
         }
 
+        // TODO: Does it even make sense to move a reference result? It's like moving a pointer - pointless.
+        // Well, I guess it would make sense to move it with the error message.
+        // But it makes no sense to move it only to get the value. (e.g. `*std::move(result)`)
+        /*
         constexpr value_type && value () && {
             return *std::get<value_type *>(std::move(content));
         }
+        */
 
         constexpr result_error const & error () const & {
             return std::get<result_error>(content);

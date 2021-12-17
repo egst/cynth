@@ -313,19 +313,22 @@ namespace esl {
         using target = T;
     };
 
+    struct lift_target_tag {};
+
     namespace target {
 
-        struct direct {};
-        struct sized_range {};
-        struct nested_range_cat {};
+        struct direct { constexpr static lift_target_tag tag = {}; };
+        struct sized_range { constexpr static lift_target_tag tag = {}; };
+        struct nested_range_cat { constexpr static lift_target_tag tag = {}; };
 
-        struct optional {};
-        struct variant {};
-        struct vector {};
+        struct optional { constexpr static lift_target_tag tag = {}; };
+        struct variant { constexpr static lift_target_tag tag = {}; };
+        struct vector { constexpr static lift_target_tag tag = {}; };
 
-        struct result {};
+        struct result { constexpr static lift_target_tag tag = {}; };
 
         template <typename...> struct nested {};
+        template <typename...> struct nary {};
 
         /** ex.: target::tpl<std::vector> -> target::vector */
         template <template <typename...> typename Tpl>

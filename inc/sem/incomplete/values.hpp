@@ -31,7 +31,9 @@
 #define GET(Type) \
     interface::GetResult<Type> get () const
 #define CONVERT(Type) \
-    interface::ConversionResult convert (context::C &, Type const &) const
+    interface::ConversionResult<Type> convertValue (context::C &, Type const &) const
+#define CONVERT_SIMPLE(Type) \
+    interface::ConversionResult<Type> convertValue (Type const &) const
 #define STATIC_VALUE_TYPE(Type, init) \
     constexpr static Type valueType = init
 #define DIRECT_VALUE_TYPE(Type) \
@@ -55,9 +57,9 @@ namespace cynth::sem {
 
             GET(bool);
 
-            CONVERT(type::Bool);
-            CONVERT(type::Int);
-            CONVERT(type::Float);
+            CONVERT_SIMPLE(type::Bool);
+            CONVERT_SIMPLE(type::Int);
+            CONVERT_SIMPLE(type::Float);
 
             constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
         };
@@ -71,9 +73,9 @@ namespace cynth::sem {
 
             GET(Integral);
 
-            CONVERT(type::Bool);
-            CONVERT(type::Int);
-            CONVERT(type::Float);
+            CONVERT_SIMPLE(type::Bool);
+            CONVERT_SIMPLE(type::Int);
+            CONVERT_SIMPLE(type::Float);
 
             constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
         };
@@ -87,9 +89,9 @@ namespace cynth::sem {
 
             GET(Floating);
 
-            CONVERT(type::Bool);
-            CONVERT(type::Int);
-            CONVERT(type::Float);
+            CONVERT_SIMPLE(type::Bool);
+            CONVERT_SIMPLE(type::Int);
+            CONVERT_SIMPLE(type::Float);
 
             constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
         };
@@ -135,7 +137,19 @@ namespace cynth::sem {
     /** For compile-time allocated arrays. */
     struct ArrayAllocation {
         using Vector = esl::component_vector<CompleteValue>;
+
         Vector value;
+
+        // A comp-time allocation can be explicitly allocated in the resulting C code on demand.
+        // This happens when access by a run-time index is needed.
+        std::optional<std::string> variable;
+
+        /**
+         *  Allocates a corresponding run-time value (while keeping the comp-time value)
+         *  if none has already been allocated and returns name of the alloation variable (this->variable).
+         *  TODO: Do I really need esl::result here?
+         */
+        esl::result<std::string> allocate (context::C);
     };
 
     namespace value {
@@ -155,7 +169,7 @@ namespace cynth::sem {
 
             DIRECT_VALUE_TYPE(type::Array);
 
-            GET(std::vector<esl::tiny_vector<CompleteValue>>);
+            //GET(std::vector<esl::tiny_vector<CompleteValue>>);
 
             CONVERT(type::Array);
 
@@ -197,7 +211,7 @@ namespace cynth::sem {
 
             VALUE_TYPE;
 
-            GET(Function);
+            //GET(Function);
 
             CONVERT(type::Function);
             CONVERT(type::Buffer);

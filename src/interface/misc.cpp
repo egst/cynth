@@ -2,19 +2,21 @@
 
 #include "esl/lift.hpp"
 #include "esl/result.hpp"
+#include "esl/sugar.hpp"
 
-#include "sem/values.hpp"
-#include "sem/types.hpp"
+#include "context/c.hpp"
+#include "interface/values.hpp"
 #include "sem/compound.hpp"
 #include "sem/numeric_types.hpp"
+#include "sem/types.hpp"
+#include "sem/values.hpp"
 
 namespace cynth::interface {
 
-    namespace target = esl::target;
-    namespace type   = sem::type;
-    namespace value  = sem::value;
+    using namespace esl::sugar;
 
-    using esl::lift;
+    namespace target = esl::target;
+
     using sem::ArrayAllocation;
     using sem::CompleteType;
     using sem::CompleteValue;
@@ -28,8 +30,8 @@ namespace cynth::interface {
         Int const [3] const a = [1, 2, 3];
         a[1]; # compile-time array
         ***/
-        constexpr auto comptimeSubscript =
-            [] (Integral index, CompleteType const & type, ArrayAllocation const & alloc)
+        constexpr auto comptimeArraySubscript =
+            [] (CompleteType const & type, Integral index, ArrayAllocation const & alloc)
             -> SingleExpressionProcessingResult {
                 // TODO: type probably not needed.
                 return ResolvedValue{
@@ -41,8 +43,8 @@ namespace cynth::interface {
         Int [3] a = [1, 2, 3];
         a[1]; # run-time array
         ***/
-        constexpr auto runtimeSubscript =
-            [] (Integral index, CompleteType const & type, std::string const & expr) {
+        constexpr auto runtimeArraySubscript =
+            [] (CompleteType const & type, Integral index, std::string const & expr) {
                 return ResolvedValue{TypedExpression{
                     .type       = type,
                     .expression = c::arraySubscript(expr, std::to_string(index))
@@ -50,11 +52,16 @@ namespace cynth::interface {
             };
 
         /***
-        1[2];
+        Int [3] a = [1, 2, 3];
+        Int i = 1;
+        a[1]; # run-time array and index
         ***/
-        constexpr auto nonArraySubscript =
-            [] (auto const &) -> SingleExpressionProcessingResult {
-                return esl::result_error{"Subscript can only be performed on an array."};
+        constexpr auto runtimeSubscript =
+            [] (CompleteType const & type, std::string const & index, std::string const & expr) {
+                return ResolvedValue{TypedExpression{
+                    .type       = type,
+                    .expression = c::arraySubscript(expr, index)
+                }};
             };
 
     }
@@ -65,41 +72,94 @@ namespace cynth::interface {
         Integral index,
         ResolvedValue const & array
     ) {
-        return lift<target::category>(
-            [index] (CompleteValue const & value) -> SingleExpressionProcessingResult {
-                return lift<target::category>(
-                    [index] (value::Array const & value) -> SingleExpressionProcessingResult {
+        return array >>= target::category{} &&
+        // Comp-time array pointer:
+        [index] (CompleteValue const & value) -> SingleExpressionProcessingResult {
+            auto arrayResult = value.get<sem::value::Array>();
+            if (!arrayResult)
+                return esl::result_error{"Subscript can only be performed on an array."};
+            auto & array = *arrayResult;
 
-                        auto type = value.valueType;
-                        if (index >= type.size)
-                            return esl::result_error{"Subscript index out of bounds."};
+            auto type = array.valueType;
+            if (index >= type.size)
+                return esl::result_error{"Subscript index out of bounds."};
 
-                        return lift<target::variant>(
-                            [index, &type] (ArrayAllocation * alloc) -> SingleExpressionProcessingResult {
-                                return comptimeSubscript(index, *type.type, *alloc);
-                            },
-                            [index, &type] (std::string const & alloc) -> SingleExpressionProcessingResult {
-                                return runtimeSubscript(index, *type.type, alloc); // Subscript directly from the allocation variable.
-                            }
-                        )(value.allocation);
+            return array.allocation >>= target::variant{} &&
+            // Comp-time array allocation:
+            [index, &type] (ArrayAllocation * alloc) -> SingleExpressionProcessingResult {
+                return comptimeArraySubscript(*type.type, index, *alloc);
+            } |
+            // Run-time array allocation:
+            [index, &type] (std::string const & alloc) -> SingleExpressionProcessingResult {
+                return runtimeArraySubscript(*type.type, index, alloc); // Subscript directly from the allocation variable.
+            };
 
-                    },
-                    nonArraySubscript
-                )(value);
-            },
-            [index] (TypedExpression const & value) {
-                return lift<target::category>(
-                    [index, &value] (type::Array const & type) -> SingleExpressionProcessingResult {
+        } |
+        // Run-time array pointer:
+        [index] (TypedExpression const & value) -> SingleExpressionProcessingResult {
+            auto typeResult = value.type.get<sem::type::Array>();
+            if (!typeResult)
+                return esl::result_error{"Subscript can only be performed on an array."};
+            auto & type = *typeResult;
 
-                        if (index >= type.size)
-                            return esl::result_error{"Subscript index out of bounds."};
-                        return runtimeSubscript(index, *type.type, value.expression);
+            if (index >= type.size)
+                return esl::result_error{"Subscript index out of bounds."};
+            return runtimeArraySubscript(*type.type, index, value.expression);
+        };
+    }
 
-                    },
-                    nonArraySubscript
-                )(value.type);
-            }
-        )(array);
+    SingleExpressionProcessingResult processSubscript (
+        context::C & ctx,
+        sem::ResolvedValue const & index,
+        sem::ResolvedValue const & array
+    ) {
+        return index >>= target::category{} &&
+        // Comp-time index:
+        [&array] (CompleteValue const & index) -> SingleExpressionProcessingResult {
+            auto conversionResult = index >>= target::category{} && convertSimpleValueTo(sem::type::Int{});
+            auto indexResult = conversionResult >>= target::result{} && get<Integral>;
+            if (!indexResult) return indexResult.error();
+            auto integralIndex = *indexResult;
+
+            return processStaticSubscript(integralIndex)(array);
+        } |
+        // Run-time index:
+        [&ctx, &array] (TypedExpression const & index) -> SingleExpressionProcessingResult {
+            auto indexResult = translateConversion(ctx, index)(sem::type::Int{});
+            if (!indexResult) return indexResult.error();
+            auto indexExpr = std::move(indexResult)->expression;
+
+            return array >>= target::category{} &&
+            // Comp-time array pointer:
+            [&ctx, indexExpr] (CompleteValue const & value) -> SingleExpressionProcessingResult {
+                auto arrayResult = value.get<sem::value::Array>();
+                if (!arrayResult)
+                    return esl::result_error{"Subscript can only be performed on an array."};
+                auto & array = *arrayResult;
+                auto type = array.valueType;
+
+                return array.allocation >>= target::variant{} &&
+                // Comp-time array allocation:
+                [&ctx, &indexExpr, &type] (ArrayAllocation * alloc) -> SingleExpressionProcessingResult {
+                    auto allocResult = alloc->allocate(ctx);
+                    if (!allocResult) return allocResult.error();
+                    return runtimeSubscript(*type.type, indexExpr, *allocResult);
+                } |
+                // Run-time array allocation:
+                [&indexExpr, &type] (std::string const & alloc) -> SingleExpressionProcessingResult {
+                    return runtimeSubscript(*type.type, indexExpr, alloc);
+                };
+            } |
+            // Run-time array pointer:
+            [indexExpr] (TypedExpression const & value) -> SingleExpressionProcessingResult {
+                auto typeResult = value.type.get<sem::type::Array>();
+                if (!typeResult)
+                    return esl::result_error{"Subscript can only be performed on an array."};
+                auto & type = *typeResult;
+
+                return runtimeSubscript(*type.type, indexExpr, value.expression);
+            };
+        };
     }
 
 }

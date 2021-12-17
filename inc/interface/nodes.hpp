@@ -103,8 +103,7 @@ namespace cynth::interface {
 
     constexpr auto processStatement (context::C & ctx) {
         return esl::overload(
-            [&ctx] (has::processStatement auto const & node) -> StatementProcessingResult
-            {
+            [&ctx] (has::processStatement auto const & node) -> StatementProcessingResult {
                 return node.processStatement(ctx);
             },
             [&ctx] <has::processExpression T> (T const & node) -> StatementProcessingResult

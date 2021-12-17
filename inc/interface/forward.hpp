@@ -46,7 +46,10 @@ namespace cynth::interface {
     // For full declarations, #include "interface/values.hpp"
     template <typename T>
     using GetResult               = esl::result<T>;
-    using ConversionResult        = esl::result<sem::CompleteValue>;
+    //using ConversionResult        = esl::result<sem::CompleteValue>;
+    template <typename T>
+    using ConversionResult        = esl::result<typename T::Value>;
+    using DynamicConversionResult = esl::result<sem::CompleteValue>;
     using ValueTypeResult         = sem::CompleteType;
     using ValueTranslationResult  = esl::result<sem::TypedExpression>;
     using TargetTranslationResult = esl::result<sem::TypedTargetExpression>;

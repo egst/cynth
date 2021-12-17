@@ -49,9 +49,14 @@ namespace cynth::interface {
             value.valueType();
         };
 
-        template <typename T, typename U>
-        concept convertValue = value<T> && requires (T value, context::C & ctx, U const & other) {
-            { value.convertValue(ctx, other) } -> std::same_as<ConversionResult>;
+        template <typename T, typename To>
+        concept convertSimpleValue = value<T> && requires (T value, To const & other) {
+            { value.convertValue(other) } -> std::same_as<ConversionResult<To>>;
+        };
+
+        template <typename T, typename To>
+        concept convertValue = value<T> && requires (T value, context::C & ctx, To const & other) {
+            { value.convertValue(ctx, other) } -> std::same_as<ConversionResult<To>>;
         };
 
         template <typename T>
@@ -84,19 +89,57 @@ namespace cynth::interface {
         }
     );
 
-    // TODO: Do I need this?
-    // Or perhaps `convertValue`'s functionality could be included in `translateConversion` (in interface/types)?
-    inline auto convertValue (context::C & ctx) {
+    constexpr auto convertValueTo (context::C & ctx) {
+        return [&ctx] <type To> (To const & to) {
+            return esl::overload(
+                [&to] <value T> (T const & value) -> ConversionResult<To>
+                requires (has::convertSimpleValue<T, To>) {
+                    return value.convertSimpleValue(to);
+                },
+                [&ctx, &to] <value T> (T const & value) -> ConversionResult<To>
+                requires (has::convertValue<T, To> && !has::convertSimpleValue<T, To>) {
+                    return value.convertValue(ctx, to);
+                },
+                [] (value auto const &) -> ConversionResult<To> {
+                    return {esl::result_error{"No conversion available."}};
+                }
+            );
+        };
+    };
+
+    constexpr auto convertValue (context::C & ctx) {
         return esl::overload(
-            [&ctx] <value T, type To> (T const & value, To const & to) -> ConversionResult
-            requires (has::convertValue<T, To>) {
-                return value.convertValue(ctx, to);
+            [] <value T, type To> (T const & value, To const & to) -> DynamicConversionResult
+            requires (has::convertSimpleValue<T, To>) {
+                auto result = value.convertValue(to);
+                if (!result) return result.error();
+                return {sem::CompleteValue{*result}};
             },
-            [] (value auto const &, type auto const &) -> ConversionResult {
+            [&ctx] <value T, type To> (T const & value, To const & to) -> DynamicConversionResult
+            requires (has::convertValue<T, To> && !has::convertSimpleValue<T, To>) {
+                auto result = value.convertValue(ctx, to);
+                if (!result) return result.error();
+                return {sem::CompleteValue{*result}};
+            },
+            [] (value auto const &, type auto const &) -> DynamicConversionResult {
                 return {esl::result_error{"No conversion available."}};
             }
         );
     };
+
+    constexpr auto convertSimpleValueTo =
+        [] <type To> (To const & to) {
+            return esl::overload(
+                [&to] <value T> (T const & value) -> ConversionResult<To>
+                requires (has::convertSimpleValue<T, To>) {
+                    return value.convertValue(to);
+                },
+                [] (value auto const &) -> ConversionResult<To> {
+                    return {esl::result_error{"No conversion available."}};
+                }
+            );
+        };
+    // TODO: convertSimpleValue?
 
     inline auto translateValue (context::C & ctx) {
         return esl::overload(
