@@ -18,51 +18,51 @@
 // call:
 a >>= [] (A) {}                                           // ([] (A) {})(a)
 args{a, b} >>= [] (A, B) {}                               // ([] (A, B) {})(a, b)
+[] (A) {} <<= a                                           // ([] (A) {})(a)
+[] (A, B) {} <<= args{a, b}                               // ([] (A, B) {})(a, b)
+
+// Note: I prefer `f <<= arg` over `arg >>= f` as it feels syntactically closer to f(arg)
+// and also allows chaining with no parentheses:
+// `f(g(arg))` vs `f <<= g <<= arg` vs `(arg >>= g) >>= f`
+// So I might remove `>>=` later.
+
+// lift:
+[] (A) {} || target::a                                    // lift_nested<target::a>([] (A) {})
 
 // nested lift:
-target::a{} && [] (A) {}                                  // lift<target::a>([] (A) {})
-target::a{} && target::b{}                                // nested_target<target::a, target::b>{}
-nested_target<target::a, target::b>{} && [] (A) {}        // lift<target::a, target::b>([] (A) {})
-target::a{} && target::b{} && [] (A) {}                   // lift<target::a, target::b>([] (A) {})
+[] (A) {} || target::nested{target::a, target::b}         // lift_nested<target::a, target::b>([] (A) {})
 
-// n-ary lift:
-target::a{} || [] (A) {}                                  // lift_nary<target::a>([] (A) {})
-target::a{} || target::b{}                                // nary_target<target::a, target::b>{}
-nary_target<target::a, target::b>{} & [] (A, B) {}        // lift_nary<target::a, target::b>([] (A, B) {})
-target::a{} || target::b{} || [] (A, B) {}                // lift_nary<target::a, target::b>([] (A, B) {})
-target::a{} && target::b{} || target::c{} || [] (A, B) {} // lift_nary<nested_target<target::a, target::b>, target::c>([] (A, B) {})
+// nary lift:
+[] (A) {} || target::nary{target::a, target::b}           // lift_nary<target::a, target::b>([] (A) {})
+
+// Combined lift:
+[] (A) {} || target::nary{target::nested{target::a, target::b}, target::c}
 
 // examples:
 
-value >>
-target::component{} | target::category{} |
 [] (value::Bool const &) -> string {
     return "bool";
-} ||
-[] (value::Int const &) -> string {
+} | [] (value::Int const &) -> string {
     return "int";
-} ||
-[] (auto const &) -> string {
+} | [] (auto const &) -> string {
     return "other";
-};
+} || target::category{} <<= value
 
-args{value, type} >>=
-target::component{} && target::category{} || target::category &&
 [] (value::Bool const &, type::Bool const &) -> string {
     return "bool, bool";
-} |
-[] (value::Int const &, type::Float const &) -> string {
+} | [] (value::Int const &, type::Float const &) -> string {
     return "int, float";
-} |
-[] (auto const &, auto const &) -> string {
+} | [] (auto const &, auto const &) -> string {
     return "other";
-};
+} || target::category{} <<= args(value, type)
 ***/
 
 /**
- *  Use this namespace explicitly to enable all the crazy syntax sugar.
- *  The provided operators are sometimes very useful to write deeply nested visitor applications to branch over variants.
- *  However, to minimize any risk of unnecessary polution of the user's code with possibly conflicting operators,
+ *  Use this namespace explicitly to enable all the syntax sugar.
+ *  The provided operators are sometimes very useful to write deeply nested visitor applications to branch over variants
+ *  without excessive unreadable parentheses all over the place.
+ *  However, some of these operators operate on any functions, rather than on some specific types.
+ *  So to minimize any risk of unnecessary polution of the user's code with possibly conflicting operators,
  *  this feature requires explicit opt-in - `using namespace esl::sugar`.
  */
 namespace esl::sugar {
@@ -99,43 +99,23 @@ namespace esl::sugar {
         return esl::compose(f, g);
     }
 
-    template <detail::targetable T, detail::targetable U>
-    constexpr auto operator && (T &&, U &&) {
-        return esl::target::nested<T, U>{};
-    }
-
-    template <detail::targetable T, typename F>
-    constexpr auto operator && (T &&, F && f) {
+    template <typename F, detail::targetable T>
+    constexpr auto operator || (F && f, T && t) {
         return esl::lift_nested<T>(std::forward<F>(f));
     }
 
-    template <typename... Ts, typename F>
-    constexpr auto operator && (esl::target::nested<Ts...> &&, F && f) {
+    template <typename F, detail::targetable... Ts>
+    constexpr auto operator || (F && f, esl::target::nested<Ts...> &&) {
         return esl::lift_nested<Ts...>(std::forward<F>(f));
     }
 
-    template <detail::targetable T, detail::targetable U>
-    constexpr auto operator || (T &&, U &&) {
-        return esl::target::nary<T, U>{};
-    }
-
-    template <detail::targetable T, typename F>
-    constexpr auto operator || (T &&, F && f) {
-        return esl::lift_nary<T>(std::forward<F>(f));
-    }
-
-    template <typename... Ts, typename F>
-    constexpr auto operator || (esl::target::nary<Ts...> &&, F && f) {
+    template <typename F, detail::targetable... Ts>
+    constexpr auto operator || (F && f, esl::target::nary<Ts...> &&) {
         return esl::lift_nary<Ts...>(std::forward<F>(f));
     }
 
-    template <typename T, detail::callable F>
-    constexpr auto operator >>= (T && arg, F && f) {
-        return std::forward<F>(f)(std::forward<T>(arg));
-    }
-
     template <typename... Ts>
-    struct args: std::tuple<Ts...> {
+    struct args_type: std::tuple<Ts...> {
         using base = std::tuple<Ts...>;
         using base::base;
 
@@ -143,13 +123,38 @@ namespace esl::sugar {
         base const & tuple () const { return *static_cast<base const *>(this); }
     };
 
+    template <typename... Ts>
+    auto args (Ts &&... vals) {
+        return std::forward_as_tuple(vals...);
+    }
+
+    template <typename T, detail::callable F>
+    constexpr auto operator >>= (T && arg, F && f) {
+        return std::forward<F>(f)(std::forward<T>(arg));
+    }
+
     template <typename... Ts, typename F>
-    constexpr auto operator >>= (esl::sugar::args<Ts...> const & args, F && f) {
+    constexpr auto operator >>= (esl::sugar::args_type<Ts...> const & args, F && f) {
         return esl::apply_forward(std::forward<F>(f), args.tuple());
     }
 
     template <typename... Ts, typename F>
-    constexpr auto operator >>= (esl::sugar::args<Ts...> & args, F && f) {
+    constexpr auto operator >>= (esl::sugar::args_type<Ts...> & args, F && f) {
+        return esl::apply_forward(std::forward<F>(f), args.tuple());
+    }
+
+    template <typename T, detail::callable F>
+    constexpr auto operator <<= (F && f, T && arg) {
+        return std::forward<F>(f)(std::forward<T>(arg));
+    }
+
+    template <typename... Ts, typename F>
+    constexpr auto operator <<= (F && f, esl::sugar::args_type<Ts...> const & args) {
+        return esl::apply_forward(std::forward<F>(f), args.tuple());
+    }
+
+    template <typename... Ts, typename F>
+    constexpr auto operator <<= (F && f, esl::sugar::args_type<Ts...> & args) {
         return esl::apply_forward(std::forward<F>(f), args.tuple());
     }
 

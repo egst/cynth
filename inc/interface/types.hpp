@@ -116,15 +116,11 @@ namespace cynth::interface {
     template <interface::has::typeValue T>
     using TypeValue = typename T::TypeValue;
 
-    constexpr auto directTypeName = esl::overload(
-        [] <has::directTypeName T> (T const & type) -> TypeNameResult {
-            //return std::string{T::typeName};
-            return std::string{type.typeName};
-        },
-        [] <type T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
-            return esl::result_error{"This type it not directly named."};
-        }
-    );
+    constexpr auto directTypeName =
+        [] <has::directTypeName T> (T const & type) -> std::string {
+            //return T::typeName;
+            return type.typeName;
+        };
 
     constexpr auto typeName = esl::overload(
         [] <has::directTypeName T> (T const & type) -> TypeNameResult {

@@ -398,6 +398,14 @@ namespace cynth {
         }
 
         /***
+        # For loop iteration variable
+        itervar_<id>
+        ***/
+        inline std::string iterationVariableName (std::string const & id) {
+            return std::string{} + str::iterator + str::variable + "_" + id;
+        }
+
+        /***
         # Struct member
         m_<id>
         ***/
@@ -495,6 +503,20 @@ namespace cynth {
         }
 
         /***
+        if (<cond>) {
+        ***/
+        inline std::string ifBegin (std::string const & cond) {
+            return std::string{} + "if (" + cond + ") {";
+        }
+
+        /***
+        while (<cond>) {
+        ***/
+        inline std::string whileBegin (std::string const & cond) {
+            return std::string{} + "while (" + cond + ") {";
+        }
+
+        /***
         for (<init>; <cond>; <iter>) {
         ***/
         inline std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter) {
@@ -532,6 +554,73 @@ namespace cynth {
         /** A pure function. */
         inline std::string pure () {
             return c::attribute("pure");
+        }
+
+        // TODO: All functions should follow this parameter order:
+        // name, type, value (e.g. declare(name, type), define(name, type, value))
+        // except when there is a "source" and "destination", then it should be:
+        // source, destination
+        // (e.g. cast(value, type))
+
+        /***
+        (<type>) <val>
+        ***/
+        inline std::string cast (std::string const & val, std::string const & type) {
+            return c::global(str::boolean);
+        }
+
+        // TODO: boolType, intType and floatType should be somehow connected with interface::directTypeName
+
+        /***
+        cth_bool
+        ***/
+        inline std::string boolType () {
+            return c::global(str::boolean);
+        }
+
+        /***
+        cth_int
+        ***/
+        inline std::string intType () {
+            return c::global(str::integral);
+        }
+
+        /***
+        cth_float
+        ***/
+        inline std::string floatType () {
+            return c::global(str::floating);
+        }
+
+        /***
+        # Integer literal
+        (cth_bool) 0
+        (cth_bool) 1
+        ***/
+        inline std::string boolLiteral (bool val) {
+            return c::cast(val ? "1" : "0", c::boolType());
+        }
+
+        /***
+        # Integer literal
+        (cth_int) val
+        ***/
+        inline std::string intLiteral (int val) {
+            return c::cast(std::to_string(val), c::intType());
+        }
+
+        /***
+        ++<val>
+        ***/
+        inline std::string increment (std::string const & val) {
+            return "++" + val;
+        }
+
+        /***
+        <a> < <b>
+        ***/
+        inline std::string lt (std::string const & a, std::string const & b) {
+            return a + " < " + b;
         }
 
     }

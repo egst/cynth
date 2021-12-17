@@ -194,13 +194,13 @@ namespace cynth::syn {
 
     interface::DisplayResult node::Assignment::display () const {
         return
-            (*target >>= target::category{} && interface::display) + " = " +
-            (*value >>= target::category{} && interface::display);
+            (interface::display || target::category{} <<= *target) + " = " +
+            (interface::display || target::category{} <<= *value);
     }
 
     interface::StatementProcessingResult node::Assignment::processStatement (context::C & ctx) const {
-        auto targetsResult = *target >>= target::category{} && interface::resolveTarget(ctx);
-        auto valuesResult  = *value  >>= target::category{} && interface::processExpression(ctx);
+        auto targetsResult = interface::resolveTarget(ctx)     || target::category{} <<= *target;
+        auto valuesResult  = interface::processExpression(ctx) || target::category{} <<= *value;
         if (!valuesResult)  return valuesResult.error();
         if (!targetsResult) return targetsResult.error();
         auto targets = *std::move(targetsResult);
@@ -230,13 +230,13 @@ namespace cynth::syn {
 
     interface::DisplayResult node::Definition::display () const {
         return
-            (*target >>= target::category{} && interface::display) + " = " +
-            (*value >>= target::category{} && interface::display);
+            (interface::display || target::category{} <<= *target) + " = " +
+            (interface::display || target::category{} <<= *value);
     }
 
     interface::StatementProcessingResult node::Definition::processStatement (context::C & ctx) const {
-        auto declsResult  = *target >>= target::category{} && interface::resolveDeclaration(ctx);
-        auto valuesResult = *value  >>= target::category{} && interface::processExpression(ctx);
+        auto declsResult  = interface::resolveDeclaration(ctx) || target::category{} <<= *target;
+        auto valuesResult = interface::processExpression(ctx)  || target::category{} <<= *value;
         if (!declsResult)  return declsResult.error();
         if (!valuesResult) return valuesResult.error();
         auto decls  = *declsResult;
@@ -250,7 +250,7 @@ namespace cynth::syn {
                 return esl::result_error{"More values than targets in a definition."};
 
             for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                auto definitionResult = type >>= target::category{} && interface::processDefinition(ctx)(value);
+                auto definitionResult = interface::processDefinition(ctx)(value) || target::category{} <<= type;
                 if (!definitionResult) return definitionResult.error();
 
                 vars.push_back(*definitionResult);
@@ -271,8 +271,8 @@ namespace cynth::syn {
 
     interface::DisplayResult node::For::display () const {
         return
-            "for " + esl::parenthesized(*declarations >>= target::category{} && interface::display) +
-            " "    + (*body >>= target::category{} && interface::display);
+            "for " + esl::parenthesized(interface::display || target::category{} <<= *declarations) +
+            " "    + (interface::display || target::category{} <<= *body);
     }
 
     // TODO: Maybe check if some optimizations could be done for some simple iteration cases.
@@ -288,6 +288,30 @@ namespace cynth::syn {
         }
         ***/
 
+        // TODO: This should be more straightforward.
+        auto intType = c::typeName(interface::directTypeName(sem::type::Int{}));
+        auto iterVar = c::iterationVariableName(c::id(ctx.nextId()));
+
+        auto head = c::forBegin(
+            c::definition(intType, iterVar, c::increment(iterVar)),
+            c::lt(iterVar, c::intLiteral(size)),
+            c::increment(iterVar)
+        );
+
+        auto scope = ctx.makeScopeChild();
+
+        for (auto & [decl, array]: iterDecls) {
+            //ESL_INSPECT(decl);  // CompleteDeclaration
+            //ESL_INSPECT(array); // ResolvedValue
+
+            // TODO: processExprSubscript
+            //interface::processSubscript(ctx, , array)
+
+            //interface::processDefinition(ctx)()
+
+            // TODO...
+        }
+
 #if 0 // TODO
         for (sem::Integral index = 0; index < size; ++index) {
             // Init inner scope:
@@ -299,8 +323,10 @@ namespace cynth::syn {
                 if (!elementResult) return elementResult.error();
                 auto element = *std::move(elementResult);
 
-                auto definitionResult = esl::single(decl.type) >>= target::result{} && target::category{} &&
-                    interface::processDefinition(ctx)(element); // Note: Arrays of tuples are not supported yet.
+                auto definitionResult = interface::processDefinition(ctx)(element) ||
+                    target::nested{target::result{}, target::category{}} <<=
+                    esl::single(decl.type);
+                // Note: Arrays of tuples are not supported yet.
                 if (!definitionResult) return definitionResult.error();
                 auto variable = *std::move(definitionResult);
 
@@ -308,7 +334,7 @@ namespace cynth::syn {
             }
 
             // Execute the loop body:
-            auto returned = *body >>= target::category{} && interface::processStatement(scope);
+            auto returned = interface::processStatement(scope) || target::category{} <<= *body;
             if (returned.has_error()) return returned.error();
 
             auto returnKind = returned.kind();
@@ -333,16 +359,16 @@ namespace cynth::syn {
 
     interface::DisplayResult node::FunDef::display () const {
         return
-            (*output >>= target::category{} && interface::display) + " " +
-            (name >>= interface::display) + " " +
-            esl::parenthesized(*input >>= target::category{} && interface::display) + " " +
-            (*body >>= target::category{} && interface::display);
+            (interface::display || target::category{} <<= *output) + " " +
+            interface::display(name) + " " +
+            esl::parenthesized(interface::display || target::category{} <<= *input) + " " +
+            (interface::display || target::category{} <<= *body);
     }
 
     interface::StatementProcessingResult node::FunDef::processStatement (context::C & ctx) const {
 
-        auto outResult = *output >>= target::category{} && interface::resolveType(ctx);
-        auto inResult  = *input  >>= target::category{} && interface::resolveDeclaration(ctx);
+        auto outResult = interface::resolveType(ctx) || target::category{} <<= *output;
+        auto inResult  = interface::resolveDeclaration(ctx) || target::category{} <<= *input ;
         if (!outResult) return outResult.error();
         if (!inResult)  return inResult.error();
         auto outTypes = *std::move(outResult);
@@ -399,9 +425,9 @@ namespace cynth::syn {
 
     interface::DisplayResult node::If::display () const {
         return
-            "if "    + esl::parenthesized(*condition >>= target::category{} && interface::display) +
-            " "      + (*positiveBranch >>= target::category{} && interface::display) +
-            " else " + (*negativeBranch >>= target::category{} && interface::display);
+            "if "    + esl::parenthesized(interface::display || target::category{} <<= *condition) +
+            " "      + (interface::display || target::category{} <<= *positiveBranch) +
+            " else " + (interface::display || target::category{} <<= *negativeBranch);
     }
 
     interface::StatementProcessingResult node::If::processStatement (context::C & ctx) const {
@@ -420,7 +446,7 @@ namespace cynth::syn {
     //// Return ////
 
     interface::DisplayResult node::Return::display () const {
-        return "return " + (*value >>= target::category{} && interface::display);
+        return "return " + (interface::display || target::category{} <<= *value);
     }
 
     interface::StatementProcessingResult node::Return::processStatement (context::C & ctx) const {
@@ -439,8 +465,8 @@ namespace cynth::syn {
 
     interface::DisplayResult node::TypeDef::display () const {
         return
-            "type " + (target >>= interface::display) +
-            " = "   + (*type >>= target::category{} && interface::display);
+            "type " + interface::display(target) +
+            " = "   + (interface::display || target::category{} <<= *type);
     }
 
     interface::StatementProcessingResult node::TypeDef::processStatement (context::C & ctx) const {
@@ -465,8 +491,8 @@ namespace cynth::syn {
 
     interface::DisplayResult node::While::display () const {
         return
-            "while " + esl::parenthesized(*condition >>= target::category{} && interface::display) +
-            " "      + (*body >>= target::category{} && interface::display);
+            "while " + esl::parenthesized(interface::display || target::category{} <<= *condition) +
+            " "      + (interface::display || target::category{} <<= *body);
     }
 
     interface::StatementProcessingResult node::While::processStatement (context::C & ctx) const {
@@ -493,8 +519,8 @@ namespace cynth::syn {
 
     interface::DisplayResult node::When::display () const {
         return
-            "when " + esl::parenthesized(*condition >>= target::category{} && interface::display) +
-            " "     + (*branch >>= target::category{} && interface::display);
+            "when " + esl::parenthesized(interface::display || target::category{} <<= *condition) +
+            " "     + (interface::display || target::category{} <<= *branch);
     }
 
     interface::StatementProcessingResult node::When::processStatement (context::C & ctx) const {
