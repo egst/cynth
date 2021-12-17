@@ -62,17 +62,16 @@ namespace cynth::context {
         };
 
         C (
-            C::Global  & global,
+            C::Global      & global,
             context::Cynth & comp
         ):  globalCtx{global},
             compCtx{&comp} {}
 
-        esl::result<void> beginFunction ();
-        esl::result<void> endFunction   ();
-        esl::result<void> beginScope    ();
-        esl::result<void> endScope      ();
+        C makeScopeChild    ();
+        C makeFunctionChild ();
 
         // TODO: Don't forget that these must completely ignore empty strings.
+        // Update: I don't think it's needed anywhere anymore, but it still could be useful.
         esl::result<void> insertStatement          (std::string);
         esl::result<void> insertFunctionAllocation (std::string);
         esl::result<void> insertStaticAllocation   (std::string);

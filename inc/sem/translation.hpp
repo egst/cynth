@@ -6,6 +6,7 @@
 #include "esl/ranges.hpp"
 #include "esl/string.hpp"
 
+// TODO: Either put this in the `sem::` namespace, or move it out of the `sem/` directory.
 namespace cynth {
 
     namespace str {
@@ -64,6 +65,22 @@ namespace cynth {
     }
 
     namespace c {
+
+        /**
+         *  `(<expr>)`
+         *  Most expressions are explicitly parenthesized to avoid precedence issues.
+         *  By default, this doesn't introduce unnecessary parentheses.
+         *  The expression is scanned for matching parentheses on both ends.
+         *  However, this might be a slight translation time slowdown
+         *  so set `neatParentheses` to false in the config if readable C code is not a concern.
+         */
+        inline std::string expression (std::string const & expr) {
+            constexpr bool neatParentheses = true; // TODO: Put this in some global config.
+            if constexpr (neatParentheses)
+                return esl::parenthesized(expr);
+            else
+                return std::string{} + "(" + expr + ")";
+        }
 
         /** `<stmt>;` */
         inline std::string statement (std::string const & stmt) {
@@ -196,7 +213,7 @@ namespace cynth {
         }
         */
 
-        /** `typeof({type} [{size}])` */
+        /** `typeof(<type> [<size>])` */
         inline std::string arrayValueType (std::string const & size, std::string const & type) {
             return std::string{} + str::gnuTypeof + "(" + type + " " + "[" + size + "])";
         }
@@ -278,6 +295,11 @@ namespace cynth {
         /** Buffer wrapper raw data - `<structure>.data` */
         inline std::string bufferData (std::string const & structure) {
             return structure + "." + def::dataMember;
+        }
+
+        /** `<array>[<index>]` */
+        inline std::string arraySubscript (std::string const & array, std::string const & index) {
+            return array + "[" + index + "]";
         }
 
         /** `arr_copy(<src>)` */

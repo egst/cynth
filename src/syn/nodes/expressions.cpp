@@ -1101,8 +1101,7 @@ namespace cynth {
             lift<target::component, target::category>(interface::display)(body);
     }
 
-    interface::ExpressionResolutionResult syn::node::Function::resolveExpression (context::C & ctx, bool translate) const {
-        // TODO: translate?
+    interface::ExpressionProcessingResult syn::node::Function::processExpression (context::C & ctx) const {
 
         auto outResult = lift<target::component, target::category>(interface::resolveType(ctx))(output);
         if (!outResult) return outResult.error();
@@ -1118,6 +1117,9 @@ namespace cynth {
         if (!typeNamesResult) return typeNamesResult.error();
         auto capture = ctx.compCtx->capture(*namesResult, *typeNamesResult);
 
+        return {};
+
+#if 0 // TODO
         sem::KnownCapture knownCapture;
 
         for (auto const & [name, tuple]: capture.values) for (auto const & capture: tuple) {
@@ -1127,7 +1129,7 @@ namespace cynth {
             std::vector<std::string> init; // initializations
             std::vector<std::string> post; // post-initialization actions
 
-            lift<target::variant>(
+            lift<target::category>(
                 [&ctx, &name = name] (sem::CompleteType const & type) -> esl::result<sem::ResolvedValue> {
                     auto nameResult = lift<target::category>(
                         [] (interface::simpleType auto const & type) -> esl::result<std::string> {
@@ -1173,7 +1175,7 @@ namespace cynth {
 
                     return {{value}};
                 }
-            )(capture.value);
+            )(capture);
 
 
         }
@@ -1190,6 +1192,7 @@ namespace cynth {
         return syn::make_evaluation_result(sem::value::complete{sem::value::Function {
             .value = stored.get()
         }});
+#endif
     }
 
 #if 0 // TODO

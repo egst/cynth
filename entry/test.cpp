@@ -11,11 +11,8 @@
 #include "esl/type_manip.hpp"
 #include "esl/zip.hpp"
 
-#include "sem/translation_context.hpp"
-//#include "sem/types.hpp"
-//#include "sem/interface.hpp"
-
 //using namespace cynth;
+//using esl::lift
 //namespace target = esl::target;
 
 int main () {

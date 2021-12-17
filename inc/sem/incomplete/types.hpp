@@ -24,24 +24,24 @@
     interface::TypeNameResult typeName () const
 #define SAME(type) \
     interface::SameTypeResult sameType (type const &) const
-#define CONST(type) \
-    interface::ConstTypeResult constType () const
 #define COMMON(type) \
     interface::CommonTypeResult commonType (type const &) const
 #define TYPE_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::DefinitionTranslationResult translateDefinition ( \
-        context::C &, \
-        std::optional<ResolvedValue> const & definition \
-    ) const; \
-    interface::AllocationTranslationResult translateAllocation ( \
+    interface::DefinitionProcessingResult processDefinition ( \
         context::C &, \
         std::optional<ResolvedValue> const & definition \
     ) const; \
     interface::ConversionTranslationResult translateConversion ( \
         context::C &, \
-        ResolvedValue const & from \
+        TypedExpression const & from \
     ) const;
+    /*
+    interface::AllocationTranslationResult translateAllocation ( \
+        context::C &, \
+        std::optional<TypedExpression> const & definition \
+    ) const; \
+    */
 #define INCOMPLETE_TYPE_INTERFACE \
     interface::TypeCompletionResult completeType (context::C &) const
 
@@ -135,12 +135,13 @@ namespace cynth::sem {
                 esl::component<IncompleteValue> // TODO: This makes types dependant on values.
             >;
 
+            // TODO: Figure out a way to work with arrays of tuples.
             template <bool Complete>
             struct Array {
-                esl::component_vector<Type<Complete>> type;
-                Size<Complete> size;
-                bool constval;
-                bool constref;
+                esl::component<Type<Complete>> type;
+                Size<Complete>                 size;
+                bool                           constval;
+                bool                           constref;
             };
 
             template <bool Complete>
@@ -195,8 +196,6 @@ namespace cynth::sem {
 
             SAME(type::Buffer);
 
-            CONST();
-
             static esl::result<type::Buffer> make (Integral);
         };
 
@@ -206,8 +205,6 @@ namespace cynth::sem {
             COMMON(type::Function);
 
             SAME(type::Function);
-
-            CONST();
         };
 
         struct IncompleteIn: detail::types::In<false> {

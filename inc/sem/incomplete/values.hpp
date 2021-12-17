@@ -142,12 +142,14 @@ namespace cynth::sem {
 
         // TODO: Figure out a way to work with arrays containing tuples.
         struct Array {
+            // TODO: Reference (reference_wrapper) instead of a pointer.
+            // For now, let's assume a non-empty vector as an invariant.
             using Allocation = std::variant<
                 ArrayAllocation *, // compile-time allocation structure
                 std::string        // run-time allocation variable name
             >;
 
-            std::optional<Allocation> allocation;
+            Allocation allocation;
 
             VALUE_INTERFACE;
 
@@ -212,8 +214,7 @@ namespace cynth::sem {
         using Simple = std::variant<
             value::Bool,
             value::Int,
-            value::Float,
-            value::String
+            value::Float
         >;
 
         using Complete = esl::extend<

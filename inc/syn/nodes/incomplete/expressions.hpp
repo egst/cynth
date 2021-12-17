@@ -17,11 +17,11 @@
 #define DISPLAY \
     interface::DisplayResult display () const
 #define EXPRESSION_INTERFACE \
-    interface::ExpressionResolutionResult resolveExpression (context::C &, bool translate) const
+    interface::ExpressionProcessingResult processExpression (context::C &) const
 #define PROGRAM_INTERFACE \
-    interface::ExpressionResolutionResult resolveProgram (context::C &, bool translate) const
+    interface::ExpressionProcessingResult processProgram (context::C &) const
 #define STATEMENT_INTERFACE \
-    interface::StatementResolutionResult resolveStatement (context::C &) const
+    interface::StatementProcessingResult processStatement (context::C &) const
 #define TARGET_INTERFACE \
     interface::TargetResolutionResult resolveTarget (context::C &) const
 
@@ -72,8 +72,8 @@ namespace cynth::syn::node {
         PROGRAM_INTERFACE; // TODO?
 
     private:
-        // Generic implementation for both `resolveProgram` and `resolveInterface`.
-        template <bool Program = true> interface::ExpressionResolutionResult resolve (context::Cynth &) const;
+        // Generic implementation for both `processProgram` and `processInterface`.
+        template <bool Program = true> interface::ExpressionProcessingResult process (context::Cynth &) const;
     };
 
     /**

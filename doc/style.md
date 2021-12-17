@@ -5,6 +5,18 @@ I will specify them all once this project reaches the potential for collaboratio
 but for now, the following list of conventions are just some explicit coding style notes for me,
 to keep consistent and stop changing my style during development.
 
+* semantic order of parameters:
+    * source, then destination (`copy(src, dst)`, `assign(value, target)`, ...)
+
+* comments: currently not standardized, but:
+    * `/** (*  ...) */` is used to comment interfaces with examples and explanations for the user (caller)
+        (some IDE tools pick those up as docblocks. clangd seems to be picking up any comment above a declaration)
+    * `/*** (...) ***/` is used for examples of input Cynth code or output C code
+        (because it sortof resembles the tripple backslash code blocks in markdown)
+        placed in some parts of the implementation for demonstration
+    * `#` is used in Cynth code (though it does support both `//` and `#`)
+    * but other than that, the inconcictency of comments hasn't triggered my OCD yet, so I don't really care (for now)
+
 * header files should not (in general) have incomplete dependencies in type declarations (not even in pointers)  
     in case that types really cannot be complete (e.g. circular dependencies):  
     * files with incomplete circular dependencies should be explicitly marked as such (placed in a directory `incomplete/` or prefixed with `incomplete_`)

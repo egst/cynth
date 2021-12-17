@@ -13,7 +13,7 @@
 #define DECLARATION_INTERFACE \
     interface::DisplayResult display () const; \
     interface::DeclarationResolutionResult resolveDeclaration (context::C &) const; \
-    interface::StatementResolutionResult resolveStatement (context::C &) const;
+    interface::StatementProcessingResult processStatement (context::C &) const;
 
 namespace cynth::syn::node {
 

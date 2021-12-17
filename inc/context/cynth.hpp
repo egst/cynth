@@ -56,7 +56,7 @@ namespace cynth::context {
         template <typename Value>
         esl::reference_result<Value> storeValue (Value const &);
 
-        static Cynth makeChild ();
+        Cynth makeChild ();
 
     protected:
         std::tuple<

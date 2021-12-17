@@ -11,6 +11,7 @@
 #include "context/c.hpp"
 #include "interface/forward.hpp"
 #include "interface/types.hpp"
+#include "sem/compound.hpp"
 #include "sem/declarations.hpp"
 #include "sem/values.hpp"
 
@@ -33,18 +34,19 @@ namespace cynth::interface {
         };
 
         template <typename T>
-        concept staticValueType = value<T> && requires () {
-            { T::valueType } -> type;
-        };
-
-        template <typename T>
         concept directValueType = value<T> && requires (T value) {
+            // Note: Both static and non-static `valueType` members satisfy this concept.
+            // It seems there is no straightforward way to check for one of them specifically,
+            // but in the end it doesn't really matter, because both are accessible
+            // with the "usual" member access `.`.
+            //{ T::valueType } -> type;
             { value.valueType } -> type;
         };
 
         template <typename T>
         concept valueType = value<T> && requires (T value) {
-            { value.valueType() } -> std::same_as<ValueTypeResult>;
+            //{ value.valueType() } -> std::same_as<ValueTypeResult>;
+            value.valueType();
         };
 
         template <typename T, typename U>
@@ -55,11 +57,6 @@ namespace cynth::interface {
         template <typename T>
         concept translateValue = value<T> && requires (T value, context::C & ctx) {
             { value.translateValue(ctx) } -> std::same_as<ValueTranslationResult>;
-        };
-
-        template <typename T>
-        concept translateTarget = value<T> && requires (T value, context::C & ctx) {
-            { value.translateTarget(ctx) } -> std::same_as<TargetTranslationResult>;
         };
 
     }
@@ -78,23 +75,18 @@ namespace cynth::interface {
     );
 
     constexpr auto valueType = esl::overload(
-        [] <has::staticValueType T> (T const &) -> ValueTypeResult
-        requires (!has::directValueType<T> && !has::valueType<T>) {
-            return sem::CompleteType{T::valueType};
-        },
-        [] <has::directValueType T> (T const & value) -> ValueTypeResult
-        requires (!has::staticValueType<T> && !has::valueType<T>) {
+        [] <has::directValueType T> (T const & value) -> ValueTypeResult requires (!has::valueType<T>) {
+            //return sem::CompleteType{T::valueType};
             return sem::CompleteType{value.valueType};
         },
-        [] <has::valueType T> (T const & value) -> ValueTypeResult
-        requires (!has::staticValueType<T> && !has::directValueType<T>) {
+        [] <has::valueType T> (T const & value) -> ValueTypeResult requires (!has::directValueType<T>) {
             return value.valueType();
         }
     );
 
     // TODO: Do I need this?
     // Or perhaps `convertValue`'s functionality could be included in `translateConversion` (in interface/types)?
-    constexpr auto convertValue = [] (context::C & ctx) {
+    inline auto convertValue (context::C & ctx) {
         return esl::overload(
             [&ctx] <value T, type To> (T const & value, To const & to) -> ConversionResult
             requires (has::convertValue<T, To>) {
@@ -106,7 +98,7 @@ namespace cynth::interface {
         );
     };
 
-    constexpr auto translateValue = [] (context::C & ctx) {
+    inline auto translateValue (context::C & ctx) {
         return esl::overload(
             [&ctx] <value T> (T const & value) -> ValueTranslationResult
             requires (has::translateValue<T>) {
@@ -114,18 +106,6 @@ namespace cynth::interface {
             },
             [] (value auto const &) -> ValueTranslationResult {
                 return {esl::result_error{"This value cannot be translated."}};
-            }
-        );
-    };
-
-    constexpr auto translateTarget = [] (context::C & ctx) {
-        return esl::overload(
-            [&ctx] <value T> (T const & value) -> TargetTranslationResult
-            requires (has::translateTarget<T>) {
-                return value.translateTarget(ctx);
-            },
-            [] (value auto const &) -> TargetTranslationResult {
-                return {esl::result_error{"This value cannot be translated into a target."}};
             }
         );
     };

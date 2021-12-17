@@ -17,6 +17,7 @@
 
 // Completing forward declarations:
 #include "sem/types.hpp"
+#include "sem/compound.hpp"
 
 namespace cynth::interface {
 
@@ -37,8 +38,10 @@ namespace cynth::interface {
     namespace has {
 
         template <typename T>
-        concept staticTypeName = simpleType<T> && requires {
-            { T::typeName } -> std::same_as<TypeNameConstant>;
+        concept directTypeName = simpleType<T> && requires (T value) {
+            // Note: This potentially also accepts a non-static member.
+            //{ T::typeName } -> std::same_as<TypeNameConstant>;
+            { value.typeName } -> std::same_as<TypeNameConstant>;
         };
 
         template <typename T>
@@ -72,17 +75,10 @@ namespace cynth::interface {
         };
 
         template <typename T>
-        concept translateDefinition = type<T> && requires (
+        concept processDefinition = type<T> && requires (
             T type, context::C & ctx, std::optional<sem::ResolvedValue> definition
         ) {
-            { type.translateDefinition(ctx, definition) } -> std::same_as<DefinitionTranslationResult>;
-        };
-
-        template <typename T>
-        concept translateAllocation = type<T> && requires (
-            T type, context::C & ctx, std::optional<sem::ResolvedValue> initialization
-        ) {
-            { type.translateAllocation(ctx, initialization) } -> std::same_as<AllocationTranslationResult>;
+            { type.processDefinition(ctx, definition) } -> std::same_as<DefinitionProcessingResult>;
         };
 
         template <typename T>
@@ -91,6 +87,15 @@ namespace cynth::interface {
         ) {
             { type.translateConversion(ctx, from) } -> std::same_as<ConversionTranslationResult>;
         };
+
+        /*
+        template <typename T>
+        concept translateAllocation = type<T> && requires (
+            T type, context::C & ctx, std::optional<sem::ResolvedValue> initialization
+        ) {
+            { type.translateAllocation(ctx, initialization) } -> std::same_as<AllocationTranslationResult>;
+        };
+        */
 
         /*
         template <typename T>
@@ -104,22 +109,24 @@ namespace cynth::interface {
     // Functions:
 
     constexpr auto directTypeName = esl::overload(
-        [] <has::staticTypeName T> (T const & type) -> TypeNameResult {
-            return std::string{T::typeName};
+        [] <has::directTypeName T> (T const & type) -> TypeNameResult {
+            //return std::string{T::typeName};
+            return std::string{type.typeName};
         },
-        [] <type T> (T const & type) -> TypeNameResult requires (!has::staticTypeName<T>) {
+        [] <type T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
             return esl::result_error{"This type it not directly named."};
         }
     );
 
     constexpr auto typeName = esl::overload(
-        [] <has::staticTypeName T> (T const & type) -> TypeNameResult {
-            return std::string{T::typeName};
+        [] <has::directTypeName T> (T const & type) -> TypeNameResult {
+            //return std::string{T::typeName};
+            return std::string{type.typeName};
         },
-        [] <has::typeName T> (T const & type) -> TypeNameResult requires (!has::staticTypeName<T>) {
+        [] <has::typeName T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
             return type.getTypeName();
         },
-        [] <type T> (T const & type) -> TypeNameResult requires (!has::typeName<T> && !has::staticTypeName<T>) {
+        [] <type T> (T const & type) -> TypeNameResult requires (!has::typeName<T> && !has::directTypeName<T>) {
             return esl::result_error{"This type does not have a name."};
         }
     );
@@ -193,29 +200,32 @@ namespace cynth::interface {
         );
     }
 
-    // TODO: I´m not sure if I like the names of the following three functions...
-    // "Translation" should probably only refer to the final translasion to C,
-    // while these three might perform both "translation" and "evaluation".
-    // Other functions that might perform either "translation"
-    // (when the argument is an AST node refering to some run-time values) and "evaluation"
-    // (when the argument is an AST node refering only to compile-time values) are called "resolve{Something}".
-    // What should I call these? "Resolve" will be probably better kept limited to the AST nodes.
-    // Maybe "process"? `processDefinition` etc.
-    // Actually, even "evaluation" is not really a thing they do - e.g. definitions are not evaluated,
-    // they're either translated to some C strings or just "proccessed" directly at compile time.
+    constexpr auto processDefinition (context::C & ctx) {
+        return [&ctx] (sem::ResolvedValue const & definition) {
+            return esl::overload(
+                [&ctx, &definition] <has::processDefinition T> (T const & type) -> DefinitionProcessingResult {
+                    return type.processDefinition(ctx, definition);
+                },
+                [] (auto const &) -> DefinitionProcessingResult {
+                    return esl::result_error{"A definition of this type cannot be translated."};
+                }
+            );
+        };
+    }
 
-    constexpr auto translateDefinition (context::C & ctx, std::optional<sem::ResolvedValue> const & definition) {
+    constexpr auto processDeclaration (context::C & ctx) {
         return esl::overload(
-            [&ctx, &definition] <has::translateDefinition T> (T const & type) -> DefinitionTranslationResult {
-                return type.translateDefinition(ctx, definition);
+            [&ctx] <has::processDefinition T> (T const & type) -> DeclarationProcessingResult {
+                return type.processDefinition(ctx, std::nullopt);
             },
-            [] (auto const &) -> DefinitionTranslationResult {
-                return esl::result_error{"A definition of this type cannot be translated."};
+            [] (auto const &) -> DeclarationProcessingResult {
+                return esl::result_error{"A declaration of this type cannot be translated."};
             }
         );
     }
 
-    constexpr auto translateAllocation (context::C & ctx, std::optional<sem::ResolvedValue> const & initialization) {
+    /*
+    constexpr auto translateAllocation (context::C & ctx, std::optional<sem::TypedExpression> const & initialization) {
         return esl::overload(
             [&ctx, &initialization] <has::translateAllocation T> (T const & type) -> AllocationTranslationResult {
                 return type.translateAllocation(ctx, initialization);
@@ -225,8 +235,9 @@ namespace cynth::interface {
             }
         );
     }
+    */
 
-    constexpr auto translateConversion (context::C & ctx, sem::ResolvedValue const & from) {
+    constexpr auto translateConversion (context::C & ctx, sem::TypedExpression const & from) {
         return esl::overload(
             [&ctx, &from] <has::translateConversion T> (T const & type) -> ConversionTranslationResult {
                 return type.translateConversion(ctx, from);

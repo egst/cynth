@@ -5,20 +5,24 @@
 
 #include "esl/category.hpp"
 #include "esl/component.hpp"
+#include "esl/containers.hpp"
 #include "esl/lift.hpp"
 #include "esl/string.hpp"
 #include "esl/tiny_vector.hpp"
 #include "esl/view.hpp"
 #include "esl/zip.hpp"
-//#include "esl/containers.hpp" // unite_results, single, init (from old code)
 
+// TODO: Clean this up, when I'm done.
 #include "context/c.hpp"
 #include "interface/common.hpp"
+#include "interface/compound.hpp"
+#include "interface/misc.hpp"
 #include "interface/nodes.hpp"
 #include "interface/types.hpp"
 #include "interface/values.hpp"
 #include "sem/compound.hpp"
 #include "sem/translation.hpp"
+#include "sem/numeric_types.hpp"
 
 // TMP
 #include "esl/debug.hpp"
@@ -175,27 +179,25 @@ namespace esl {
 
 }
 
-namespace cynth {
+namespace cynth::syn {
 
     namespace target = esl::target;
     using esl::lift;
 
     //// Assignment ////
 
-    interface::DisplayResult syn::node::Assignment::display () const {
+    interface::DisplayResult node::Assignment::display () const {
         return
             lift<target::component, target::category>(interface::display)(target) + " = " +
             lift<target::component, target::category>(interface::display)(value);
     }
 
-    interface::StatementResolutionResult syn::node::Assignment::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::Assignment::processStatement (context::C & ctx) const {
         auto targetsResult = lift<target::component, target::category>(interface::resolveTarget(ctx))(target);
         if (!targetsResult) return targetsResult.error();
         auto targets = *std::move(targetsResult);
 
-        auto target = std::move(targets.front());
-
-        auto valuesResult = lift<target::component, target::category>(interface::resolveExpression(ctx))(value);
+        auto valuesResult = lift<target::component, target::category>(interface::processExpression(ctx))(value);
         if (!valuesResult) return valuesResult.error();
         auto values = *std::move(valuesResult);
 
@@ -208,48 +210,28 @@ namespace cynth {
         if (targets.size() > values.size())
             return esl::result_error{"More targets than values in an assignment."};
 
-        for (auto const & [target, value]: esl::zip(targets, values)) {
-            auto conversionResult = lift<target::category>(interface::translateConversion(ctx, value))(target.type);
-            if (!conversionResult) return conversionResult.error();
-            auto converted = *std::move(conversionResult);
+        //lift<target::tiny_vector>(interface::processAssignment(ctx))(value, target);
+        // TODO: lift<tiny_vector> doesn't work here for some reason.
 
-            return lift<target::variant>(
-                [] (sem::CompleteValue * target, sem::CompleteValue const & value) -> esl::result<void> {
-                    if (!target) return esl::result_error{"Missing target."};
-                    *target = value;
-                    return {};
-                },
-                [&ctx] (sem::CompleteValue * target, std::string const & value) -> esl::result<void> {
-                    if (!target) return esl::result_error{"Missing target."};
-                    auto translatoinResult = lift<target::category>(interface::translateTarget(ctx))(*target);
-                    if (!translatoinResult) return translatoinResult.error();
-                    return {};
-                },
-                [&ctx] (std::string const & target, sem::CompleteValue const & value) -> esl::result<void> {
-                    auto translatoinResult = lift<target::category>(interface::translateValue(ctx))(value);
-                    if (!translatoinResult) return translatoinResult.error();
-                    return ctx.insertStatement(c::assignment(*translatoinResult, target));
-                },
-                [&ctx] (std::string const & target, std::string const & value) -> esl::result<void> {
-                    return ctx.insertStatement(c::assignment(value, target));
-                }
-            )(target.target, converted.value);
+        for (auto const & [target, value]: esl::zip(targets, values)) {
+            auto result = interface::processAssignment(ctx)(value, target);
+            if (!result) return result.error();
         }
 
-        return {};
+        return {sem::NoReturn{}};
     }
 
     //// Definition ////
 
-    interface::DisplayResult syn::node::Definition::display () const {
+    interface::DisplayResult node::Definition::display () const {
         return
             lift<target::component, target::category>(interface::display)(target) + " = " +
             lift<target::component, target::category>(interface::display)(value);
     }
 
-    interface::StatementResolutionResult syn::node::Definition::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::Definition::processStatement (context::C & ctx) const {
         auto declsResult  = lift<target::component, target::category>(interface::resolveDeclaration(ctx))(target);
-        auto valuesResult = lift<target::component, target::category>(interface::resolveExpression(ctx))(value);
+        auto valuesResult = lift<target::component, target::category>(interface::processExpression(ctx))(value);
         if (!declsResult)  return declsResult.error();
         if (!valuesResult) return valuesResult.error();
         auto decls  = *declsResult;
@@ -263,15 +245,10 @@ namespace cynth {
                 return esl::result_error{"More values than targets in a definition."};
 
             for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                auto defResult = lift<target::category>(interface::translateDefinition(ctx, value))(type);
-                if (!defResult) return defResult.error();
-                auto def = *defResult;
+                auto definitionResult = lift<target::category>(interface::processDefinition(ctx)(value))(type);
+                if (!definitionResult) return definitionResult.error();
 
-                vars.push_back(sem::Variable{
-                    .type     = value.type,
-                    .value    = def.value,
-                    .variable = std::nullopt
-                });
+                vars.push_back(*definitionResult);
             }
 
             auto varResult = ctx.compCtx->insertValue(decl.name, vars);
@@ -282,49 +259,66 @@ namespace cynth {
         if (valueIterator != values.end())
             return esl::result_error{"More targets than values in a definition."};
 
-        return {};
+        return {sem::NoReturn{}};
     }
 
     //// For ////
 
-    interface::DisplayResult syn::node::For::display () const {
+    interface::DisplayResult node::For::display () const {
         return
             "for " + esl::parenthesized(lift<target::component, target::category>(interface::display)(declarations)) +
             " "    + lift<target::component, target::category>(interface::display)(body);
     }
 
-    interface::StatementResolutionResult syn::node::For::resolveStatement (context::C & ctx) const {
-        return {};
-#if 0 // TODO
-        auto decls_result = sem::for_decls(ctx, *declarations);
-        if (!decls_result)
-            return syn::make_execution_result(decls_result.error());
-        auto [size, iter_decls] = *std::move(decls_result);
+    // TODO: Maybe check if some optimizations could be done for some simple iteration cases.
+    interface::StatementProcessingResult node::For::processStatement (context::C & ctx) const {
+        auto declsResult = interface::resolveRangeDeclarations(ctx, *declarations);
+        if (!declsResult) return declsResult.error();
+        auto [size, iterDecls] = *std::move(declsResult);
 
-        for (integral i = 0; i < size; ++i) {
+        for (sem::Integral index = 0; index < size; ++index) {
             // Init inner scope:
-            auto iter_scope = make_child_context(ctx);
+            auto scope = ctx.makeScopeChild();
 
             // Define iteration elements:
-            for (auto & [decl, value]: iter_decls)
-                iter_scope.define_value(decl, value.value->value[i]);
+            for (auto & [decl, array]: iterDecls) {
+                auto elementResult = interface::processStaticSubscript(index)(array);
+                if (!elementResult) return elementResult.error();
+                auto element = *std::move(elementResult);
+
+                auto definitionResult = lift<target::result, target::category>(
+                    interface::processDefinition(ctx)(element)
+                )(esl::single(decl.type)); // Note: Arrays of tuples are not supported yet.
+                if (!definitionResult) return definitionResult.error();
+                auto variable = *std::move(definitionResult);
+
+                auto varResult = scope.compCtx->insertValue(decl.name, {variable});
+            }
 
             // Execute the loop body:
-            auto returned = interface::resolveStatement(iter_scope)(body);
+            auto returned = lift<target::component, target::category>(interface::processStatement(scope))(body);
+            if (returned.has_error()) return returned.error();
+
+            auto returnKind = returned.kind();
+
+            // TODO: I just realized... This will unroll the loop.
+            // I probably don't want to implement any loop unrolling. I'll let the C compiler take care of that.
+            // But maybe it still could be useful to go through the whole loop at compile time to extract some compconst values.
+            // Eh... I need a break, this makes no sense, how do I even know the range of the loop at compile-time?
+
+            if (returnKind == sem::Returned::returned)
+                return returned;
 
             if (returned)
                 return *returned;
-            if (returned.has_error())
-                return syn::make_execution_result(returned.error());
         }
 
         return {};
-#endif
     }
 
     //// FunDef ////
 
-    interface::DisplayResult syn::node::FunDef::display () const {
+    interface::DisplayResult node::FunDef::display () const {
         return
             lift<target::component, target::category>(interface::display)(output) + " " +
             interface::display(name) + " " +
@@ -332,7 +326,7 @@ namespace cynth {
             lift<target::component, target::category>(interface::display)(body);
     }
 
-    interface::StatementResolutionResult syn::node::FunDef::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::FunDef::processStatement (context::C & ctx) const {
 
         auto outResult = lift<target::component, target::category>(interface::resolveType(ctx))(output);
         if (!outResult) return outResult.error();
@@ -342,6 +336,7 @@ namespace cynth {
         if (!inResult) return inResult.error();
         auto inDecls = *std::move(inResult);
 
+#if 0 // TODO
         auto namesResult = lift<target::component, target::category>(interface::extractNames)(body);
         if (!namesResult) return namesResult.error();
         auto typeNamesResult = lift<target::component, target::category>(interface::extractTypeNames)(body);
@@ -349,7 +344,7 @@ namespace cynth {
         auto capture = ctx.compCtx->capture(*namesResult, *typeNamesResult);
 
         sem::value::Function value{
-            .capture      = std::move(capture), // TODO
+            .context      = std::move(capture), // TODO
             .outType      = esl::make_component_vector(outTypes),
             .parameters   = esl::make_component_vector(inDecls),
             .body         = body,
@@ -361,6 +356,7 @@ namespace cynth {
 
         auto varResult = ctx.compCtx->insertValue(*name.name, {/* TODO */});
         if (!varResult) return varResult.error();
+#endif
 
         /*
         auto stored = ctx.compCtx->storeValue(sem::value::FunctionValue {
@@ -370,7 +366,7 @@ namespace cynth {
             .capture    = ctx // TODO
         });
         if (!stored)
-            return syn::make_execution_result(stored.error());
+            return make_execution_result(stored.error());
 
         auto value = esl::init<tuple_vector>(sem::value::complete{sem::value::Function {
             .value = stored.get()
@@ -381,7 +377,7 @@ namespace cynth {
         /*
         auto define_result = ctx.define_value(*name->name, value);
         if (!define_result)
-            return syn::make_execution_result(define_result.error());
+            return make_execution_result(define_result.error());
         */
 
         return {};
@@ -389,38 +385,38 @@ namespace cynth {
 
     //// If ////
 
-    interface::DisplayResult syn::node::If::display () const {
+    interface::DisplayResult node::If::display () const {
         return
             "if "    + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
             " "      + lift<target::component, target::category>(interface::display)(positive_branch) +
             " else " + lift<target::component, target::category>(interface::display)(negative_branch);
     }
 
-    interface::StatementResolutionResult syn::node::If::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::If::processStatement (context::C & ctx) const {
         return {};
 #if 0 // TODO
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(syn::evaluate(ctx)(condition))));
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
         if (!result)
-            return syn::make_execution_result(result.error());
+            return make_execution_result(result.error());
         if (*result)
-            return interface::resolveStatement(ctx)(positive_branch);
+            return interface::processStatement(ctx)(positive_branch);
         else
-            return interface::resolveStatement(ctx)(negative_branch);
+            return interface::processStatement(ctx)(negative_branch);
 #endif
     }
 
     //// Return ////
 
-    interface::DisplayResult syn::node::Return::display () const {
+    interface::DisplayResult node::Return::display () const {
         return "return " + lift<target::component, target::category>(interface::display)(value);
     }
 
-    interface::StatementResolutionResult syn::node::Return::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::Return::processStatement (context::C & ctx) const {
         return {};
 #if 0 // TODO
-        auto value_result = esl::unite_results(syn::evaluate(ctx)(value));
+        auto value_result = esl::unite_results(evaluate(ctx)(value));
         if (!value_result)
-            return syn::make_execution_result(value_result.error());
+            return make_execution_result(value_result.error());
         auto value = *std::move(value_result);
 
         return value;
@@ -429,25 +425,25 @@ namespace cynth {
 
     //// TypeDef ////
 
-    interface::DisplayResult syn::node::TypeDef::display () const {
+    interface::DisplayResult node::TypeDef::display () const {
         return
             "type " + interface::display(target) +
             " = "   + lift<target::component, target::category>(interface::display)(type);
     }
 
-    interface::StatementResolutionResult syn::node::TypeDef::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::TypeDef::processStatement (context::C & ctx) const {
         return {};
 #if 0 // TODO
         std::string name = *target->name;
 
-        auto type_result = esl::unite_results(sem::complete(ctx)(syn::eval_type(ctx)(type)));
+        auto type_result = esl::unite_results(sem::complete(ctx)(eval_type(ctx)(type)));
         if (!type_result)
-            return syn::make_execution_result(type_result.error());
+            return make_execution_result(type_result.error());
         auto type = *std::move(type_result);
 
         auto define_result = ctx.define_type(name, type);
         if (!define_result)
-            return syn::make_execution_result(define_result.error());
+            return make_execution_result(define_result.error());
 
         return {};
 #endif
@@ -455,26 +451,26 @@ namespace cynth {
 
     //// While ////
 
-    interface::DisplayResult syn::node::While::display () const {
+    interface::DisplayResult node::While::display () const {
         return
             "while " + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
             " "      + lift<target::component, target::category>(interface::display)(body);
     }
 
-    interface::StatementResolutionResult syn::node::While::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::While::processStatement (context::C & ctx) const {
         return {};
 #if 0 // TODO
         while (true) {
-            auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(syn::evaluate(ctx)(condition))));
+            auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
             if (!result)
-                return syn::make_execution_result(result.error());
+                return make_execution_result(result.error());
             if (*result) {
                 auto branch_scope = make_child_context(ctx);
-                auto returned = interface::resolveStatement(branch_scope)(body);
+                auto returned = interface::processStatement(branch_scope)(body);
                 if (returned)
                     return *returned;
                 if (returned.has_error())
-                    return syn::make_execution_result(returned.error());
+                    return make_execution_result(returned.error());
             } else
                 return {};
         }
@@ -483,24 +479,119 @@ namespace cynth {
 
     //// When ////
 
-    interface::DisplayResult syn::node::When::display () const {
+    interface::DisplayResult node::When::display () const {
         return
             "when " + esl::parenthesized(lift<target::component, target::category>(interface::display)(condition)) +
             " "     + lift<target::component, target::category>(interface::display)(branch);
     }
 
-    interface::StatementResolutionResult syn::node::When::resolveStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::When::processStatement (context::C & ctx) const {
         return {};
 #if 0 // TODO
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(syn::evaluate(ctx)(condition))));
+        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
         if (!result)
-            return syn::make_execution_result(result.error());
+            return make_execution_result(result.error());
         if (*result) {
             auto branch_scope = make_child_context(ctx);
-            return interface::resolveStatement(branch_scope)(branch);
+            return interface::processStatement(branch_scope)(branch);
         }
         return {};
 #endif
     }
 
 }
+
+//// Pieces of old code ////
+
+// This might be useful when implementing assignments.
+#if 0
+            auto assignmentResult = lift<target::variant>(
+                [&ctx] (sem::TypedTargetExpression const & target, sem::TypedExpression const & expr) -> esl::result<void> {
+                    /***
+                    Int a = 1;
+                    Int b = 2;
+                    a = b; # assigning a run-time value to a runtime variable
+                    # Note that even values known at compile-time (such as the literals `1` and `2` above)
+                    # are intentionally "lost" (translated to a run-time C expression) when assigned to any non-const variable.
+                    # So, while `2` was initially a comp-time value, `b` is a run-time expression.
+                    ***/
+
+                    auto conversionResult = lift<target::category>(
+                        interface::translateConversion(ctx, expr)
+                    )(target.type);
+                    if (!conversionResult) return conversionResult.error();
+                    auto converted = *std::move(conversionResult);
+
+                    return ctx.insertStatement(c::assignment(expr.expression, target.expression));
+                },
+                [&ctx] (sem::TypedTargetExpression const & target, sem::CompleteValue const & value) -> esl::result<void> {
+                    /***
+                    # runtime x
+                    Int a;
+                    a = 1; # assigning a compile-time value to a runtime variable
+                    ***/
+
+                    auto exprResult = lift<target::category>(interface::translateValue(ctx))(value);
+                    if (!exprResult) return exprResult.error();
+                    auto expr = *std::move(exprResult);
+
+                    auto conversionResult = lift<target::category>(
+                        interface::translateConversion(ctx, expr)
+                    )(target.type);
+                    if (!conversionResult) return conversionResult.error();
+                    auto converted = *std::move(conversionResult);
+
+                    return esl::result_error{"A compile-time value cannot be assigned to a run-time target."};
+                },
+                [&ctx] (sem::CompleteValue * target, sem::CompleteValue const & value) -> esl::result<void> {
+                    // TODO: Assignment to compconst variables should be impossible.
+                    // So does this even make sense? Do comp-time targets make any sense?
+
+                    if (!target) return esl::result_error{"Missing target."};
+
+                    auto targetType = lift<target::category>(interface::valueType)(*target);
+                    auto conversionResult = lift<target::category>(interface::convertValue(ctx))(value, targetType);
+                    if (!conversionResult) return conversionResult.error();
+                    auto converted = *std::move(conversionResult);
+
+                    *target = value;
+
+                    return {};
+                },
+                // Note: This is an implementation error, not user error.
+                [&ctx] (sem::CompleteValue *, sem::TypedExpression const &) -> esl::result<void> {
+                    return esl::result_error{"A run-time value cannot be assigned to a compile-time target."};
+                }
+            )(target.target, value.value);
+            if (!assignmentResult) return assignmentResult.error();
+#endif
+
+// This might be useful when implementing definitions/declarations.
+#if 0
+                auto definitionResult = lift<target::variant>(
+                    [] (sem::CompleteValue const & value) {
+                        /***
+                        Int a = 1;       # initializing from a compile-time value
+                        Int const b = 1; # in compconst cases, no run-time declaration is needed
+                        ***/
+
+                    },
+                    [&ctx, &type = type] (sem::TypedExpression const & expr) {
+                        /***
+                        Int b = 1;
+                        Int a = b; # initializing from a run-time value
+                        ***/
+
+                        auto result = lift<target::category>(interface::translateDefinition(ctx, expr))(type);
+                        // -> TypedName
+                    },
+                )(value.value);
+                if (!definitionResult ) return definitionResult.error();
+                auto definition = *definitionResult;
+
+                /*
+                auto defResult = lift<target::category>(interface::translateDefinition(ctx, value))(type);
+                if (!defResult) return defResult.error();
+                auto def = *defResult;
+                */
+#endif

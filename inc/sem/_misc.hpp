@@ -16,19 +16,42 @@
 #include "sem/numeric_types.hpp"
 #include "sem/values.hpp"
 
-// TODO: Some of these algorithms might not be relevant anymore.
+// TODO: Maybe move this somewhere to `interface/`. (It's not only related to the semantic structures.)
 namespace cynth::sem {
 
+    /***
+    for (
+        Int i in [1, 2],                    # 0
+        (Int i, Int j) in [(1, 2), (3, 4)], # 1
+        (Int i, Int j) in ([1, 2], [3, 4]), # 2
+        ((Int, Int) i, Int j)   in ([(1, 2), (3, 4)], [5, 6]), #3
+        ((Int i, Int j), Int k) in ([(1, 2), (3, 4)], [5, 6]), #4
+        (Int i, Int j, Int k)   in ([(1, 2), (3, 4)], [5, 6])  #5
+    )
+    # 0: This simplest case is implemented currently.
+    # "Zip" iteration can be represented with a list of such range declarations.
+    # 1: Arrays of tuples will not be implemented in the first version, so this case is not considered.
+    # 2: This won't be implemented in the first version, but it could replace the need for multiple range
+    # declarations (e.g. `for (decl, decl, ...)`) as it also represents the zip functionality.
+    # (So in future versions, there will be a backwards-incompatible change of removing this.)
+    # 3: This shows how zip iteration over arrays of tuples can be represented.
+    # 4: Even the tuples inside of arrays can be "unpacked".
+    # 5: Tuples are always flat, so this is actually semantically equivalent to #4
+    ***/
+    // This only considers a list of #0 range declarations from the example above.
     using RangeVector = esl::tiny_vector<std::pair<
-        esl::tiny_vector<CompleteDeclaration>,
-        value::Array
+        CompleteDeclaration, // Iteration variable declaration
+        ResolvedValue        // value::Array or a C variable name
     >>;
 
-    esl::result<std::pair<Integral, RangeVector>> for_decls (
-        context::Cynth &,
+    esl::result<std::pair<Integral, RangeVector>> resolveRangeDeclarations (
+        context::C &,
         syn::category::RangeDeclaration
     );
 
+    interface::ExpressionProcessingResult processStaticSubscript (ResolvedValue const & array, Integral subscript);
+
+#if 0 // TODO
     using ArrayVector = value::Array::Vector;
     using ArrayType   = esl::tiny_vector<CompleteType>;
 
@@ -121,5 +144,6 @@ namespace cynth::sem {
         esl::component_vector<CompleteDeclaration> const & parameters,
         esl::component<syn::category::Expression>  const & body
     );
+#endif
 
 }

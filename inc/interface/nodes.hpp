@@ -14,6 +14,7 @@
 #include "syn/categories/all.hpp"
 
 // Completing forward declarations:
+#include "sem/compound.hpp"
 #include "sem/declarations.hpp"
 #include "sem/types.hpp"
 
@@ -40,18 +41,18 @@ namespace cynth::interface {
     namespace has {
 
         template <typename T>
-        concept resolveExpression = node<T> && requires (T node, context::C & ctx, bool translate) {
-            { node.resolveExpression(ctx, translate) } -> std::same_as<ExpressionResolutionResult>;
+        concept processExpression = node<T> && requires (T node, context::C & ctx) {
+            { node.processExpression(ctx) } -> std::same_as<ExpressionProcessingResult>;
         };
 
         template <typename T>
-        concept resolveArrayElement = node<T> && requires (T node, context::C & ctx) {
-            { node.resolveArrayElement(ctx) } -> std::same_as<ExpressionResolutionResult>;
+        concept processArrayElement = node<T> && requires (T node, context::C & ctx) {
+            { node.processArrayElement(ctx) } -> std::same_as<ArrayElementProcessingResult>;
         };
 
         template <typename T>
-        concept resolveStatement = node<T> && requires (T node, context::C & ctx/*, bool translate*/) {
-            { node.resolveStatement(ctx/*, translate*/) } -> std::same_as<StatementResolutionResult>;
+        concept processStatement = node<T> && requires (T node, context::C & ctx) {
+            { node.processStatement(ctx) } -> std::same_as<StatementProcessingResult>;
         };
 
         template <typename T>
@@ -88,46 +89,48 @@ namespace cynth::interface {
 
     // Functions:
 
-    constexpr auto resolveExpression (context::C & ctx, bool translate = false) {
-        return [&ctx, translate] (has::resolveExpression auto const & node) {
-            return node.resolveExpression(ctx, translate);
+    constexpr auto processExpression (context::C & ctx) {
+        return [&ctx] (has::processExpression auto const & node) -> ExpressionProcessingResult {
+            return node.processExpression(ctx);
         };
     }
 
-    constexpr auto resolveArrayElement (context::C & ctx) {
-        return [&ctx] (has::resolveArrayElement auto const & node) {
-            return node.resolveArrayElement(ctx);
+    constexpr auto processArrayElement (context::C & ctx) {
+        return [&ctx] (has::processArrayElement auto const & node) -> ArrayElementProcessingResult {
+            return node.processArrayElement(ctx);
         };
     }
 
-    constexpr auto resolveStatement (context::C & ctx) {
+    constexpr auto processStatement (context::C & ctx) {
         return esl::overload(
-            [&ctx] (has::resolveStatement auto const & node) {
-                return node.resolveStatement(ctx);
+            [&ctx] (has::processStatement auto const & node) -> StatementProcessingResult
+            {
+                return node.processStatement(ctx);
             },
-            [&ctx] (has::resolveExpression auto const & node) -> StatementResolutionResult {
-                auto result = esl::unite_results(node.resolveExpression(ctx));
+            [&ctx] <has::processExpression T> (T const & node) -> StatementProcessingResult
+            requires (!has::processStatement<T>) { // TODO: Or is it the other way around? (Should i put !has::processExpression above?)
+                auto result = node.processExpression(ctx);
                 if (!result)
                     return result.error();
-                return {};
+                return {sem::NoReturn{}};
             }
         );
     }
 
     constexpr auto resolveType (context::C & ctx) {
-        return [&ctx] (has::resolveType auto const & node) {
+        return [&ctx] (has::resolveType auto const & node) -> TypeResolutionResult {
             return node.resolveType(ctx);
         };
     }
 
     constexpr auto resolveDeclaration (context::C & ctx) {
-        return [&ctx] (has::resolveDeclaration auto const & node) {
+        return [&ctx] (has::resolveDeclaration auto const & node) -> DeclarationResolutionResult {
             return node.resolveDeclaration(ctx);
         };
     }
 
     constexpr auto resolveRangeDeclaration (context::C & ctx) {
-        return [&ctx] (has::resolveRangeDeclaration auto const & node) {
+        return [&ctx] (has::resolveRangeDeclaration auto const & node) -> RangeDeclarationResolutionResult {
             return node.resolveRangeDeclaration(ctx);
         };
     }

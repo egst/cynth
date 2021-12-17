@@ -9,6 +9,8 @@ namespace cynth::sem {
     struct TypedExpression;
     struct TypedName;
     struct TypedTargetExpression;
+    struct ReturnedType;
+    struct Returned;
     struct Variable;
     struct ResolvedValue;
     struct ResolvedTarget;
