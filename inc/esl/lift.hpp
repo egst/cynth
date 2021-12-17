@@ -216,6 +216,9 @@ namespace esl {
         static constexpr auto handle_one_error =
             [] (esl::result_error e) { return esl::result<Result>{e}; };
 
+        static constexpr auto handle_one_error_void =
+            [] (esl::result_error e) { esl::result<void>{e}; };
+
         template <typename First, typename Second, typename Result>
         static constexpr auto handle_two_errors = esl::overload(
             [] (esl::result_error   e, Second const &)      { return esl::result<Result>{e}; },
@@ -231,7 +234,15 @@ namespace esl {
                 using value_type  = typename std::remove_cvref_t<T>::value_type;
                 using result_type = std::remove_cvref_t<decltype(derived().invoke(std::declval<value_type>()))>;
 
-                if constexpr (esl::same_template<result_type, esl::result>) {
+                if constexpr (std::same_as<result_type, void>) {
+                    std::visit(esl::overload(
+                        [this] <esl::same_but_cvref<value_type> Value> (Value && value) {
+                            derived().invoke(std::forward<Value>(value));
+                        },
+                        handle_one_error_void
+                    ), esl::forward_like<T>(target.content));
+
+                } else if constexpr (esl::same_template<result_type, esl::result>) {
                     using nested_type = typename result_type::value_type;
                     return std::visit(esl::overload(
                         [this] <esl::same_but_cvref<value_type> Value> (Value && value) {

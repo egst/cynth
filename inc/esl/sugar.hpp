@@ -4,6 +4,7 @@
 #include <utility>
 #include <tuple>
 
+#include "esl/concepts.hpp"
 #include "esl/functional.hpp"
 #include "esl/lift.hpp"
 #include "esl/tuple.hpp"
@@ -55,6 +56,15 @@ args{a, b} >>= [] (A, B) {}                               // ([] (A, B) {})(a, b
 } | [] (auto const &, auto const &) -> string {
     return "other";
 } || target::category{} <<= args(value, type)
+
+auto fooResult = getFoo();
+if (!fooResult) return fooResult.error();
+auto foo = *fooResult;
+// ...
+
+[] (auto foo) {
+    // ...
+} || target::result{} <<= getFoo();
 ***/
 
 /**
@@ -124,8 +134,8 @@ namespace esl::sugar {
     };
 
     template <typename... Ts>
-    auto args (Ts &&... vals) {
-        return std::forward_as_tuple(vals...);
+    args_type<Ts &&...> args (Ts &&... vals) {
+        return {std::forward<Ts>(vals)...};
     }
 
     template <typename T, detail::callable F>
@@ -143,7 +153,7 @@ namespace esl::sugar {
         return esl::apply_forward(std::forward<F>(f), args.tuple());
     }
 
-    template <typename T, detail::callable F>
+    template <typename T, detail::callable F> requires (!esl::same_template<T, args_type>)
     constexpr auto operator <<= (F && f, T && arg) {
         return std::forward<F>(f)(std::forward<T>(arg));
     }
@@ -151,11 +161,13 @@ namespace esl::sugar {
     template <typename... Ts, typename F>
     constexpr auto operator <<= (F && f, esl::sugar::args_type<Ts...> const & args) {
         return esl::apply_forward(std::forward<F>(f), args.tuple());
+        //return std::apply(std::forward<F>(f), args.tuple());
     }
 
     template <typename... Ts, typename F>
     constexpr auto operator <<= (F && f, esl::sugar::args_type<Ts...> & args) {
         return esl::apply_forward(std::forward<F>(f), args.tuple());
+        //return std::apply(std::forward<F>(f), args.tuple());
     }
 
 }

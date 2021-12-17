@@ -29,6 +29,17 @@ namespace cynth::interface {
 
     // Functions:
 
+    inline auto resolvedValueType (sem::ResolvedValue const & value) {
+        return esl::lift<esl::target::category>(
+            [] (sem::CompleteValue const & value) -> ValueTypeResult {
+                return esl::lift<esl::target::category>(interface::valueType)(value);
+            },
+            [] (sem::TypedExpression const & expr) -> ValueTypeResult {
+                return expr.type;
+            }
+        )(value);
+    }
+
     inline auto targetType (sem::ResolvedTarget const & target) {
         return esl::lift<esl::target::category>(
             [] (sem::CompleteValue * target) -> ValueTypeResult {

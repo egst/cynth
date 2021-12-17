@@ -28,6 +28,7 @@
 // TMP
 #include "esl/debug.hpp"
 #include "esl/macros.hpp"
+#include <tuple>
 
 namespace esl {
 
@@ -186,9 +187,12 @@ namespace cynth::syn {
 
     namespace target = esl::target;
 
+    using interface::StatementProcessingResult;
+    using interface::DisplayResult;
     using sem::Returned;
     using sem::NoReturn;
     using sem::Variable;
+    using sem::TypedExpression;
 
     //// Assignment ////
 
@@ -198,32 +202,31 @@ namespace cynth::syn {
             (interface::display || target::category{} <<= *value);
     }
 
-    interface::StatementProcessingResult node::Assignment::processStatement (context::C & ctx) const {
-        auto targetsResult = interface::resolveTarget(ctx)     || target::category{} <<= *target;
-        auto valuesResult  = interface::processExpression(ctx) || target::category{} <<= *value;
-        if (!valuesResult)  return valuesResult.error();
-        if (!targetsResult) return targetsResult.error();
-        auto targets = *std::move(targetsResult);
-        auto values  = *std::move(valuesResult);
-
+    StatementProcessingResult node::Assignment::processStatement (context::C & ctx) const {
         // TODO: What about .size() == 0? And elsewhere as well...
         // I guess techincally it shouldn't be a problem semantically and it should also be impossible syntactically,
         // so maybe it's not a problem, but I should check it once I get back to testing again.
 
-        if (values.size() > targets.size())
-            return esl::result_error{"More values than targets in an assignment."};
-        if (targets.size() > values.size())
-            return esl::result_error{"More targets than values in an assignment."};
+        return [&] (auto targets, auto values) -> StatementProcessingResult {
+            if (values.size() > targets.size())
+                return esl::result_error{"More values than targets in an assignment."};
+            if (targets.size() > values.size())
+                return esl::result_error{"More targets than values in an assignment."};
 
-        //lift<target::tiny_vector>(interface::processAssignment(ctx))(value, target);
-        // TODO: lift<tiny_vector> doesn't work here for some reason.
+            //lift<target::tiny_vector>(interface::processAssignment(ctx))(value, target);
+            // TODO: lift<tiny_vector> doesn't work here for some reason.
 
-        for (auto const & [target, value]: esl::zip(targets, values)) {
-            auto result = interface::processAssignment(ctx)(value, target);
-            if (!result) return result.error();
-        }
+            for (auto const & [target, value]: esl::zip(targets, values)) {
+                auto result = interface::processAssignment(ctx)(value, target);
+                if (!result) return result.error();
+            }
 
-        return {sem::NoReturn{}};
+            return {sem::NoReturn{}};
+
+        } || target::result{} <<= args(
+            interface::resolveTarget(ctx)     || target::category{} <<= *target,
+            interface::processExpression(ctx) || target::category{} <<= *value
+        );
     }
 
     //// Definition ////
@@ -235,36 +238,35 @@ namespace cynth::syn {
     }
 
     interface::StatementProcessingResult node::Definition::processStatement (context::C & ctx) const {
-        auto declsResult  = interface::resolveDeclaration(ctx) || target::category{} <<= *target;
-        auto valuesResult = interface::processExpression(ctx)  || target::category{} <<= *value;
-        if (!declsResult)  return declsResult.error();
-        if (!valuesResult) return valuesResult.error();
-        auto decls  = *declsResult;
-        auto values = *valuesResult;
+        return [&] (auto decls, auto values) -> StatementProcessingResult {
+            auto valueIterator = values.begin();
+            for (auto const & decl: decls) {
+                esl::tiny_vector<sem::Variable> vars;
+                auto count = decl.type.size();
+                if (count > values.end() - valueIterator)
+                    return esl::result_error{"More values than targets in a definition."};
 
-        auto valueIterator = values.begin();
-        for (auto const & decl: decls) {
-            esl::tiny_vector<sem::Variable> vars;
-            auto count = decl.type.size();
-            if (count > values.end() - valueIterator)
-                return esl::result_error{"More values than targets in a definition."};
+                for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
+                    auto definitionResult = interface::processDefinition(ctx)(value) || target::category{} <<= type;
+                    if (!definitionResult) return definitionResult.error();
 
-            for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                auto definitionResult = interface::processDefinition(ctx)(value) || target::category{} <<= type;
-                if (!definitionResult) return definitionResult.error();
+                    vars.push_back(*definitionResult);
+                }
 
-                vars.push_back(*definitionResult);
+                auto varResult = ctx.compCtx->insertValue(decl.name, vars);
+                if (!varResult) return varResult.error();
+                valueIterator += count;
             }
 
-            auto varResult = ctx.compCtx->insertValue(decl.name, vars);
-            if (!varResult) return varResult.error();
-            valueIterator += count;
-        }
+            if (valueIterator != values.end())
+                return esl::result_error{"More targets than values in a definition."};
 
-        if (valueIterator != values.end())
-            return esl::result_error{"More targets than values in a definition."};
+            return {sem::NoReturn{}};
 
-        return {sem::NoReturn{}};
+        } || target::result{} <<= args(
+            interface::resolveDeclaration(ctx) || target::category{} <<= *target,
+            interface::processExpression(ctx)  || target::category{} <<= *value
+        );
     }
 
     //// For ////
@@ -275,84 +277,69 @@ namespace cynth::syn {
             " "    + (interface::display || target::category{} <<= *body);
     }
 
-    // TODO: Maybe check if some optimizations could be done for some simple iteration cases.
+    // TODO: Maybe check if some optimizations could be done for some simple iteration cases
+    // to avoid allocation of arrays, when the range is known at compile time and is an arithmetic sequence.
+    // (e.g. `for (Int i in [1, 3, 5])` -> `for (int i = 0; i <= 5; i += 2)`)
+    // TODO: Execute the whole loop when all ranges are known at compile time
+    // and all the statements in the body are executable at compile time.
+    // I don't really have any mechanisms to "try to execute" statements in compile time
+    // before resorting to run-time translation.
+    // Well, actually I can omit run-time translation of "leaf" statements (with no sub-statements, only sub-expressions)
+    // easily, and that means, that even if I were to translate a for loop, that would be fully executable
+    // at compile-time, it would just be an empty loop. The range arrays would still need to be allocated though.
+    // I guess I'll just have to rely on additional constant propagation by the C compiler.
     interface::StatementProcessingResult node::For::processStatement (context::C & ctx) const {
-        auto declsResult = interface::resolveRangeDeclarations(ctx, *declarations);
-        if (!declsResult) return declsResult.error();
-        auto [size, iterDecls] = *std::move(declsResult);
+        return [&] (auto decl) -> StatementProcessingResult {
+            auto & [size, iterDecls] = (decl);
 
-        /***
-        for (cth_int itervar_i = 0; itervar_i < <size>; ++itervar_i) {
-            <decl> = <array>[i]; ...
-            <body>
-        }
-        ***/
+            // TODO: This should be more straightforward.
+            auto intType = c::typeName(interface::directTypeName(sem::type::Int{}));
+            auto iterVar = c::iterationVariableName(c::id(ctx.nextId()));
+            //auto iterExpr = TypedExpression{.type = sem::type::Int{}, .expression = iterVar};
 
-        // TODO: This should be more straightforward.
-        auto intType = c::typeName(interface::directTypeName(sem::type::Int{}));
-        auto iterVar = c::iterationVariableName(c::id(ctx.nextId()));
+            auto head = c::forBegin(
+                c::definition(intType, iterVar, c::increment(iterVar)),
+                c::lt(iterVar, c::intLiteral(size)),
+                c::increment(iterVar)
+            );
 
-        auto head = c::forBegin(
-            c::definition(intType, iterVar, c::increment(iterVar)),
-            c::lt(iterVar, c::intLiteral(size)),
-            c::increment(iterVar)
-        );
+            /***
+            for (cth_int itervar_i = 0; itervar_i < <size>; ++itervar_i) {
+            ***/
+            ctx.insertStatement(head);
 
-        auto scope = ctx.makeScopeChild();
-
-        for (auto & [decl, array]: iterDecls) {
-            //ESL_INSPECT(decl);  // CompleteDeclaration
-            //ESL_INSPECT(array); // ResolvedValue
-
-            // TODO: processExprSubscript
-            //interface::processSubscript(ctx, , array)
-
-            //interface::processDefinition(ctx)()
-
-            // TODO...
-        }
-
-#if 0 // TODO
-        for (sem::Integral index = 0; index < size; ++index) {
-            // Init inner scope:
             auto scope = ctx.makeScopeChild();
 
-            // Define iteration elements:
             for (auto & [decl, array]: iterDecls) {
-                auto elementResult = interface::processStaticSubscript(index)(array);
-                if (!elementResult) return elementResult.error();
-                auto element = *std::move(elementResult);
+                /***
+                <decl> = <array>[itervar_i];
+                ***/
+                auto declResult = [&, &array = array, &decl = decl] (auto var) {
+                    return scope.compCtx->insertValue(decl.name, {var});
 
-                auto definitionResult = interface::processDefinition(ctx)(element) ||
-                    target::nested{target::result{}, target::category{}} <<=
-                    esl::single(decl.type);
-                // Note: Arrays of tuples are not supported yet.
-                if (!definitionResult) return definitionResult.error();
-                auto variable = *std::move(definitionResult);
+                } || target::result{} <<= [&, &array = array] (auto elem, auto type) {
+                    return interface::processDefinition(ctx)(elem)(type);
 
-                auto varResult = scope.compCtx->insertValue(decl.name, {variable});
+                } || target::result{} <<= args(
+                    interface::processVerifiedSubscript(ctx, iterVar, array),
+                    esl::single(decl.type)
+                );
+                if (!declResult) return declResult.error();
             }
 
-            // Execute the loop body:
-            auto returned = interface::processStatement(scope) || target::category{} <<= *body;
-            if (returned.has_error()) return returned.error();
+            /***
+            <body>
+            ***/
+            auto bodyResult = interface::processStatement(scope) || target::category{} <<= *body;
 
-            auto returnKind = returned.kind();
+            /***
+            }
+            ***/
+            ctx.insertStatement(c::end());
 
-            // TODO: I just realized... This will unroll the loop.
-            // I probably don't want to implement any loop unrolling. I'll let the C compiler take care of that.
-            // But maybe it still could be useful to go through the whole loop at compile time to extract some compconst values.
-            // Eh... I need a break, this makes no sense, how do I even know the range of the loop at compile-time?
+            return bodyResult;
 
-            if (returnKind == sem::Returned::returned)
-                return returned;
-
-            if (returned)
-                return *returned;
-        }
-#endif
-
-        return {sem::NoReturn{}};
+        } || target::result{} <<= interface::resolveRangeDeclarations(ctx, *declarations);
     }
 
     //// FunDef ////
@@ -366,15 +353,17 @@ namespace cynth::syn {
     }
 
     interface::StatementProcessingResult node::FunDef::processStatement (context::C & ctx) const {
+        return [&] (auto outTypes, auto inDecls) -> StatementProcessingResult {
 
-        auto outResult = interface::resolveType(ctx) || target::category{} <<= *output;
-        auto inResult  = interface::resolveDeclaration(ctx) || target::category{} <<= *input ;
-        if (!outResult) return outResult.error();
-        if (!inResult)  return inResult.error();
-        auto outTypes = *std::move(outResult);
-        auto inDecls  = *std::move(inResult);
+            // TODO...
+            return {sem::NoReturn{}};
 
-#if 0 // TODO
+        } || target::result{} <<= args(
+            interface::resolveType(ctx)        || target::category{} <<= *output,
+            interface::resolveDeclaration(ctx) || target::category{} <<= *input
+        );
+
+#if 0
         auto namesResult = lift<target::component, target::category>(interface::extractNames)(body);
         if (!namesResult) return namesResult.error();
         auto typeNamesResult = lift<target::component, target::category>(interface::extractTypeNames)(body);
@@ -394,7 +383,6 @@ namespace cynth::syn {
 
         auto varResult = ctx.compCtx->insertValue(*name.name, {/* TODO */});
         if (!varResult) return varResult.error();
-#endif
 
         /*
         auto stored = ctx.compCtx->storeValue(sem::value::FunctionValue {
@@ -417,8 +405,7 @@ namespace cynth::syn {
         if (!define_result)
             return make_execution_result(define_result.error());
         */
-
-        return {sem::NoReturn{}};
+#endif
     }
 
     //// If ////

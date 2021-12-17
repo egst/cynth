@@ -62,14 +62,21 @@ namespace cynth::interface {
         };
     }
 
+    /** Same as processSubscript but with no type checks - index is assumed to be Int. */
+    SingleExpressionProcessingResult processVerifiedSubscript (
+        context::C & ctx,
+        std::string const & index,
+        sem::ResolvedValue const & array
+    );
+
     /***
     Int i = 1;
     a[i]; # run-time index
     ***/
     SingleExpressionProcessingResult processSubscript (
         context::C &,
-        sem::ResolvedValue const & index,
-        sem::ResolvedValue const & array
+        sem::TypedExpression const & index,
+        sem::ResolvedValue   const & array
     );
 
 }

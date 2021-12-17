@@ -67,6 +67,7 @@ namespace cynth::context {
         ):  globalCtx{global},
             compCtx{&comp} {}
 
+        // TODO: Don't forget to increase indent when implementing this.
         C makeScopeChild    ();
         C makeFunctionChild ();
 
@@ -74,11 +75,12 @@ namespace cynth::context {
         // Update: I don't think it's needed anywhere anymore, but it still could be useful.
         // TODO: Do these really need to return a result? There's nothing exprected to go wrong.
         // Change to void and modify all calling code accordingly.
-        esl::result<void> insertStatement          (std::string);
-        esl::result<void> insertFunctionAllocation (std::string);
-        esl::result<void> insertStaticAllocation   (std::string);
-        esl::result<void> insertInternalFunction   (std::string);
-        esl::result<void> insertInternalType       (std::string);
+        // TODO: Don't forget to incorporate the current indent when implementing this.
+        void insertStatement          (std::string);
+        void insertFunctionAllocation (std::string);
+        void insertStaticAllocation   (std::string);
+        void insertInternalFunction   (std::string);
+        void insertInternalType       (std::string);
 
         std::size_t nextId ();
 
@@ -87,6 +89,8 @@ namespace cynth::context {
         C::Global & globalCtx;
 
     protected:
+        std::size_t indent = 0;
+
         struct {
             std::vector<std::string> functionData; // function scope lifetime allocations
             std::vector<std::string> statements;   // including stuff like: `if (...) {`, `for (...) {`, `{`, `}`

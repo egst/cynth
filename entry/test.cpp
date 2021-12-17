@@ -12,29 +12,6 @@
 #include "esl/type_manip.hpp"
 #include "esl/zip.hpp"
 
-
-#include <concepts>
-#include <optional>
-#include <utility>
-
-#include "esl/concepts.hpp"
-#include "esl/functional.hpp"
-#include "esl/ranges.hpp"
-#include "esl/sugar.hpp"
-
-#include "context/c.hpp"
-#include "interface/forward.hpp"
-#include "interface/types.hpp"
-#include "sem/compound.hpp"
-#include "sem/declarations.hpp"
-#include "sem/values.hpp"
-
-// Completing declarations:
-#include "sem/types.hpp"
-#include "sem/values.hpp"
-
-
-
 //using namespace cynth;
 //using esl::lift;
 namespace target = esl::target;
@@ -43,16 +20,28 @@ using namespace esl::sugar;
 struct A {};
 struct B {};
 
+struct C {
+    int foo;
+    int bar;
+};
+
 constexpr auto f = ([] () {}) | ([] () {});
 
 int main () {
 
-    constexpr std::variant<A, B> value = A{};
+    C c = {1, 2};
 
-    constexpr auto result = value >>= target::variant{} &&
-        [] (A const &) -> int { return 1; } |
-        [] (B const &) -> int { return 2; };
+    auto [foo, baz] = c;
 
-    static_assert(result == 1);
+    constexpr std::variant<A, B> v = A{};
+    esl::result<int> q = esl::result_error{"oops"};
+    esl::result<int> r = {1};
+
+    auto result =
+        [] (int, int) -> int { return 1; } ||
+        target::result{} <<=
+        args(q, r);
+
+    //static_assert(result == 1);
 
 }
