@@ -9,6 +9,8 @@
 
 namespace esl {
 
+    // TODO: Warnings?
+
     /*
     struct generic_error {
         std::string message;

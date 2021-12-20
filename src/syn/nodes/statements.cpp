@@ -253,7 +253,7 @@ namespace cynth::syn {
                     vars.push_back(*definitionResult);
                 }
 
-                auto varResult = ctx.compCtx->insertValue(decl.name, vars);
+                auto varResult = ctx.comptime().insertValue(decl.name, vars);
                 if (!varResult) return varResult.error();
                 valueIterator += count;
             }
@@ -315,7 +315,7 @@ namespace cynth::syn {
                 <decl> = <array>[itervar_i];
                 ***/
                 auto declResult = [&, &array = array, &decl = decl] (auto var) {
-                    return scope.compCtx->insertValue(decl.name, {var});
+                    return scope.comptime().insertValue(decl.name, {var});
 
                 } || target::result{} <<= [&, &array = array] (auto elem, auto type) {
                     return interface::processDefinition(ctx)(elem)(type);
@@ -368,7 +368,7 @@ namespace cynth::syn {
         if (!namesResult) return namesResult.error();
         auto typeNamesResult = lift<target::component, target::category>(interface::extractTypeNames)(body);
         if (!typeNamesResult) return typeNamesResult.error();
-        auto capture = ctx.compCtx->capture(*namesResult, *typeNamesResult);
+        auto capture = ctx.comptime().capture(*namesResult, *typeNamesResult);
 
         sem::value::Function value{
             .context      = std::move(capture), // TODO
@@ -381,11 +381,11 @@ namespace cynth::syn {
 
         auto translated = value.translateValue();
 
-        auto varResult = ctx.compCtx->insertValue(*name.name, {/* TODO */});
+        auto varResult = ctx.comptime().insertValue(*name.name, {/* TODO */});
         if (!varResult) return varResult.error();
 
         /*
-        auto stored = ctx.compCtx->storeValue(sem::value::FunctionValue {
+        auto stored = ctx.comptime().storeValue(sem::value::FunctionValue {
             .out_type   = make_component_vector(output),
             .parameters = make_component_vector(input),
             .body       = body,

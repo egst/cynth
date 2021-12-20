@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "esl/boolean.hpp"
 #include "esl/concepts.hpp"
 #include "esl/containers.hpp"
 #include "esl/functional.hpp"
@@ -59,10 +60,13 @@ namespace cynth::interface {
             { type.sameType(other) } -> std::same_as<SameTypeResult>;
         };
 
+        // There will be no implicit conversions in the first version.
+        /*
         template <typename T, typename U>
         concept commonType = type<T> && requires (T type, U const & other) {
             { type.commonType(other) } -> std::same_as<CommonTypeResult>;
         };
+        */
 
         template <typename T>
         concept constType = type<T> && requires (T type) {
@@ -145,6 +149,18 @@ namespace cynth::interface {
         }
     );
 
+    template <typename... Targets>
+    constexpr auto sameTypeTupleLift = [] (auto const & type, auto const & as) -> SameTypeResult {
+        // Lift over two sized ranges will return an error for ranges of different sizes.
+        // TODO: Maybe it should return an empty optional or something,
+        // as this function shows that different sized inputs don't necessarilly mean an error.
+        auto result = esl::lift<esl::target::tiny_vector, Targets...>(sameType)(type, as);
+        return result && esl::all(*result); // same size && same contents
+    };
+
+    constexpr auto sameTypeTuple = sameTypeTupleLift<>;
+
+    /*
     constexpr auto commonType = esl::overload(
         [] <type T> (T const & type, T const & with) -> CommonTypeResult
         requires (has::commonType<T, T>) {
@@ -182,6 +198,7 @@ namespace cynth::interface {
             return {esl::result_error{"Two-way type.commonType(with) implementation found."}};
         }
     );
+    */
 
     constexpr auto constType = esl::overload(
         [] <type T> (T const & type) -> ConstTypeResult

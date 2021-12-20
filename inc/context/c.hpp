@@ -49,52 +49,79 @@ namespace cynth::context {
      */
     struct C {
 
+        // TODO: Global could contain warning and error entries.
+        // Currently the whole translation process stops at any error.
+        // Maybe I should continue and just accumulate the errors (and warnings)
+        // here, in the context structure.
+        // Should I incorporate warnings into esl::result?
+        // Or should I just insert results directly into the context structure?
+
         struct Global {
             std::size_t nextId ();
+
+            void insertAllocation       (std::string);
+            void insertInternalFunction (std::string);
+            void insertInternalType     (std::string);
 
         protected:
             std::vector<std::string> internalTypes;
             std::vector<std::string> internalFunctions;
             std::vector<std::string> userFunctions;
-            std::vector<std::string> staticData; // static lifetime allocations
+            std::vector<std::string> data; // static lifetime allocations
+
+            std::size_t id = 0;
+        };
+
+        struct Function {
+            void insertAllocation (std::string);
+
+        protected:
+            std::vector<std::string> data; // function lifetime allocations
 
             std::size_t id = 0;
         };
 
         C (
-            C::Global      & global,
+            Global      & global,
+            Function    & function,
             context::Cynth & comp
         ):  globalCtx{global},
+            functionCtx{function},
             compCtx{&comp} {}
 
-        // TODO: Don't forget to increase indent when implementing this.
         C makeScopeChild    ();
         C makeFunctionChild ();
 
-        // TODO: Don't forget that these must completely ignore empty strings.
-        // Update: I don't think it's needed anywhere anymore, but it still could be useful.
-        // TODO: Do these really need to return a result? There's nothing exprected to go wrong.
-        // Change to void and modify all calling code accordingly.
-        // TODO: Don't forget to incorporate the current indent when implementing this.
-        void insertStatement          (std::string);
-        void insertFunctionAllocation (std::string);
-        void insertStaticAllocation   (std::string);
-        void insertInternalFunction   (std::string);
-        void insertInternalType       (std::string);
+        void mergeScopeChild    (C const &) {}
+        void mergeFunctionChild (C const &) {}
 
+        void insertStatement (std::string);
+
+        /** Number of local statements. */
+        bool count () const;
+
+        /** Check if any local statements present. */
+        bool empty () const;
+
+        // TODO: I might limit the uniqueness of these ids to functions (or something) in the future.
+        // For now, this simply counts the global incremental id.
         std::size_t nextId ();
 
-        // TODO: Make these protected and provide referential accessors for unified interface.
-        Cynth     * compCtx;
-        C::Global & globalCtx;
+        Global   & global   () { return globalCtx; }
+        Function & function () { return functionCtx; }
+        Cynth    & comptime () { return *compCtx; }
 
     protected:
+        Global   & globalCtx;
+        Function & functionCtx;
+        Cynth    * compCtx;
+
+        // TODO: Don't forget about the indent.
+        // Increase it in scope children. Reset it for function children.
+        // Use it in the insert<whatever> methods.
         std::size_t indent = 0;
 
-        struct {
-            std::vector<std::string> functionData; // function scope lifetime allocations
-            std::vector<std::string> statements;   // including stuff like: `if (...) {`, `for (...) {`, `{`, `}`
-        } local;
+        std::vector<std::string> statements; // including stuff like: `if (...) {`, `for (...) {`, `{`, `}`
     };
 
 }

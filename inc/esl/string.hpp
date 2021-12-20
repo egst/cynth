@@ -37,6 +37,16 @@ namespace esl {
         return str;
     }
 
+    inline std::string repeat (std::string const & str, std::size_t count) {
+        if (count == 0)
+            return str;
+        std::string result;
+        result.reserve(str.size() * count);
+        while (count--)
+            result += str;
+        return result;
+    }
+
     /** Join strings with a delimiter. */
 
     namespace detail::string {

@@ -4,8 +4,11 @@
 #include <string>
 
 #include "esl/containers.hpp"
+#include "esl/lift.hpp"
 #include "esl/ranges.hpp"
 #include "esl/string.hpp"
+#include "esl/tiny_vector.hpp"
+#include "esl/zip.hpp"
 
 // TODO: Either put this in the `sem::` namespace, or move it out of the `sem/` directory.
 namespace cynth {
@@ -43,13 +46,15 @@ namespace cynth {
         constexpr char const * value    = "val";
         constexpr char const * variable = "var";
 
-        // Indentation:
-        constexpr char const * indent = "    ";
+        // Whitespace:
         //constexpr char const * indent = "\t";
+        constexpr char const * indent  = "    ";
+        constexpr char const * newLine = "\n";
 
         // GNU extensions and their alternate keywords:
         //constexpr char const * gnuTypeof = "typeof";
         constexpr char const * gnuTypeof    = "__typeof__";
+        constexpr char const * gnuAuto      = "__auto_type";
         constexpr char const * gnuLabel     = "__label__";
         constexpr char const * gnuAttribute = "__attribute__";
 
@@ -89,6 +94,16 @@ namespace cynth {
         constexpr char const * dataMember   = "data";
         constexpr char const * offsetMember = "offset";
 
+        // Returning:
+        /***
+        __label__ ret;
+        struct result {};
+        <type> result;
+        ret: result;
+        ***/
+        constexpr char const * returnLabel    = "ret";
+        constexpr char const * returnVariable = "result";
+        constexpr char const * returnType     = "result";
     }
 
     namespace c {
@@ -173,7 +188,7 @@ namespace cynth {
         /***
         struct <name>
         ***/
-        inline std::string structure (std::string const & name) {
+        inline std::string structureName (std::string const & name) {
             return std::string{} + "structure " + name;
         }
 
@@ -187,7 +202,7 @@ namespace cynth {
         }
 
         /***
-        # A GNU statement expression extension
+        # GNU statement expression extension
         ({\n\t<stmt1>;\n\t<stmt2>;\n\t...;\n\t<stmtN>;\n})
         ***/
         template <typename... Ts>
@@ -197,11 +212,33 @@ namespace cynth {
         }
 
         /***
-        # A GNU typeof extension
+        \t...\t
+        ***/
+        inline std::string indentation (int n = 1) {
+            return esl::repeat(str::indent, n);
+        }
+
+        /***
+        \t...\t<stmt>
+        ***/
+        inline std::string indented (std::string stmt, int n = 1) {
+            return indentation(n) + stmt;
+        }
+
+        /***
+        # GNU typeof extension
         typeof(<value>)
         ***/
         inline std::string infer (std::string const & value) {
             return std::string{} + str::gnuTypeof + "(" + value + ")";
+        }
+
+        /***
+        # GNU auto type extension
+        __auto_type
+        ***/
+        inline std::string autoType () {
+            return str::gnuAuto;
         }
 
         /***
@@ -223,6 +260,20 @@ namespace cynth {
         ***/
         inline std::string assignment (std::string const & src, std::string const & dst) {
             return dst + " = " + src;
+        }
+
+        /***
+        <str>.<mem>
+        ***/
+        inline std::string memberAccess (std::string const & str, std::string const & mem) {
+            return str + "." + mem;
+        }
+
+        /***
+        <tup>.e<num>
+        ***/
+        inline std::string tupleElement (std::string const & tup, std::size_t num) {
+            return c::memberAccess(tup, str::elem + std::to_string(num));
         }
 
         /***
@@ -286,12 +337,13 @@ namespace cynth {
             return c::global(type);
         }
 
+        // TODO: This probably won't be needed.
         /***
         struct cth_tup$<type1>$<type2>$...
         ***/
         template <typename... Ts>
         std::string tupleType (Ts const &... types) {
-            return c::structure(c::global(std::string{} + str::tuple + c::templateArguments(types...)));
+            return c::structureName(c::global(std::string{} + str::tuple + c::templateArguments(types...)));
         }
 
         /***
@@ -300,7 +352,7 @@ namespace cynth {
         /* TODO: This probably won't be needed anymore.
         template <typename... Ts>
         std::string arrayValueType (std::string const & size, Ts const &... types) {
-            return c::structure(c::global(c::templateArguments(std::string{} + str::array, size, types...)));
+            return c::structureName(c::global(c::templateArguments(std::string{} + str::array, size, types...)));
         }
         */
 
@@ -331,7 +383,7 @@ namespace cynth {
         struct cth_buff$<size>
         ***/
         inline std::string bufferValueType (std::string size) {
-            return c::structure(c::global(c::templateArguments(std::string{} + str::buffer, size)));
+            return c::structureName(c::global(c::templateArguments(std::string{} + str::buffer, size)));
         }
 
         /***
@@ -403,6 +455,14 @@ namespace cynth {
         ***/
         inline std::string iterationVariableName (std::string const & id) {
             return std::string{} + str::iterator + str::variable + "_" + id;
+        }
+
+        /***
+        # Local tuple variable - returning from blocks.
+        tupvar_<id>
+        ***/
+        inline std::string tupleVariableName (std::string const & id) {
+            return std::string{} + str::tuple + str::variable + "_" + id;
         }
 
         /***
@@ -489,6 +549,30 @@ namespace cynth {
         }
 
         /***
+        # GNU statement expression extension
+        ({
+        ***/
+        inline std::string blockExpressionBegin () {
+            return "({";
+        }
+
+        /***
+        # Extracting a returned value from an expression block.
+        __auto_type <var> = ({
+        ***/
+        inline std::string blockExpressionHead (std::string const & var) {
+            return c::definition(c::autoType(), var, c::blockExpressionBegin());
+        }
+
+        /***
+        # GNU statement expression extension
+        })
+        ***/
+        inline std::string blockExpressionEnd () {
+            return "({";
+        }
+
+        /***
         }
         ***/
         inline std::string end () {
@@ -521,6 +605,102 @@ namespace cynth {
         ***/
         inline std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter) {
             return std::string{} + "for (" + init + ";" + cond + ";" + iter + ") {";
+        }
+
+        /***
+        goto <label>
+        ***/
+        inline std::string jump (std::string label) {
+            return std::string{} + "goto " + label;
+        }
+
+        /***
+        <label>:
+        ***/
+        inline std::string label (std::string label) {
+            return label + ":";
+        }
+
+        /***
+        # GNU extension - local labels
+        __label__ <name>
+        ***/
+        inline std::string labelDeclaration (std::string const & name) {
+            return std::string{} + str::gnuLabel + " " + name;
+        }
+
+        inline std::string newLine () {
+            return str::newLine;
+        }
+
+        /***
+        struct <name> {
+            <decl1>;
+            <decl2>;
+            ...
+        }
+        ***/
+        template <typename... Ts>
+        inline std::string structure (std::string const & name, Ts const &... decls) {
+            auto head     = std::string{} + "struct " + name + " {";
+            auto indent   = c::indentation();
+            auto declEnd  = std::string{} + ";" + c::newLine();
+            auto contents = esl::join(declEnd + indent, decls...);
+            return head + (!contents.empty() ? c::newLine() + indent + contents + declEnd : "") + "}";
+            // When empty: `struct <name> {}`
+        }
+
+        /***
+        __label__ ret;
+        struct result {
+            <type1> e0;
+            <type2> e1;
+            ...
+        };
+        struct result result;
+        ***/
+        template <esl::sized_range T> requires (std::convertible_to<esl::range_value_type<T>, std::string>)
+        inline std::string returnInit (T const & types) {
+            esl::tiny_vector<std::string> decls;
+            decls.reserve(decls.size());
+            for (auto const & [i, type]: esl::enumerate(types))
+                decls.push_back(std::string{type} + " " + str::elem + std::to_string(i));
+            return
+                c::statement(c::labelDeclaration(def::returnLabel)) + c::newLine() +
+                c::statement(c::structure(def::returnType, decls)) +
+                c::statement(c::declaration(c::structureName(def::returnType), def::returnVariable));
+        }
+
+        /***
+        ret: result;
+        ***/
+        inline std::string blockExpressionReturn () {
+            return c::statement(c::label(def::returnLabel) + " " + def::returnVariable);
+        }
+
+        /***
+        ret: <TODO>;
+        ***/
+        inline std::string mainReturn () {
+            return c::statement(c::label(def::returnLabel) + " /* TODO */");
+        }
+
+        /***
+        result = <value>; goto ret;
+        ***/
+        inline std::string returnValue (std::string value) {
+            return
+                c::statement(c::assignment(value, def::returnVariable)) + " " +
+                c::statement(c::jump(def::returnLabel));
+        }
+
+        /** {`<var>.e1`, `<var>.e2`, ...} */
+        inline esl::tiny_vector<std::string> tupleElements (std::string var, std::size_t count) {
+            esl::tiny_vector<std::string> result;
+            result.reserve(count);
+            for (std::size_t i = 0; i < count; ++i)
+                result.push_back(c::tupleElement(var, i));
+            return result;
         }
 
         /***

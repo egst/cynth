@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 
 #include "esl/category.hpp"
 #include "esl/component.hpp"
@@ -72,8 +73,8 @@ namespace cynth::syn::node {
         PROGRAM_INTERFACE; // TODO?
 
     private:
-        // Generic implementation for both `processProgram` and `processInterface`.
-        template <bool Program = true> interface::ExpressionProcessingResult process (context::Cynth &) const;
+        // Generic implementation for both `processProgram` and `processExpression`.
+        template <bool Program = true> interface::ExpressionProcessingResult process (context::C &) const;
     };
 
     /**

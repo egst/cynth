@@ -5,6 +5,7 @@
 #include <variant>
 
 #include "esl/category.hpp"
+#include "esl/tiny_vector.hpp"
 
 #include "context/forward.hpp"
 #include "sem/types.hpp"
@@ -31,36 +32,40 @@ namespace cynth::sem {
     };
 
     struct ReturnedType {
-        bool         always;
-        CompleteType type;
+        bool always;
+        esl::tiny_vector<CompleteType> type;
+    };
+
+    struct ReturnedValue {
+        esl::tiny_vector<CompleteValue> value;
     };
 
     namespace detail::compound {
 
         using ReturnedVariant = std::variant<
-            std::monostate,
-            CompleteValue,
-            ReturnedType
+            std::monostate, // never
+            ReturnedValue,  // returned
+            ReturnedType    // maybe (sometimes | always)
         >;
 
     }
+
+    using NoReturn = std::monostate;
 
     struct Returned: esl::category<Returned, detail::compound::ReturnedVariant> {
         using base = esl::category<Returned, detail::compound::ReturnedVariant>;
         using base::base;
 
+        // TODO: This might not be needed.
         enum Kind: int {
             never,    // Never returns
             returned, // Returned a compile-time value
             maybe     // Might return a run-time value
         };
-
-        inline Kind kind () const {
+        constexpr Kind kind () const {
             return static_cast<Kind>(value.index());
         }
     };
-
-    using NoReturn = std::monostate;
 
     namespace detail::compound {
 

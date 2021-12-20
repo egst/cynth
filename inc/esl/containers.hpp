@@ -122,33 +122,33 @@ namespace esl {
      *  TODO: Combine all the errors. There is no mechanism for this yet.
      *  range<result<T>> -> result<range<T>>
      */
-    template <esl::range Container>
-    requires
-        esl::same_template<esl::range_value_type<Container>, esl::result> &&
-        esl::back_pushable_range<Container> // TODO: Generalize for any range.
-    constexpr auto unite_results (Container && items) {
-        using value_type  = esl::range_value_type<Container>;
-        using result_type = typename value_type::value_type;
+    constexpr auto unite_results = [] <esl::range Container> (Container && items)
+        requires (
+            esl::same_template<esl::range_value_type<Container>, esl::result> &&
+            esl::back_pushable_range<Container> // TODO: Generalize for any range.
+        ) {
+            using value_type  = esl::range_value_type<Container>;
+            using result_type = typename value_type::value_type;
 
-        if constexpr (std::same_as<result_type, void>) {
-            for (auto & item: items)
-                if (!item.has_value())
-                    return esl::result<void>{item.error()};
-            return esl::result<void>{};
+            if constexpr (std::same_as<result_type, void>) {
+                for (auto & item: items)
+                    if (!item.has_value())
+                        return esl::result<void>{item.error()};
+                return esl::result<void>{};
 
-        } else {
-            using container_type = esl::replace<Container, result_type>;
-            container_type values;
-            if constexpr (esl::sized_range<Container> && esl::reservable_range<container_type>)
-                values.reserve(items.size());
-            for (auto & item: items)
-                if (item.has_value())
-                    values.push_back(esl::forward_like<Container>(*item));
-                else
-                    return esl::result<container_type>{item.error()};
-            return esl::result{esl::forward_like<Container>(values)};
-        }
-    }
+            } else {
+                using container_type = esl::replace<Container, result_type>;
+                container_type values;
+                if constexpr (esl::sized_range<Container> && esl::reservable_range<container_type>)
+                    values.reserve(items.size());
+                for (auto & item: items)
+                    if (item.has_value())
+                        values.push_back(esl::forward_like<Container>(*item));
+                    else
+                        return esl::result<container_type>{item.error()};
+                return esl::result{esl::forward_like<Container>(values)};
+            }
+        };
 
     /**
      *  range<optional_result<T>> -> result<range<optional<T>>>
@@ -157,7 +157,7 @@ namespace esl {
     requires
         esl::same_template<esl::range_value_type<Container>, optional_result> &&
         esl::back_pushable_range<Container> // TODO: Generalize for any range.
-    constexpr auto unite_results (Container && items) {
+    constexpr auto unite_optional_results (Container && items) {
         using value_type     = esl::range_value_type<Container>;
         using result_type    = typename value_type::value_type;
         using container_type = esl::replace<Container, std::optional<result_type>>;
@@ -183,7 +183,7 @@ namespace esl {
     requires
         esl::same_template<esl::range_value_type<Container>, optional_result> &&
         esl::back_pushable_range<Container> // TODO: Generalize for any range.
-    constexpr auto unite_results (Container && items, result_error const & empty_error) {
+    constexpr auto unite_optional_results (Container && items, result_error const & empty_error) {
         using value_type     = esl::range_value_type<Container>;
         using result_type    = typename value_type::value_type;
         using container_type = esl::replace<Container, result_type>;

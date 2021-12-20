@@ -35,6 +35,8 @@ namespace cynth::interface {
     using SameTypeResult               = bool;
     using CommonTypeResult             = esl::result<sem::CompleteType>;
     using ConstTypeResult              = bool;
+    // TODO: Do I need a result here? Shouldn't all types be translatable?
+    // (I mean with all the restictions of the first version...)
     using TypeCompletionResult         = esl::result<sem::CompleteType>;
     using TypeTranslationResult        = esl::result<std::string>;
     using ConversionTranslationResult  = esl::result<sem::TypedExpression>;

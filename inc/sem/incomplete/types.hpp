@@ -161,8 +161,7 @@ namespace cynth::sem {
 
             template <bool Complete>
             struct Function {
-                esl::component_vector<Type<Complete>> out;
-                esl::component_vector<Type<Complete>> in;
+                // TODO
             };
 
         }
@@ -218,6 +217,16 @@ namespace cynth::sem {
         };
 
         struct Function: detail::types::Function<true> {
+            // TODO: Which of these really need to be in a component?
+
+            esl::component_vector<CompleteType> out;
+            esl::component_vector<CompleteType> in;
+
+            esl::optional_component<sem::ResolvedCapturedContext> context;
+            std::optional<std::string> contextType;     // Runtime context type
+            std::optional<std::string> contextVariable; // Runtime context variable
+            std::optional<std::string> functionName;    // Runtime function name
+
             TYPE_INTERFACE;
 
             VALUE(value::Function);

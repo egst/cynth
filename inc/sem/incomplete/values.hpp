@@ -200,16 +200,14 @@ namespace cynth::sem {
         struct Function {
             // TODO: Which of these really need to be in a component?
             // TODO: Will optional strings also cause the still unfixed segfault problem?
-            esl::component<sem::ResolvedCapturedContext> context;
-            esl::component_vector<CompleteType>          outType;
-            esl::component_vector<CompleteDeclaration>   parameters;
-            esl::component<syn::category::Expression>    body;
-            std::optional<std::string>                   functionName; // corresponding C function (generated on demand)
-            std::optional<std::string>                   contextData;  // corresponding C variable containing the captured context
+
+            std::vector<std::pair<std::string, Integral>> parameters; // Parameter names and size of the corresponding tuples
+            esl::component<syn::category::Expression> body;
 
             VALUE_INTERFACE;
 
-            VALUE_TYPE;
+            //VALUE_TYPE;
+            DIRECT_VALUE_TYPE(type::Function);
 
             //GET(Function);
 

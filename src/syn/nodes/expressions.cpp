@@ -1,18 +1,24 @@
 #include "syn/nodes/expressions.hpp"
 
 #include <string>
+#include <utility>
 
 #include "esl/category.hpp"
+#include "esl/containers.hpp"
 #include "esl/component.hpp"
 #include "esl/lift.hpp"
 #include "esl/result.hpp"
 #include "esl/string.hpp"
+#include "esl/sugar.hpp"
+#include "esl/zip.hpp"
 
 #include "context/c.hpp"
 #include "interface/common.hpp"
 #include "interface/nodes.hpp"
 #include "interface/types.hpp"
+#include "interface/values.hpp"
 #include "sem/translation.hpp"
+#include "syn/categories/statement.hpp"
 
 namespace esl {
 
@@ -515,13 +521,24 @@ namespace esl {
 
 }
 
-namespace cynth {
+namespace cynth::syn {
 
-    using esl::lift;
+    using namespace esl::sugar;
     namespace target = esl::target;
+    using esl::lift;
+    using interface::DisplayResult;
+    using interface::ExpressionProcessingResult;
+    using interface::StatementProcessingResult;
+    using sem::CompleteType;
+    using sem::CompleteValue;
+    using sem::NoReturn;
+    using sem::Returned;
+    using sem::ReturnedType;
+    using sem::ReturnedValue;
+    using sem::ResolvedValue;
+    using sem::TypedExpression;
 
-// TODO
-#if 0
+#if 0 // TODO
     //// Implementation helpers ////
 
     namespace {
@@ -721,7 +738,9 @@ namespace cynth {
         constexpr auto le = [] (sem::context & ctx) { return compare(ctx, util::le); };
 
     }
+#endif
 
+#if 0 // TODO
     //// Add ////
 
     display_result syn::node::Add::display () const {
@@ -846,58 +865,289 @@ namespace cynth {
             return syn::make_evaluation_result(array_result.error());
         return syn::make_evaluation_result(*array_result);
     }
+#endif
 
     //// Block ////
 
-    display_result syn::node::Block::display () const {
+    DisplayResult node::Block::display () const {
+        using Target = target::nested<target::component_vector, target::category>;
         return statements.empty()
             ? "{}"
-            : "{\n" + util::join(";\n", cynth::display(statements)) + "\n}";
+            : "{\n" + esl::join(";\n", interface::display || Target{} <<= statements) + "\n}";
     }
 
-    template <bool Scope>
-    syn::evaluation_result syn::node::Block::evaluate (sem::context & ctx) const {
-        constexpr auto eval = [] (
-            sem::context & ctx,
-            component_vector<category::Statement> const & statements
-        ) -> syn::evaluation_result {
-            for (auto & statement: statements) {
-                auto returned = syn::execute(ctx)(statement);
-                if (returned)
-                    return lift::tuple_vector{make_result}(*returned);
-                if (returned.has_error())
-                    return syn::make_evaluation_result(returned.error());
-            }
+    ExpressionProcessingResult node::Block::processExpression (context::C & ctx) const {
+        return process<false>(ctx);
+    }
 
-            //return syn::make_evaluation_result(result_error{"Evaluated block does not return."});
-            return {}; // Return the void value.
+    ExpressionProcessingResult node::Block::processProgram (context::C & ctx) const {
+        return process<true>(ctx);
+    }
+
+    namespace {
+
+        // TODO: Should I count dead code after a return as an error?
+        // Probably not, as some code could be "turned off" on purpose depending on some compile time constants.
+        // A warning would be useful. I don't have any mechanism to show warnings though.
+        // In any case, I will ignore any following dead code and provide no diagnostics (for now).
+        /***
+        Bool const debug = true; # comp-time
+        {
+            foo();
+            if (!debug) # always returns
+                return;
+            # warning/error: dead code after return
+            print();
         };
 
-        if constexpr (Scope) {
-            auto block_scope = make_child_context(ctx);
-            return eval(block_scope, statements);
+        Bool state = true; # run-time
+        type T i = {
+            if (state)
+                return true; # Bool  -- could be returned
+            if (debug)
+                return 1;    # Int   -- could be returned
+            else
+                return 1.5;  # Float -- won't be returned
+        };
+        # T could be Int or Bool depending on `debug`.
 
-        } else
-            return eval(ctx, statements);
+        # Let's say I want to compute this at compile time.
+        Int const c = {
+            Int a = 1; # This creates a runtime declaration.
+            return a;
+        };
+        Int [c] a; # Error: c is not a comp-time constant.
+
+        Int const c = {
+            Int const a = 1;
+            return a;
+            # The whole block didn't create any 
+        };
+        Int [c] a; # Now this is OK.
+
+        Int a = {
+            Int b = {
+                return 1;
+            };
+            {
+                return b;
+            }
+        };
+
+        cth_int var_a = ({
+            __label__ ret;
+            cth_int result = 0;
+            cth_int var_b = ({
+                __label__ ret;
+                cth_int result = 0;
+                result = 1; goto ret;
+                ret: result;
+            });
+            {
+                result = var_b; goto ret;
+            }
+            ret: result;
+        });
+        ***/
+
+        struct BlockResult {
+            std::optional<esl::tiny_vector<CompleteType>>  returnedType  = {};
+            std::optional<esl::tiny_vector<CompleteValue>> returnedValue = {};
+            bool always = false;
+        };
+
+        esl::result<BlockResult> processBlock (
+            context::C & ctx,
+            esl::component_vector<category::Statement> const & statements
+        ) {
+            auto before = ctx.count();
+            bool runtime = false;
+            BlockResult blockResult = {};
+
+            for (auto const & statement: statements) {
+                using Result = esl::result<bool>;
+
+                auto result = [] (NoReturn const &) -> Result {
+                    return false; // continue
+
+                } | [&] (ReturnedValue const & returned) -> Result {
+                    using Target = target::nested<target::tiny_vector, target::category>;
+                    auto type = interface::valueType || Target{} <<= returned.value;
+                    if (blockResult.returnedType && !interface::sameTypeTupleLift<target::category>(type, *blockResult.returnedType))
+                        return esl::result_error{"returning incompatible types in different branches"};
+                    if (!blockResult.returnedType)
+                        blockResult.returnedType = type;
+                    if (!runtime)
+                        blockResult.returnedValue = returned.value;
+                    return true; // break
+
+                } | [&] (ReturnedType const & returned) -> Result {
+                    if (blockResult.returnedType && !interface::sameTypeTupleLift<target::category>(returned.type, *blockResult.returnedType))
+                        return esl::result_error{"error: returning incompatible types in different branches"};
+                    if (!blockResult.returnedType)
+                        blockResult.returnedType = returned.type;
+                    runtime = true;
+                    if (returned.always)
+                        return true; // break
+                    return true; // continue
+
+                } || target::nested<target::result, target::category>{} <<=
+                interface::processStatement(ctx) || target::category{} <<= statement;
+
+                if (!result) return result.error();
+                if (*result) {
+                    blockResult.always = true;
+                    break;
+                }
+            }
+
+            if (runtime || ctx.count() != before)
+                // If any runtime values returned or any local statements added, loose the comp-time value.
+                blockResult.returnedValue = {};
+
+            return blockResult;
+        };
+
     }
 
-    template syn::evaluation_result syn::node::Block::evaluate <true>  (sem::context &) const;
-    template syn::evaluation_result syn::node::Block::evaluate <false> (sem::context &) const;
+    template <bool Program>
+    ExpressionProcessingResult syn::node::Block::process (context::C & outerScope) const {
+        if constexpr (Program) {
 
-    syn::execution_result syn::node::Block::execute (sem::context & ctx) const {
-        auto block_scope = make_child_context(ctx);
+            // TODO
 
-        for (auto & statement: statements) {
-            auto returned = syn::execute(block_scope)(statement);
-            if (returned)
-                return *returned;
-            if (returned.has_error())
-                return syn::make_execution_result(returned.error());
+            /***
+            __label__ ret; <type> result;
+            ***/
+            // c::returnInit(type)
+
+            // ...
+            //auto result = processBlock(outerScope, statements);
+
+            /***
+            ret: ... # output result value somewhere
+            ***/
+            // c::mainReturn()
+
+            // ... # main loop
+
+        } else {
+
+            /***
+            struct cth_ctx_f0 { ... };
+            struct cth_ctx_f1 { ... };
+            struct cth_ctx_f2 { ... };
+            struct cth_ctx_f {
+                int branch;
+                union {
+                    cth_ctx_f0 e0;
+                    cth_ctx_f1 e1;
+                    cth_ctx_f2 e2;
+                } data;
+            };
+            ...
+            {
+                ...
+                if (x)
+                    result.e0 = (struct cth_ctx_f) {0, {...}};
+                if (y)
+                    result.e0 = (struct cth_ctx_f) {1, {...}};
+                result.e0 = (struct cth_ctx_f) {2, {...}};
+                ...
+            }
+            ***/
+
+            auto blockScope = outerScope.makeScopeChild();
+
+            return [&] (auto result) -> ExpressionProcessingResult {
+                if (!result.always)
+                    return esl::result_error{"Expression block does not always return."};
+
+                if (result.returnedValue) {
+                    // TODO
+                    // return ...;
+                }
+
+                if (result.returnedType) [&] (auto translatedTypes) -> ExpressionProcessingResult {
+                    auto types    = *result.returnedType;
+                    auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
+                    auto head     = c::blockExpressionHead(tupleVar);
+                    auto init     = c::indented(c::returnInit(translatedTypes));
+                    auto ret      = c::blockExpressionReturn();
+                    auto end      = c::blockExpressionEnd();
+
+                    /***
+                    __auto_type var_<id> = ({
+                    ***/
+                    outerScope.insertStatement(head);
+
+                    /***
+                        __label__ ret;
+                        struct result {
+                            <type1> e0;
+                            <type2> e1;
+                            // ...
+                        };
+                        struct result result;
+                    ***/
+                    blockScope.insertStatement(init);
+
+                    /***
+                        ...
+                        ret: result;
+                    ***/
+                    blockScope.insertStatement(ret);
+
+                    outerScope.mergeScopeChild(blockScope);
+
+                    /***
+                    })
+                    ***/
+                    outerScope.insertStatement(end);
+
+                    esl::tiny_vector<ResolvedValue> result;
+                    for (auto const & [i, type]: esl::enumerate(types))
+                        result.push_back(TypedExpression{.type = type, .expression = c::tupleElement(tupleVar, i)});
+
+                    return result;
+
+                } || target::result{} <<=
+                esl::unite_results <<=
+                interface::translateType(outerScope) || target::tiny_vector{} <<=
+                *result.returnedType;
+
+                return esl::result_error{"Expression block never returns."};
+
+            } || target::result{} <<= processBlock(blockScope, statements);
         }
 
-        return {};
+        return esl::result_error{"TODO"};
     }
 
+    StatementProcessingResult syn::node::Block::processStatement (context::C & ctx) const {
+        auto scope = ctx.makeScopeChild();
+        auto result = processBlock(scope, statements);
+
+        /***
+        {
+        ***/
+        //c::begin();
+
+        // indent +
+
+        // ...
+
+        // indent -
+
+        /***
+        }
+        ***/
+        //c::end();
+
+        return esl::result_error{"TODO"};
+    }
+
+#if 0 // TODO
     //// Bool ////
 
     display_result syn::node::Bool::display () const {
@@ -1111,11 +1361,13 @@ namespace cynth {
         if (!inResult) return inResult.error();
         auto inDecls = *std::move(inResult);
 
+        /*
         auto namesResult = lift<target::component, target::category>(interface::extractNames)(body);
         if (!namesResult) return namesResult.error();
         auto typeNamesResult = lift<target::component, target::category>(interface::extractTypeNames)(body);
         if (!typeNamesResult) return typeNamesResult.error();
-        auto capture = ctx.compCtx->capture(*namesResult, *typeNamesResult);
+        auto capture = ctx.comptime().capture(*namesResult, *typeNamesResult);
+        */
 
         return {};
 

@@ -151,10 +151,18 @@ namespace cynth::interface {
         sem::ResolvedValue   const & array
     ) {
         // Run-time index.
+
+        // Note: There will be no implicit conversions in the first version.
+        if (!index.type.get<sem::type::Int>())
+            return esl::result_error{"Only integers can be used as subscript indices."};
+        return processVerifiedSubscript(ctx, index.expression, array);
+
+        /*
         return [&] (auto index) {
             return processVerifiedSubscript(ctx, index.expression, array);
 
         } || target::result{} <<= translateConversion(ctx, index)(sem::type::Int{});
+        */
     }
 
 }
