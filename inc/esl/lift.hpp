@@ -227,6 +227,23 @@ namespace esl {
                     return Result{esl::first_of<esl::result_error>(std::forward<Us>(args)...)};
             };
 
+        template <bool RETURN, typename Result, typename... Ts>
+        static constexpr auto handle_optional_errors =
+            [] <typename... Us> (Us &&... args)
+            requires (
+                sizeof...(Us) == sizeof...(Ts) &&
+                // Same as handle_errors, but std::monostate is also allowed:
+                esl::every<(
+                    esl::same_but_cvref<std::monostate, Us> ||
+                    esl::same_but_cvref<esl::result_error, Us> ||
+                    esl::same_but_cvref<Ts, Us>
+                )...> &&
+                esl::some_same_as<esl::result_error, Us...>
+            ) {
+                if constexpr (RETURN)
+                    return Result{esl::first_of<esl::result_error>(std::forward<Us>(args)...)};
+            };
+
         template <typename T>
         using value_type = typename std::remove_cvref_t<T>::value_type;
 
@@ -328,7 +345,24 @@ namespace esl {
                             ) {
                                 return derived().invoke(std::forward<Args>(args)...);
                             },
-                            handle_errors<true, esl::result<nested_type>, value_type<Ts>...>
+                            handle_optional_errors<true, esl::result<nested_type>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
+
+                } else if constexpr (esl::same_template<result_type, esl::optional_result>) {
+                    using nested_type = typename result_type::value_type;
+                    return std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<(
+                                    esl::same_but_cvref<Args, value_type<Ts>> ||
+                                    esl::same_but_cvref<Args, std::monostate>
+                                )...>
+                            ) {
+                                return derived().invoke(std::forward<Args>(args)...);
+                            },
+                            handle_optional_errors<true, esl::optional_result<nested_type>, value_type<Ts>...>
                         ),
                         esl::forward_like<Ts>(targets.content)...
                     );
@@ -344,7 +378,7 @@ namespace esl {
                             ) {
                                 return esl::result<result_type>{derived().invoke(std::forward<Args>(args)...)};
                             },
-                            handle_errors<true, esl::result<result_type>, value_type<Ts>...>
+                            handle_optional_errors<true, esl::result<result_type>, value_type<Ts>...>
                         ),
                         esl::forward_like<Ts>(targets.content)...
                     );

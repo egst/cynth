@@ -1,5 +1,7 @@
 #pragma once
 
+#include "esl/concepts.hpp"
+
 #include <type_traits>
 #include <utility>
 
@@ -7,7 +9,7 @@ namespace esl {
 
     template <typename T, typename First, typename... Rest>
     constexpr decltype(auto) first_of (First && first, Rest &&... rest) {
-        if constexpr (std::same_as<First, T>)
+        if constexpr (esl::same_but_cvref<First, T>)
             return std::forward<First>(first);
         else
             return first_of<T>(std::forward<Rest>(rest)...);

@@ -261,6 +261,7 @@ namespace esl {
         using value_type = T;
 
         constexpr optional_result () {}
+        constexpr optional_result (std::monostate) {}
         constexpr optional_result (result_error    const & e): content{e} {}
         constexpr optional_result (result_error    &&      e): content{std::move(e)} {}
         constexpr optional_result (value_type      const & v): content{v} {}

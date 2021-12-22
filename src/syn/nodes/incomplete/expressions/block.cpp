@@ -34,7 +34,7 @@ namespace cynth::syn {
     using sem::FunctionDefinition;
     using sem::NoReturn;
     using sem::ResolvedValue;
-    using sem::ReturnVector;
+    using sem::ReturnedValues;
     using sem::Returned;
     using sem::TypedExpression;
 
@@ -105,10 +105,10 @@ namespace cynth::syn {
                                 return esl::result_error{"Returning incompatible types."};
                         }
 
-                        [&] (ReturnVector<CompleteValue> const & values, ReturnVector<CompleteValue> entry) {
+                        [&] (ReturnedValues const & values, ReturnedValues entry) {
                             entry.insert_back(values.begin(), values.end());
 
-                        } | [&] (ReturnVector<CompleteValue> const & values, auto const &) {
+                        } | [&] (ReturnedValues const & values, auto const &) {
                             // Ignore those.
 
                         } | [&] (CompleteType const &, auto const &) {
@@ -153,7 +153,7 @@ namespace cynth::syn {
                 auto name         = c::tupleElementName(i);
                 auto tupleElement = c::tupleElement(tupleVar, i);
 
-                auto result = [&] (ReturnVector<CompleteValue> const & values) {
+                auto result = [&] (ReturnedValues const & values) {
                     return [&] (sem::type::Function const & type) -> esl::result<void> {
                         // Partially run-time function values:
                         if (values.size() == 0) // Implemetation error.
@@ -204,8 +204,8 @@ namespace cynth::syn {
                         // This only happens when there is only one possible return value independent from any runtime conditions.
                         if (values.size() > 1) // Implementation error.
                             return esl::result_error{"Returning multiple values in a compile-time block return."};
-                        if (values.size() == 0) // Implementation error.
-                            return esl::result_error{"Returning no values in a compile-time block return."};
+                        if (values.size() == 0)
+                            return {}; // Returning void.
                         auto const & value = values.front();
                         blockResult.resolved.push_back(value);
 
@@ -256,12 +256,12 @@ namespace cynth::syn {
             if (!blockResult.runtime) {
                 esl::tiny_vector<ResolvedValue> result;
                 for (auto const & entry: blockResult.returned) {
-                    auto returnedResult = entry.template get<ReturnVector<CompleteValue>>();
+                    auto returnedResult = entry.template get<ReturnedValues>();
                     if (!returnedResult) // Implementation error.
                         return esl::result_error{"Unknown value of a compile-time return."};
                     auto const & returned = *returnedResult;
-                    if (returned.size() == 0) // Implementation error.
-                        return esl::result_error{"No compile-time returns in a compile-time block."};
+                    if (returned.size() == 0)
+                        return {}; // Returning void.
                     if (returned.size() > 1) // Implementation error.
                         return esl::result_error{"More than one compile-time return."};
                     result.push_back(returned.front());
@@ -272,7 +272,7 @@ namespace cynth::syn {
             // At least partially run-time block expression:
 
             return [&] (auto blockResult) -> ExpressionProcessingResult {
-                auto head = c::blockExpressionHead(tupleVar);
+                auto head = c::blockExpressionBegin(tupleVar);
                 auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
                 auto ret  = c::indented(c::blockExpressionReturn());
                 auto end  = c::statement(c::blockExpressionEnd());

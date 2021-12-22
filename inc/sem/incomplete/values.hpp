@@ -42,7 +42,7 @@
     interface::ValueTypeResult valueType () const
 #define VALUE_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::ValueTranslationResult translateValue () const
+    interface::ValueTranslationResult translateValue (context::Main &) const
 
 namespace cynth::sem {
 

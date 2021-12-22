@@ -57,14 +57,16 @@ namespace cynth::sem {
     //using ReturnVector = std::vector<T>;
     using ReturnVector = esl::tiny_vector<T>; // Optimized for single-return blocks.
 
+    using ReturnedValues = ReturnVector<CompleteValue>;
+
     namespace detail::compound {
 
         // Invariant: ReturnVector<...> alternative contains all same types
         // Invariant: ReturnVector<...> alternative is always non-empty.
         // (TODO: Enforce this statically.)
         using ReturnedVariant = std::variant<
-            ReturnVector<CompleteValue>, // comp-time TODO: Update the algorithms
-            CompleteType                 // run-time
+            ReturnedValues, // comp-time
+            CompleteType    // run-time
         >;
 
     }
@@ -77,6 +79,13 @@ namespace cynth::sem {
     struct Return {
         esl::tiny_vector<Returned> returned;
         bool always;
+
+        static Return makeVoid (bool always = false) {
+            return {
+                .returned = {},
+                .always   = always
+            };
+        }
     };
 
     namespace detail::compound {

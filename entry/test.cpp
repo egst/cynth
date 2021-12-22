@@ -19,6 +19,16 @@
 
 int main () {
 
+    std::string s1 = R"code(
+        int foo (int x) {
+            return x + 1;
+        }
+    )code";
+
+    std::string s2 = R"code(
+    #include ""
+    )code";
+
     return 0;
 
 }

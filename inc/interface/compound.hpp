@@ -63,7 +63,7 @@ namespace cynth::interface {
         )(target);
     }
 
-    inline sem::CompleteType returnedValuesType (sem::ReturnVector<sem::CompleteValue> const & value) {
+    inline sem::CompleteType returnedValuesType (sem::ReturnedValues const & value) {
         // Note: This assumes non-empty value.
         return esl::lift<esl::target::category>(interface::valueType)(value.back());
     }

@@ -708,7 +708,7 @@ namespace cynth {
         # Extracting a returned value from an expression block.
         __auto_type <var> = ({
         ***/
-        inline std::string blockExpressionHead (std::string const & var) {
+        inline std::string blockExpressionBegin (std::string const & var) {
             return c::definition(c::autoType(), var, c::blockExpressionBegin());
         }
 
@@ -739,6 +739,20 @@ namespace cynth {
         ***/
         inline std::string ifBegin (std::string const & cond) {
             return std::string{} + "if (" + cond + ") {";
+        }
+
+        /***
+        else {
+        ***/
+        inline std::string elseBegin () {
+            return "else {";
+        }
+
+        /***
+        } else {
+        ***/
+        inline std::string cuddledElse () {
+            return "} else {";
         }
 
         /***
@@ -831,11 +845,39 @@ namespace cynth {
         }
 
         /***
-        result = <value>; goto ret;
+        result.e<number> = <value>;
+        goto ret;
         ***/
-        inline std::string returnValue (std::string value) {
+        inline std::string returnValue (std::size_t number, std::string const & value) {
+            auto newLine = c::newLine();
+            auto target  = c::returnElement(number);
             return
-                c::statement(c::assignment(value, def::returnVariable)) + " " +
+                c::statement(c::assignment(value, target)) + newLine +
+                c::statement(c::jump(def::returnLabel));
+        }
+
+        /***
+        result.e<number>.branch = <branch>;
+        result.e<number>.data.v<branch> = <expr>; # optionally
+        goto ret;
+        ***/
+        inline std::string returnFunction (
+            std::size_t number,
+            std::size_t branch,
+            std::optional<std::string> const & value
+        ) {
+            auto newLine      = c::newLine();
+            auto branchString = std::to_string(branch);
+            auto branchTarget = c::memberAccess(c::returnElement(number), def::branchMember);
+            if (value) {
+                auto dataTarget = c::memberAccess(c::returnElement(number), def::ctxDataMember);
+                return
+                    c::statement(c::assignment(branchString, branchTarget)) + newLine +
+                    c::statement(c::assignment(*value, dataTarget)) + newLine +
+                    c::statement(c::jump(def::returnLabel));
+            }
+            return
+                c::statement(c::assignment(branchString, branchTarget)) + " " +
                 c::statement(c::jump(def::returnLabel));
         }
 
@@ -911,25 +953,25 @@ namespace cynth {
 
         /***
         (struct <type>) {
-            .branch = <number>,
-            .data.v<number> = <expr> # optionally
+            .branch = <branch>,
+            .data.v<branch> = <expr> # optionally
         }
         ***/
         inline std::string contextLiteral (
             std::string                const & type,
-            std::size_t                const & number,
+            std::size_t                const & branch,
             std::optional<std::string> const & expr
         ) {
             if (expr)
                 return c::structureLiteral(
                     c::structure(type),
-                    c::branchInitialization(0),
-                    c::contextDataInitialization(0, *expr)
+                    c::branchInitialization(branch),
+                    c::contextDataInitialization(branch, *expr)
                 );
 
             return c::structureLiteral(
                 c::structure(type),
-                c::branchInitialization(0)
+                c::branchInitialization(branch)
             );
         }
 

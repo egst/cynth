@@ -82,13 +82,15 @@ namespace cynth::interface {
     );
 
     constexpr auto valueType = esl::overload(
-        [] <has::directValueType T> (T const & value) -> ValueTypeResult requires (!has::valueType<T>) {
+        [] <has::directValueType T> (T const & value) -> ValueTypeResult /*requires (!has::valueType<T>)*/ {
             //return sem::CompleteType{T::valueType};
             return sem::CompleteType{value.valueType};
-        },
+        }
+        /*
         [] <has::valueType T> (T const & value) -> ValueTypeResult requires (!has::directValueType<T>) {
             return value.valueType();
         }
+        */
     );
 
     constexpr auto convertValueTo (context::Main & ctx) {
