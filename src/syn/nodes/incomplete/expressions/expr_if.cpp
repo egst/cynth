@@ -91,7 +91,7 @@ namespace cynth::syn {
                         auto posType = interface::valueType || target::category{} <<= pos;
                         auto negType = interface::valueType || target::category{} <<= pos;
                         // Note: No conversion to a common type will be implemented in the first version.
-                        if (!(interface::sameType || target::category{} <<= args(posType, negType)))
+                        if (!(interface::sameTypes || target::category{} <<= args(posType, negType)))
                             return esl::result_error{"Incompatible types in if expression branches."};
 
                         return [&] (sem::type::Function const & type) -> esl::result<void> {
@@ -155,7 +155,7 @@ namespace cynth::syn {
                         // At least one of them run-time:
                         return [&] (auto pos, auto neg) -> esl::result<void> {
                             // Note: No conversion to a common type will be implemented in the first version.
-                            if (!(interface::sameType || target::category{} <<= args(pos.type, neg.type)))
+                            if (!(interface::sameTypes || target::category{} <<= args(pos.type, neg.type)))
                                 return esl::result_error{"Incompatible types in if expression branches."};
 
                             resolved.push_back(TypedExpression{
@@ -243,7 +243,7 @@ namespace cynth::syn {
                             sem::type::Function const & negType
                         ) -> esl::result<void> {
                             // Partially run-time function values:
-                            if (!interface::sameType(posType, negType))
+                            if (!interface::sameTypes(posType, negType))
                                 return esl::result_error{"Different function types in an if statement."};
                             posVals.insert_back(negVals.begin(), negVals.end());
                             returnResult.returned.emplace_back(posVals);
@@ -251,7 +251,7 @@ namespace cynth::syn {
 
                         } | [&, i = i] <typename T> (T const & posType, T const & negType) -> esl::result<void>
                         requires (!esl::same_but_cvref<T, sem::type::Function>) {
-                            if (!interface::sameType(posType, negType))
+                            if (!interface::sameTypes(posType, negType))
                                 return esl::result_error{"Different types in an if statement."};
 
                             // Compile-time value:
@@ -285,7 +285,7 @@ namespace cynth::syn {
 
                     } | [&] (CompleteType posType, CompleteType negType) -> esl::result<void> {
                         // Both run-time values:
-                        if (!(interface::sameType || target::category{} <<= args(posType, negType)))
+                        if (!(interface::sameTypes || target::category{} <<= args(posType, negType)))
                             return esl::result_error{"Returning different types in an if statement."};
                         returnResult.returned.emplace_back(posType);
                         return {};
@@ -305,7 +305,7 @@ namespace cynth::syn {
                         auto const & compVal = compVals.front();
 
                         auto compType = interface::valueType || target::category{} <<= compVal;
-                        if (!(interface::sameType || target::category{} <<= args(compType, runType)))
+                        if (!(interface::sameTypes || target::category{} <<= args(compType, runType)))
                             return esl::result_error{"Returning different types in an if statement."};
 
                         returnResult.returned.emplace_back(compType);

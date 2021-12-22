@@ -336,7 +336,7 @@ namespace cynth::sem {
     */
 
     interface::SameTypeResult type::In::sameType (type::In const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
+        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
     }
 
     interface::TypeCompletionResult type::IncompleteIn::completeType (context::Cynth & ctx) const {
@@ -411,7 +411,7 @@ namespace cynth::sem {
     */
 
     interface::SameTypeResult type::Out::sameType (type::Out const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
+        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
     }
 
     interface::TypeCompletionResult type::IncompleteOut::completeType (context::Cynth & ctx) const {
@@ -496,7 +496,7 @@ namespace cynth::sem {
     */
 
     interface::SameTypeResult type::Const::sameType (type::Const const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameType)(type, other.type);
+        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
     }
 
     interface::CommonTypeResult type::Const::commonType (type::Const const & other) const {
@@ -577,7 +577,7 @@ namespace cynth::sem {
     }
 
     interface::SameTypeResult type::Array::sameType (type::Array const & other) const {
-        auto result = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(type, other.type);
+        auto result = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(type, other.type);
         return result && size == other.size && esl::all(*result);
     }
 
@@ -585,23 +585,23 @@ namespace cynth::sem {
         auto results = (esl::lift<esl::target::component_vector, esl::target::category>(
             [] <typename T, typename U> (T const & a, U const & b) -> std::optional<CompleteType> {
             //requires (std::sameType_as<T, U> || !std::sameType_as<T, type::Const> && std::sameType_as<U, type::Const>)
-                if (interface::sameType(a, b))
+                if (interface::sameTypes(a, b))
                     return {a};
                 return {};
             },
             [] <typename T> (type::Const const & a, T const & b) -> std::optional<CompleteType>
             requires (!std::same_as<T, type::Const>) {
-                if (interface::sameType(a, b))
+                if (interface::sameTypes(a, b))
                     return {a};
-                if (interface::sameType(a, type::Const{{.type = {b}}}))
+                if (interface::sameTypes(a, type::Const{{.type = {b}}}))
                     return {type::Const{{a}}};
                 return {};
             },
             [] <typename T> (T const & a, type::Const const & b) -> std::optional<CompleteType>
             requires (!std::same_as<T, type::Const>) {
-                if (interface::sameType(a, b))
+                if (interface::sameTypes(a, b))
                     return {a};
-                if (interface::sameType(type::Const{{.type = {a}}}, b))
+                if (interface::sameTypes(type::Const{{.type = {a}}}, b))
                     return {type::Const{{.type = {a}}}};
                 return {};
             }
@@ -795,12 +795,12 @@ namespace cynth::sem {
     }
 
     interface::CommonTypeResult type::Function::commonType (type::Function const & other) const {
-        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(out, other.out);
+        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(out, other.out);
         if (!outResult)
             return outResult.error();
         if (!esl::all(*outResult))
             return esl::result_error{"No common type for two functions because of diferent output types."};
-        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(in, other.in);
+        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(in, other.in);
         if (!inResult)
             return inResult.error();
         if (!esl::all(*inResult))
@@ -809,8 +809,8 @@ namespace cynth::sem {
     }
 
     interface::SameTypeResult type::Function::sameType (type::Function const & other) const {
-        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(out, other.out);
-        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameType)(in, other.in);
+        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(out, other.out);
+        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(in, other.in);
         return
             outResult && esl::all(*outResult) &&
             inResult  && esl::all(*inResult);

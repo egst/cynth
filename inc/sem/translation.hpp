@@ -117,6 +117,16 @@ namespace cynth {
         constexpr char const * returnLabel    = "ret";
         constexpr char const * returnVariable = "result";
         constexpr char const * returnType     = "result";
+
+        // Iteration:
+        /***
+        struct {
+            cth_int pos;
+            ...
+        } iter = {0, ...}
+        ***/
+        constexpr char const * position  = "pos";
+        constexpr char const * iteration = "iter";
     }
 
     namespace c {
@@ -261,9 +271,11 @@ namespace cynth {
         # For loop iteration variable
         itervar_<id>
         ***/
+        /* TODO: Maybe won't be needed.
         inline std::string iterationVariableName (std::string const & id) {
             return std::string{} + str::iterator + str::variable + "_" + id;
         }
+        */
 
         /***
         # Local tuple variable - returning from blocks.
@@ -345,6 +357,14 @@ namespace cynth {
         }
 
         /***
+        <f>(<arg1>, <arg2>, ...)
+        ***/
+        template <typename... Ts>
+        std::string call (std::string f, Ts const &... args) {
+            return f + "(" + esl::join(", ", args...) + ")";
+        }
+
+        /***
         (<type>) <val>
         ***/
         inline std::string cast (std::string const & val, std::string const & type) {
@@ -356,6 +376,13 @@ namespace cynth {
         ***/
         inline std::string increment (std::string const & val) {
             return "++" + val;
+        }
+
+        /***
+        <target> += <diff>
+        ***/
+        inline std::string advance (std::string const & target, std::string const & diff) {
+            return target + " += " + diff;
         }
 
         /***
@@ -600,16 +627,6 @@ namespace cynth {
             return c::memberAccess(def::returnVariable, c::returnElementName(number));
         }
 
-        //// Functions ////
-
-        /***
-        <f>(<arg1>, <arg2>, ...)
-        ***/
-        template <typename... Ts>
-        std::string call (std::string f, Ts const &... args) {
-            return f + "(" + esl::join(", ", args...) + ")";
-        }
-
         //// Templates ////
 
         /***
@@ -767,6 +784,25 @@ namespace cynth {
         ***/
         inline std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter) {
             return std::string{} + "for (" + init + ";" + cond + ";" + iter + ") {";
+        }
+
+        //// Looping ////
+
+
+        /***
+        struct {
+            cth_int pos;
+            <decl1>;
+            <decl2>;
+            ...
+        } iter;
+        ***/
+        template <typename... Ts>
+        std::string iterationStructure (Ts const &... decls) {
+            auto indent  = c::indentation();
+            auto declSep = ";" + c::newLine() + indent;
+            auto posDecl = c::declaration(c::intType(), def::position);
+            return c::structureDefinition(def::iteration, posDecl, decls...);
         }
 
         //// Labels ////

@@ -14,7 +14,7 @@
 #include "esl/zip.hpp"
 
 // TODO: Clean this up, when I'm done.
-#include "context/c.hpp"
+#include "context/main.hpp"
 #include "interface/common.hpp"
 #include "interface/compound.hpp"
 #include "interface/misc.hpp"
@@ -202,7 +202,7 @@ namespace cynth::syn {
             (interface::display || target::category{} <<= *value);
     }
 
-    StatementProcessingResult node::Assignment::processStatement (context::C & ctx) const {
+    StatementProcessingResult node::Assignment::processStatement (context::Main & ctx) const {
         // TODO: What about .size() == 0? And elsewhere as well...
         // I guess techincally it shouldn't be a problem semantically and it should also be impossible syntactically,
         // so maybe it's not a problem, but I should check it once I get back to testing again.
@@ -237,7 +237,7 @@ namespace cynth::syn {
             (interface::display || target::category{} <<= *value);
     }
 
-    interface::StatementProcessingResult node::Definition::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::Definition::processStatement (context::Main & ctx) const {
         return [&] (auto decls, auto values) -> StatementProcessingResult {
             auto valueIterator = values.begin();
             for (auto const & decl: decls) {
@@ -253,7 +253,7 @@ namespace cynth::syn {
                     vars.push_back(*definitionResult);
                 }
 
-                auto varResult = ctx.comptime().insertValue(decl.name, vars);
+                auto varResult = ctx.lookup.insertValue(decl.name, vars);
                 if (!varResult) return varResult.error();
                 valueIterator += count;
             }
@@ -270,77 +270,7 @@ namespace cynth::syn {
     }
 
     //// For ////
-
-    interface::DisplayResult node::For::display () const {
-        return
-            "for " + esl::parenthesized(interface::display || target::category{} <<= *declarations) +
-            " "    + (interface::display || target::category{} <<= *body);
-    }
-
-    // TODO: Maybe check if some optimizations could be done for some simple iteration cases
-    // to avoid allocation of arrays, when the range is known at compile time and is an arithmetic sequence.
-    // (e.g. `for (Int i in [1, 3, 5])` -> `for (int i = 0; i <= 5; i += 2)`)
-    // TODO: Execute the whole loop when all ranges are known at compile time
-    // and all the statements in the body are executable at compile time.
-    // I don't really have any mechanisms to "try to execute" statements in compile time
-    // before resorting to run-time translation.
-    // Well, actually I can omit run-time translation of "leaf" statements (with no sub-statements, only sub-expressions)
-    // easily, and that means, that even if I were to translate a for loop, that would be fully executable
-    // at compile-time, it would just be an empty loop. The range arrays would still need to be allocated though.
-    // I guess I'll just have to rely on additional constant propagation by the C compiler.
-    interface::StatementProcessingResult node::For::processStatement (context::C & ctx) const {
-        return [&] (auto decl) -> StatementProcessingResult {
-            auto & [size, iterDecls] = (decl);
-
-            // TODO: This should be more straightforward.
-            auto intType = c::typeName(interface::directTypeName(sem::type::Int{}));
-            auto iterVar = c::iterationVariableName(c::id(ctx.nextId()));
-            //auto iterExpr = TypedExpression{.type = sem::type::Int{}, .expression = iterVar};
-
-            auto head = c::forBegin(
-                c::definition(intType, iterVar, c::increment(iterVar)),
-                c::lt(iterVar, c::intLiteral(size)),
-                c::increment(iterVar)
-            );
-
-            /***
-            for (cth_int itervar_i = 0; itervar_i < <size>; ++itervar_i) {
-            ***/
-            ctx.insertStatement(head);
-
-            auto scope = ctx.makeScopeChild();
-
-            for (auto & [decl, array]: iterDecls) {
-                /***
-                <decl> = <array>[itervar_i];
-                ***/
-                auto declResult = [&, &array = array, &decl = decl] (auto var) {
-                    return scope.comptime().insertValue(decl.name, {var});
-
-                } || target::result{} <<= [&, &array = array] (auto elem, auto type) {
-                    return interface::processDefinition(ctx)(elem)(type);
-
-                } || target::result{} <<= args(
-                    interface::processVerifiedSubscript(ctx, iterVar, array),
-                    esl::single(decl.type)
-                );
-                if (!declResult) return declResult.error();
-            }
-
-            /***
-            <body>
-            ***/
-            auto bodyResult = interface::processStatement(scope) || target::category{} <<= *body;
-
-            /***
-            }
-            ***/
-            ctx.insertStatement(c::end());
-
-            return bodyResult;
-
-        } || target::result{} <<= interface::resolveRangeDeclarations(ctx, *declarations);
-    }
+    // src/syn/nodes/incomplete/statements/for.cpp
 
     //// FunDef ////
 
@@ -352,7 +282,7 @@ namespace cynth::syn {
             (interface::display || target::category{} <<= *body);
     }
 
-    interface::StatementProcessingResult node::FunDef::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::FunDef::processStatement (context::Main & ctx) const {
         return [&] (auto outTypes, auto inDecls) -> StatementProcessingResult {
 
             // TODO...
@@ -417,7 +347,7 @@ namespace cynth::syn {
             " else " + (interface::display || target::category{} <<= *negativeBranch);
     }
 
-    interface::StatementProcessingResult node::If::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::If::processStatement (context::Main & ctx) const {
         return {sem::NoReturn{}};
 #if 0 // TODO
         auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
@@ -436,7 +366,7 @@ namespace cynth::syn {
         return "return " + (interface::display || target::category{} <<= *value);
     }
 
-    interface::StatementProcessingResult node::Return::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::Return::processStatement (context::Main & ctx) const {
         return {sem::NoReturn{}};
 #if 0 // TODO
         auto value_result = esl::unite_results(evaluate(ctx)(value));
@@ -456,7 +386,7 @@ namespace cynth::syn {
             " = "   + (interface::display || target::category{} <<= *type);
     }
 
-    interface::StatementProcessingResult node::TypeDef::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::TypeDef::processStatement (context::Main & ctx) const {
         return {sem::NoReturn{}};
 #if 0 // TODO
         std::string name = *target->name;
@@ -482,7 +412,7 @@ namespace cynth::syn {
             " "      + (interface::display || target::category{} <<= *body);
     }
 
-    interface::StatementProcessingResult node::While::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::While::processStatement (context::Main & ctx) const {
         return {sem::NoReturn{}};
 #if 0 // TODO
         while (true) {
@@ -510,7 +440,7 @@ namespace cynth::syn {
             " "     + (interface::display || target::category{} <<= *branch);
     }
 
-    interface::StatementProcessingResult node::When::processStatement (context::C & ctx) const {
+    interface::StatementProcessingResult node::When::processStatement (context::Main & ctx) const {
         return {sem::NoReturn{}};
 #if 0 // TODO
         auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));

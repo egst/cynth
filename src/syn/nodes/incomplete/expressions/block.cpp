@@ -101,7 +101,7 @@ namespace cynth::syn {
                         if (!init) {
                             auto lastType = interface::returnedType(entry);
                             // Note: Conversion to comon types upon return will not be supported in the first version.
-                            if (!(interface::sameType || target::category{} <<= args(lastType, returnedType)))
+                            if (!(interface::sameTypes || target::category{} <<= args(lastType, returnedType)))
                                 return esl::result_error{"Returning incompatible types."};
                         }
 

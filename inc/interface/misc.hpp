@@ -5,7 +5,7 @@
 #include "esl/result.hpp"
 #include "esl/tiny_vector.hpp"
 
-#include "context/c.hpp"
+#include "context/main.hpp"
 #include "sem/compound.hpp"
 #include "sem/declarations.hpp"
 #include "sem/numeric_types.hpp"

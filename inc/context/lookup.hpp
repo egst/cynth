@@ -26,6 +26,7 @@ namespace cynth::context {
         Lookup (Lookup &&)      = default;
 
         esl::result<ValueEntry *> insertValue (std::string name, ValueEntry const &);
+        //esl::result<ValueEntry *> insertValue (std::string name, ValueEntry &&);
         esl::result<TypeEntry  *> insertType  (std::string name, TypeEntry  const &);
 
         ValueEntry * findValueInside (std::string const & name);

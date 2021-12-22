@@ -71,6 +71,20 @@
 
 # Cynth
 
+* I might skip this in the first version, but:
+    * Arrays should be (explicitly) convertible to smaller sized arrays (by reference).
+    * Maybe they could be (explicitly) convertible to larger array when copying (by filling the rest with zeroes)?
+    * For loops should be able to iterate over differently sized arrays, restricting the iteration range to the smaller size.
+* In the next version, I should change `Variable` to contain `variant<CompleteValue, CompleteType>` and `optional<string>`.  
+    Currently it contains `variant<CompleteValue, struct { CompleteType; string }>` which forces every variable to be either run-time or comp-time.
+    (Except for functions, that might be partially run-time, but they handle it internally in the `CompleteValue{value::Function}`.)
+    Containing both a copile-time value and a runtime variable name allows a) further constant propagation and
+    b) handling functions the same way without that "partially run-time" concept.
+    The reason I didn't want it in the first version is that having either exclusively run-time variables or exclusively comp-time variables
+    simplifies the semantics (for the user) - when a variable is not marked const, it won't be usable as a compile-time value.
+    However, there are cases, where it might be useful: When a non-const variable is encapsulated in a block expression,
+    it would make sense to use its value as comp-time from that block expression - the variable won't ever be modified further
+    after the block returns, so its mutation can be thought of as a compile-time initialization with multiple steps.
 * I guess I could allow not explicitly returning from block expressions which would indicate a default value.  
     Declared variables with no explicit initialization are implicitly initialized to some default value (zero initialized)
     so maybe the same could be done with block expressions.

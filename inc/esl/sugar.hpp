@@ -119,7 +119,8 @@ namespace esl::sugar {
         return esl::lift_nested<Ts...>(std::forward<F>(f));
     }
 
-    template <typename F, detail::targetable... Ts>
+    //template <typename F, detail::targetable... Ts>
+    template <typename F, typename... Ts>
     constexpr auto operator || (F && f, esl::target::nary<Ts...> &&) {
         return esl::lift_nary<Ts...>(std::forward<F>(f));
     }

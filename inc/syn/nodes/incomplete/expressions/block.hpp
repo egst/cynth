@@ -14,7 +14,9 @@
 
 namespace cynth::syn::node {
 
-    /** { stmt; ... } */
+    /***
+    { stmt; ... }
+    ***/
     struct Block {
         esl::component_vector<category::Statement> statements;
 

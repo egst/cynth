@@ -153,7 +153,7 @@ namespace cynth::interface {
         }
     );
 
-    constexpr auto sameType = esl::overload(
+    constexpr auto sameTypes = esl::overload(
         [] <type T, type U> (T const & type, U const & as) -> SameTypeResult
         requires (has::sameType<T, U>) {
             return type.sameType(as);
@@ -162,6 +162,18 @@ namespace cynth::interface {
             return false;
         }
     );
+
+    constexpr auto sameType = [] <type T> (T const & t) {
+        return esl::overload(
+            [&t] <type U> (U const & as) -> SameTypeResult
+            requires (has::sameType<T, U>) {
+                return t.sameType(as);
+            },
+            [] (type auto const &) -> SameTypeResult {
+                return false;
+            }
+        );
+    };
 
     template <typename... Targets>
     constexpr auto sameTypeTupleLift = [] (auto const & type, auto const & as) -> SameTypeResult {

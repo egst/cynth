@@ -271,7 +271,7 @@ __auto_type var_t = ({
 ```cth
 # runtime Int x;
 Int (Int) f = {
-    if (x == 0)
+    when (x == 0)
         return Int fn (Int x) x;
     return
         if (x > 0) {
@@ -367,68 +367,198 @@ __auto_type tupvar_t = ({ // block expression
 cth_ctx_f var_f = tupvar_t.e0;
 ```
 
-# Optimizing a single return of a run-time function
-
-This is the general case:
+# For loops
 
 ```cth
-Int (Int) f = {
-    ...
-    Int a = 1;
-    if (a > 0) return Int fn (Int x) x - a;
-    return Int fn (Int x) x + a;
-}
+# runtime Int [16] arr
+# runtime Int x
+Int a = {
+    for (Int const e in arr) { # for:  returns Int, sometimes
+        when (e == x)          # when: returns Int, sometimes
+            return 1;
+    };
+    return 2;
+};
 ```
+
+```cth
+# runtime Int [16] arr
+# runtime Int x
+Int a = {
+    for (Int const e in arr) { # for:      returns Int, always (= in the first iteration)
+        if (e == x)            # if..else: returns Int, always
+            return 1;
+        else
+            return 2;
+    };
+};
+```
+
+This could be translated into:
 
 ```c
 __auto_type tupvar_t = ({
-    // ...
-    cth_int var_a = 1;
-
-    if (var_a > 0) {
-        result.e0.branch = 0;
-        result.e0.data.v0 = (struct cth_ctx_x) {
-            .a = var_a
-        };
-        goto ret;
+    struct result { cth_int e0; } result;
+    __label__ ret;
+    {
+        cth_int const var_e = var_arr[0];
+        if (var_e == var_x) {
+            result.e0 = 1;
+            goto ret;
+        } else {
+            result.e0 = 2;
+            goto ret;
+        }
     }
-
-    result.e0.branch = 1;
-    result.e0.data.v1 = (struct cth_ctx_y) {
-        .a = var_a
-    };
-    goto ret;
-
     ret: result;
 });
-__auto_type var_f = tupvar_t.e0;
+cth_int var_a = tupvar_t.e0;
 ```
 
-This is a single return case:
+```cth
+# runtime Int [16] arr
+# runtime Int x
+Int a = {
+    for (Int const e in arr) { # for:    returns [Int{1}], always (= in the first iteration)
+        return 1;              # return: returns [Int{1}], always
+    };
+};
+```
+
+What about functions?
 
 ```cth
+# runtime Int [16] arr
+# runtime Int x
 Int (Int) f = {
+    for (Int const e in arr) { # for:      returns [Fun{...}, Fun{...}], always (= in the first iteration)
+        if (e == x)            # if..else: returns [Fun{...}, Fun{...}], always
+            return Int fn (Int x) x + 1;
+        else
+            return Int fn (Int x) x - 1;
+    };
+};
+```
+
+```cth
+# runtime Int [16] arr
+# runtime Int x
+Int (Int) f = {
+    for (Int const e in arr) { # for:      returns [Fun{...}], sometimes (= in the first iteration)
+        when (e == x)          # if..else: returns [Fun{...}], sometimes
+            return Int fn (Int x) x + 1;
+    };
+};
+```
+
+Seems like everythig should work OK. The general rule is, that for loop returns whatever its branches return.
+
+What about mixed comp-time and run-time ranges?
+
+```cth
+Int [16] a;
+Int [16] b;
+for (Int i in [1 to 16], Int j in [1 to 32 by 2], Int e in a, Int f in b) {
     ...
-    Int a = 1;
-    return Int fn (Int x) x + a;
 }
 ```
 
 ```c
-__auto_type tupvar_t = ({
-    // ...
-    cth_int var_a = 1;
-    // omitting `result.e0.branch = 0;`
-    result.e0.data.v0 = (struct cth_ctx_x) {
-        .a = var_a
+cth_int * var_a;
+cth_int * var_b;
+for (
+    struct {
+        cth_int pos;
+        cth_int var_i;
+        cth_int var_j;
+    } iter = {0, 1, 1};
+    iter.pos < 16;
+    ++iter.pos,
+    iter.var_i += 1,
+    iter.var_j += 2
+) {
+    cth_int var_e = var_a[iter.pos];
+    cth_int var_f = var_b[iter.pos];
+    ...
+}
+```
+
+# Optimizing for loops
+
+```cth
+Bool const a = {
+    Int const b = 3;
+    for (Int i in [1 to 5]) { # Loops that add no local statements can be executed in compile-time.
+        when (i > b)
+            return true;
     };
-    goto ret;
+    return false;
+};
+```
+
+```c
+cth_bool const var_a = true;
+```
+
+```cth
+Int j = 0;
+Int const a = {
+    for (Int i in [1 to 5]) { # Loops with comp-time ranges smaller than some threshold can be unrolled.
+        j = j + i;
+    }
+    return 1;
+};
+```
+
+This loop adds local statements, but the result of the block expression does not depend on it,
+so while the loop will be translated, the `a` variable's value will be determined at compile-time.
+
+```c
+cth_int var_j = 0;
+__auto_type tupvar_t = ({
+    struct result {} result;
+    __label__ ret;
+
+    var_j = var_j + 1;
+    var_j = var_j + 2;
+    var_j = var_j + 3;
+    var_j = var_j + 4;
 
     ret: result;
 });
-__auto_type var_f = tupvar_t.e0;
 ```
 
-# For expression
+```cth
+for (Int i in [1 to 10000]) { # Unrolling loops with large comp-time ranges might not be a good idea.
+    j = j + i;
+};
+```
 
-TODO
+Unrolling a "large" loop would lead to large source files for the C compiler to compile and ultimately large executables.
+However, simply allocating the range array would lead to the same problem.
+The loop needs to be optimize into a simple `for (int i = <from>; i < <to>; i += <by>)` loop whenever possible.
+If it's not possible, the array will be allocated, since that would probably have a similar spatial imprint
+on the final executable while being simpler for the C compiler to go through than when unrolling it.
+
+```c
+for (cth_int var_i = 1; var_i < 10000; var_i += 1) {
+    var_j = var_j + var_i;
+}
+```
+
+```cth
+for (Int i in [1, 8, 6, 11]) { # Comp-time ranges not fitting an arithmetic sequence must be allocated.
+    j = j + i;
+};
+```
+
+```c
+// function scope:
+cth_arr$4$cth_int val_a = {1, 8, 6, 11};
+...
+// local:
+for (cth_int pos = 1; pos < 4; ++pos) {
+    cth_int var_i = var_a[pos];
+    var_j = var_j + var_i;
+}
+```

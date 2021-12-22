@@ -134,11 +134,47 @@ namespace cynth::sem {
 
     }
 
+    // Note: The whole incapsulation here ensures that the three properties are always of the same type.
+    struct ArithmeticSequence {
+        // Sequence definition can be extracted from any literal of the form [<from> to <to> by <by>].
+        // For other cases, the array values can still be inspected one by one to try and fit them into a sequence,
+        // however, this only happens up to this limit. Otherwise it could be slowing down compilation.
+        //constexpr static std::size_t limit = 1000;
+        // Update: Nope, this doesn't make much sense. If a comp-time array value isn't recognized as a sequence
+        // and is used in a for loop range declaration, it must be declared as a run-time variable,
+        // which would go through the sequence elements one by one anyway.
+
+        // TODO: Implement for T = value::Int, value::Float
+        template <typename T>
+        ArithmeticSequence (T const & from, T const & to, T const & by);
+
+        CompleteType  type () const;
+        sem::Integral size () const;
+
+        CompleteValue const & from () const;
+        CompleteValue const & to   () const;
+        CompleteValue const & by   () const;
+
+    protected:
+        struct {
+            esl::component<CompleteValue> from;
+            esl::component<CompleteValue> to;
+            esl::component<CompleteValue> by;
+        } definition;
+    };
+
     /** For compile-time allocated arrays. */
     struct ArrayAllocation {
         using Vector = esl::component_vector<CompleteValue>;
 
         Vector value;
+
+        // Allocated array values with only const-valued array references to them can be optimized in some cases.
+        bool constant;
+
+        // Comp-time arrays in for ranges containing arithmetic sequnces will be optimized into
+        // `for (int i = <from>; i < <to>; i += <by>)` instead of actual run-time array allocation.
+        std::optional<ArithmeticSequence> sequence;
 
         // A comp-time allocation can be explicitly allocated in the resulting C code on demand.
         // This happens when access by a run-time index is needed.
@@ -150,6 +186,8 @@ namespace cynth::sem {
          *  TODO: Do I really need esl::result here?
          */
         esl::result<std::string> allocate (context::Main &);
+
+        //std::optional<ArithmeticSequence> sequentialize ();
     };
 
     namespace value {

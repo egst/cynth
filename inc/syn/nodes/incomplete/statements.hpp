@@ -1,21 +1,24 @@
 #pragma once
 
+#include <string>
+
 #include "esl/component.hpp"
 
 #include "context/forward.hpp"
 #include "interface/forward.hpp"
+
+// Statements in separate headers:
+#include "syn/nodes/incomplete/statements/for.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
 #include "syn/nodes/incomplete/expressions.hpp"
 #include "syn/nodes/incomplete/types.hpp"
 
-#include <string>
-
 // Note: No macros escape this file.
 #define STATEMENT_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::StatementProcessingResult processStatement (context::Main &) const;
+    interface::StatementProcessingResult processStatement (context::Main &) const
 
 namespace cynth::syn::node {
 
@@ -34,14 +37,6 @@ namespace cynth::syn::node {
     struct Definition {
         esl::component<category::Declaration> target;
         esl::component<category::Expression>  value;
-
-        STATEMENT_INTERFACE;
-    };
-
-    /** for (T e in a) x */
-    struct For {
-        esl::component<category::RangeDeclaration> declarations;
-        esl::component<category::Statement>        body;
 
         STATEMENT_INTERFACE;
     };

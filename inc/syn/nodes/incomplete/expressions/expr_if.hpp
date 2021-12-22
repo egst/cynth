@@ -14,7 +14,9 @@
 
 namespace cynth::syn::node {
 
-    /** if (cond) a else b */
+    /***
+    if (cond) a else b
+    ***/
     struct ExprIf {
         esl::component<category::Expression> condition;
         esl::component<category::Expression> positiveBranch;
