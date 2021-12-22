@@ -43,7 +43,6 @@ namespace cynth::syn {
     using sem::Integral;
     using sem::NoReturn;
     using sem::ResolvedValue;
-    using sem::Returned;
     using sem::ReturnedValues;
     using sem::TypedExpression;
 

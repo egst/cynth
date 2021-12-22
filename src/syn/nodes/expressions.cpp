@@ -898,99 +898,10 @@ namespace cynth::syn {
             return syn::make_evaluation_result(results.error());
         return *results;
     }
+#endif
 
     //// ExprFor ////
-
-    display_result syn::node::ExprFor::display () const {
-        return
-            "for " + util::parenthesized(interface::display(declarations)) +
-            " "    + interface::display(body);
-    }
-
-    syn::evaluation_result syn::node::ExprFor::evaluate (sem::context & ctx) const {
-        auto decls_result = sem::for_decls(ctx, *declarations);
-        if (!decls_result)
-            return syn::make_evaluation_result(decls_result.error());
-        auto [size, iter_decls] = *std::move(decls_result);
-
-        sem::array_vector              result_values;
-        std::optional<sem::array_type> result_type;
-
-        result_values.reserve(size);
-
-        for (integral i = 0; i < size; ++i) {
-            // Init inner scope:
-            auto iter_scope = make_child_context(ctx);
-
-            // Define iteration elements:
-            for (auto & [decl, value]: iter_decls)
-                iter_scope.define_value(decl, value.value->value[i]);
-
-            // Evaluate the loop body:
-            auto value_result = util::unite_results(syn::evaluate(iter_scope)(body));
-            if (!value_result)
-                return syn::make_evaluation_result(value_result.error());
-
-            auto & value = *value_result;
-            auto   type  = sem::value_type(value);
-
-            if (result_type) {
-                auto common_results = sem::common(type, *result_type);
-                if (!common_results)
-                    return syn::make_evaluation_result(common_results.error());
-                result_type = result_to_optional(util::unite_results(*common_results));
-            } else {
-                result_type = std::optional{std::move(type)};
-            }
-
-            result_values.push_back(std::move(value));
-        }
-
-        if (!result_type)
-            return syn::make_evaluation_result(result_error{"No common type for an array in a for expression."});
-
-        auto stored = ctx.store_value(sem::value::ArrayValue {
-            .value = result_values
-        });
-        if (!stored)
-            return syn::make_evaluation_result(stored.error());
-
-        auto result = sem::value::make_array (
-            stored.get(),
-            *std::move(result_type),
-            static_cast<integral>(stored->value.size())
-        );
-        if (!result)
-            return syn::make_evaluation_result(result.error());
-        return syn::make_evaluation_result(*result);
-    }
-
-    syn::execution_result syn::node::ExprFor::execute (sem::context & ctx) const {
-        auto decls_result = sem::for_decls(ctx, *declarations);
-        if (!decls_result)
-            return syn::make_execution_result(decls_result.error());
-        auto [size, iter_decls] = *std::move(decls_result);
-
-        for (integral i = 0; i < size; ++i) {
-            // Init inner scope:
-            auto iter_scope = make_child_context(ctx);
-
-            // Define iteration elements:
-            for (auto & [decl, value]: iter_decls)
-                iter_scope.define_value(decl, value.value->value[i]);
-
-            // Execute the loop body:
-            auto returned = syn::execute(iter_scope)(body);
-
-            if (returned)
-                return *returned;
-            if (returned.has_error())
-                return syn::make_execution_result(returned.error());
-        }
-
-        return {};
-    }
-#endif
+    // src/syn/nodes/incomplete/expressions/expr_for.hpp
 
     //// ExprIf ////
     // src/syn/nodes/incomplete/expressions/expr_if.hpp

@@ -131,31 +131,6 @@ namespace cynth {
 
     namespace c {
 
-        /**
-         *  Most expressions are explicitly parenthesized to avoid precedence issues.
-         *  By default, this doesn't introduce unnecessary parentheses.
-         *  The expression is scanned for matching parentheses on both ends.
-         *  However, this might be a slight translation time slowdown
-         *  so set `neatParentheses` to false in the config if readable C code is not a concern.
-         */
-        /***
-        `(<expr>)`
-        ***/
-        inline std::string expression (std::string const & expr) {
-            constexpr bool neatParentheses = true; // TODO: Put this in some global config.
-            if constexpr (neatParentheses)
-                return esl::parenthesized(expr);
-            else
-                return std::string{} + "(" + expr + ")";
-        }
-
-        /***
-        <stmt>;
-        ***/
-        inline std::string statement (std::string const & stmt) {
-            return stmt + ";";
-        }
-
         //// Whitespace ////
 
         /***
@@ -174,6 +149,102 @@ namespace cynth {
 
         inline std::string newLine () {
             return str::newLine;
+        }
+
+        //// Misc. ////
+
+        /***
+        <arg1>, <arg2>, ...
+        ***/
+        template <typename... Ts>
+        std::string inlineJoin (std::string const & sep, Ts const &... args) {
+            return esl::join(sep + " " , args...);
+        }
+
+        /***
+        <arg1>,
+        <arg2>,
+        ...
+        ***/
+        template <typename... Ts>
+        std::string join (std::string const & sep, Ts const &... args) {
+            return esl::join(sep + c::newLine(), args...);
+        }
+
+        /***
+        # An indented comma-separated list (with line breaks)
+            <arg1>,
+            <arg2>,
+            ...
+        ***/
+        template <typename... Ts>
+        std::string indentedJoin (std::string const & sep, Ts const &... args) {
+            auto indent = c::indentation();
+            return indent + esl::join(sep + c::newLine() + indent, args...);
+        }
+
+        /***
+        <arg1>, <arg2>, ..., <argN>,
+        ***/
+        template <typename... Ts>
+        std::string inlineTerminatedJoin (std::string const & sep, Ts const &... args) {
+            return esl::join(sep + " " , args...) + sep;
+        }
+
+        /***
+        <arg1>,
+        <arg2>,
+        ...
+        <argN>,
+        ***/
+        template <typename... Ts>
+        std::string terminatedJoin (std::string const & sep, Ts const &... args) {
+            return esl::join(sep + c::newLine(), args...) + sep;
+        }
+
+        /***
+        # An indented comma-separated list (with line breaks)
+            <arg1>,
+            <arg2>,
+            ...
+            <argN>,
+        ***/
+        template <typename... Ts>
+        std::string indentedTerminatedJoin (std::string const & sep, Ts const &... args) {
+            auto indent = c::indentation();
+            return indent + esl::join(sep + c::newLine() + indent, args...) + sep;
+        }
+
+        /**
+         *  Most expressions are explicitly parenthesized to avoid precedence issues.
+         *  By default, this doesn't introduce unnecessary parentheses.
+         *  The expression is scanned for matching parentheses on both ends.
+         *  However, this might be a slight translation time slowdown
+         *  so set `neatParentheses` to false in the config if readable C code is not a concern.
+         */
+        /***
+        (<expr>)
+        ***/
+        inline std::string expression (std::string const & expr) {
+            constexpr bool neatParentheses = true; // TODO: Put this in some global config.
+            if constexpr (neatParentheses)
+                return esl::parenthesized(expr);
+            else
+                return "(" + expr + ")";
+        }
+
+        /***
+        <stmt>;
+        ***/
+        inline std::string statement (std::string const & stmt) {
+            return stmt + ";";
+        }
+
+        /***
+        [<expr>]
+        ***/
+        inline std::string brackets (std::string const & expr) {
+            return "[" + expr + "]";
         }
 
         //// Declarations & definitions ////
@@ -357,11 +428,23 @@ namespace cynth {
         }
 
         /***
-        <f>(<arg1>, <arg2>, ...)
+        <f>(
+            <arg1>,
+            <arg2>,
+            ...
+        )
         ***/
         template <typename... Ts>
         std::string call (std::string f, Ts const &... args) {
-            return f + "(" + esl::join(", ", args...) + ")";
+            return f + "(" + c::join(",", args...) + ")";
+        }
+
+        /***
+        <f>(<arg1>, <arg2>, ...)
+        ***/
+        template <typename... Ts>
+        std::string inlineCall (std::string f, Ts const &... args) {
+            return f + "(" + c::inlineJoin(",", args...) + ")";
         }
 
         /***
@@ -408,6 +491,19 @@ namespace cynth {
             return std::string{} + "struct " + name;
         }
 
+        namespace detail::translation {
+
+            template <typename... Ts>
+            inline std::string structureDefinition (std::optional<std::string> const & name, Ts const &... decls) {
+                auto head     = std::string{} + "struct " + (name ? *name + " " : "") + "{";
+                auto newLine  = c::newLine();
+                auto contents = c::indentedTerminatedJoin(";", decls...);
+                return head + (!contents.empty() ? newLine + contents + newLine : "") + "}";
+                // When empty: `struct <name> {}`
+            }
+
+        }
+
         /***
         struct <name> {
             <decl1>;
@@ -417,12 +513,19 @@ namespace cynth {
         ***/
         template <typename... Ts>
         inline std::string structureDefinition (std::string const & name, Ts const &... decls) {
-            auto head     = std::string{} + "struct " + name + " {";
-            auto indent   = c::indentation();
-            auto declEnd  = std::string{} + ";" + c::newLine();
-            auto contents = esl::join(declEnd + indent, decls...);
-            return head + (!contents.empty() ? c::newLine() + indent + contents + declEnd : "") + "}";
-            // When empty: `struct <name> {}`
+            return detail::translation::structureDefinition(std::make_optional(name), decls...);
+        }
+
+        /***
+        struct {
+            <decl1>;
+            <decl2>;
+            ...
+        }
+        ***/
+        template <typename... Ts>
+        inline std::string anonymousStructureDefinition (Ts const &... decls) {
+            return detail::translation::structureDefinition(std::nullopt, decls...);
         }
 
         /***
@@ -490,22 +593,32 @@ namespace cynth {
         //// Compound statements ////
 
         /***
-        {\n\t<stmt1>;\n\t<stmt2>;\n\t...;\n\t<stmtN>;\n}
+        {
+            <stmt1>;
+            <stmt2>;
+            ...
+            <stmtN>;
+        }
         ***/
         template <typename... Ts>
         inline std::string block (Ts const &... stmts) {
-            return std::string{} +
-                "{\n" + str::indent + esl::join(std::string{} + ";\n" + str::indent, stmts...) + ";\n}";
+            auto newLine = c::newLine();
+            return "{" + newLine + c::terminatedJoin(";", stmts...) + newLine + "}";
         }
 
         /***
         # GNU statement expression extension
-        ({\n\t<stmt1>;\n\t<stmt2>;\n\t...;\n\t<stmtN>;\n})
+        ({
+            <stmt1>;
+            <stmt2>;
+            ...;
+            <stmtN>;
+        })
         ***/
         template <typename... Ts>
         inline std::string blockExpression (Ts const &... stmts) {
-            return std::string{} +
-                "({\n" + str::indent + esl::join(std::string{} + ";\n" + str::indent, stmts...) + ";\n})";
+            auto newLine = c::newLine();
+            return "({" + newLine + c::terminatedJoin(";", stmts...) + newLine + "})";
         }
 
         //// Assignments ////
@@ -534,7 +647,7 @@ namespace cynth {
         }
 
         /***
-        # Brace initialization
+        # Brace initialization (with line breaks)
         {
             <arg1>,
             <arg2>,
@@ -545,8 +658,17 @@ namespace cynth {
         std::string init (Ts const &... args) {
             auto indent  = c::indentation();
             auto newLine = c::newLine();
-            auto contents = esl::join("," + newLine + indent, args...);
-            return "{" + (!contents.empty() ? newLine + indent + contents + newLine : "") + "}";
+            auto contents = c::indentedJoin(",", args...);
+            return "{" + (!contents.empty() ? newLine + contents + newLine : "") + "}";
+        }
+
+        /***
+        # Brace initialization (with no line breaks)
+        {<arg1>, <arg2>, ...}
+        ***/
+        template <typename... Ts>
+        std::string inlineInit (Ts const &... args) {
+            return "{" + c::join("," , args...) + "}";
         }
 
         /***
@@ -617,6 +739,14 @@ namespace cynth {
         ***/
         inline std::string bufferOffset (std::string const & structure) {
             return structure + "." + def::dataMember;
+        }
+
+        /***
+        # Iteration position
+        iter.pos
+        ***/
+        inline std::string iterationPosition () {
+            return std::string{} + def::iteration + "." + def::position;
         }
 
         /***
@@ -782,8 +912,20 @@ namespace cynth {
         /***
         for (<init>; <cond>; <iter>) {
         ***/
+        inline std::string inlineForBegin (std::string const & init, std::string const & cond, std::string const & iter) {
+            return "for (" + c::join(";", init, cond, iter) + ") {";
+        }
+
+        /***
+        for (
+            <init>;
+            <cond>;
+            <iter>
+        ) {
+        ***/
         inline std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter) {
-            return std::string{} + "for (" + init + ";" + cond + ";" + iter + ") {";
+            auto newLine = c::newLine();
+            return "for (" + newLine + c::indentedJoin(";", init, cond, iter) + ") {";
         }
 
         //// Looping ////
@@ -795,14 +937,14 @@ namespace cynth {
             <decl1>;
             <decl2>;
             ...
-        } iter;
+        } iter = {0, <init1>, <init2>, ...}
         ***/
-        template <typename... Ts>
-        std::string iterationStructure (Ts const &... decls) {
-            auto indent  = c::indentation();
-            auto declSep = ";" + c::newLine() + indent;
+        template <esl::range T, esl::range U>
+        std::string iterationStructure (T const & decls, U const & inits) {
             auto posDecl = c::declaration(c::intType(), def::position);
-            return c::structureDefinition(def::iteration, posDecl, decls...);
+            auto type    = c::anonymousStructureDefinition(posDecl, decls);
+            auto init    = c::inlineInit(inits);
+            return c::definition(type, def::iteration, init);
         }
 
         //// Labels ////

@@ -275,19 +275,19 @@ namespace esl {
         constexpr optional_result & operator = (optional_result const &) = default;
 
         constexpr bool has_value () const {
-            return content.has_value() && (content->index() == 0);
-            //return content->index() == 1;
+            //return content.has_value() && (content->index() == 0);
+            return content.index() == 1;
         }
 
         constexpr bool has_error () const {
-            return content.has_value() && (content->index() == 1);
-            //return content->index() == 2;
+            //return content.has_value() && (content->index() == 1);
+            return content.index() == 2;
         }
 
         constexpr bool empty () const {
             // Note: The previous implementation would have included the error state as well.
-            return !content.has_value();
-            //return content->index() == 0;
+            //return !content.has_value();
+            return content.index() == 0;
         }
 
         constexpr value_type const & value () const & {

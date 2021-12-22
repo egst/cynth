@@ -100,13 +100,6 @@ namespace cynth::sem {
     struct Variable: esl::category<Variable, detail::compound::VariableVariant> {
         using base = esl::category<Variable, detail::compound::VariableVariant>;
         using base::base;
-        /*
-        using base::value;
-        Variable & operator = (Variable const & other) {
-            value = other.value;
-            return *this;
-        }
-        */
     };
 
     namespace detail::compound {

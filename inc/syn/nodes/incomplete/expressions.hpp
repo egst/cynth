@@ -3,7 +3,6 @@
 #include <string>
 #include <type_traits>
 
-#include "esl/category.hpp"
 #include "esl/component.hpp"
 
 #include "context/forward.hpp"
@@ -12,6 +11,7 @@
 
 // Expressions in separate headers:
 #include "syn/nodes/incomplete/expressions/block.hpp"
+#include "syn/nodes/incomplete/expressions/expr_for.hpp"
 #include "syn/nodes/incomplete/expressions/expr_if.hpp"
 
 // Circular dependencies:
@@ -102,16 +102,6 @@ namespace cynth::syn::node {
 
         EXPRESSION_INTERFACE;
         DISPLAY;
-    };
-
-    /** for (T e in a) x */
-    struct ExprFor {
-        esl::component<category::RangeDeclaration> declarations;
-        esl::component<category::Expression>       body;
-
-        EXPRESSION_INTERFACE;
-        DISPLAY;
-        STATEMENT_INTERFACE;
     };
 
     /** 12.34e-56 */
