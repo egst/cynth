@@ -30,22 +30,24 @@
     interface::CommonTypeResult commonType (Type const &) const
 #define TYPE_INTERFACE \
     interface::DisplayResult display () const; \
+    interface::TypeTranslationResult translateType() const; \
+    interface::TypeSpecifierTranslationResult translateTypeSpecifier() const; \
     interface::DefinitionProcessingResult processDefinition ( \
-        context::C &, \
+        context::Main &, \
         std::optional<ResolvedValue> const & definition \
     ) const; \
     interface::ConversionTranslationResult translateConversion ( \
-        context::C &, \
+        context::Main &, \
         TypedExpression const & from \
     ) const;
     /*
     interface::AllocationTranslationResult translateAllocation ( \
-        context::C &, \
+        context::Main &, \
         std::optional<TypedExpression> const & definition \
     ) const; \
     */
 #define INCOMPLETE_TYPE_INTERFACE \
-    interface::TypeCompletionResult completeType (context::C &) const
+    interface::TypeCompletionResult completeType (context::Main &) const
 
 /*
 #define DECAY \
@@ -217,15 +219,8 @@ namespace cynth::sem {
         };
 
         struct Function: detail::types::Function<true> {
-            // TODO: Which of these really need to be in a component?
-
             esl::component_vector<CompleteType> out;
             esl::component_vector<CompleteType> in;
-
-            esl::optional_component<sem::ResolvedCapturedContext> context;
-            std::optional<std::string> contextType;     // Runtime context type
-            std::optional<std::string> contextVariable; // Runtime context variable
-            std::optional<std::string> functionName;    // Runtime function name
 
             TYPE_INTERFACE;
 

@@ -75,6 +75,11 @@ namespace esl {
             return detail::category::get<U, esl::result<U>>(*this);
         }
 
+        template <typename U>
+        bool holds_alternative () const {
+            return std::holds_alternative<U>(value);
+        }
+
     private:
     };
 

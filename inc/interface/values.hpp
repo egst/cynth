@@ -8,7 +8,7 @@
 #include "esl/functional.hpp"
 #include "esl/ranges.hpp"
 
-#include "context/c.hpp"
+#include "context/main.hpp"
 #include "interface/forward.hpp"
 #include "interface/types.hpp"
 #include "sem/compound.hpp"
@@ -43,6 +43,8 @@ namespace cynth::interface {
             { value.valueType } -> type;
         };
 
+        // TODO: There are now actually no values that don't have a directly stated value type.
+        // So maybe this shold be removed.
         template <typename T>
         concept valueType = value<T> && requires (T value) {
             //{ value.valueType() } -> std::same_as<ValueTypeResult>;
@@ -55,12 +57,12 @@ namespace cynth::interface {
         };
 
         template <typename T, typename To>
-        concept convertValue = value<T> && requires (T value, context::C & ctx, To const & other) {
+        concept convertValue = value<T> && requires (T value, context::Main & ctx, To const & other) {
             { value.convertValue(ctx, other) } -> std::same_as<ConversionResult<To>>;
         };
 
         template <typename T>
-        concept translateValue = value<T> && requires (T value, context::C & ctx) {
+        concept translateValue = value<T> && requires (T value, context::Main & ctx) {
             { value.translateValue(ctx) } -> std::same_as<ValueTranslationResult>;
         };
 
@@ -89,7 +91,7 @@ namespace cynth::interface {
         }
     );
 
-    constexpr auto convertValueTo (context::C & ctx) {
+    constexpr auto convertValueTo (context::Main & ctx) {
         return [&ctx] <type To> (To const & to) {
             return esl::overload(
                 [&to] <value T> (T const & value) -> ConversionResult<To>
@@ -107,7 +109,7 @@ namespace cynth::interface {
         };
     };
 
-    constexpr auto convertValue (context::C & ctx) {
+    constexpr auto convertValue (context::Main & ctx) {
         return esl::overload(
             [] <value T, type To> (T const & value, To const & to) -> DynamicConversionResult
             requires (has::convertSimpleValue<T, To>) {
@@ -141,7 +143,7 @@ namespace cynth::interface {
         };
     // TODO: convertSimpleValue?
 
-    inline auto translateValue (context::C & ctx) {
+    inline auto translateValue (context::Main & ctx) {
         return esl::overload(
             [&ctx] <value T> (T const & value) -> ValueTranslationResult
             requires (has::translateValue<T>) {

@@ -244,8 +244,8 @@ namespace esl {
         template <typename... Args>
         constexpr reference emplace_back (Args &&... args) {
             return first
-                ? rest.emplace_back(args...)
-                : first = value_type{std::forward<Args>(args)...};
+                ? rest.emplace_back(std::forward<Args>(args)...)
+                : first.emplace(std::forward<Args>(args)...);
         }
 
         constexpr void push_back (value_type const & value) {
@@ -265,6 +265,19 @@ namespace esl {
         constexpr void swap (tiny_vector & other) {
             first.swap(other.first);
             rest.swap(other.rest);
+        }
+
+        /** "insert back" aka append aka `insert(end(), ...)` */
+        template <typename It>
+        constexpr iterator insert_back (It from, It to) {
+            std::ptrdiff_t pos = size();
+            if (first)
+                rest.insert(rest.end(), from, to);
+            else if (from != to) {
+                first.emplace(*from);
+                rest.insert(rest.end(), from + 1, to);
+            }
+            return make_iterator(pos);
         }
 
     private:

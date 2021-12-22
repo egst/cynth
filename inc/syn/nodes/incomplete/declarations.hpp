@@ -12,8 +12,8 @@
 // Note: No macros escape this file.
 #define DECLARATION_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::DeclarationResolutionResult resolveDeclaration (context::C &) const; \
-    interface::StatementProcessingResult processStatement (context::C &) const;
+    interface::DeclarationResolutionResult resolveDeclaration (context::Main &) const; \
+    interface::StatementProcessingResult processStatement (context::Main &) const;
 
 namespace cynth::syn::node {
 

@@ -5,6 +5,14 @@
 
 namespace esl {
 
+    template <typename T, typename First, typename... Rest>
+    constexpr decltype(auto) first_of (First && first, Rest &&... rest) {
+        if constexpr (std::same_as<First, T>)
+            return std::forward<First>(first);
+        else
+            return first_of<T>(std::forward<Rest>(rest)...);
+    }
+
     template <typename Ref>
     struct arrow_proxy {
         using value_type = Ref;

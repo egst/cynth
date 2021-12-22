@@ -31,7 +31,7 @@
 #define GET(Type) \
     interface::GetResult<Type> get () const
 #define CONVERT(Type) \
-    interface::ConversionResult<Type> convertValue (context::C &, Type const &) const
+    interface::ConversionResult<Type> convertValue (context::Main &, Type const &) const
 #define CONVERT_SIMPLE(Type) \
     interface::ConversionResult<Type> convertValue (Type const &) const
 #define STATIC_VALUE_TYPE(Type, init) \
@@ -149,7 +149,7 @@ namespace cynth::sem {
          *  if none has already been allocated and returns name of the alloation variable (this->variable).
          *  TODO: Do I really need esl::result here?
          */
-        esl::result<std::string> allocate (context::C);
+        esl::result<std::string> allocate (context::Main &);
     };
 
     namespace value {
@@ -197,22 +197,62 @@ namespace cynth::sem {
             //constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
         };
 
-        struct Function {
-            // TODO: Which of these really need to be in a component?
-            // TODO: Will optional strings also cause the still unfixed segfault problem?
+    }
 
+    struct FunctionDefinition {
+        struct Implementation {
             std::vector<std::pair<std::string, Integral>> parameters; // Parameter names and size of the corresponding tuples
-            esl::component<syn::category::Expression> body;
+            esl::component<syn::category::Expression>     body;       // Unevaluated body expression
+            esl::component<sem::ResolvedCapturedContext>  context;    // Comp-time captured values and run-time typed names
+        };
+        using Switch = esl::component_vector<value::Function>;
+        using Variant = std::variant<
+            Implementation, // A "leaf" function with a direct implementation.
+            Switch          // A "switch" function only delegating to other functions.
+        >;
+
+        Variant                    implementation;
+        type::Function             type;
+        std::optional<std::string> contextType; // Run-time context variable type. No value => No run-time context.
+        std::string                name; // Run-time function name
+    };
+
+    namespace value {
+
+        // TODO: Which members really need to be in a component?
+        // TODO: Will optional strings also cause the still unfixed segfault problem?
+
+        struct Function {
+            FunctionDefinition &       definition;
+            std::optional<std::string> contextVariable; // Run-time context variable.
+
+            // Note: A function value may be linked to a local variable containing its runtime context data.
+            // This makes it a "partially run-time" vlaue, that is passed around in a semantic structure,
+            // but might also need some run-time definitions in the C code to be complete.
+            // Some array values are also "partially run-time" with their allocation variables.
+            // The fact that the runtime part of the function is a local variable means that it might
+            // require more careful manipulation, because the variable must be transfrered (copied)
+            // along with the function value (when returning, or maybe when assigning to another function variable),
+            // unlike the allocation variables of arrays, that have a wider (function) scope.
+
+            // TODO: Define in cpp.
+            inline bool contextual () const {
+                return definition.contextType.has_value();
+            }
 
             VALUE_INTERFACE;
 
             //VALUE_TYPE;
-            DIRECT_VALUE_TYPE(type::Function);
+            //DIRECT_VALUE_TYPE(type::Function);
+            type::Function & valueType = definition.type;
+            // TODO: I hope this will still satitfy the directTypeName concept.
 
             //GET(Function);
 
             CONVERT(type::Function);
             CONVERT(type::Buffer);
+
+            Function copy (std::optional<std::string> contextVariable) const;
         };
 
         struct Unknown {

@@ -31,40 +31,52 @@ namespace cynth::sem {
         std::string  expression;
     };
 
+#if 0
+    /***
+    # runtime Bool x, Int y
+    if (true) return y; # returning a run-time value always => .always = true
+    if (x)    return y; # returning a run-time value, depending on a runtime value => .always = false
+    ***/
     struct ReturnedType {
         bool always;
-        esl::tiny_vector<CompleteType> type;
+        CompleteType type;
     };
 
+    /***
+    # runtime Bool x
+    if (true) return 1; # returning a compile-time value always => .always = true
+    if (x)    return 1; # returning a compile-time value, depending on a runtime value => .always = false
+    ***/
     struct ReturnedValue {
-        esl::tiny_vector<CompleteValue> value;
+        bool always;
+        CompleteValue value;
     };
+#endif
+
+    template <typename T>
+    //using ReturnVector = std::vector<T>;
+    using ReturnVector = esl::tiny_vector<T>; // Optimized for single-return blocks.
 
     namespace detail::compound {
 
+        // Invariant: ReturnVector<...> alternative contains all same types
+        // Invariant: ReturnVector<...> alternative is always non-empty.
+        // (TODO: Enforce this statically.)
         using ReturnedVariant = std::variant<
-            std::monostate, // never
-            ReturnedValue,  // returned
-            ReturnedType    // maybe (sometimes | always)
+            ReturnVector<CompleteValue>, // comp-time TODO: Update the algorithms
+            CompleteType                 // run-time
         >;
 
     }
 
-    using NoReturn = std::monostate;
-
     struct Returned: esl::category<Returned, detail::compound::ReturnedVariant> {
         using base = esl::category<Returned, detail::compound::ReturnedVariant>;
         using base::base;
+    };
 
-        // TODO: This might not be needed.
-        enum Kind: int {
-            never,    // Never returns
-            returned, // Returned a compile-time value
-            maybe     // Might return a run-time value
-        };
-        constexpr Kind kind () const {
-            return static_cast<Kind>(value.index());
-        }
+    struct Return {
+        esl::tiny_vector<Returned> returned;
+        bool always;
     };
 
     namespace detail::compound {

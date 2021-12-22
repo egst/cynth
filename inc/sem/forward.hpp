@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <variant>
 
 namespace cynth::sem {
 
@@ -9,7 +10,8 @@ namespace cynth::sem {
     struct TypedExpression;
     struct TypedName;
     struct TypedTargetExpression;
-    struct ReturnedType;
+    using  NoReturn = std::monostate;
+    struct Return;
     struct Returned;
     struct Variable;
     struct ResolvedValue;
@@ -58,6 +60,7 @@ namespace cynth::sem {
 
     // Values:
 
+    struct FunctionDefinition;
     struct ArrayAllocation;
 
     namespace value {

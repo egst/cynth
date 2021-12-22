@@ -13,7 +13,7 @@
 #include "esl/result.hpp"
 #include "esl/type_manip.hpp"
 
-#include "context/c.hpp"
+#include "context/main.hpp"
 #include "interface/forward.hpp"
 
 // Completing forward declarations:
@@ -68,31 +68,45 @@ namespace cynth::interface {
         };
         */
 
+        /*
         template <typename T>
         concept constType = type<T> && requires (T type) {
             { type.constType() } -> std::same_as<ConstTypeResult>;
         };
+        */
+
+        /*
+        template <typename T>
+        concept translateType = type<T> && requires (T type, context::Main & ctx) {
+            { type.translateType(ctx) } -> std::same_as<TypeTranslationResult>;
+        };
+        */
 
         template <typename T>
-        concept translateType = type<T> && requires (T type, context::C & ctx) {
-            { type.translateType(ctx) } -> std::same_as<TypeTranslationResult>;
+        concept translateType = type<T> && requires (T type) {
+            { type.translateType() } -> std::same_as<TypeTranslationResult>;
         };
 
         template <typename T>
-        concept completeType = incompleteType<T> && requires (T type, context::C & ctx) {
+        concept translateTypeSpecifier = type<T> && requires (T type) {
+            { type.translateTypeSpecifier() } -> std::same_as<TypeSpecifierTranslationResult>;
+        };
+
+        template <typename T>
+        concept completeType = incompleteType<T> && requires (T type, context::Main & ctx) {
             { type.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
         };
 
         template <typename T>
         concept processDefinition = type<T> && requires (
-            T type, context::C & ctx, std::optional<sem::ResolvedValue> definition
+            T type, context::Main & ctx, std::optional<sem::ResolvedValue> definition
         ) {
             { type.processDefinition(ctx, definition) } -> std::same_as<DefinitionProcessingResult>;
         };
 
         template <typename T>
         concept translateConversion = type<T> && requires (
-            T type, context::C & ctx, sem::ResolvedValue from
+            T type, context::Main & ctx, sem::ResolvedValue from
         ) {
             { type.translateConversion(ctx, from) } -> std::same_as<ConversionTranslationResult>;
         };
@@ -100,7 +114,7 @@ namespace cynth::interface {
         /*
         template <typename T>
         concept translateAllocation = type<T> && requires (
-            T type, context::C & ctx, std::optional<sem::ResolvedValue> initialization
+            T type, context::Main & ctx, std::optional<sem::ResolvedValue> initialization
         ) {
             { type.translateAllocation(ctx, initialization) } -> std::same_as<AllocationTranslationResult>;
         };
@@ -200,6 +214,7 @@ namespace cynth::interface {
     );
     */
 
+    /*
     constexpr auto constType = esl::overload(
         [] <type T> (T const & type) -> ConstTypeResult
         requires (has::constType<T>) {
@@ -209,44 +224,65 @@ namespace cynth::interface {
             return false;
         }
     );
+    */
 
-    constexpr auto translateType (context::C & ctx) {
+    /*
+    constexpr auto translateType (context::Main & ctx) {
         return esl::overload(
             [&ctx] <has::translateType T> (T const & type) -> TypeTranslationResult {
                 return type.translateType(ctx);
             },
-            [] (auto const &) -> TypeTranslationResult {
+            [] (type auto const &) -> TypeTranslationResult {
                 return esl::result_error{"This type cannot be translated."};
             }
         );
     }
+    */
 
-    constexpr auto processDefinition (context::C & ctx) {
+    constexpr auto translateType = esl::overload(
+        [] <has::translateType T> (T const & type) -> esl::result<TypeTranslationResult> {
+            return type.translateType();
+        },
+        [] (type auto const &) -> esl::result<TypeTranslationResult> {
+            return esl::result_error{"This type cannot be translated."};
+        }
+    );
+
+    constexpr auto translateTypeSpecifier = esl::overload(
+        [] <has::translateType T> (T const & type) -> esl::result<TypeSpecifierTranslationResult> {
+            return type.translateTypeSpecifier();
+        },
+        [] (type auto const &) -> esl::result<TypeSpecifierTranslationResult> {
+            return esl::result_error{"This type cannot be translated into a type specifier."};
+        }
+    );
+
+    constexpr auto processDefinition (context::Main & ctx) {
         return [&ctx] (sem::ResolvedValue const & definition) {
             return esl::overload(
                 [&ctx, &definition] <has::processDefinition T> (T const & type) -> DefinitionProcessingResult {
                     return type.processDefinition(ctx, definition);
                 },
-                [] (auto const &) -> DefinitionProcessingResult {
+                [] (type auto const &) -> DefinitionProcessingResult {
                     return esl::result_error{"A definition of this type cannot be translated."};
                 }
             );
         };
     }
 
-    constexpr auto processDeclaration (context::C & ctx) {
+    constexpr auto processDeclaration (context::Main & ctx) {
         return esl::overload(
             [&ctx] <has::processDefinition T> (T const & type) -> DeclarationProcessingResult {
                 return type.processDefinition(ctx, std::nullopt);
             },
-            [] (auto const &) -> DeclarationProcessingResult {
+            [] (type auto const &) -> DeclarationProcessingResult {
                 return esl::result_error{"A declaration of this type cannot be translated."};
             }
         );
     }
 
     /*
-    constexpr auto translateAllocation (context::C & ctx, std::optional<sem::TypedExpression> const & initialization) {
+    constexpr auto translateAllocation (context::Main & ctx, std::optional<sem::TypedExpression> const & initialization) {
         return esl::overload(
             [&ctx, &initialization] <has::translateAllocation T> (T const & type) -> AllocationTranslationResult {
                 return type.translateAllocation(ctx, initialization);
@@ -258,18 +294,18 @@ namespace cynth::interface {
     }
     */
 
-    constexpr auto translateConversion (context::C & ctx, sem::TypedExpression const & from) {
+    constexpr auto translateConversion (context::Main & ctx, sem::TypedExpression const & from) {
         return esl::overload(
             [&ctx, &from] <has::translateConversion T> (T const & type) -> ConversionTranslationResult {
                 return type.translateConversion(ctx, from);
             },
-            [] (auto const &) -> ConversionTranslationResult {
+            [] (type auto const &) -> ConversionTranslationResult {
                 return esl::result_error{"A conversion to this type cannot be translated."};
             }
         );
     }
 
-    constexpr auto completeType (context::C & ctx) {
+    constexpr auto completeType (context::Main & ctx) {
         return esl::overload(
             [] <type T> (T && type) -> TypeCompletionResult {
                 return sem::CompleteType{std::forward<T>(type)};
@@ -358,7 +394,7 @@ namespace cynth::interface {
 
     namespace detail {
 
-        constexpr auto makeDeclComplete = [] (context::C & ctx) {
+        constexpr auto makeDeclComplete = [] (context::Main & ctx) {
             return esl::overload(
                 [&ctx] <esl::same_but_cvref<sem::IncompleteDeclaration> Decl> (Decl && decl)
                 -> esl::result<sem::CompleteDeclaration> {
@@ -379,7 +415,7 @@ namespace cynth::interface {
             );
         };
 
-        constexpr auto makeRangeDeclComplete = [] (context::C & ctx) {
+        constexpr auto makeRangeDeclComplete = [] (context::Main & ctx) {
             return esl::overload(
                 [&ctx] <esl::same_but_cvref<sem::IncompleteRangeDeclaration> Decl> (Decl && decl)
                 -> esl::result<sem::CompleteRangeDeclaration> {

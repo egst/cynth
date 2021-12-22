@@ -7,7 +7,7 @@
 #include "esl/result.hpp"
 #include "esl/concepts.hpp" // variant_member
 
-#include "context/c.hpp"
+#include "context/main.hpp"
 #include "interface/forward.hpp"
 
 // This might introduce some problematic circular dependencies, but I'll give it a try:
@@ -41,37 +41,37 @@ namespace cynth::interface {
     namespace has {
 
         template <typename T>
-        concept processExpression = node<T> && requires (T node, context::C & ctx) {
+        concept processExpression = node<T> && requires (T node, context::Main & ctx) {
             { node.processExpression(ctx) } -> std::same_as<ExpressionProcessingResult>;
         };
 
         template <typename T>
-        concept processArrayElement = node<T> && requires (T node, context::C & ctx) {
+        concept processArrayElement = node<T> && requires (T node, context::Main & ctx) {
             { node.processArrayElement(ctx) } -> std::same_as<ArrayElementProcessingResult>;
         };
 
         template <typename T>
-        concept processStatement = node<T> && requires (T node, context::C & ctx) {
+        concept processStatement = node<T> && requires (T node, context::Main & ctx) {
             { node.processStatement(ctx) } -> std::same_as<StatementProcessingResult>;
         };
 
         template <typename T>
-        concept resolveType = node<T> && requires (T node, context::C & ctx) {
+        concept resolveType = node<T> && requires (T node, context::Main & ctx) {
             { node.resolveType(ctx) } -> std::same_as<TypeResolutionResult>;
         };
 
         template <typename T>
-        concept resolveDeclaration = node<T> && requires (T node, context::C & ctx) {
+        concept resolveDeclaration = node<T> && requires (T node, context::Main & ctx) {
             { node.resolveDeclaration(ctx) } -> std::same_as<DeclarationResolutionResult>;
         };
 
         template <typename T>
-        concept resolveRangeDeclaration = node<T> && requires (T node, context::C & ctx) {
+        concept resolveRangeDeclaration = node<T> && requires (T node, context::Main & ctx) {
             { node.resolveRangeDeclaration(ctx) } -> std::same_as<RangeDeclarationResolutionResult>;
         };
 
         template <typename T>
-        concept resolveTarget = node<T> && requires (T node, context::C & ctx) {
+        concept resolveTarget = node<T> && requires (T node, context::Main & ctx) {
             { node.resolveTarget(ctx) } -> std::same_as<TargetResolutionResult>;
         };
 
@@ -89,19 +89,19 @@ namespace cynth::interface {
 
     // Functions:
 
-    constexpr auto processExpression (context::C & ctx) {
+    constexpr auto processExpression (context::Main & ctx) {
         return [&ctx] (has::processExpression auto const & node) -> ExpressionProcessingResult {
             return node.processExpression(ctx);
         };
     }
 
-    constexpr auto processArrayElement (context::C & ctx) {
+    constexpr auto processArrayElement (context::Main & ctx) {
         return [&ctx] (has::processArrayElement auto const & node) -> ArrayElementProcessingResult {
             return node.processArrayElement(ctx);
         };
     }
 
-    constexpr auto processStatement (context::C & ctx) {
+    constexpr auto processStatement (context::Main & ctx) {
         return esl::overload(
             [&ctx] (has::processStatement auto const & node) -> StatementProcessingResult {
                 return node.processStatement(ctx);
@@ -111,30 +111,30 @@ namespace cynth::interface {
                 auto result = node.processExpression(ctx);
                 if (!result)
                     return result.error();
-                return {sem::NoReturn{}};
+                return {};
             }
         );
     }
 
-    constexpr auto resolveType (context::C & ctx) {
+    constexpr auto resolveType (context::Main & ctx) {
         return [&ctx] (has::resolveType auto const & node) -> TypeResolutionResult {
             return node.resolveType(ctx);
         };
     }
 
-    constexpr auto resolveDeclaration (context::C & ctx) {
+    constexpr auto resolveDeclaration (context::Main & ctx) {
         return [&ctx] (has::resolveDeclaration auto const & node) -> DeclarationResolutionResult {
             return node.resolveDeclaration(ctx);
         };
     }
 
-    constexpr auto resolveRangeDeclaration (context::C & ctx) {
+    constexpr auto resolveRangeDeclaration (context::Main & ctx) {
         return [&ctx] (has::resolveRangeDeclaration auto const & node) -> RangeDeclarationResolutionResult {
             return node.resolveRangeDeclaration(ctx);
         };
     }
 
-    constexpr auto resolveTarget (context::C & ctx) {
+    constexpr auto resolveTarget (context::Main & ctx) {
         return esl::overload(
             [&ctx] (has::resolveTarget auto const & node) -> TargetResolutionResult {
                 return node.resolveTarget(ctx);

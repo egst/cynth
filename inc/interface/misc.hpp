@@ -39,7 +39,7 @@ namespace cynth::interface {
 
     // TODO: Implement.
     esl::result<std::pair<sem::Integral, RangeVector>> resolveRangeDeclarations (
-        context::C &,
+        context::Main &,
         syn::category::RangeDeclaration
     );
 
@@ -64,7 +64,7 @@ namespace cynth::interface {
 
     /** Same as processSubscript but with no type checks - index is assumed to be Int. */
     SingleExpressionProcessingResult processVerifiedSubscript (
-        context::C & ctx,
+        context::Main & ctx,
         std::string const & index,
         sem::ResolvedValue const & array
     );
@@ -74,7 +74,7 @@ namespace cynth::interface {
     a[i]; # run-time index
     ***/
     SingleExpressionProcessingResult processSubscript (
-        context::C &,
+        context::Main &,
         sem::TypedExpression const & index,
         sem::ResolvedValue   const & array
     );

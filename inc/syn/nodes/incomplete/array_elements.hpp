@@ -11,7 +11,7 @@
 // Note: No macros escape this file.
 #define ARRAY_INTEFRACE \
     interface::DisplayResult display () const; \
-    interface::ArrayElementProcessingResult processArrayElement (context::C &) const
+    interface::ArrayElementProcessingResult processArrayElement (context::Main &) const
 
 namespace cynth::syn::node {
 

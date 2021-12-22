@@ -241,14 +241,14 @@ namespace esl {
 
     namespace detail::component {
 
-        template <typename V, typename T, typename B>
+        template <typename V, typename T/*, typename B*/>
         concept compatible_vector =
             //!std::derived_from<V, B> &&
             //!esl::matching_template<V, B> &&
             //TODO: Check if this isn't ambiguous without explicit "V is not a B (the component vector)"
             esl::reservable_range<V> && esl::back_pushable_range<V> &&
-            std::convertible_to<typename std::remove_cvref_t<V>::value_type, T> &&
-            std::convertible_to<T, typename std::remove_cvref_t<V>::value_type>;
+            std::convertible_to<esl::range_value_type<V>, T> &&
+            std::convertible_to<T, typename esl::range_value_type<V>>;
 
         template <template <typename...> typename Base>
         struct vector_param {
@@ -269,6 +269,9 @@ namespace esl {
 
                 /*constexpr component_vector              (component_vector const &) = delete;
                 constexpr component_vector & operator = (component_vector const &) = delete;*/
+
+                template <esl::same_but_cvref<T>... Ts> requires (sizeof...(Ts) > 1) // TODO: Some constructor for single values.
+                constexpr component_vector (Ts &&... vals): base{std::forward<Ts>(vals)...} {}
 
                 constexpr component_vector (component_vector &&      other): base{std::move(other)} {}
                 constexpr component_vector (component_vector const & other): base{other} {}
@@ -295,7 +298,8 @@ namespace esl {
                 }
 
                 /** Construct from a compatible vector type. */
-                template <detail::component::compatible_vector<value_type, component_vector> V>
+                //template <detail::component::compatible_vector<value_type> V>
+                template <typename V>
                 // TODO: This doesn't work as a constructor. (It requires a complete type.)
                 constexpr static component_vector make (V && other) {
                     component_vector v;
@@ -308,7 +312,7 @@ namespace esl {
                 }
 
                 /** Convert to a compatible vector type. */
-                template <detail::component::compatible_vector<value_type, component_vector> V>
+                template <detail::component::compatible_vector<value_type> V>
                 constexpr operator V () const {
                     V copy;
                     copy.reserve(size());

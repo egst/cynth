@@ -13,7 +13,7 @@
 // Note: No macros escape this file.
 #define TYPE_INTERFACE \
     interface::DisplayResult display () const; \
-    interface::TypeResolutionResult resolveType (context::C &) const
+    interface::TypeResolutionResult resolveType (context::Main &) const
 
 namespace cynth::syn::node {
 

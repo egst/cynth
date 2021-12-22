@@ -2,8 +2,10 @@
 
 namespace cynth::context {
 
-    // TODO: I still don't like these names.
-    struct C;
-    struct Cynth;
+    struct Global;
+    struct Function;
+    struct Return;
+    struct Lookup;
+    struct Main;
 
 }

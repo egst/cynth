@@ -263,8 +263,8 @@ namespace esl {
         constexpr optional_result () {}
         constexpr optional_result (result_error    const & e): content{e} {}
         constexpr optional_result (result_error    &&      e): content{std::move(e)} {}
-        constexpr optional_result (value_type      const & v): content{std::make_optional(v)} {}
-        constexpr optional_result (value_type      &&      v): content{std::move(std::make_optional(v))} {}
+        constexpr optional_result (value_type      const & v): content{v} {}
+        constexpr optional_result (value_type      &&      v): content{std::move(v)} {}
         constexpr optional_result (optional_result const &) = default;
         constexpr optional_result (optional_result &&)      = default;
         constexpr optional_result (result<T>       const & r): content{r.content}            {}
@@ -275,42 +275,52 @@ namespace esl {
 
         constexpr bool has_value () const {
             return content.has_value() && (content->index() == 0);
+            //return content->index() == 1;
         }
 
         constexpr bool has_error () const {
             return content.has_value() && (content->index() == 1);
+            //return content->index() == 2;
         }
 
         constexpr bool empty () const {
+            // Note: The previous implementation would have included the error state as well.
             return !content.has_value();
+            //return content->index() == 0;
         }
 
         constexpr value_type const & value () const & {
-            return std::get<value_type>(*content);
+            return std::get<value_type>(content);
         }
 
         constexpr value_type & value () & {
-            return std::get<value_type>(*content);
+            return std::get<value_type>(content);
         }
 
         constexpr value_type && value () && {
-            return std::get<value_type>(*std::move(content));
+            return std::get<value_type>(std::move(content));
         }
 
         constexpr result_error const & error () const & {
-            return std::get<result_error>(*content);
+            return std::get<result_error>(content);
         }
 
         constexpr result_error & error () & {
-            return std::get<result_error>(*content);
+            return std::get<result_error>(content);
         }
 
         constexpr result_error && error () && {
-            return std::get<result_error>(*std::move(content));
+            return std::get<result_error>(std::move(content));
         }
 
     //protected:
-        std::optional<std::variant<value_type, result_error>> content;
+        //std::optional<std::variant<value_type, result_error>> content;
+        std::variant<std::monostate, value_type, result_error> content;
+    };
+
+    template <>
+    struct optional_result<void> {
+        static_assert("Optional result of void not implemented.");
     };
 
     constexpr auto make_result = [] <typename T> (T && value) {

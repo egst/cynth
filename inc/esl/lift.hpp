@@ -1,11 +1,12 @@
 #pragma once
 
-#include "esl/iterator.hpp"
-#include "esl/zip.hpp"
-#include "esl/ranges.hpp"
-#include "esl/type_manip.hpp"
+#include "esl/boolean.hpp"
 #include "esl/functional.hpp"
+#include "esl/iterator.hpp"
+#include "esl/ranges.hpp"
 #include "esl/result.hpp"
+#include "esl/type_manip.hpp"
+#include "esl/zip.hpp"
 
 #include <optional>
 #include <variant>
@@ -212,77 +213,141 @@ namespace esl {
             }
         };
 
-        template <typename Result>
-        static constexpr auto handle_one_error =
-            [] (esl::result_error e) { return esl::result<Result>{e}; };
+        template <bool RETURN, typename Result, typename... Ts>
+        static constexpr auto handle_errors =
+            [] <typename... Us> (Us &&... args)
+            requires (
+                // All types must be the same as specified (in the specified order) or esl::result_error:
+                sizeof...(Us) == sizeof...(Ts) &&
+                esl::every<(esl::same_but_cvref<esl::result_error, Us> || esl::same_but_cvref<Ts, Us>)...> &&
+                // At least one of them must be esl::result_error:
+                esl::some_same_as<esl::result_error, Us...>
+            ) {
+                if constexpr (RETURN)
+                    return Result{esl::first_of<esl::result_error>(std::forward<Us>(args)...)};
+            };
 
-        static constexpr auto handle_one_error_void =
-            [] (esl::result_error e) { esl::result<void>{e}; };
-
-        template <typename First, typename Second, typename Result>
-        static constexpr auto handle_two_errors = esl::overload(
-            [] (esl::result_error   e, Second const &)      { return esl::result<Result>{e}; },
-            [] (First const &,         esl::result_error e) { return esl::result<Result>{e}; },
-            [] (esl::result_error   a, esl::result_error)   { return esl::result<Result>{a}; } // TODO: Combining multiple errors...
-        );
+        template <typename T>
+        using value_type = typename std::remove_cvref_t<T>::value_type;
 
         template <typename Derived, typename F>
         struct result_impl {
-            /** Operate on a single result. */
-            template <esl::same_template<esl::result> T>
-            constexpr decltype(auto) operator () (T && target) const {
-                using value_type  = typename std::remove_cvref_t<T>::value_type;
-                using result_type = std::remove_cvref_t<decltype(derived().invoke(std::declval<value_type>()))>;
+            /** Operate on any number of results. */
+            template <esl::same_template<esl::result>... Ts>
+            constexpr decltype(auto) operator () (Ts &&... targets) const {
+                using result_type = std::remove_cvref_t<decltype(derived().invoke(
+                    std::declval<value_type<Ts>>()...
+                ))>;
 
                 if constexpr (std::same_as<result_type, void>) {
-                    std::visit(esl::overload(
-                        [this] <esl::same_but_cvref<value_type> Value> (Value && value) {
-                            derived().invoke(std::forward<Value>(value));
-                        },
-                        handle_one_error_void
-                    ), esl::forward_like<T>(target.content));
+                    std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<esl::same_but_cvref<value_type<Ts>, Args>...>
+                            ) {
+                                derived().invoke(std::forward<Args>(args)...);
+                            },
+                            handle_errors<false, esl::result<void>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
 
                 } else if constexpr (esl::same_template<result_type, esl::result>) {
                     using nested_type = typename result_type::value_type;
-                    return std::visit(esl::overload(
-                        [this] <esl::same_but_cvref<value_type> Value> (Value && value) {
-                            return derived().invoke(std::forward<Value>(value));
-                        },
-                        handle_one_error<nested_type>
-                    ), esl::forward_like<T>(target.content));
+                    return std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<esl::same_but_cvref<value_type<Ts>, Args>...>
+                            ) {
+                                return derived().invoke(std::forward<Args>(args)...);
+                            },
+                            handle_errors<true, esl::result<nested_type>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
+
+                } else if constexpr (esl::same_template<result_type, esl::optional_result>) {
+                    using nested_type = typename result_type::value_type;
+                    return std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<(
+                                    esl::same_but_cvref<Args, value_type<Ts>> ||
+                                    esl::same_but_cvref<Args, std::monostate>
+                                )...>
+                            ) {
+                                return derived().invoke(std::forward<Args>(args)...);
+                            },
+                            handle_errors<true, esl::optional_result<nested_type>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
 
                 } else
-                    return std::visit(esl::overload(
-                        [this] <esl::same_but_cvref<value_type> Value> (Value && value) {
-                            return esl::result<result_type>{derived().invoke(std::forward<Value>(value))};
-                        },
-                        handle_one_error<result_type>
-                    ), esl::forward_like<T>(target.content));
+                    return std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<esl::same_but_cvref<value_type<Ts>, Args>...>
+                            ) {
+                                return esl::result<result_type>{derived().invoke(std::forward<Args>(args)...)};
+                            },
+                            handle_errors<true, esl::result<result_type>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
             }
 
-            /** Operate on two results. */
-            template <esl::same_template<esl::result> T, esl::same_template<esl::result> U>
-            constexpr decltype(auto) operator () (T && first, U && second) const {
-                using first_type  = typename std::remove_cvref_t<T>::value_type;
-                using second_type = typename std::remove_cvref_t<U>::value_type;
-                using result_type = std::remove_cvref_t<decltype(derived().invoke(std::declval<first_type>(), std::declval<second_type>()))>;
+        private:
 
-                if constexpr (esl::same_template<result_type, esl::result>) {
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+        template <typename Derived, typename F>
+        struct opt_result_impl {
+            /** Operate on any number of results. */
+            template <esl::same_template<esl::optional_result>... Ts>
+            constexpr decltype(auto) operator () (Ts &&... targets) const {
+                using result_type = std::remove_cvref_t<decltype(derived().invoke(
+                    std::declval<value_type<Ts>>()...
+                ))>;
+
+                if constexpr (std::same_as<result_type, void>) {
+                    static_assert("Optional result of void not implemented.");
+
+                } else if constexpr (esl::same_template<result_type, esl::result>) {
                     using nested_type = typename result_type::value_type;
-                    return std::visit(esl::overload(
-                        [this] <esl::same_but_cvref<first_type> First, esl::same_but_cvref<second_type> Second> (First && a, Second && b) {
-                            return derived().invoke(std::forward<First>(a), std::forward<Second>(b));
-                        },
-                        handle_two_errors<first_type, second_type, nested_type>
-                    ), esl::forward_like<T>(first.content), esl::forward_like<U>(second.content));
+                    return std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<(
+                                    esl::same_but_cvref<Args, value_type<Ts>> ||
+                                    esl::same_but_cvref<Args, std::monostate>
+                                )...>
+                            ) {
+                                return derived().invoke(std::forward<Args>(args)...);
+                            },
+                            handle_errors<true, esl::result<nested_type>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
 
                 } else
-                    return std::visit(esl::overload(
-                        [this] <esl::same_but_cvref<first_type> First, esl::same_but_cvref<second_type> Second> (First && a, Second && b) {
-                            return esl::result<result_type>{derived().invoke(std::forward<First>(a), std::forward<Second>(b))};
-                        },
-                        handle_two_errors<first_type, second_type, result_type>
-                    ), esl::forward_like<T>(first.content), esl::forward_like<U>(second.content));
+                    return std::visit(
+                        esl::overload(
+                            [this] <typename... Args> (Args &&... args) requires (
+                                esl::every<(
+                                    esl::same_but_cvref<Args, value_type<Ts>> ||
+                                    esl::same_but_cvref<Args, std::monostate>
+                                )...>
+                            ) {
+                                return esl::result<result_type>{derived().invoke(std::forward<Args>(args)...)};
+                            },
+                            handle_errors<true, esl::result<result_type>, value_type<Ts>...>
+                        ),
+                        esl::forward_like<Ts>(targets.content)...
+                    );
             }
 
         private:
@@ -337,6 +402,7 @@ namespace esl {
         struct vector { constexpr static lift_target_tag tag = {}; };
 
         struct result { constexpr static lift_target_tag tag = {}; };
+        struct optional_result { constexpr static lift_target_tag tag = {}; };
 
         template <typename...> struct nested {};
         template <typename...> struct nary {};
@@ -347,10 +413,11 @@ namespace esl {
 
     }
 
-    template <> struct lift_tpl_target_map<std::optional>: lift_target<target::optional> {};
-    template <> struct lift_tpl_target_map<std::variant>:  lift_target<target::variant>  {};
-    template <> struct lift_tpl_target_map<std::vector>:   lift_target<target::vector>   {};
-    template <> struct lift_tpl_target_map<esl::result>:   lift_target<target::result>   {};
+    template <> struct lift_tpl_target_map<std::optional>:        lift_target<target::optional>        {};
+    template <> struct lift_tpl_target_map<std::variant>:         lift_target<target::variant>         {};
+    template <> struct lift_tpl_target_map<std::vector>:          lift_target<target::vector>          {};
+    template <> struct lift_tpl_target_map<esl::result>:          lift_target<target::result>          {};
+    template <> struct lift_tpl_target_map<esl::optional_result>: lift_target<target::optional_result> {};
 
     // Only std containers (vector, variant and such), generic containers (sized_range) and esl::result
     // are implemented here. Other esl containers have their implementation in their respective headers.
@@ -363,6 +430,7 @@ namespace esl {
     template <> struct lift_specialization_map<target::optional>:         lift_implementation<detail::lift::optional_impl>     {};
     template <> struct lift_specialization_map<target::variant>:          lift_implementation<detail::lift::variant_impl>      {};
     template <> struct lift_specialization_map<target::result>:           lift_implementation<detail::lift::result_impl>       {};
+    template <> struct lift_specialization_map<target::optional_result>:  lift_implementation<detail::lift::opt_result_impl>   {};
 
     template <typename, typename... Rest> struct lift_type;
 

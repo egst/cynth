@@ -6,10 +6,13 @@
 #include "esl/category.hpp"
 #include "esl/component.hpp"
 
-#include "sem/numeric_types.hpp"
-
 #include "context/forward.hpp"
 #include "interface/forward.hpp"
+#include "sem/numeric_types.hpp"
+
+// Expressions in separate headers:
+#include "syn/nodes/incomplete/expressions/block.hpp"
+#include "syn/nodes/incomplete/expressions/expr_if.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
@@ -18,20 +21,20 @@
 #define DISPLAY \
     interface::DisplayResult display () const
 #define EXPRESSION_INTERFACE \
-    interface::ExpressionProcessingResult processExpression (context::C &) const
+    interface::ExpressionProcessingResult processExpression (context::Main &) const
 #define PROGRAM_INTERFACE \
-    interface::ExpressionProcessingResult processProgram (context::C &) const
+    interface::ExpressionProcessingResult processProgram (context::Main &) const
 #define STATEMENT_INTERFACE \
-    interface::StatementProcessingResult processStatement (context::C &) const
+    interface::StatementProcessingResult processStatement (context::Main &) const
 #define TARGET_INTERFACE \
-    interface::TargetResolutionResult resolveTarget (context::C &) const
+    interface::TargetResolutionResult resolveTarget (context::Main &) const
 
 namespace cynth::syn::node {
 
     /** a + b */
     struct Add {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -39,8 +42,8 @@ namespace cynth::syn::node {
 
     /** a && b */
     struct And {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -61,20 +64,6 @@ namespace cynth::syn::node {
 
         EXPRESSION_INTERFACE;
         DISPLAY;
-    };
-
-    /** { stmt; ... } */
-    struct Block {
-        esl::component_vector<category::Statement> statements;
-
-        DISPLAY;
-        STATEMENT_INTERFACE;
-        EXPRESSION_INTERFACE;
-        PROGRAM_INTERFACE; // TODO?
-
-    private:
-        // Generic implementation for both `processProgram` and `processExpression`.
-        template <bool Program = true> interface::ExpressionProcessingResult process (context::C &) const;
     };
 
     /**
@@ -99,8 +88,8 @@ namespace cynth::syn::node {
 
     /** a / b */
     struct Div {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -108,8 +97,8 @@ namespace cynth::syn::node {
 
     /** a == b */
     struct Eq {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -119,17 +108,6 @@ namespace cynth::syn::node {
     struct ExprFor {
         esl::component<category::RangeDeclaration> declarations;
         esl::component<category::Expression>       body;
-
-        EXPRESSION_INTERFACE;
-        DISPLAY;
-        STATEMENT_INTERFACE;
-    };
-
-    /** if (cond) a else b */
-    struct ExprIf {
-        esl::component<category::Expression> condition;
-        esl::component<category::Expression> positive_branch;
-        esl::component<category::Expression> negative_branch;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -156,8 +134,8 @@ namespace cynth::syn::node {
 
     /** a >= b */
     struct Ge {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -165,8 +143,8 @@ namespace cynth::syn::node {
 
     /** a > b */
     struct Gt {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -182,8 +160,8 @@ namespace cynth::syn::node {
 
     /** a <= b */
     struct Le {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -191,8 +169,8 @@ namespace cynth::syn::node {
 
     /** a < b */
     struct Lt {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -208,8 +186,8 @@ namespace cynth::syn::node {
 
     /** a % b */
     struct Mod {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -217,8 +195,8 @@ namespace cynth::syn::node {
 
     /** a * b */
     struct Mul {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -236,8 +214,8 @@ namespace cynth::syn::node {
 
     /** a != b */
     struct Ne {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -253,8 +231,8 @@ namespace cynth::syn::node {
 
     /** a || b */
     struct Or {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -270,8 +248,8 @@ namespace cynth::syn::node {
 
     /** a ** b */
     struct Pow {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;
@@ -288,8 +266,8 @@ namespace cynth::syn::node {
 
     /** a - b */
     struct Sub {
-        esl::component<category::Expression> left_argument;
-        esl::component<category::Expression> right_argument;
+        esl::component<category::Expression> leftArgument;
+        esl::component<category::Expression> rightArgument;
 
         EXPRESSION_INTERFACE;
         DISPLAY;

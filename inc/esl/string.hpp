@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <string>
@@ -17,6 +18,16 @@
 #include "esl/macros.hpp"
 
 namespace esl {
+
+    inline std::vector<std::string> split (std::string delim, std::string const & str) {
+        std::vector<std::string> result;
+        std::size_t pos = 0;
+        std::size_t len = delim.size();
+        while ((pos = str.find(delim, pos ? pos + len : 0)) != std::string::npos) {
+            result.push_back(str.substr(0, pos));
+        }
+        return result;
+    }
 
     /** Add parentheses around unparenthesized string. */
     inline std::string parenthesized (std::string const & str) {

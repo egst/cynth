@@ -14,34 +14,11 @@
 
 //using namespace cynth;
 //using esl::lift;
-namespace target = esl::target;
-using namespace esl::sugar;
-
-struct A {};
-struct B {};
-
-struct C {
-    int foo;
-    int bar;
-};
-
-constexpr auto f = ([] () {}) | ([] () {});
+//namespace target = esl::target;
+//using namespace esl::sugar;
 
 int main () {
 
-    C c = {1, 2};
-
-    auto [foo, baz] = c;
-
-    constexpr std::variant<A, B> v = A{};
-    esl::result<int> q = esl::result_error{"oops"};
-    esl::result<int> r = {1};
-
-    auto result =
-        [] (int, int) -> int { return 1; } ||
-        target::result{} <<=
-        args(q, r);
-
-    //static_assert(result == 1);
+    return 0;
 
 }

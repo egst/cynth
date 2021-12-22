@@ -1,24 +1,8 @@
 #include "syn/nodes/expressions.hpp"
 
-#include <string>
 #include <utility>
 
-#include "esl/category.hpp"
-#include "esl/containers.hpp"
 #include "esl/component.hpp"
-#include "esl/lift.hpp"
-#include "esl/result.hpp"
-#include "esl/string.hpp"
-#include "esl/sugar.hpp"
-#include "esl/zip.hpp"
-
-#include "context/c.hpp"
-#include "interface/common.hpp"
-#include "interface/nodes.hpp"
-#include "interface/types.hpp"
-#include "interface/values.hpp"
-#include "sem/translation.hpp"
-#include "syn/categories/statement.hpp"
 
 namespace esl {
 
@@ -523,21 +507,6 @@ namespace esl {
 
 namespace cynth::syn {
 
-    using namespace esl::sugar;
-    namespace target = esl::target;
-    using esl::lift;
-    using interface::DisplayResult;
-    using interface::ExpressionProcessingResult;
-    using interface::StatementProcessingResult;
-    using sem::CompleteType;
-    using sem::CompleteValue;
-    using sem::NoReturn;
-    using sem::Returned;
-    using sem::ReturnedType;
-    using sem::ReturnedValue;
-    using sem::ResolvedValue;
-    using sem::TypedExpression;
-
 #if 0 // TODO
     //// Implementation helpers ////
 
@@ -744,7 +713,7 @@ namespace cynth::syn {
     //// Add ////
 
     display_result syn::node::Add::display () const {
-        return "(" + cynth::display(left_argument) + " + " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " + " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Add::evaluate (sem::context & ctx) const {
@@ -757,7 +726,7 @@ namespace cynth::syn {
     //// And ////
 
     display_result syn::node::And::display () const {
-        return "(" + cynth::display(left_argument) + " && " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " && " + interface::display(right_argument) + ")";
     }
 
     // TODO: This implementation doesn't work on tuples.
@@ -774,7 +743,7 @@ namespace cynth::syn {
     //// Application ////
 
     display_result syn::node::Application::display () const {
-        return cynth::display(function) + util::parenthesized(cynth::display(arguments));
+        return interface::display(function) + util::parenthesized(interface::display(arguments));
     }
 
     syn::evaluation_result syn::node::Application::evaluate (sem::context & ctx) const {
@@ -826,7 +795,7 @@ namespace cynth::syn {
     //// Array ////
 
     display_result syn::node::Array::display () const {
-        return "[" + util::join(", ", cynth::display(elements)) + "]";
+        return "[" + util::join(", ", interface::display(elements)) + "]";
     }
 
     syn::evaluation_result syn::node::Array::evaluate (sem::context & ctx) const {
@@ -868,284 +837,7 @@ namespace cynth::syn {
 #endif
 
     //// Block ////
-
-    DisplayResult node::Block::display () const {
-        using Target = target::nested<target::component_vector, target::category>;
-        return statements.empty()
-            ? "{}"
-            : "{\n" + esl::join(";\n", interface::display || Target{} <<= statements) + "\n}";
-    }
-
-    ExpressionProcessingResult node::Block::processExpression (context::C & ctx) const {
-        return process<false>(ctx);
-    }
-
-    ExpressionProcessingResult node::Block::processProgram (context::C & ctx) const {
-        return process<true>(ctx);
-    }
-
-    namespace {
-
-        // TODO: Should I count dead code after a return as an error?
-        // Probably not, as some code could be "turned off" on purpose depending on some compile time constants.
-        // A warning would be useful. I don't have any mechanism to show warnings though.
-        // In any case, I will ignore any following dead code and provide no diagnostics (for now).
-        /***
-        Bool const debug = true; # comp-time
-        {
-            foo();
-            if (!debug) # always returns
-                return;
-            # warning/error: dead code after return
-            print();
-        };
-
-        Bool state = true; # run-time
-        type T i = {
-            if (state)
-                return true; # Bool  -- could be returned
-            if (debug)
-                return 1;    # Int   -- could be returned
-            else
-                return 1.5;  # Float -- won't be returned
-        };
-        # T could be Int or Bool depending on `debug`.
-
-        # Let's say I want to compute this at compile time.
-        Int const c = {
-            Int a = 1; # This creates a runtime declaration.
-            return a;
-        };
-        Int [c] a; # Error: c is not a comp-time constant.
-
-        Int const c = {
-            Int const a = 1;
-            return a;
-            # The whole block didn't create any 
-        };
-        Int [c] a; # Now this is OK.
-
-        Int a = {
-            Int b = {
-                return 1;
-            };
-            {
-                return b;
-            }
-        };
-
-        cth_int var_a = ({
-            __label__ ret;
-            cth_int result = 0;
-            cth_int var_b = ({
-                __label__ ret;
-                cth_int result = 0;
-                result = 1; goto ret;
-                ret: result;
-            });
-            {
-                result = var_b; goto ret;
-            }
-            ret: result;
-        });
-        ***/
-
-        struct BlockResult {
-            std::optional<esl::tiny_vector<CompleteType>>  returnedType  = {};
-            std::optional<esl::tiny_vector<CompleteValue>> returnedValue = {};
-            bool always = false;
-        };
-
-        esl::result<BlockResult> processBlock (
-            context::C & ctx,
-            esl::component_vector<category::Statement> const & statements
-        ) {
-            auto before = ctx.count();
-            bool runtime = false;
-            BlockResult blockResult = {};
-
-            for (auto const & statement: statements) {
-                using Result = esl::result<bool>;
-
-                auto result = [] (NoReturn const &) -> Result {
-                    return false; // continue
-
-                } | [&] (ReturnedValue const & returned) -> Result {
-                    using Target = target::nested<target::tiny_vector, target::category>;
-                    auto type = interface::valueType || Target{} <<= returned.value;
-                    if (blockResult.returnedType && !interface::sameTypeTupleLift<target::category>(type, *blockResult.returnedType))
-                        return esl::result_error{"returning incompatible types in different branches"};
-                    if (!blockResult.returnedType)
-                        blockResult.returnedType = type;
-                    if (!runtime)
-                        blockResult.returnedValue = returned.value;
-                    return true; // break
-
-                } | [&] (ReturnedType const & returned) -> Result {
-                    if (blockResult.returnedType && !interface::sameTypeTupleLift<target::category>(returned.type, *blockResult.returnedType))
-                        return esl::result_error{"error: returning incompatible types in different branches"};
-                    if (!blockResult.returnedType)
-                        blockResult.returnedType = returned.type;
-                    runtime = true;
-                    if (returned.always)
-                        return true; // break
-                    return true; // continue
-
-                } || target::nested<target::result, target::category>{} <<=
-                interface::processStatement(ctx) || target::category{} <<= statement;
-
-                if (!result) return result.error();
-                if (*result) {
-                    blockResult.always = true;
-                    break;
-                }
-            }
-
-            if (runtime || ctx.count() != before)
-                // If any runtime values returned or any local statements added, loose the comp-time value.
-                blockResult.returnedValue = {};
-
-            return blockResult;
-        };
-
-    }
-
-    template <bool Program>
-    ExpressionProcessingResult syn::node::Block::process (context::C & outerScope) const {
-        if constexpr (Program) {
-
-            // TODO
-
-            /***
-            __label__ ret; <type> result;
-            ***/
-            // c::returnInit(type)
-
-            // ...
-            //auto result = processBlock(outerScope, statements);
-
-            /***
-            ret: ... # output result value somewhere
-            ***/
-            // c::mainReturn()
-
-            // ... # main loop
-
-        } else {
-
-            /***
-            struct cth_ctx_f0 { ... };
-            struct cth_ctx_f1 { ... };
-            struct cth_ctx_f2 { ... };
-            struct cth_ctx_f {
-                int branch;
-                union {
-                    cth_ctx_f0 e0;
-                    cth_ctx_f1 e1;
-                    cth_ctx_f2 e2;
-                } data;
-            };
-            ...
-            {
-                ...
-                if (x)
-                    result.e0 = (struct cth_ctx_f) {0, {...}};
-                if (y)
-                    result.e0 = (struct cth_ctx_f) {1, {...}};
-                result.e0 = (struct cth_ctx_f) {2, {...}};
-                ...
-            }
-            ***/
-
-            auto blockScope = outerScope.makeScopeChild();
-
-            return [&] (auto result) -> ExpressionProcessingResult {
-                if (!result.always)
-                    return esl::result_error{"Expression block does not always return."};
-
-                if (result.returnedValue) {
-                    // TODO
-                    // return ...;
-                }
-
-                if (result.returnedType) [&] (auto translatedTypes) -> ExpressionProcessingResult {
-                    auto types    = *result.returnedType;
-                    auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
-                    auto head     = c::blockExpressionHead(tupleVar);
-                    auto init     = c::indented(c::returnInit(translatedTypes));
-                    auto ret      = c::blockExpressionReturn();
-                    auto end      = c::blockExpressionEnd();
-
-                    /***
-                    __auto_type var_<id> = ({
-                    ***/
-                    outerScope.insertStatement(head);
-
-                    /***
-                        __label__ ret;
-                        struct result {
-                            <type1> e0;
-                            <type2> e1;
-                            // ...
-                        };
-                        struct result result;
-                    ***/
-                    blockScope.insertStatement(init);
-
-                    /***
-                        ...
-                        ret: result;
-                    ***/
-                    blockScope.insertStatement(ret);
-
-                    outerScope.mergeScopeChild(blockScope);
-
-                    /***
-                    })
-                    ***/
-                    outerScope.insertStatement(end);
-
-                    esl::tiny_vector<ResolvedValue> result;
-                    for (auto const & [i, type]: esl::enumerate(types))
-                        result.push_back(TypedExpression{.type = type, .expression = c::tupleElement(tupleVar, i)});
-
-                    return result;
-
-                } || target::result{} <<=
-                esl::unite_results <<=
-                interface::translateType(outerScope) || target::tiny_vector{} <<=
-                *result.returnedType;
-
-                return esl::result_error{"Expression block never returns."};
-
-            } || target::result{} <<= processBlock(blockScope, statements);
-        }
-
-        return esl::result_error{"TODO"};
-    }
-
-    StatementProcessingResult syn::node::Block::processStatement (context::C & ctx) const {
-        auto scope = ctx.makeScopeChild();
-        auto result = processBlock(scope, statements);
-
-        /***
-        {
-        ***/
-        //c::begin();
-
-        // indent +
-
-        // ...
-
-        // indent -
-
-        /***
-        }
-        ***/
-        //c::end();
-
-        return esl::result_error{"TODO"};
-    }
+    // src/syn/nodes/incomplete/expressions/block.cpp
 
 #if 0 // TODO
     //// Bool ////
@@ -1161,7 +853,7 @@ namespace cynth::syn {
     //// Conversion ////
 
     display_result syn::node::Conversion::display () const {
-        return cynth::display(type) + util::parenthesized(cynth::display(argument));
+        return interface::display(type) + util::parenthesized(interface::display(argument));
     }
 
     syn::evaluation_result syn::node::Conversion::evaluate (sem::context & ctx) const {
@@ -1184,7 +876,7 @@ namespace cynth::syn {
     //// Div ///
 
     display_result syn::node::Div::display () const {
-        return "(" + cynth::display(left_argument) + " / " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " / " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Div::evaluate (sem::context & ctx) const {
@@ -1197,7 +889,7 @@ namespace cynth::syn {
     //// Eq ///
 
     display_result syn::node::Eq::display () const {
-        return "(" + cynth::display(left_argument) + " == " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " == " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Eq::evaluate (sem::context & ctx) const {
@@ -1211,8 +903,8 @@ namespace cynth::syn {
 
     display_result syn::node::ExprFor::display () const {
         return
-            "for " + util::parenthesized(cynth::display(declarations)) +
-            " "    + cynth::display(body);
+            "for " + util::parenthesized(interface::display(declarations)) +
+            " "    + interface::display(body);
     }
 
     syn::evaluation_result syn::node::ExprFor::evaluate (sem::context & ctx) const {
@@ -1298,39 +990,13 @@ namespace cynth::syn {
 
         return {};
     }
+#endif
 
     //// ExprIf ////
+    // src/syn/nodes/incomplete/expressions/expr_if.hpp
 
-    display_result syn::node::ExprIf::display () const {
-        return
-            "if "    + util::parenthesized(cynth::display(condition)) +
-            " "      + cynth::display(positive_branch) +
-            " else " + cynth::display(negative_branch);
-    }
 
-    syn::evaluation_result syn::node::ExprIf::evaluate (sem::context & ctx) const {
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(syn::evaluate(ctx)(condition))));
-        if (!result)
-            return syn::make_evaluation_result(result.error());
-        if (*result)
-            return syn::evaluate(ctx)(positive_branch);
-        else
-            return syn::evaluate(ctx)(negative_branch);
-    }
-
-    syn::execution_result syn::node::ExprIf::execute (sem::context & ctx) const {
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(util::single(syn::evaluate(ctx)(condition))));
-        if (!result)
-            return syn::make_execution_result(result.error());
-        if (*result) {
-            auto branch_scope = make_child_context(ctx);
-            return syn::execute(branch_scope)(positive_branch);
-        } else {
-            auto branch_scope = make_child_context(ctx);
-            return syn::execute(branch_scope)(negative_branch);
-        }
-    }
-
+#if 0
     //// Float ////
 
     display_result syn::node::Float::display () const {
@@ -1351,7 +1017,7 @@ namespace cynth::syn {
             lift<target::component, target::category>(interface::display)(body);
     }
 
-    interface::ExpressionProcessingResult syn::node::Function::processExpression (context::C & ctx) const {
+    interface::ExpressionProcessingResult syn::node::Function::processExpression (context::Main & ctx) const {
 
         auto outResult = lift<target::component, target::category>(interface::resolveType(ctx))(output);
         if (!outResult) return outResult.error();
@@ -1451,7 +1117,7 @@ namespace cynth::syn {
     //// Ge ////
 
     display_result syn::node::Ge::display () const {
-        return "(" + cynth::display(left_argument) + " >= " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " >= " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Ge::evaluate (sem::context & ctx) const {
@@ -1464,7 +1130,7 @@ namespace cynth::syn {
     //// Gt ////
 
     display_result syn::node::Gt::display () const {
-        return "(" + cynth::display(left_argument) + " > " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " > " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Gt::evaluate (sem::context & ctx) const {
@@ -1487,7 +1153,7 @@ namespace cynth::syn {
     //// Le ////
 
     display_result syn::node::Le::display () const {
-        return "(" + cynth::display(left_argument) + " <= " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " <= " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Le::evaluate (sem::context & ctx) const {
@@ -1500,7 +1166,7 @@ namespace cynth::syn {
     //// Lt ////
 
     display_result syn::node::Lt::display () const {
-        return "(" + cynth::display(left_argument) + " < " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " < " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Lt::evaluate (sem::context & ctx) const {
@@ -1513,7 +1179,7 @@ namespace cynth::syn {
     //// Minus ////
 
     display_result syn::node::Minus::display () const {
-        return "-" + cynth::display(argument);
+        return "-" + interface::display(argument);
     }
 
     syn::evaluation_result syn::node::Minus::evaluate (sem::context & ctx) const {
@@ -1523,7 +1189,7 @@ namespace cynth::syn {
     //// Mod ////
 
     display_result syn::node::Mod::display () const {
-        return "(" + cynth::display(left_argument) + " % " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " % " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Mod::evaluate (sem::context & ctx) const {
@@ -1536,7 +1202,7 @@ namespace cynth::syn {
     //// Mul ////
 
     display_result syn::node::Mul::display () const {
-        return "(" + cynth::display(left_argument) + " * " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " * " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Mul::evaluate (sem::context & ctx) const {
@@ -1574,7 +1240,7 @@ namespace cynth::syn {
     //// Ne ////
 
     display_result syn::node::Ne::display () const {
-        return "(" + cynth::display(left_argument) + " != " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " != " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Ne::evaluate (sem::context & ctx) const {
@@ -1587,7 +1253,7 @@ namespace cynth::syn {
     //// Not ////
 
     display_result syn::node::Not::display () const {
-        return "!" + cynth::display(argument);
+        return "!" + interface::display(argument);
     }
 
     syn::evaluation_result syn::node::Not::evaluate (sem::context & ctx) const {
@@ -1605,7 +1271,7 @@ namespace cynth::syn {
     //// Or ////
 
     display_result syn::node::Or::display () const {
-        return "(" + cynth::display(left_argument) + " || " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " || " + interface::display(right_argument) + ")";
     }
 
     // TODO: This implementation doesn't work on tuples.
@@ -1622,7 +1288,7 @@ namespace cynth::syn {
     //// Plus ////
 
     display_result syn::node::Plus::display () const {
-        return "+" + cynth::display(argument);
+        return "+" + interface::display(argument);
     }
 
     syn::evaluation_result syn::node::Plus::evaluate (sem::context & ctx) const {
@@ -1632,7 +1298,7 @@ namespace cynth::syn {
     //// Pow ////
 
     display_result syn::node::Pow::display () const {
-        return "(" + cynth::display(left_argument) + " ** " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " ** " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Pow::evaluate (sem::context & ctx) const {
@@ -1656,7 +1322,7 @@ namespace cynth::syn {
     //// Sub ////
 
     display_result syn::node::Sub::display () const {
-        return "(" + cynth::display(left_argument) + " - " + cynth::display(right_argument) + ")";
+        return "(" + interface::display(left_argument) + " - " + interface::display(right_argument) + ")";
     }
 
     syn::evaluation_result syn::node::Sub::evaluate (sem::context & ctx) const {
@@ -1669,7 +1335,7 @@ namespace cynth::syn {
     //// Subscript ////
 
     display_result syn::node::Subscript::display () const {
-        return cynth::display(container) + " [" + util::join(", ", cynth::display(location)) + "]";
+        return interface::display(container) + " [" + util::join(", ", interface::display(location)) + "]";
     }
 
     // TODO: This implementation only allows the simple c-like subscript a[i] with a single index on a single (non-tuple) value.
@@ -1751,7 +1417,7 @@ namespace cynth::syn {
     //// Tuple ////
 
     display_result syn::node::Tuple::display () const {
-        return "(" + util::join(", ", cynth::display(values)) + ")";
+        return "(" + util::join(", ", interface::display(values)) + ")";
     }
 
     syn::evaluation_result syn::node::Tuple::evaluate (sem::context & ctx) const {

@@ -7,6 +7,7 @@
 
 #include "sem/compound.hpp"
 
+#include "context/main.hpp"
 #include "interface/forward.hpp"
 #include "interface/values.hpp"
 
@@ -18,7 +19,7 @@ namespace cynth::interface {
 
         template <typename T>
         concept processAssignment = type<T> && requires (
-            T type, context::C & ctx,
+            T type, context::Main & ctx,
             sem::ResolvedValue  value,
             sem::ResolvedTarget target
         ) {
@@ -28,6 +29,17 @@ namespace cynth::interface {
     }
 
     // Functions:
+
+    inline auto translateResolvedValue (context::Main & ctx, sem::ResolvedValue const & value) {
+        return esl::lift<esl::target::category>(
+            [&ctx] (sem::CompleteValue const & value) -> ValueTranslationResult {
+                return esl::lift<esl::target::category>(interface::translateValue(ctx))(value);
+            },
+            [] (sem::TypedExpression const & expr) -> ValueTranslationResult {
+                return expr;
+            }
+        )(value);
+    }
 
     inline auto resolvedValueType (sem::ResolvedValue const & value) {
         return esl::lift<esl::target::category>(
@@ -51,7 +63,21 @@ namespace cynth::interface {
         )(target);
     }
 
-    constexpr auto processAssignment (context::C & ctx) {
+    inline sem::CompleteType returnedValuesType (sem::ReturnVector<sem::CompleteValue> const & value) {
+        // Note: This assumes non-empty value.
+        return esl::lift<esl::target::category>(interface::valueType)(value.back());
+    }
+
+    inline auto returnedType (sem::Returned const & value) {
+        return esl::lift<esl::target::category>(
+            returnedValuesType,
+            [] (sem::CompleteType const & type) -> sem::CompleteType {
+                return type;
+            }
+        )(value);
+    }
+
+    constexpr auto processAssignment (context::Main & ctx) {
         return [&ctx] (sem::ResolvedValue const & value, sem::ResolvedTarget const & target) {
             auto type = targetType(target);
 

@@ -9,6 +9,7 @@
 
 // Forward declarations that might need to be resolved:
 #include "sem/forward.hpp"
+#include "sem/translation.hpp"
 
 namespace cynth::interface {
 
@@ -18,7 +19,7 @@ namespace cynth::interface {
 
     // Nodes:
     // For full declarations, #include "interface/nodes.hpp"
-    using StatementProcessingResult        = esl::result<sem::Returned>;
+    using StatementProcessingResult        = esl::optional_result<sem::Return>;
     using ExpressionProcessingResult       = esl::result<esl::tiny_vector<sem::ResolvedValue>>;
     using ArrayElementProcessingResult     = esl::result<std::vector<esl::tiny_vector<sem::ResolvedValue>>>;
     using TypeResolutionResult             = esl::result<esl::tiny_vector<sem::CompleteType>>;
@@ -30,19 +31,18 @@ namespace cynth::interface {
 
     // Types:
     // For full declarations, #include "interface/types.hpp"
-    using TypeNameConstant             = char const * const;
-    using TypeNameResult               = esl::result<std::string>;
-    using SameTypeResult               = bool;
-    using CommonTypeResult             = esl::result<sem::CompleteType>;
-    using ConstTypeResult              = bool;
-    // TODO: Do I need a result here? Shouldn't all types be translatable?
-    // (I mean with all the restictions of the first version...)
-    using TypeCompletionResult         = esl::result<sem::CompleteType>;
-    using TypeTranslationResult        = esl::result<std::string>;
-    using ConversionTranslationResult  = esl::result<sem::TypedExpression>;
-    using DefinitionProcessingResult   = esl::result<sem::Variable>;
-    using DeclarationProcessingResult  = DefinitionProcessingResult;
-    //using AllocationTranslationResult  = esl::result<sem::TypedExpression>;
+    using TypeNameConstant               = char const * const;
+    using TypeNameResult                 = esl::result<std::string>;
+    using SameTypeResult                 = bool;
+    using CommonTypeResult               = esl::result<sem::CompleteType>;
+    using ConstTypeResult                = bool;
+    using TypeTranslationResult          = std::string;
+    using TypeSpecifierTranslationResult = tpl::TypeSpecifier;
+    using TypeCompletionResult           = esl::result<sem::CompleteType>;
+    using ConversionTranslationResult    = esl::result<sem::TypedExpression>;
+    using DefinitionProcessingResult     = esl::result<sem::Variable>;
+    using DeclarationProcessingResult    = DefinitionProcessingResult;
+    //using AllocationTranslationResult = esl::result<sem::TypedExpression>;
 
     // Values:
     // For full declarations, #include "interface/values.hpp"
