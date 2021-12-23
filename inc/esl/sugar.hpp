@@ -1,8 +1,8 @@
 #pragma once
 
 #include <concepts>
-#include <utility>
 #include <tuple>
+#include <utility>
 
 #include "esl/concepts.hpp"
 #include "esl/functional.hpp"

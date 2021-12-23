@@ -10,9 +10,6 @@
 #include "esl/tuple.hpp"
 #include "esl/type_manip.hpp"
 
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
-
 namespace esl {
 
     template <typename F>

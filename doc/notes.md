@@ -1,5 +1,8 @@
 # Misc. notes on translation
 
+This file contains mostly just some brainstorming ideas on how to tackle translation
+(or comp-time evaluation/execution) of different Cynth constructs.
+
 ## Translating names
 
 Names related to cynth declarations in the final C code follow some conventions
@@ -561,4 +564,76 @@ for (cth_int pos = 1; pos < 4; ++pos) {
     cth_int var_i = var_a[pos];
     var_j = var_j + var_i;
 }
+```
+
+# Translating block expressions
+
+```cth
+Int [16] a;
+Int [16] b = for (Int e in a) e * 2;
+```
+
+```c
+// function:
+cth_arr$16$cth_int val_a = {0};
+cth_arr$16$cth_int val_f;
+...
+// local:
+for (cth_int iter = 0; iter < 16; ++iter) {
+    cth_int var_e = val_a[iter];
+    val_f[iter] = var_e * 2;
+}
+cth_int * var_b = val_f;
+```
+
+```cth
+Int [16] a;
+Int [16] b;
+Int [16] c = for (Int e in a, Int f in b) e * f * 2;
+```
+
+```c
+// function:
+cth_arr$16$cth_int val_a = {0};
+cth_arr$16$cth_int val_b = {0};
+cth_arr$16$cth_int val_f;
+...
+// local:
+for (cth_int iter = 0; iter < 16; ++iter) {
+    cth_int var_e = val_a[iter];
+    cth_int var_f = val_b[iter];
+    val_f[iter] = var_e * var_f * 2;
+}
+cth_int * var_b = val_f;
+```
+
+What about block expressions?
+
+```cth
+Int [16] a;
+Int [16] b = for (Int e in a) {
+    Int x = e + 2;
+    return x * 2;
+}
+```
+
+```c
+// function:
+cth_arr$16$cth_int val_a = {0};
+cth_arr$16$cth_int val_f;
+...
+// local:
+for (cth_int iter = 0; iter < 16; ++iter) {
+    cth_int var_e = val_a[iter];
+
+    __auto_type tuplevar_t = ({
+        struct result { cth_int e0; } result;
+        __label__ ret;
+
+        ret: result;
+    });
+
+    val_f[iter] = var_e * 2;
+}
+cth_int * var_b = val_f;
 ```

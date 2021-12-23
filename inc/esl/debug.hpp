@@ -13,6 +13,9 @@ namespace esl {
      */
     template <typename Type> requires (false) struct inspector {};
 
+    /** Same as esl::inspector, but for constepr values. */
+    template <auto Type> requires (false) struct value_inspector {};
+
     struct dostream {
         template <typename T>
         constexpr dostream const & operator << (T const & val) const {

@@ -1,11 +1,11 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
-#include <utility>
-#include <type_traits>
 #include <functional>
 #include <tuple>
-#include <array>
+#include <type_traits>
+#include <utility>
 
 #include "esl/concepts.hpp"
 

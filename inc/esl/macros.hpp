@@ -7,5 +7,6 @@
  *  Headers for the underlying C++ declarations must be included manually.
  */
 
-#define ESL_INSPECT(val) esl::inspector<decltype(val)>{}
+#define ESL_INSPECT(val)       esl::inspector<decltype(val)>{}
 #define ESL_INSPECT_TYPE(type) esl::inspector<type>{}
+#define ESL_INSPECT_VALUE(val) esl::value_inspector<val>{}

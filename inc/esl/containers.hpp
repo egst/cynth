@@ -1,15 +1,15 @@
 #pragma once
 
-#include "esl/concepts.hpp"
-#include "esl/ranges.hpp"
-#include "esl/type_manip.hpp"
-#include "esl/result.hpp"
-#include "esl/iterator.hpp"
-
-#include <type_traits>
-#include <utility>
 #include <concepts>
 #include <optional>
+#include <type_traits>
+#include <utility>
+
+#include "esl/concepts.hpp"
+#include "esl/iterator.hpp"
+#include "esl/ranges.hpp"
+#include "esl/result.hpp"
+#include "esl/type_manip.hpp"
 
 namespace esl {
 

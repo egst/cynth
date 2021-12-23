@@ -1,5 +1,15 @@
 #pragma once
 
+#include <algorithm>
+#include <concepts>
+#include <iterator>
+#include <optional>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
+
 #include "esl/boolean.hpp"
 #include "esl/functional.hpp"
 #include "esl/iterator.hpp"
@@ -7,16 +17,6 @@
 #include "esl/result.hpp"
 #include "esl/type_manip.hpp"
 #include "esl/zip.hpp"
-
-#include <optional>
-#include <variant>
-#include <vector>
-#include <string>
-#include <type_traits>
-#include <concepts>
-#include <utility>
-#include <algorithm>
-#include <iterator>
 
 namespace esl {
 

@@ -111,7 +111,7 @@ namespace cynth::interface {
                 auto result = node.processExpression(ctx);
                 if (!result)
                     return result.error();
-                return {};
+                return sem::NoReturn{};
             }
         );
     }

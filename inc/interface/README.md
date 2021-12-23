@@ -1,3 +1,11 @@
+# Interface
+
+The basic operations on AST nodes and semantic structures are implemented as member methods on respective structures
+and generalized as free functions in the `cynth::interface` namespace.
+
+Some of the information below might be outdated (TODO), so check with the corresponding code
+to confirm the exact names, types, order and currying of parameters, result semantics and implementation requirements.
+
 ## The general idea:
 
 ```
@@ -51,8 +59,6 @@ extractTypeNames (Node) -> [Name]
 # TODO: translateAllocation
 # Maybe it shouldn't even be a part of the interface
 ```
-
-# Interface
 
 ```c++ pseudo code
 Vector          = std::vector

@@ -124,9 +124,13 @@ namespace cynth {
             cth_int pos;
             ...
         } iter = {0, ...}
+        # or:
+        cth_int iter = 0
         ***/
         constexpr char const * position  = "pos";
         constexpr char const * iteration = "iter";
+        // TODO: Make sure that `struct {...} iter` and `cth_int iter` do not collide with themselves (when nested) or each other.
+
     }
 
     namespace c {

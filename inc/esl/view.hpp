@@ -1,10 +1,10 @@
 #pragma once
 
-#include "esl/concepts.hpp"
-#include "esl/lift.hpp"
-
 #include <cstddef>
 #include <vector>
+
+#include "esl/concepts.hpp"
+#include "esl/lift.hpp"
 
 namespace esl {
 

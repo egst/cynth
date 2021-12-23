@@ -1,18 +1,18 @@
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <initializer_list>
+#include <optional>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "esl/concepts.hpp"
-#include "esl/type_manip.hpp"
 #include "esl/iterator.hpp"
 #include "esl/lift.hpp"
-
-#include <cstddef>
-#include <optional>
-#include <vector>
-#include <initializer_list>
-#include <utility>
-#include <algorithm>
-#include <type_traits>
-#include <functional>
+#include "esl/type_manip.hpp"
 
 namespace esl {
 

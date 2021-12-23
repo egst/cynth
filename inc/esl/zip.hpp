@@ -1,13 +1,13 @@
 #pragma once
 
+#include <cstddef>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
 #include "esl/iterator.hpp"
 #include "esl/ranges.hpp"
 #include "esl/type_manip.hpp"
-
-#include <cstddef>
-#include <utility>
-#include <type_traits>
-#include <tuple>
 
 namespace esl {
 

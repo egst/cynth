@@ -1,9 +1,9 @@
 #pragma once
 
+#include <utility>
+
 #include "esl/concepts.hpp"
 #include "esl/result.hpp"
-
-#include <utility>
 
 namespace esl {
 

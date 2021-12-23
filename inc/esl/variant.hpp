@@ -1,13 +1,13 @@
 #pragma once
 
-#include "esl/concepts.hpp"
-#include "esl/type_manip.hpp"
-
-#include <variant>
 #include <concepts>
+#include <memory>
 #include <type_traits>
 #include <utility>
-#include <memory>
+#include <variant>
+
+#include "esl/concepts.hpp"
+#include "esl/type_manip.hpp"
 
 namespace esl {
 

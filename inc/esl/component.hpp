@@ -1,17 +1,15 @@
 #pragma once
 
-#include "esl/debug.hpp"
-#include "esl/concepts.hpp"
-#include "esl/ranges.hpp"
-#include "esl/lift.hpp"
-#include "esl/tiny_vector.hpp"
-
-#include <utility>
-#include <type_traits>
 #include <concepts>
+#include <type_traits>
+#include <utility>
 #include <vector>
-//#include <cstddef>
-//#include <array>
+
+#include "esl/concepts.hpp"
+#include "esl/debug.hpp"
+#include "esl/lift.hpp"
+#include "esl/ranges.hpp"
+#include "esl/tiny_vector.hpp"
 
 namespace esl {
 
