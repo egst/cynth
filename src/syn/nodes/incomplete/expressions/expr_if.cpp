@@ -38,7 +38,6 @@ namespace cynth::syn {
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
     using interface::StatementProcessingResult;
-    using sem::CompleteType;
     using sem::CompleteValue;
     using sem::FunctionDefinition;
     using sem::Integral;
@@ -172,8 +171,8 @@ namespace cynth::syn {
                             interface::translateTypeSpecifier || target::category{} <<= pos.type;
 
                         } || target::result{} <<= args(
-                            interface::translateResolvedValue(ctx, pos),
-                            interface::translateResolvedValue(ctx, neg)
+                            interface::translateResolvedValue(ctx)(pos),
+                            interface::translateResolvedValue(ctx)(neg)
                         );
 
                     } || target::category{} <<= args(pos, neg);
@@ -210,86 +209,8 @@ namespace cynth::syn {
         interface::processExpression(ctx) || target::category{} <<= *condition;
     }
 
-    StatementProcessingResult syn::node::ExprIf::processStatement (context::Main & outerScope) const {
-        return [&] (CompleteValue cond) -> StatementProcessingResult {
-            // Compile-time condition value:
-
-            // Note: No implicit conversions of the if condition will be implemented in the first version.
-            auto boolResult = cond.template get<sem::value::Bool>();
-            if (!boolResult)
-                return esl::result_error{"If condition must be an integer value."};
-
-            auto branchScope = outerScope.makeScopeChild();
-
-            auto returnResult = [&] (auto cond) -> StatementProcessingResult {
-                auto const & branch = cond ? *positiveBranch : *negativeBranch;
-                return interface::processStatement(branchScope) || target::category{} <<= branch;
-
-            } || target::result{} <<= interface::get<Integral>(*boolResult);
-
-            auto head = c::blockBegin();
-            auto end  = c::end();
-
-            /***
-            {
-                <branch>
-            }
-            ***/
-            outerScope.insertStatement(head);
-            /* TODO: Do I need to do this here too?
-            for (auto const & ret: returnStmts)
-                outerScope.insertStatement(c::indented(ret));
-            */
-            outerScope.mergeNestedChild(branchScope);
-            outerScope.insertStatement(end);
-
-            return returnResult;
-
-        } | [&] (TypedExpression cond) -> StatementProcessingResult {
-            // Run-time condition value:
-
-            // Note: No implicit conversions of the if condition will be implemented in the first version.
-            if (!cond.type.template holds_alternative<sem::type::Bool>())
-                return esl::result_error{"If condition must be an integer value."};
-
-            auto posBranchScope = outerScope.makeScopeChild();
-            auto negBranchScope = outerScope.makeScopeChild();
-
-            auto result = processIfStatement(
-                outerScope,
-                posBranchScope,
-                negBranchScope,
-                positiveBranch,
-                negativeBranch
-            );
-
-            auto ifHead   = c::ifBegin(cond.expression);
-            auto elseHead = c::cuddledElse();
-            auto end      = c::end();
-
-            /***
-            if (<cond>) {
-                result.e<n> = <value> # for all comp-time values
-                <pos>
-            } else {
-                <neg>
-            }
-            ***/
-            outerScope.insertStatement(ifHead);
-            for (auto const & ret: result.posReturnStmts)
-                outerScope.insertStatement(c::indented(ret));
-            outerScope.mergeNestedChild(negBranchScope);
-            outerScope.insertStatement(elseHead);
-            for (auto const & ret: result.negReturnStmts)
-                outerScope.insertStatement(c::indented(ret));
-            outerScope.mergeNestedChild(posBranchScope);
-            outerScope.insertStatement(end);
-
-            return result.returnResult;
-
-        } || target::nested<target::result, target::category>{} <<=
-        esl::single || target::result{} <<=
-        interface::processExpression(outerScope) || target::category{} <<= *condition;
+    StatementProcessingResult syn::node::ExprIf::processStatement (context::Main & ctx) const {
+        return if_nodes::processStatement(ctx, *condition, *positiveBranch, *negativeBranch);
     }
 
 }

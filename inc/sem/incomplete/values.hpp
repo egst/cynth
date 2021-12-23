@@ -20,12 +20,6 @@
 
 // Circular dependencies:
 #include "sem/forward.hpp"
-// TODO: sem/compound
-// TODO:
-// * values should be fully dependent on types.
-// * types should only need incomplete values
-// * compound should need both types and values, while nither types nor values should need compound
-// * what about declarations?
 
 // Note: No macros escape this file.
 #define GET(Type) \
@@ -169,9 +163,6 @@ namespace cynth::sem {
 
         Vector value;
 
-        // Allocated array values with only const-valued array references to them can be optimized in some cases.
-        bool constant;
-
         // Comp-time arrays in for ranges containing arithmetic sequnces will be optimized into
         // `for (int i = <from>; i < <to>; i += <by>)` instead of actual run-time array allocation.
         std::optional<ArithmeticSequence> sequence;
@@ -187,7 +178,25 @@ namespace cynth::sem {
          */
         esl::result<std::string> allocate (context::Main &);
 
+        // TODO: Use sequence.type() if available.
+        CompleteType type () const;
+
         //std::optional<ArithmeticSequence> sequentialize ();
+
+        /**
+         *  Allocated array values with only const-valued array references to them can be optimized in some cases.
+         *  By default, all newly created array values (usually with an array literal)
+         *  are marked as "constant" (const-valued) to allow optimizations.
+         *  When assigning to a non-const variable or passing as a non-const argument
+         *  (or maybe even explicitly converting to a non-const value?) call this function to relax this constness.
+         *  Note that this might not correspond with the .constval property of type::Array.
+         *  Actual constness of types can only be added, not removed. So all array values start as non-const types
+         *  with this hidden "constant" property that might be relaxed when first assigned or passed.
+         */
+        void relax ();
+
+    protected:
+        bool constant = true;
     };
 
     namespace value {

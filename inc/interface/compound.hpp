@@ -30,15 +30,17 @@ namespace cynth::interface {
 
     // Functions:
 
-    inline auto translateResolvedValue (context::Main & ctx, sem::ResolvedValue const & value) {
-        return esl::lift<esl::target::category>(
-            [&ctx] (sem::CompleteValue const & value) -> ValueTranslationResult {
-                return esl::lift<esl::target::category>(interface::translateValue(ctx))(value);
-            },
-            [] (sem::TypedExpression const & expr) -> ValueTranslationResult {
-                return expr;
-            }
-        )(value);
+    constexpr auto translateResolvedValue (context::Main & ctx) {
+        return [&ctx] (sem::ResolvedValue const & value) {
+            return esl::lift<esl::target::category>(
+                [&ctx] (sem::CompleteValue const & value) -> ValueTranslationResult {
+                    return esl::lift<esl::target::category>(interface::translateValue(ctx))(value);
+                },
+                [] (sem::TypedExpression const & expr) -> ValueTranslationResult {
+                    return expr;
+                }
+            )(value);
+        };
     }
 
     inline auto resolvedValueType (sem::ResolvedValue const & value) {

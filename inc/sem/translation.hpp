@@ -746,11 +746,17 @@ namespace cynth {
         }
 
         /***
-        # Iteration position
         iter.pos
         ***/
         inline std::string iterationPosition () {
             return std::string{} + def::iteration + "." + def::position;
+        }
+
+        /***
+        iter
+        ***/
+        inline std::string simpleIterationPosition () {
+            return def::iteration;
         }
 
         /***
@@ -798,8 +804,10 @@ namespace cynth {
         # alternatively:
         typeof(<type> [<size>])
         ***/
-        inline std::string arrayType (std::string const & size, std::string const & type) {
-            return c::structure(c::global(c::templateArguments(std::string{} + str::array, size, type)));
+        inline std::string arrayType (std::size_t size, std::string const & type) {
+            return c::structure(
+                c::global(c::templateArguments(std::string{} + str::array, std::to_string(size), type))
+            );
             //return std::string{} + str::gnuTypeof + "(" + type + " " + "[" + size + "])";
         }
 
@@ -949,6 +957,13 @@ namespace cynth {
             auto type    = c::anonymousStructureDefinition(posDecl, decls);
             auto init    = c::inlineInit(inits);
             return c::definition(type, def::iteration, init);
+        }
+
+        /***
+        cth_int iter = 0
+        ***/
+        inline std::string iterationVariable () {
+            return c::definition(c::intType(), def::iteration, "0");
         }
 
         //// Labels ////

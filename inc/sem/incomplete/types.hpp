@@ -195,6 +195,14 @@ namespace cynth::sem {
         };
 
         struct Array: detail::types::Array<true> {
+            /*
+            using base = detail::types::Array<true>;
+            using base::type;
+            using base::size;
+            using base::constval;
+            using base::constref;
+            */
+
             TYPE_INTERFACE;
 
             VALUE(value::Array);
@@ -203,7 +211,7 @@ namespace cynth::sem {
 
             SAME(type::Array);
 
-            static esl::result<type::Array> make (esl::component_vector<CompleteType> &&, Integral);
+            static type::Array make (CompleteType const &, Integral);
         };
 
         struct Buffer: detail::types::Buffer<true> {

@@ -637,3 +637,31 @@ for (cth_int iter = 0; iter < 16; ++iter) {
 }
 cth_int * var_b = val_f;
 ```
+
+What about arithmetic sequence ranges?
+
+```cth
+Int [16] a;
+Int [16] b = for (Int e in a, Int i in [0 to 16]) e * i * 2;
+```
+
+```c
+// function:
+cth_arr$16$cth_int val_a = {0};
+cth_arr$16$cth_int val_f;
+...
+// local:
+for (
+    struct {
+        cth_int pos;
+        cth_int var_i;
+    } iter = {0, 1, 1};
+    iter.pos < 16;
+    ++iter.pos,
+    iter.var_i += 1
+) {
+    cth_int var_e = val_a[iter];
+    val_f[iter] = var_e * iter.var_i * 2;
+}
+cth_int * var_b = val_f;
+```

@@ -116,6 +116,7 @@ namespace esl {
 
         constexpr tiny_vector & operator = (std::initializer_list<value_type> init) {
             assign(init);
+            return *this;
         }
 
         bool tiny () const {
