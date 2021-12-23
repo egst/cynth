@@ -339,26 +339,7 @@ namespace cynth::syn {
     }
 
     //// If ////
-
-    interface::DisplayResult node::If::display () const {
-        return
-            "if "    + esl::parenthesized(interface::display || target::category{} <<= *condition) +
-            " "      + (interface::display || target::category{} <<= *positiveBranch) +
-            " else " + (interface::display || target::category{} <<= *negativeBranch);
-    }
-
-    interface::StatementProcessingResult node::If::processStatement (context::Main & ctx) const {
-        return {sem::NoReturn{}};
-#if 0 // TODO
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
-        if (!result)
-            return make_execution_result(result.error());
-        if (*result)
-            return interface::processStatement(ctx)(positive_branch);
-        else
-            return interface::processStatement(ctx)(negative_branch);
-#endif
-    }
+    // src/syn/nodes/incomplete/statements/if.cpp
 
     //// Return ////
 

@@ -9,6 +9,7 @@
 
 // Statements in separate headers:
 #include "syn/nodes/incomplete/statements/for.hpp"
+#include "syn/nodes/incomplete/statements/if.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
@@ -47,15 +48,6 @@ namespace cynth::syn::node {
         esl::component<category::Declaration> input;
         node::Name                            name;
         esl::component<category::Expression>  body;
-
-        STATEMENT_INTERFACE;
-    };
-
-    /** if (cond) a else b */
-    struct If {
-        esl::component<category::Expression> condition;
-        esl::component<category::Statement>  positiveBranch;
-        esl::component<category::Statement>  negativeBranch;
 
         STATEMENT_INTERFACE;
     };
