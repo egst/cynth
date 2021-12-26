@@ -11,7 +11,7 @@ namespace cynth::syn::if_nodes {
         context::Main              &,
         category::Expression const & condition,
         Branch               const & positiveBranch,
-        Branch               const & negativeBranch
+        Branch               const * negativeBranch = nullptr
     );
 
 }

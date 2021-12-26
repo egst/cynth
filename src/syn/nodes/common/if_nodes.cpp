@@ -51,7 +51,7 @@ namespace cynth::syn::if_nodes {
             context::Main & posBranchScope,
             context::Main & negBranchScope,
             Branch const  & positiveBranch,
-            Branch const  & negativeBranch
+            Branch const  * negativeBranch
         ) {
             esl::tiny_vector<std::string> posReturnStmts;
             esl::tiny_vector<std::string> negReturnStmts;
@@ -205,7 +205,10 @@ namespace cynth::syn::if_nodes {
 
             } || target::optional_result{} <<= args(
                 interface::processStatement(posBranchScope) || target::category{} <<= positiveBranch,
-                interface::processStatement(negBranchScope) || target::category{} <<= negativeBranch
+                interface::processStatement(negBranchScope) ||
+                    target::nested<target::pointer, target::category>{} <<= negativeBranch
+                    // This way, the second argument will be simply handled like NoReturn for the `while` statement,
+                    // as if it was `if (<cond>) <pos> else {}`.
             );
 
             return {
@@ -222,7 +225,7 @@ namespace cynth::syn::if_nodes {
         context::Main              & outerScope,
         category::Expression const & condition,
         Branch               const & positiveBranch,
-        Branch               const & negativeBranch
+        Branch               const * negativeBranch
     ) {
         return [&] (CompleteValue cond) -> StatementProcessingResult {
             // Compile-time condition value:
@@ -235,8 +238,17 @@ namespace cynth::syn::if_nodes {
             auto branchScope = outerScope.makeScopeChild();
 
             auto returnResult = [&] (auto cond) -> StatementProcessingResult {
-                auto const & branch = cond ? positiveBranch : negativeBranch;
-                return interface::processStatement(branchScope) || target::category{} <<= branch;
+                // if..else:
+                if (negativeBranch) {
+                    auto const & branch = cond ? positiveBranch : *negativeBranch;
+                    return interface::processStatement(branchScope) || target::category{} <<= branch;
+
+                // when:
+                } else if (cond) {
+                    return interface::processStatement(branchScope) || target::category{} <<= positiveBranch;
+                } else {
+                    return NoReturn{};
+                }
 
             } || target::result{} <<= interface::get<Integral>(*boolResult);
 
@@ -284,18 +296,27 @@ namespace cynth::syn::if_nodes {
             if (<cond>) {
                 result.e<n> = <value> # for all comp-time values
                 <pos>
-            } else {
-                <neg>
-            }
             ***/
             outerScope.insertStatement(ifHead);
             for (auto const & ret: result.posReturnStmts)
                 outerScope.insertStatement(c::indented(ret));
-            outerScope.mergeNestedChild(negBranchScope);
-            outerScope.insertStatement(elseHead);
-            for (auto const & ret: result.negReturnStmts)
-                outerScope.insertStatement(c::indented(ret));
             outerScope.mergeNestedChild(posBranchScope);
+
+            /***
+            } else {
+                <neg>
+            ***/
+            if (negativeBranch) {
+                // if..else:
+                outerScope.insertStatement(elseHead);
+                for (auto const & ret: result.negReturnStmts)
+                    outerScope.insertStatement(c::indented(ret));
+                outerScope.mergeNestedChild(negBranchScope);
+            }
+
+            /***
+            }
+            ***/
             outerScope.insertStatement(end);
 
             return result.returnResult;
@@ -310,7 +331,7 @@ namespace cynth::syn::if_nodes {
         context::Main              &,
         category::Expression const &,
         category::Expression const &,
-        category::Expression const &
+        category::Expression const *
     );
 
     template
@@ -318,7 +339,7 @@ namespace cynth::syn::if_nodes {
         context::Main              &,
         category::Expression const &,
         category::Statement  const &,
-        category::Statement  const &
+        category::Statement  const *
     );
 
 }

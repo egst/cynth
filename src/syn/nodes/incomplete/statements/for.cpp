@@ -8,24 +8,24 @@
 
 #include "context/main.hpp"
 #include "interface/common.hpp"
-#include "syn/nodes/common/if_nodes.hpp"
+#include "syn/nodes/common/for_nodes.hpp"
 
 namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
+
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
 
-    DisplayResult node::If::display () const {
+    DisplayResult node::For::display () const {
         return
-            "if "   + esl::parenthesized(interface::display || target::category{} <<= *condition) +
-            " "     + (interface::display || target::category{} <<= *positiveBranch) +
-            "else " + (interface::display || target::category{} <<= *positiveBranch);
+            "for " + esl::parenthesized(interface::display || target::category{} <<= *declarations) +
+            " "    + (interface::display || target::category{} <<= *body);
     }
 
-    StatementProcessingResult node::If::processStatement (context::Main & ctx) const {
-        return if_nodes::processStatement(ctx, *condition, *positiveBranch, *negativeBranch);
+    StatementProcessingResult node::For::processStatement (context::Main & ctx) const {
+        return for_nodes::processStatement(ctx, *declarations, *body);
     }
 
 }

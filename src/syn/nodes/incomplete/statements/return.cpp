@@ -9,11 +9,6 @@
 #include "context/main.hpp"
 #include "interface/common.hpp"
 #include "sem/compound.hpp"
-#include "syn/nodes/common/if_nodes.hpp"
-
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
 
 namespace cynth::syn {
 

@@ -29,6 +29,12 @@
 * Check if `return decltype(auto)` used where needed (esp. in lift).
 * `std:forward` when calling perfectly forwarded callables.
 * TODO: Move or ref in chained lifts?
+* `f (std::optional<std::string> const &)` would force `std::string str; f(str)` to copy `str` before passing it.  
+    Is there a simple way so avoid this?  
+    The obvious solutions are either `std::optional<std::reference_wrapper<std::string>>` or `std::string *`.  
+    In more specific internal code, I don't mind using raw pointers as "nullable references" or "referential optionals", it's semantically exactly the same.
+    I don't really like it in more high-level general-purpose functions, because of the need to explicitly convert the argument, or take its address,
+    which makes it harder to modify interface (e.g. to make a parameter optional) without modifying its use everywhere.
 
 # Naming
 

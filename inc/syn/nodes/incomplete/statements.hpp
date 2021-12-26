@@ -8,9 +8,12 @@
 #include "interface/forward.hpp"
 
 // Statements in separate headers:
+#include "syn/nodes/incomplete/statements/assignment.hpp"
+#include "syn/nodes/incomplete/statements/definition.hpp"
 #include "syn/nodes/incomplete/statements/for.hpp"
 #include "syn/nodes/incomplete/statements/if.hpp"
 #include "syn/nodes/incomplete/statements/return.hpp"
+#include "syn/nodes/incomplete/statements/when.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
@@ -23,25 +26,6 @@
     interface::StatementProcessingResult processStatement (context::Main &) const
 
 namespace cynth::syn::node {
-
-    /** a = b */
-    struct Assignment {
-        // Target is syntactically any expression (otherwise it would be too complicated to parse),
-        // but semantically it may be only be a name or a tuple of names.
-        // TODO: This is no longer true. Should I type this tighter?
-        esl::component<category::Expression> target;
-        esl::component<category::Expression> value;
-
-        STATEMENT_INTERFACE;
-    };
-
-    /** T a = b */
-    struct Definition {
-        esl::component<category::Declaration> target;
-        esl::component<category::Expression>  value;
-
-        STATEMENT_INTERFACE;
-    };
 
     /** Out f (In a) b */
     struct FunDef {
@@ -57,14 +41,6 @@ namespace cynth::syn::node {
     struct TypeDef {
         node::TypeName                 target;
         esl::component<category::Type> type;
-
-        STATEMENT_INTERFACE;
-    };
-
-    /** when (cond) a */
-    struct When {
-        esl::component <category::Expression> condition;
-        esl::component <category::Statement>  branch;
 
         STATEMENT_INTERFACE;
     };

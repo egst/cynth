@@ -392,6 +392,8 @@ namespace esl {
 
         template <typename Derived, typename F>
         struct optional_impl {
+            // TODO: What's going on here with the two implementations?
+
             /** Operate on any number of optionals. */
             template <esl::same_template<std::optional>... Ts>
             constexpr decltype(auto) operator () (Ts &&... target) const {
@@ -401,11 +403,37 @@ namespace esl {
             /** Operate on a single optional. Returns an optional. */
             template <esl::same_template<std::optional> T>
             constexpr auto operator () (T && target) const {
-                using Result = decltype(derived().invoke(*std::forward<T>(target)));
+                using result_type = decltype(derived().invoke(*std::forward<T>(target)));
                 if (target)
-                    return std::optional<Result>{derived().invoke(*std::forward<T>(target))};
+                    return std::optional<result_type>{derived().invoke(*std::forward<T>(target))};
                 else
-                    return std::optional<Result>{};
+                    return std::optional<result_type>{};
+            }
+
+        private:
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
+        template <typename Derived, typename F>
+        struct pointer_impl {
+            /**
+             *  Operate on a single pointer with an esl::optional_result result.
+             *  This is just a very specific use case that I currently need, others will be implemented as needed.
+             */
+            template <typename T>
+            constexpr auto operator () (T * target) const {
+                using result_type = std::remove_cvref_t<decltype(derived().invoke(*target))>;
+                if constexpr (esl::same_template<result_type, esl::optional_result>) {
+                    if (target)
+                        return derived().invoke(*target);
+                    else
+                        return result_type{};
+                } else {
+                    static_assert("No lifts over pointers without optional_result implemented yet.");
+                    // ...
+                }
             }
 
         private:
@@ -427,16 +455,17 @@ namespace esl {
 
     namespace target {
 
-        struct direct { constexpr static lift_target_tag tag = {}; };
-        struct sized_range { constexpr static lift_target_tag tag = {}; };
+        struct direct           { constexpr static lift_target_tag tag = {}; };
+        struct sized_range      { constexpr static lift_target_tag tag = {}; };
         struct nested_range_cat { constexpr static lift_target_tag tag = {}; };
 
-        struct optional { constexpr static lift_target_tag tag = {}; };
-        struct variant { constexpr static lift_target_tag tag = {}; };
-        struct vector { constexpr static lift_target_tag tag = {}; };
+        struct pointer          { constexpr static lift_target_tag tag = {}; };
+        struct optional         { constexpr static lift_target_tag tag = {}; };
+        struct variant          { constexpr static lift_target_tag tag = {}; };
+        struct vector           { constexpr static lift_target_tag tag = {}; };
 
-        struct result { constexpr static lift_target_tag tag = {}; };
-        struct optional_result { constexpr static lift_target_tag tag = {}; };
+        struct result           { constexpr static lift_target_tag tag = {}; };
+        struct optional_result  { constexpr static lift_target_tag tag = {}; };
 
         template <typename...> struct nested {};
         template <typename...> struct nary {};
@@ -461,6 +490,7 @@ namespace esl {
     template <> struct lift_specialization_map<target::sized_range>:      lift_implementation<detail::lift::sized_range_impl>  {};
     template <> struct lift_specialization_map<target::nested_range_cat>: lift_implementation<detail::lift::sized_range_impl>  {};
     template <> struct lift_specialization_map<target::vector>:           lift_implementation<detail::lift::sized_range_impl>  {};
+    template <> struct lift_specialization_map<target::pointer>:          lift_implementation<detail::lift::pointer_impl>      {};
     template <> struct lift_specialization_map<target::optional>:         lift_implementation<detail::lift::optional_impl>     {};
     template <> struct lift_specialization_map<target::variant>:          lift_implementation<detail::lift::variant_impl>      {};
     template <> struct lift_specialization_map<target::result>:           lift_implementation<detail::lift::result_impl>       {};

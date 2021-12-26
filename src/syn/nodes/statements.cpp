@@ -25,11 +25,6 @@
 #include "sem/translation.hpp"
 #include "sem/numeric_types.hpp"
 
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
-#include <tuple>
-
 namespace esl {
 
     using cynth::syn::node::Assignment;
@@ -193,82 +188,10 @@ namespace cynth::syn {
     using sem::Variable;
 
     //// Assignment ////
-
-    interface::DisplayResult node::Assignment::display () const {
-        return
-            (interface::display || target::category{} <<= *target) + " = " +
-            (interface::display || target::category{} <<= *value);
-    }
-
-    StatementProcessingResult node::Assignment::processStatement (context::Main & ctx) const {
-        return [&] (auto targets, auto values) -> StatementProcessingResult {
-            if (targets.empty())
-                return esl::result_error{"No targets in an assignment."};
-            if (values.empty())
-                return esl::result_error{"No values in an assignment."};
-            if (values.size() > targets.size())
-                return esl::result_error{"More values than targets in an assignment."};
-            if (targets.size() > values.size())
-                return esl::result_error{"More targets than values in an assignment."};
-
-            for (auto const & [target, value]: esl::zip(targets, values)) {
-                auto result = interface::processAssignment(ctx)(value, target);
-                if (!result) return result.error();
-            }
-
-            return {sem::NoReturn{}};
-
-        } || target::result{} <<= args(
-            interface::resolveTarget(ctx)     || target::category{} <<= *target,
-            interface::processExpression(ctx) || target::category{} <<= *value
-        );
-    }
+    // src/syn/nodes/incomplete/statements/assignment.cpp
 
     //// Definition ////
-
-    interface::DisplayResult node::Definition::display () const {
-        return
-            (interface::display || target::category{} <<= *target) + " = " +
-            (interface::display || target::category{} <<= *value);
-    }
-
-    interface::StatementProcessingResult node::Definition::processStatement (context::Main & ctx) const {
-        return [&] (auto decls, auto values) -> StatementProcessingResult {
-            if (decls.empty())
-                return esl::result_error{"No declarations in a definition."};
-            if (values.empty())
-                return esl::result_error{"No values in a definition."};
-            auto valueIterator = values.begin();
-            for (auto const & decl: decls) {
-                if (decl.type.empty())
-                    return esl::result_error{"No types in a declaration."};
-                esl::tiny_vector<sem::Variable> vars;
-                auto count = decl.type.size();
-                if (count > values.end() - valueIterator)
-                    return esl::result_error{"More values than targets in a definition."};
-
-                for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                    auto definitionResult = interface::processDefinition(ctx)(value) || target::category{} <<= type;
-                    if (!definitionResult) return definitionResult.error();
-
-                    vars.push_back(*definitionResult);
-                }
-
-                auto varResult = ctx.lookup.insertValue(decl.name, std::move(vars));
-                if (!varResult) return varResult.error();
-                valueIterator += count;
-            }
-
-            if (valueIterator != values.end())
-                return esl::result_error{"More targets than values in a definition."};
-
-            return {sem::NoReturn{}};
-
-        } || target::result{} <<= args(
-            interface::resolveDeclaration(ctx) || target::category{} <<= *target,
-            interface::processExpression(ctx)  || target::category{} <<= *value
-        );
-    }
+    // src/syn/nodes/incomplete/statements/definition.cpp
 
     //// For ////
     // src/syn/nodes/incomplete/statements/for.cpp
