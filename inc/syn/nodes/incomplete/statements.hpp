@@ -10,6 +10,7 @@
 // Statements in separate headers:
 #include "syn/nodes/incomplete/statements/for.hpp"
 #include "syn/nodes/incomplete/statements/if.hpp"
+#include "syn/nodes/incomplete/statements/return.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
@@ -48,15 +49,6 @@ namespace cynth::syn::node {
         esl::component<category::Declaration> input;
         node::Name                            name;
         esl::component<category::Expression>  body;
-
-        STATEMENT_INTERFACE;
-    };
-
-    /** return a
-        return ()
-        return */
-    struct Return {
-        esl::component<category::Expression> value;
 
         STATEMENT_INTERFACE;
     };

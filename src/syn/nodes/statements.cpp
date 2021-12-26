@@ -342,22 +342,7 @@ namespace cynth::syn {
     // src/syn/nodes/incomplete/statements/if.cpp
 
     //// Return ////
-
-    interface::DisplayResult node::Return::display () const {
-        return "return " + (interface::display || target::category{} <<= *value);
-    }
-
-    interface::StatementProcessingResult node::Return::processStatement (context::Main & ctx) const {
-        return {sem::NoReturn{}};
-#if 0 // TODO
-        auto value_result = esl::unite_results(evaluate(ctx)(value));
-        if (!value_result)
-            return make_execution_result(value_result.error());
-        auto value = *std::move(value_result);
-
-        return value;
-#endif
-    }
+    // src/syn/nodes/incomplete/statements/return.cpp
 
     //// TypeDef ////
 
@@ -368,21 +353,15 @@ namespace cynth::syn {
     }
 
     interface::StatementProcessingResult node::TypeDef::processStatement (context::Main & ctx) const {
-        return {sem::NoReturn{}};
-#if 0 // TODO
-        std::string name = *target->name;
+        std::string name = *target.name;
 
-        auto type_result = esl::unite_results(sem::complete(ctx)(eval_type(ctx)(type)));
-        if (!type_result)
-            return make_execution_result(type_result.error());
-        auto type = *std::move(type_result);
+        auto typeResult = interface::resolveType(ctx) || target::category{} <<= *type;
+        if (!typeResult) return typeResult.error();
+        auto type = *std::move(typeResult);
 
-        auto define_result = ctx.define_type(name, type);
-        if (!define_result)
-            return make_execution_result(define_result.error());
+        ctx.lookup.insertType(name, type);
 
-        return {};
-#endif
+        return NoReturn{};
     }
 
     //// While ////
