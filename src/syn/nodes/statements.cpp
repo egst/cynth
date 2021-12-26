@@ -289,54 +289,10 @@ namespace cynth::syn {
     }
 
     //// While ////
-
-    interface::DisplayResult node::While::display () const {
-        return
-            "while " + esl::parenthesized(interface::display || target::category{} <<= *condition) +
-            " "      + (interface::display || target::category{} <<= *body);
-    }
-
-    interface::StatementProcessingResult node::While::processStatement (context::Main & ctx) const {
-        return {sem::NoReturn{}};
-#if 0 // TODO
-        while (true) {
-            auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
-            if (!result)
-                return make_execution_result(result.error());
-            if (*result) {
-                auto branch_scope = make_child_context(ctx);
-                auto returned = interface::processStatement(branch_scope)(body);
-                if (returned)
-                    return *returned;
-                if (returned.has_error())
-                    return make_execution_result(returned.error());
-            } else
-                return {};
-        }
-#endif
-    }
+    // src/syn/nodes/incomplete/statements/while.cpp
 
     //// When ////
-
-    interface::DisplayResult node::When::display () const {
-        return
-            "when " + esl::parenthesized(interface::display || target::category{} <<= *condition) +
-            " "     + (interface::display || target::category{} <<= *branch);
-    }
-
-    interface::StatementProcessingResult node::When::processStatement (context::Main & ctx) const {
-        return {sem::NoReturn{}};
-#if 0 // TODO
-        auto result = sem::get<bool>(sem::convert(ctx)(sem::type::Bool{})(esl::single(evaluate(ctx)(condition))));
-        if (!result)
-            return make_execution_result(result.error());
-        if (*result) {
-            auto branch_scope = make_child_context(ctx);
-            return interface::processStatement(branch_scope)(branch);
-        }
-        return {};
-#endif
-    }
+    // src/syn/nodes/incomplete/statements/when.cpp
 
 }
 

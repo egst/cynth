@@ -14,6 +14,7 @@
 #include "syn/nodes/incomplete/statements/if.hpp"
 #include "syn/nodes/incomplete/statements/return.hpp"
 #include "syn/nodes/incomplete/statements/when.hpp"
+#include "syn/nodes/incomplete/statements/while.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
@@ -41,14 +42,6 @@ namespace cynth::syn::node {
     struct TypeDef {
         node::TypeName                 target;
         esl::component<category::Type> type;
-
-        STATEMENT_INTERFACE;
-    };
-
-    /** while (cond) a */
-    struct While {
-        esl::component<category::Expression> condition;
-        esl::component<category::Statement>  body;
 
         STATEMENT_INTERFACE;
     };

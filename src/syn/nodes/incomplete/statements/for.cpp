@@ -14,7 +14,6 @@ namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
 

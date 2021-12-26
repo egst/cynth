@@ -918,7 +918,7 @@ namespace cynth {
         while (<cond>) {
         ***/
         inline std::string whileBegin (std::string const & cond) {
-            return std::string{} + "while (" + cond + ") {";
+            return "while (" + cond + ") {";
         }
 
         /***
@@ -941,7 +941,6 @@ namespace cynth {
         }
 
         //// Looping ////
-
 
         /***
         struct {

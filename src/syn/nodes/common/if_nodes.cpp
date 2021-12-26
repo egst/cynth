@@ -322,8 +322,8 @@ namespace cynth::syn::if_nodes {
             return result.returnResult;
 
         } || target::nested<target::result, target::category>{} <<=
-        esl::single || target::result{} <<=
-        interface::processExpression(outerScope) || target::category{} <<= condition;
+            esl::single || target::result{} <<=
+            interface::processExpression(outerScope) || target::category{} <<= condition;
     }
 
     template
