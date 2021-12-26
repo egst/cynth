@@ -160,14 +160,16 @@ namespace cynth::sem {
         using base::base;
     };
 
-    struct CapturedContext {
-        std::unordered_map<std::string, esl::tiny_vector<CompleteType>> types;
-        std::unordered_map<std::string, esl::tiny_vector<Capture>>      values;
-    };
+    template <typename T>
+    using CaptureVector = esl::tiny_vector<T>;
 
-    struct ResolvedCapturedContext {
-        std::unordered_map<std::string, esl::tiny_vector<CompleteType>>    types;
-        std::unordered_map<std::string, esl::tiny_vector<ResolvedCapture>> values;
+    struct Closure {
+        using TypeMap       = std::unordered_map<std::string, CaptureVector<CompleteType>>;
+        using ValueMap      = std::unordered_map<std::string, CaptureVector<ResolvedCapture>>;
+        using UnresolvedMap = std::unordered_map<std::string, CaptureVector<Capture>>; // TODO: Might be not needed.
+
+        TypeMap  types;
+        ValueMap values;
     };
 
 }

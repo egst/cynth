@@ -25,16 +25,19 @@ namespace cynth::context {
         Lookup (Lookup const &) = default;
         Lookup (Lookup &&)      = default;
 
-        //esl::result<ValueEntry *> insertValue (std::string name, ValueEntry const &);
-        esl::result<ValueEntry *> insertValue (std::string name, ValueEntry &&);
-        esl::result<TypeEntry  *> insertType  (std::string name, TypeEntry  const &);
+        // TODO: There is some problem with assigning to sem::Variable (hence the rvalue overload).
+        //ValueEntry & insertValue (std::string name, ValueEntry const &);
+        ValueEntry & insertValue (std::string name, ValueEntry &&);
+        TypeEntry  & insertType  (std::string name, TypeEntry  const &);
+        // TODO: Check if there is some code remaning that exprects a esl::result.
 
-        ValueEntry * findValueInside (std::string const & name);
-        TypeEntry  * findTypeInside  (std::string const & name);
-        ValueEntry * findValue       (std::string const & name);
-        TypeEntry  * findType        (std::string const & name);
+        ValueEntry & findValueInside (std::string const & name);
+        TypeEntry  & findTypeInside  (std::string const & name);
+        ValueEntry & findValue       (std::string const & name);
+        TypeEntry  & findType        (std::string const & name);
 
-        sem::Capture capture (
+        // TODO: Might be not needed.
+        sem::CapturedContext capture (
             std::vector<std::string> const & names,
             std::vector<std::string> const & typeNames
         ) const;

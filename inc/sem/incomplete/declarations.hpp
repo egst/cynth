@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "esl/component.hpp"
 
 // Circular dependencies:

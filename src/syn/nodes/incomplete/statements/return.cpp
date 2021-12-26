@@ -8,6 +8,7 @@
 
 #include "context/main.hpp"
 #include "interface/common.hpp"
+#include "interface/nodes.hpp"
 #include "sem/compound.hpp"
 
 namespace cynth::syn {

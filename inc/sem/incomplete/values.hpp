@@ -247,10 +247,14 @@ namespace cynth::sem {
     }
 
     struct FunctionDefinition {
+        struct Parameter {
+            std::string name;
+            Integral    arity;
+        };
         struct Implementation {
-            std::vector<std::pair<std::string, Integral>> parameters; // Parameter names and size of the corresponding tuples
-            esl::component<syn::category::Expression>     body;       // Unevaluated body expression
-            esl::component<sem::ResolvedCapturedContext>  context;    // Comp-time captured values and run-time typed names
+            esl::tiny_vector<Parameter>               parameters; // Parameter names and size of the corresponding tuples
+            esl::component<syn::category::Expression> body;       // Unevaluated body expression
+            esl::component<sem::Closure>              closure;    // Comp-time captured values and run-time typed names
         };
         using Switch = esl::component_vector<value::Function>;
         using Variant = std::variant<
@@ -260,8 +264,8 @@ namespace cynth::sem {
 
         Variant                    implementation;
         type::Function             type;
-        std::optional<std::string> contextType; // Run-time context variable type. No value => No run-time context.
-        std::string                name; // Run-time function name
+        std::optional<std::string> closureType; // Run-time closure variable type. No value => No run-time closure.
+        std::string                name;        // Run-time function name
     };
 
     namespace value {
@@ -271,9 +275,9 @@ namespace cynth::sem {
 
         struct Function {
             FunctionDefinition &       definition;
-            std::optional<std::string> contextVariable; // Run-time context variable.
+            std::optional<std::string> closureVariable; // Run-time closure variable.
 
-            // Note: A function value may be linked to a local variable containing its runtime context data.
+            // Note: A function value may be linked to a local variable containing its runtime closure data.
             // This makes it a "partially run-time" vlaue, that is passed around in a semantic structure,
             // but might also need some run-time definitions in the C code to be complete.
             // Some array values are also "partially run-time" with their allocation variables.
@@ -283,8 +287,8 @@ namespace cynth::sem {
             // unlike the allocation variables of arrays, that have a wider (function) scope.
 
             // TODO: Define in cpp.
-            inline bool contextual () const {
-                return definition.contextType.has_value();
+            inline bool runtimeClosure () const {
+                return definition.closureType.has_value();
             }
 
             VALUE_INTERFACE;
@@ -298,8 +302,6 @@ namespace cynth::sem {
 
             CONVERT(type::Function);
             CONVERT(type::Buffer);
-
-            Function copy (std::optional<std::string> contextVariable) const;
         };
 
         struct Unknown {

@@ -8,12 +8,8 @@
 
 #include "context/main.hpp"
 #include "interface/common.hpp"
+#include "interface/nodes.hpp"
 #include "interface/compound.hpp"
-#include "syn/nodes/common/for_nodes.hpp"
-
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
 
 namespace cynth::syn {
 

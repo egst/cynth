@@ -103,23 +103,23 @@ namespace cynth::syn {
                             auto & posFun = *posResult;
                             auto & negFun = *negResult;
 
-                            auto contextType = c::contextVariableType(c::id(ctx.nextId()));
+                            auto closureType = c::closureVariableType(c::id(ctx.nextId()));
                             auto & def = ctx.global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{posFun, negFun},
                                 .type           = type,
-                                .contextType    = contextType,
+                                .closureType    = closureType,
                                 .name           = c::functionName(c::id(ctx.nextId()))
                             });
                             auto newFun = sem::value::Function{
                                 .definition      = def,
-                                .contextVariable = tupleElement
+                                .closureVariable = tupleElement
                             };
 
-                            auto posExpr = c::contextLiteral(contextType, 0, posFun.contextVariable);
-                            auto negExpr = c::contextLiteral(contextType, 1, negFun.contextVariable);
+                            auto posExpr = c::closureLiteral(closureType, 0, posFun.closureVariable);
+                            auto negExpr = c::closureLiteral(closureType, 1, negFun.closureVariable);
                             posTupleVals.push_back(posExpr);
                             negTupleVals.push_back(negExpr);
-                            tupleTypes.push_back(tpl::TypeSpecifier{.type = contextType, .structure = true});
+                            tupleTypes.push_back(tpl::TypeSpecifier{.type = closureType, .structure = true});
                             resolved.push_back(CompleteValue{newFun});
 
                             return {};

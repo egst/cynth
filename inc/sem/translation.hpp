@@ -21,7 +21,7 @@ namespace cynth {
         cth_bool
         cth_int
         var_<id>
-        ctxvar_<id>
+        closurevar_<id>
         itervar_<id>
         val_<id>
         inval_<id>
@@ -33,7 +33,7 @@ namespace cynth {
         constexpr char const * boolean   = "bool";
         constexpr char const * buffer    = "buff";
         constexpr char const * constant  = "const";
-        constexpr char const * context   = "ctx";
+        constexpr char const * closure   = "closure";
         constexpr char const * element   = "e";
         constexpr char const * floating  = "float";
         constexpr char const * function  = "fun";
@@ -104,9 +104,9 @@ namespace cynth {
         constexpr char const * dataMember   = "data";
         constexpr char const * offsetMember = "offset";
 
-        // Function contexts:
-        constexpr char const * ctxDataMember = "data";
-        constexpr char const * branchMember  = "branch";
+        // Function closures:
+        constexpr char const * closureDataMember = "data";
+        constexpr char const * branchMember      = "branch";
 
         // Returning:
         /***
@@ -386,19 +386,19 @@ namespace cynth {
         }
 
         /***
-        # Local variable holding a function's context
-        ctxvar_<id>
+        # Local variable holding a function's closure
+        closurevar_<id>
         ***/
-        inline std::string contextVariableName (std::string const & id) {
-            return std::string{} + str::context + str::variable + "_" + id;
+        inline std::string closureVariableName (std::string const & id) {
+            return std::string{} + str::closure + str::variable + "_" + id;
         }
 
         /***
-        # Function context type
-        cth_ctx_<id>
+        # Function closure type
+        cth_closure_<id>
         ***/
-        inline std::string contextVariableType (std::string const & id) {
-            return c::global(std::string{} + str::context + "_" + id);
+        inline std::string closureVariableType (std::string const & id) {
+            return c::global(std::string{} + str::closure + "_" + id);
         }
 
         /***
@@ -692,10 +692,17 @@ namespace cynth {
         /***
         .data.v<number> = <expr>
         ***/
-        inline std::string contextDataInitialization (std::size_t number, std::string const & expr) {
+        inline std::string closureDataInitialization (std::size_t number, std::string const & expr) {
             return c::designatedInitialization(
                 expr, std::string{} + def::dataMember + "." + str::variant + std::to_string(number)
             );
+        }
+
+        /***
+        .<var> = <expr>
+        ***/
+        inline std::string closureVariableInitialization (std::string const & var, std::string const & expr) {
+            return c::designatedInitialization(expr, var);
         }
 
         /***
@@ -1067,7 +1074,7 @@ namespace cynth {
             auto branchString = std::to_string(branch);
             auto branchTarget = c::memberAccess(c::returnElement(number), def::branchMember);
             if (value) {
-                auto dataTarget = c::memberAccess(c::returnElement(number), def::ctxDataMember);
+                auto dataTarget = c::memberAccess(c::returnElement(number), def::closureDataMember);
                 return
                     c::statement(c::assignment(branchString, branchTarget)) + c::newLine() +
                     c::statement(c::assignment(*value, dataTarget));
@@ -1151,7 +1158,7 @@ namespace cynth {
             .data.v<branch> = <expr> # optionally
         }
         ***/
-        inline std::string contextLiteral (
+        inline std::string closureLiteral (
             std::string                const & type,
             std::size_t                const & branch,
             std::optional<std::string> const & expr
@@ -1160,7 +1167,7 @@ namespace cynth {
                 return c::structureLiteral(
                     c::structure(type),
                     c::branchInitialization(branch),
-                    c::contextDataInitialization(branch, *expr)
+                    c::closureDataInitialization(branch, *expr)
                 );
 
             return c::structureLiteral(

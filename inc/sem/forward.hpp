@@ -18,8 +18,7 @@ namespace cynth::sem {
     struct ResolvedTarget;
     struct Capture;
     struct ResolvedCapture;
-    struct CapturedContext;
-    struct ResolvedCapturedContext;
+    struct Closure;
 
     // Declarations:
 

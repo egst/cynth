@@ -348,6 +348,9 @@ namespace esl {
 
     }
 
+    template <> struct lift_tpl_target_map<esl::tiny_vector>:
+        lift_target<target::tiny_vector> {};
+
     template <> struct lift_specialization_map<target::tiny_vector>:
         lift_implementation<detail::tiny_vector::lift_impl> {};
     template <> struct lift_specialization_map<target::nested_tiny_vector_cat>:
