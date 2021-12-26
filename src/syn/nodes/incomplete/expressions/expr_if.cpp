@@ -46,7 +46,7 @@ namespace cynth::syn {
     using sem::ReturnedValues;
     using sem::TypedExpression;
 
-    interface::DisplayResult syn::node::ExprIf::display () const {
+    DisplayResult syn::node::ExprIf::display () const {
         return
             "if "    + esl::parenthesized(interface::display || target::category{} <<= *condition) +
             " "      + (interface::display || target::category{} <<= *positiveBranch) +

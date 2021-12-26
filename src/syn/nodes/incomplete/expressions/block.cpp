@@ -55,7 +55,7 @@ namespace cynth::syn {
 
     namespace {
 
-        // TODO: These lelper functions are huge.
+        // TODO: These helper functions are huge.
         // Can I split them up and place them in some corresponding semantic structures?
 
         constexpr bool stop = true;  // break

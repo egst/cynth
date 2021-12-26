@@ -1042,40 +1042,38 @@ namespace cynth {
         }
 
         /***
-        result.e<number> = <value>;
         goto ret;
         ***/
+        inline std::string returnJump () {
+            return c::statement(c::jump(def::returnLabel));
+        }
+
+        /***
+        result.e<number> = <value>;
+        ***/
         inline std::string returnValue (std::size_t number, std::string const & value) {
-            auto newLine = c::newLine();
             auto target  = c::returnElement(number);
-            return
-                c::statement(c::assignment(value, target)) + newLine +
-                c::statement(c::jump(def::returnLabel));
+            return c::statement(c::assignment(value, target));
         }
 
         /***
         result.e<number>.branch = <branch>;
         result.e<number>.data.v<branch> = <expr>; # optionally
-        goto ret;
         ***/
         inline std::string returnFunction (
             std::size_t number,
             std::size_t branch,
             std::optional<std::string> const & value
         ) {
-            auto newLine      = c::newLine();
             auto branchString = std::to_string(branch);
             auto branchTarget = c::memberAccess(c::returnElement(number), def::branchMember);
             if (value) {
                 auto dataTarget = c::memberAccess(c::returnElement(number), def::ctxDataMember);
                 return
-                    c::statement(c::assignment(branchString, branchTarget)) + newLine +
-                    c::statement(c::assignment(*value, dataTarget)) + newLine +
-                    c::statement(c::jump(def::returnLabel));
+                    c::statement(c::assignment(branchString, branchTarget)) + c::newLine() +
+                    c::statement(c::assignment(*value, dataTarget));
             }
-            return
-                c::statement(c::assignment(branchString, branchTarget)) + " " +
-                c::statement(c::jump(def::returnLabel));
+            return c::statement(c::assignment(branchString, branchTarget));
         }
 
         //// Attributes ////

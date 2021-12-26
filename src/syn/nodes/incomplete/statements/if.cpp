@@ -20,13 +20,13 @@ namespace cynth::syn {
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
 
-    interface::DisplayResult node::For::display () const {
+    DisplayResult node::For::display () const {
         return
             "for " + esl::parenthesized(interface::display || target::category{} <<= *declarations) +
             " "    + (interface::display || target::category{} <<= *body);
     }
 
-    interface::StatementProcessingResult node::For::processStatement (context::Main & ctx) const {
+    StatementProcessingResult node::For::processStatement (context::Main & ctx) const {
         return for_nodes::processStatement(ctx, *declarations, *body);
     }
 

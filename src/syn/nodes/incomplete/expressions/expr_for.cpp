@@ -38,14 +38,14 @@ namespace cynth::syn {
     using sem::TypedExpression;
     using sem::Variable;
 
-    interface::DisplayResult syn::node::ExprFor::display () const {
+    DisplayResult syn::node::ExprFor::display () const {
         return
             "for " + esl::parenthesized(interface::display || target::category{} <<= *declarations) +
             " "    + (interface::display || target::category{} <<= *body);
     }
 
 
-    interface::ExpressionProcessingResult syn::node::ExprFor::processExpression (context::Main & outerScope) const {
+    ExpressionProcessingResult syn::node::ExprFor::processExpression (context::Main & outerScope) const {
         return [&] (auto decl) -> ExpressionProcessingResult {
             auto & [size, iterDecls] = decl;
 
@@ -195,7 +195,7 @@ namespace cynth::syn {
 
     }
 
-    interface::StatementProcessingResult syn::node::ExprFor::processStatement (context::Main & ctx) const {
+    StatementProcessingResult syn::node::ExprFor::processStatement (context::Main & ctx) const {
         return for_nodes::processStatement(ctx, *declarations, *body);
     }
 

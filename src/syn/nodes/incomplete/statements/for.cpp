@@ -17,14 +17,14 @@ namespace cynth::syn {
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
 
-    interface::DisplayResult node::If::display () const {
+    DisplayResult node::If::display () const {
         return
             "if "   + esl::parenthesized(interface::display || target::category{} <<= *condition) +
             " "     + (interface::display || target::category{} <<= *positiveBranch) +
             "else " + (interface::display || target::category{} <<= *positiveBranch);
     }
 
-    interface::StatementProcessingResult node::If::processStatement (context::Main & ctx) const {
+    StatementProcessingResult node::If::processStatement (context::Main & ctx) const {
         return if_nodes::processStatement(ctx, *condition, *positiveBranch, *negativeBranch);
     }
 

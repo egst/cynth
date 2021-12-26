@@ -189,10 +189,8 @@ namespace cynth::syn {
 
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
-    using sem::Returned;
     using sem::NoReturn;
     using sem::Variable;
-    using sem::TypedExpression;
 
     //// Assignment ////
 
@@ -203,18 +201,15 @@ namespace cynth::syn {
     }
 
     StatementProcessingResult node::Assignment::processStatement (context::Main & ctx) const {
-        // TODO: What about .size() == 0? And elsewhere as well...
-        // I guess techincally it shouldn't be a problem semantically and it should also be impossible syntactically,
-        // so maybe it's not a problem, but I should check it once I get back to testing again.
-
         return [&] (auto targets, auto values) -> StatementProcessingResult {
+            if (targets.empty())
+                return esl::result_error{"No targets in an assignment."};
+            if (values.empty())
+                return esl::result_error{"No values in an assignment."};
             if (values.size() > targets.size())
                 return esl::result_error{"More values than targets in an assignment."};
             if (targets.size() > values.size())
                 return esl::result_error{"More targets than values in an assignment."};
-
-            //lift<target::tiny_vector>(interface::processAssignment(ctx))(value, target);
-            // TODO: lift<tiny_vector> doesn't work here for some reason.
 
             for (auto const & [target, value]: esl::zip(targets, values)) {
                 auto result = interface::processAssignment(ctx)(value, target);
@@ -239,8 +234,14 @@ namespace cynth::syn {
 
     interface::StatementProcessingResult node::Definition::processStatement (context::Main & ctx) const {
         return [&] (auto decls, auto values) -> StatementProcessingResult {
+            if (decls.empty())
+                return esl::result_error{"No declarations in a definition."};
+            if (values.empty())
+                return esl::result_error{"No values in a definition."};
             auto valueIterator = values.begin();
             for (auto const & decl: decls) {
+                if (decl.type.empty())
+                    return esl::result_error{"No types in a declaration."};
                 esl::tiny_vector<sem::Variable> vars;
                 auto count = decl.type.size();
                 if (count > values.end() - valueIterator)
@@ -253,7 +254,7 @@ namespace cynth::syn {
                     vars.push_back(*definitionResult);
                 }
 
-                auto varResult = ctx.lookup.insertValue(decl.name, vars);
+                auto varResult = ctx.lookup.insertValue(decl.name, std::move(vars));
                 if (!varResult) return varResult.error();
                 valueIterator += count;
             }

@@ -268,8 +268,19 @@ namespace esl {
         constexpr optional_result (value_type      &&      v): content{std::move(v)} {}
         constexpr optional_result (optional_result const &) = default;
         constexpr optional_result (optional_result &&)      = default;
-        constexpr optional_result (result<T>       const & r): content{r.content}            {}
-        constexpr optional_result (result<T>       &&      r): content{std::move(r.content)} {}
+
+        constexpr optional_result (result<T> const & r) {
+            if (r.has_value())
+                content = r.value();
+            else
+                content = r.error();
+        }
+        constexpr optional_result (result<T> && r) {
+            if (r.has_value())
+                content = std::move(r).value();
+            else
+                content = std::move(r).error();
+        }
 
         constexpr optional_result & operator = (optional_result &&)      = default;
         constexpr optional_result & operator = (optional_result const &) = default;
