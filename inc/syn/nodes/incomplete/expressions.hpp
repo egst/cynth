@@ -18,18 +18,6 @@
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
 
-// Note: No macros escape this file.
-#define DISPLAY \
-    interface::DisplayResult display () const
-#define EXPRESSION_INTERFACE \
-    interface::ExpressionProcessingResult processExpression (context::Main &) const
-#define PROGRAM_INTERFACE \
-    interface::ExpressionProcessingResult processProgram (context::Main &) const
-#define STATEMENT_INTERFACE \
-    interface::StatementProcessingResult processStatement (context::Main &) const
-#define TARGET_INTERFACE \
-    interface::TargetResolutionResult resolveTarget (context::Main &) const
-
 namespace cynth::syn::node {
 
     /** a + b */
@@ -37,8 +25,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a && b */
@@ -46,8 +34,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** f(in) */
@@ -55,16 +43,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> function;
         esl::component<category::Expression> arguments;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** [a, ...] */
     struct Array {
         esl::component_vector<category::ArrayElement> elements;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /**
@@ -74,8 +62,8 @@ namespace cynth::syn::node {
     struct Bool {
         bool value;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** T(a) */
@@ -83,8 +71,8 @@ namespace cynth::syn::node {
         esl::component<category::Type>       type;
         esl::component<category::Expression> argument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a / b */
@@ -92,8 +80,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a == b */
@@ -101,16 +89,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** 12.34e-56 */
     struct Float {
         sem::Floating value;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a >= b */
@@ -118,8 +106,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a > b */
@@ -127,16 +115,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** 12e-34 */
     struct Int {
         sem::Integral value;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a <= b */
@@ -144,8 +132,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a < b */
@@ -153,16 +141,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a - b */
     struct Minus {
         esl::component<category::Expression> argument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a % b */
@@ -170,8 +158,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a * b */
@@ -179,8 +167,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a */
@@ -188,9 +176,9 @@ namespace cynth::syn::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         esl::component<std::string> name;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
-        TARGET_INTERFACE;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::TargetResolutionResult     resolveTarget     (context::Main &) const;
     };
 
     /** a != b */
@@ -198,16 +186,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** !a */
     struct Not {
         esl::component<category::Expression> argument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a || b */
@@ -215,16 +203,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a + b */
     struct Plus {
         esl::component<category::Expression> argument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a ** b */
@@ -232,8 +220,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** "abc" */
@@ -241,8 +229,8 @@ namespace cynth::syn::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         esl::component<std::string> value;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a - b */
@@ -250,8 +238,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 
     /** a[b] */
@@ -259,9 +247,9 @@ namespace cynth::syn::node {
         esl::component<category::Expression>          container;
         esl::component_vector<category::ArrayElement> location;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
-        TARGET_INTERFACE;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::TargetResolutionResult     resolveTarget     (context::Main &) const;
     };
 
     /** (a, ...) */
@@ -269,14 +257,9 @@ namespace cynth::syn::node {
         // TODO: Non-unary vector?
         esl::component_vector<category::Expression> values;
 
-        EXPRESSION_INTERFACE;
-        DISPLAY;
-        TARGET_INTERFACE;
+        interface::DisplayResult              display           ()                const;
+        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::TargetResolutionResult     resolveTarget     (context::Main &) const;
     };
 
 }
-
-#undef DISPLAY
-#undef EXPRESSION_INTERFACE
-#undef STATEMENT_INTERFACE
-#undef TARGET_INTERFACE
