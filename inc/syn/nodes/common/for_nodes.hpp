@@ -4,7 +4,7 @@
 
 #include "esl/tiny_vector.hpp"
 
-#include "context/forward.hpp"
+#include "context/main.hpp"
 #include "interface/nodes.hpp"
 #include "sem/declarations.hpp"
 #include "sem/compound.hpp"

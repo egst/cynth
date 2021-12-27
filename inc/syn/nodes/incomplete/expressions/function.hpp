@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <type_traits>
+
+#include "esl/category.hpp"
 #include "esl/component.hpp"
 
 #include "context/forward.hpp"
@@ -10,16 +14,13 @@
 
 namespace cynth::syn::node {
 
-    /***
-    if (cond) a else b
-    ***/
-    struct ExprIf {
-        esl::component<category::Expression> condition;
-        esl::component<category::Expression> positiveBranch;
-        esl::component<category::Expression> negativeBranch;
+    /** Out fn (In a) */
+    struct Function {
+        esl::component<category::Type>        output;
+        esl::component<category::Declaration> input;
+        esl::component<category::Expression>  body;
 
         interface::DisplayResult              display           ()                const;
-        interface::StatementProcessingResult  processStatement  (context::Main &) const;
         interface::ExpressionProcessingResult processExpression (context::Main &) const;
     };
 

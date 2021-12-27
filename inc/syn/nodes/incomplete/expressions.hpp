@@ -13,6 +13,7 @@
 #include "syn/nodes/incomplete/expressions/block.hpp"
 #include "syn/nodes/incomplete/expressions/expr_for.hpp"
 #include "syn/nodes/incomplete/expressions/expr_if.hpp"
+#include "syn/nodes/incomplete/expressions/function.hpp"
 
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
@@ -107,16 +108,6 @@ namespace cynth::syn::node {
     /** 12.34e-56 */
     struct Float {
         sem::Floating value;
-
-        EXPRESSION_INTERFACE;
-        DISPLAY;
-    };
-
-    /** Out fn (In a) */
-    struct Function {
-        esl::component<category::Type>        output;
-        esl::component<category::Declaration> input;
-        esl::component<category::Expression>  body;
 
         EXPRESSION_INTERFACE;
         DISPLAY;

@@ -1,9 +1,5 @@
 #pragma once
 
-#include <string>
-#include <type_traits>
-
-#include "esl/category.hpp"
 #include "esl/component.hpp"
 
 #include "context/forward.hpp"

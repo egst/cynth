@@ -1,6 +1,6 @@
 #pragma once
 
-#include "context/forward.hpp"
+#include "context/main.hpp"
 #include "interface/nodes.hpp"
 #include "syn/categories/expression.hpp"
 
