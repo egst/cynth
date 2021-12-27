@@ -19,6 +19,12 @@
 
 namespace cynth::sem {
 
+    enum struct IO {
+        internal,
+        input,
+        output
+    };
+
     namespace type {
 
         struct Bool {
@@ -145,10 +151,6 @@ namespace cynth::sem {
 
             using Value = value::In;
 
-            // implicit common(Bool)
-            // implicit common(Int)
-            // implicit common(Float)
-
             interface::SameTypeResult sameType (type::In const &) const;
         };
 
@@ -193,7 +195,7 @@ namespace cynth::sem {
 
             interface::SameTypeResult sameType (type::Buffer const &) const;
 
-            static esl::result<type::Buffer> make (Integral);
+            IO io = IO::internal;
         };
 
         struct Function: detail::types::Function<true> {

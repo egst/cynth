@@ -16,6 +16,8 @@
 
 # C++ details
 
+* Go through all lifted lambdas and check that lvalue and rvalue references are used properly in the parameters.  
+    Taking parameters by value should be avoided - use only rvalue and lvalue (or forwarding) references.
 * Explicitly `inline` simple small functions?  
     I was going to implement everything (except for templates) in cpp files to be consistent,
     but then I realized, that that might limit the compiler's inlining abilities.
@@ -32,7 +34,6 @@
 * How come, that i need to handle delete and new for incomplete component types manually, but it just somehow works for std::vector of incomplete types?
 * Check if `return decltype(auto)` used where needed (esp. in lift).
 * `std:forward` when calling perfectly forwarded callables.
-* TODO: Move or ref in chained lifts?
 * `f (std::optional<std::string> const &)` would force `std::string str; f(str)` to copy `str` before passing it.  
     Is there a simple way so avoid this?  
     The obvious solutions are either `std::optional<std::reference_wrapper<std::string>>` or `std::string *`.  

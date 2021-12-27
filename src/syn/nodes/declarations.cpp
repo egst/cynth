@@ -1,5 +1,7 @@
 #include "syn/nodes/declarations.hpp"
 
+#include <utility>
+
 #include "esl/category.hpp"
 #include "esl/component.hpp"
 #include "esl/containers.hpp"
@@ -51,7 +53,6 @@ namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-    using esl::lift;
     using interface::DeclarationResolutionResult;
     using interface::DisplayResult;
     using interface::StatementProcessingResult;
@@ -61,19 +62,18 @@ namespace cynth::syn {
 
     namespace {
 
-        StatementProcessingResult processStatementImpl (context::C & ctx, interface::node auto const & decl) {
-            return [&] (auto decls) -> StatementProcessingResult {
-                for (auto const & decl : decls) {
-                    auto result = [&] (auto vars) {
-                        return ctx.comptime().insertValue(decl.name, vars);
+        StatementProcessingResult processStatementImpl (context::Main & ctx, interface::node auto const & decl) {
+            return [&] (auto && decls) -> StatementProcessingResult {
+                for (auto && decl: std::move(decls)) {
+                    auto result = [&] (auto && vars) {
+                        return ctx.lookup.insertValue(std::move(decl).name, std::move(std::move(vars)));
 
-                    } || target::result{} <<=
-                    esl::unite_results <<=
-                    [&ctx] (auto const & type) -> esl::result<Variable> {
-                        return interface::processDeclaration(ctx)(type);
+                    } || target::result{} <<= esl::unite_results <<=
+                    [&ctx] (auto && type) -> esl::result<Variable> {
+                        return interface::processDeclaration(ctx)(std::move(type));
 
-                    } || target::nested<target::component_vector_tiny_result, target::category>{} <<= decl.type;
-
+                    } || target::nested<target::component_vector_tiny_result, target::category>{} <<=
+                        std::move(decl).type;
                     if (!result) return result.error();
                 }
 
@@ -87,11 +87,11 @@ namespace cynth::syn {
     //// Declaration ////
 
     DisplayResult node::Declaration::display () const {
-        return lift<target::component, target::category>(interface::display)(type) + " " + interface::display(name);
+        return (interface::display || target::category{} <<= *type) + " " + interface::display(name);
     }
 
-    DeclarationResolutionResult node::Declaration::resolveDeclaration (context::C & ctx) const {
-        return [&] (auto type) {
+    DeclarationResolutionResult node::Declaration::resolveDeclaration (context::Main & ctx) const {
+        return [&] (auto && type) {
             return esl::init<esl::tiny_vector>(CompleteDeclaration{
                 esl::make_component_vector(std::move(type)),
                 *name.name
@@ -100,36 +100,31 @@ namespace cynth::syn {
         } || target::result {} <<= interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
-    StatementProcessingResult node::Declaration::processStatement (context::C & ctx) const {
+    StatementProcessingResult node::Declaration::processStatement (context::Main & ctx) const {
         return processStatementImpl(ctx, *this);
     }
 
     //// TupleDecl ////
 
     DisplayResult node::TupleDecl::display () const {
-        return
-            "(" +
-            esl::join(", ", lift<target::component_vector, target::category>(interface::display)(declarations)) +
-            ")";
+        using Target = target::nested<target::component_vector, target::category>;
+        return "(" + esl::join(", ", interface::display || Target{} <<= declarations) + ")";
     }
 
-    DeclarationResolutionResult node::TupleDecl::resolveDeclaration (context::C & ctx) const {
+    DeclarationResolutionResult node::TupleDecl::resolveDeclaration (context::Main & ctx) const {
         DeclarationResolutionResult::value_type result;
-
-        [&] (auto decls) {
-            for (auto const & tuple: decls) for (auto const & value: tuple) {
+        [&] (auto && decls) {
+            for (auto && tuple: decls) for (auto && value: tuple) {
                 result.push_back(std::move(value));
             }
 
-        } || target::result{} <<=
-        esl::unite_results <<=
-        interface::resolveDeclaration(ctx) || target::nested<target::component_vector, target::category>{} <<=
-        declarations;
-
+        } || target::result{} <<= esl::unite_results <<=
+            interface::resolveDeclaration(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            declarations;
         return result;
     }
 
-    StatementProcessingResult node::TupleDecl::processStatement (context::C & ctx) const {
+    StatementProcessingResult node::TupleDecl::processStatement (context::Main & ctx) const {
         return processStatementImpl(ctx, *this);
     }
 

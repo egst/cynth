@@ -65,16 +65,20 @@ namespace cynth::syn::fun_nodes {
         auto closureName = c::closureVariableName(c::id(ctx.nextId()));
 
         for (auto const & name: names) {
-            auto const & type = ctx.lookup.findType(name);
-            result.closure.types.emplace(std::make_pair(name, type));
+            auto type = ctx.lookup.findType(name);
+            if (!type)
+                return esl::result_error{"Type name not found."};
+            result.closure.types.emplace(std::make_pair(name, *type));
         }
 
         for (auto const & name: names) {
             CaptureVector<ResolvedCapture> capturedTuple;
 
-            auto const & tupleVar = ctx.lookup.findValue(name);
+            auto value = ctx.lookup.findValue(name);
+            if (!value)
+                return esl::result_error{"Name not found."};
 
-            for (auto const & var: tupleVar) {
+            for (auto const & var: *value) {
                 auto captureResult = [&] (CompleteValue const & varVal) {
                     return [&] (sem::value::Function fun) -> esl::result<void> {
                         // Capturing a function (a partially run-time value):

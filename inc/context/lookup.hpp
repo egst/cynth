@@ -31,10 +31,10 @@ namespace cynth::context {
         TypeEntry  & insertType  (std::string name, TypeEntry  const &);
         // TODO: Check if there is some code remaning that exprects an esl::result.
 
-        ValueEntry & findValueInside (std::string const & name);
-        TypeEntry  & findTypeInside  (std::string const & name);
-        ValueEntry & findValue       (std::string const & name);
-        TypeEntry  & findType        (std::string const & name);
+        ValueEntry * findValueInside (std::string const & name);
+        TypeEntry  * findTypeInside  (std::string const & name);
+        ValueEntry * findValue       (std::string const & name);
+        TypeEntry  * findType        (std::string const & name);
 
         Lookup makeChild ();
     };

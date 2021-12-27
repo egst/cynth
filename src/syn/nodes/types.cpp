@@ -1,6 +1,18 @@
 #include "syn/nodes/types.hpp"
 
+#include "esl/category.hpp"
 #include "esl/component.hpp"
+#include "esl/containers.hpp"
+#include "esl/lift.hpp"
+#include "esl/sugar.hpp"
+
+#include "interface/common.hpp"
+#include "interface/nodes.hpp"
+#include "interface/values.hpp"
+#include "sem/compound.hpp"
+#include "sem/numeric_types.hpp"
+#include "sem/types.hpp"
+#include "sem/values.hpp"
 
 namespace esl {
 
@@ -167,238 +179,261 @@ namespace esl {
 
 }
 
-// TODO
-#if 0
-namespace cynth {
+namespace cynth::syn {
+
+    using namespace esl::sugar;
+    namespace target = esl::target;
+    using interface::DisplayResult;
+    using interface::TypeResolutionResult;
+    using sem::CompleteType;
+    using sem::CompleteValue;
+    using sem::IO;
+    using sem::Integral;
+    using sem::TypedExpression;
 
     //// ArrayType ////
 
-    display_result syn::node::ArrayType::display () const {
-        //return cynth::display(type) + " [" + util::coalesce(cynth::display(size) ?: "") + "]";
-        //return cynth::display(type) + " [" + util::coalesce(cynth::display(size), "") + "]";
-        return cynth::display(type) + " [" + cynth::display(size).value_or("$") + "]";
+    DisplayResult node::ArrayType::display () const {
+        using SizeTarget = target::nested<target::optional_component, target::category>;
+        return
+            (interface::display || target::category{} <<= *type) + " [" +
+            (interface::display || SizeTarget{} <<= size).value_or("$") + "]";
     }
 
-    syn::type_eval_result syn::node::ArrayType::eval_type (sem::context & ctx) const {
-        auto type_result = util::unite_results(syn::eval_type(ctx)(type));
-        if (!type_result)
-            return syn::make_type_eval_result(type_result.error());
-        auto type = *std::move(type_result);
+    TypeResolutionResult node::ArrayType::resolveType (context::Main & ctx) const {
+        using SizeTarget = target::nested<target::optional_component, target::category>;
+        auto sizeResult =
+            [&] (interface::has::processExpression auto && expr) {
+                return [&] (CompleteValue && value) -> esl::result<Integral> {
+                    auto valueResult = std::move(value).get<sem::value::Int>();
+                    if (!valueResult) return valueResult.error();
+                    return interface::get<Integral>(*std::move(valueResult));
 
-        auto size_result = lift::category_component{util::overload {
-            [&ctx] <syn::interface::expression Expr> (Expr && e) -> result<sem::value::incomplete> {
-                auto result = sem::convert(ctx)(sem::type::Int{})(util::single(syn::evaluate(ctx)(e)));
-                if (!result)
-                    return result.error();
-                return sem::value::incomplete{*std::move(result)};
-            },
-            [] <syn::interface::declaration Decl> (Decl &&) -> result<sem::value::incomplete> {
-                return result_error{"Capturing array size deduction is not supported yet."};
-            },
-        }} (size);
-        sem::value::incomplete size = (size_result && *size_result)
-            ? **size_result
-            : sem::value::unknown{};
+                } | [&] (TypedExpression &&) -> esl::result<Integral> {
+                    return esl::result_error{"Array size must be a compconst value."};
 
-        return syn::make_type_eval_result(sem::type::array_type<false> {
-            .type = make_component_vector (std::move(type)),
-            .size = make_component        (std::move(size))
-        });
+                } || target::nested<target::result, target::category>{} <<= esl::single || target::result{} <<=
+                    interface::processExpression(ctx)(std::move(expr));
+
+            } | [] (interface::has::resolveDeclaration auto &&) -> esl::result<Integral> {
+                return esl::result_error{"Capturing array size deduction is not supported yet."};
+
+            } || SizeTarget{} <<= size;
+        if (!sizeResult)
+            return esl::result_error{"Array size deduction is not supported yet."};
+
+        return [&] (auto && type, auto && size) {
+            return esl::init<esl::tiny_vector>(CompleteType{sem::type::Array{std::move(type), std::move(size)}});
+
+        } || target::result{} <<= args(
+            esl::single || target::result{} <<= interface::resolveType(ctx) || target::category{} <<= *type,
+            *std::move(sizeResult)
+        );
     }
 
     //// Auto ////
 
-    display_result syn::node::Auto::display () const {
+    DisplayResult node::Auto::display () const {
         return "$";
     }
 
-    syn::type_eval_result syn::node::Auto::eval_type (sem::context &) const {
-        return syn::make_type_eval_result(sem::type::unknown{});
+    TypeResolutionResult node::Auto::resolveType (context::Main &) const {
+        return esl::result_error{"The auto type is not supported yet."};
     }
 
     //// BufferType ////
 
-    display_result syn::node::BufferType::display () const {
-        return "buffer [" + cynth::display(size) + "]";
+    DisplayResult node::BufferType::display () const {
+        return "buffer [" + (interface::display || target::category{} <<= *size) + "]";
     }
 
-    syn::type_eval_result syn::node::BufferType::eval_type (sem::context & ctx) const {
-        auto size_result = sem::convert(ctx)(sem::type::Int{})(util::single(syn::evaluate(ctx)(size)));
-        if (!size_result)
-            return syn::make_type_eval_result(size_result.error());
-        auto size = sem::value::incomplete{*std::move(size_result)};
-        // TODO: Decide whether a pattern should be allowed here.
+    TypeResolutionResult node::BufferType::resolveType (context::Main & ctx) const {
+        auto sizeResult =
+            [&] (CompleteValue && value) -> esl::result<Integral> {
+                auto valueResult = std::move(value).get<sem::value::Int>();
+                if (!valueResult) return valueResult.error();
+                return interface::get<Integral>(*std::move(valueResult));
 
-        return syn::make_type_eval_result(sem::type::buffer_type<false> {
-            .size = make_component(std::move(size))
-        });
+            } | [&] (TypedExpression &&) -> esl::result<Integral> {
+                return esl::result_error{"Array size must be a compconst value."};
+
+            } || target::nested<target::result, target::category>{} <<= esl::single || target::result{} <<=
+                interface::processExpression(ctx) || target::category{} <<= *size;
+
+        return [&] (auto && size) {
+            return esl::init<esl::tiny_vector>(CompleteType{sem::type::Buffer{std::move(size)}});
+
+        } || target::result{} <<= std::move(sizeResult);
     }
 
     //// ConstType ////
 
-    display_result syn::node::ConstType::display () const {
-        return cynth::display(type) + " const";
+    DisplayResult node::ConstType::display () const {
+        return (interface::display || target::category{} <<= *type) + " const";
     }
 
-    syn::type_eval_result syn::node::ConstType::eval_type (sem::context & ctx) const {
-        auto types_result = syn::eval_type(ctx)(type);
-
-        return lift::evaluation{util::overload {
-            [] <bool Complete> (sem::type::const_type<Complete> && type) -> result<sem::type::incomplete> {
-                return {type};
-            },
-            [] <bool Complete> (sem::type::in_type<Complete> && type) -> result<sem::type::incomplete> {
+    TypeResolutionResult node::ConstType::resolveType (context::Main & ctx) const {
+        return esl::unite_results || target::result{} <<=
+            [] (sem::type::In && type) -> esl::result<CompleteType> {
                 // Note: Input types are implicitly const.
                 return {std::move(type)};
-            },
-            [] <bool Complete> (sem::type::out_type<Complete> && type) -> result<sem::type::incomplete> {
+
+            } | [] (sem::type::Out && type) -> esl::result<CompleteType> {
                 // Note: Output types are implicitly const.
                 return {std::move(type)};
-            },
-            [] <bool Complete> (sem::type::buffer_type<Complete> && type) -> result<sem::type::incomplete> {
+
+            } | [] (sem::type::Buffer && type) -> esl::result<CompleteType> {
                 // Note: Buffers are implicitly const.
                 return {std::move(type)};
-            },
-            [] <bool Complete> (sem::type::function_type<Complete> && type) -> result<sem::type::incomplete> {
+
+            } | [] (sem::type::Function && type) -> esl::result<CompleteType> {
                 // Note: Function types are implicitly const.
                 return {std::move(type)};
-            },
-            [] <util::temporary Type> (Type && type) -> result<sem::type::incomplete> {
-                return {sem::type::const_type<false> {
-                    .type = make_component(sem::type::incomplete{std::move(type)})
-                }};
-            }
-        }} (std::move(types_result));
+
+            } | [] (sem::type::Array && type) -> esl::result<CompleteType> {
+                type.constref = true;
+                return {std::move(type)};
+
+            } | [] (interface::simpleType auto && type) -> esl::result<CompleteType> {
+                type.constant = true;
+                return {std::move(type)};
+
+            } | [] (sem::type::String && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Strings are not supoorted yet."};
+
+            } || target::nested<target::result, target::tiny_vector, target::category>{} <<=
+                interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
     //// FunctionType ////
 
-    display_result syn::node::FunctionType::display () const {
-        return cynth::display(output) + " " + util::parenthesized(cynth::display(input));
+    DisplayResult node::FunctionType::display () const {
+        return
+            (interface::display || target::category{} <<= *output) + " " +
+            esl::parenthesized(interface::display || target::category{} <<= *input);
     }
 
-    syn::type_eval_result syn::node::FunctionType::eval_type (sem::context & ctx) const {
-        auto out_result = util::unite_results(syn::eval_type(ctx)(output));
-        if (!out_result)
-            return syn::make_type_eval_result(out_result.error());
-        auto out = *std::move(out_result);
-
-        auto in_result = util::unite_results(syn::eval_type(ctx)(input));
-        if (!in_result)
-            return syn::make_type_eval_result(in_result.error());
-        auto in = *std::move(in_result);
-
-        return syn::make_type_eval_result(sem::type::function_type<false> {
-            .out = make_component_vector(std::move(out)),
-            .in  = make_component_vector(std::move(in))
-        });
+    TypeResolutionResult node::FunctionType::resolveType (context::Main & ctx) const {
+        return [&] (auto && out, auto && in) -> TypeResolutionResult {
+            return esl::init<esl::tiny_vector>(CompleteType{sem::type::Function{
+                .in  = esl::make_component_vector(std::move(in)),
+                .out = esl::make_component_vector(std::move(out))
+            }});
+        } || target::result{} <<= args(
+            interface::resolveType(ctx) || target::category{} <<= *output,
+            interface::resolveType(ctx) || target::category{} <<= *input
+        );
     }
 
     //// InType ////
 
-    display_result syn::node::InType::display () const {
-        return cynth::display(type) + " in";
+    DisplayResult node::InType::display () const {
+        return (interface::display || target::category{} <<= *type) + " in";
     }
 
-    syn::type_eval_result syn::node::InType::eval_type (sem::context & ctx) const {
-        auto types_result = syn::eval_type(ctx)(type);
+    TypeResolutionResult node::InType::resolveType (context::Main & ctx) const {
+        return esl::unite_results || target::result{} <<=
+            [] (sem::type::In && type) -> esl::result<CompleteType> {
+                return {std::move(type)};
 
-        return lift::evaluation{util::overload {
-            [] <bool Complete> (sem::type::in_type<Complete> && type) -> result<sem::type::incomplete> {
-                return {type};
-            },
-            [] <bool Complete> (sem::type::out_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Input type cannot contain a nested output type."};
-            },
-            [] <bool Complete> (sem::type::const_type<Complete> && type) -> result<sem::type::incomplete> {
-                // Note: Input type implicitly contains a const type already.
-                return {sem::type::in_type<false> {
-                    .type = sem::type::incomplete{*std::move(type.type)}
-                }};
-            },
-            [] <bool Complete> (sem::type::array_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Array input types are not suppported yet."};
-            },
-            [] <bool Complete> (sem::type::function_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Function cannot be an input type."};
-            },
-            [] <util::temporary Type> (Type && type) -> result<sem::type::incomplete> {
-                return {sem::type::in_type<false> {
-                    .type = make_component(sem::type::incomplete{std::move(type)})
-                }};
-            }
-        }} (std::move(types_result));
+            } | [] (sem::type::Out && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Input type cannot contain a nested output type."};
+
+            } | [] (sem::type::Buffer && type) -> esl::result<CompleteType> {
+                type.io = IO::input;
+                return {std::move(type)};
+
+            } | [] (sem::type::Function && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Function cannot an input type."};
+
+            } | [] (sem::type::Array && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Array cannot an input type."};
+
+            } | [] (interface::simpleType auto && type) -> esl::result<CompleteType> {
+                return {sem::type::In{CompleteType{std::move(type)}}};
+
+            } | [] (sem::type::String && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Strings are not supoorted yet."};
+
+            } || target::nested<target::result, target::tiny_vector, target::category>{} <<=
+                interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
     //// OutType ////
 
-    display_result syn::node::OutType::display () const {
-        return cynth::display(type) + " out";
+    DisplayResult node::OutType::display () const {
+        return (interface::display || target::category{} <<= *type) + " out";
     }
 
-    syn::type_eval_result syn::node::OutType::eval_type (sem::context & ctx) const {
-        auto types_result = syn::eval_type(ctx)(type);
+    TypeResolutionResult node::OutType::resolveType (context::Main & ctx) const {
+        return esl::unite_results || target::result{} <<=
+            [] (sem::type::In && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Output type cannot contain a nested input type."};
 
-        return lift::evaluation{util::overload {
-            [] <bool Complete> (sem::type::out_type<Complete> && type) -> result<sem::type::incomplete> {
-                return {type};
-            },
-            [] <bool Complete> (sem::type::in_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Output type cannot contain a nested input type."};
-            },
-            [] <bool Complete> (sem::type::const_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Output type cannot contain a const value."};
-            },
-            [] <bool Complete> (sem::type::array_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Array output types are not supported yet."};
-            },
-            [] <bool Complete> (sem::type::function_type<Complete> &&) -> result<sem::type::incomplete> {
-                return result_error{"Function cannot be an output type."};
-            },
-            [] <util::temporary Type> (Type && type) -> result<sem::type::incomplete> {
-                return {sem::type::out_type<false> {
-                    .type = make_component(sem::type::incomplete{std::move(type)})
-                }};
-            }
-        }} (std::move(types_result));
+            } | [] (sem::type::Out && type) -> esl::result<CompleteType> {
+                return {std::move(type)};
+
+            } | [] (sem::type::Buffer && type) -> esl::result<CompleteType> {
+                type.io = IO::output;
+                return {std::move(type)};
+
+            } | [] (sem::type::Function && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Function cannot an output type."};
+
+            } | [] (sem::type::Array && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Array cannot an output type."};
+
+            } | [] (interface::simpleType auto && type) -> esl::result<CompleteType> {
+                return {sem::type::Out{CompleteType{std::move(type)}}};
+
+            } | [] (sem::type::String && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Strings are not supoorted yet."};
+
+            } || target::nested<target::result, target::tiny_vector, target::category>{} <<=
+                interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
     //// TupleType ////
 
-    display_result syn::node::TupleType::display () const {
-        return "(" + util::join(", ", cynth::display(types)) + ")";
+    DisplayResult node::TupleType::display () const {
+        using Target = target::nested<target::component_vector, target::category>;
+        return "(" + esl::join(", ", interface::display || Target{} <<= types) + ")";
     }
 
-    syn::type_eval_result syn::node::TupleType::eval_type (sem::context & ctx) const {
-        type_eval_result result;
-        for (auto & value_tuple : syn::eval_type(ctx)(types)) for (auto & value : value_tuple) {
-            result.push_back(std::move(value));
-        }
+    TypeResolutionResult node::TupleType::resolveType (context::Main & ctx) const {
+        TypeResolutionResult::value_type result;
+        [&] (auto && types) {
+            for (auto && tuple: types) for (auto && type: tuple) {
+                result.push_back(std::move(type));
+            }
+
+        } || target::result{} <<= esl::unite_results <<=
+            interface::resolveType(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            types;
         return result;
     }
 
     //// TypeDecl ////
 
-    display_result syn::node::TypeDecl::display () const {
-        return "type " + cynth::display(name);
+    DisplayResult node::TypeDecl::display () const {
+        return "type " + interface::display(name);
     }
 
-    syn::type_eval_result syn::node::TypeDecl::eval_type (sem::context &) const {
-        return syn::make_type_eval_result(result_error{"Capturing type deduction is not supported yet."});
+    TypeResolutionResult node::TypeDecl::resolveType (context::Main &) const {
+        return esl::result_error{"Capturing type deduction is not supported yet."};
     }
 
     //// TypeName ////
 
-    display_result syn::node::TypeName::display () const {
+    DisplayResult node::TypeName::display () const {
         return *name;
     }
 
-    syn::type_eval_result syn::node::TypeName::eval_type (sem::context & ctx) const {
-        auto value = ctx.find_type(*name);
-        return value
-            ? sem::incomplete(lift::tuple_vector{make_result}(*value))
-            : syn::make_type_eval_result(result_error{"Type name not found."});
+    TypeResolutionResult node::TypeName::resolveType (context::Main & ctx) const {
+        auto value = ctx.lookup.findType(*name);
+        if (!value)
+            return esl::result_error{"Type name not found"};
+        return {*value};
     }
 
 }
-#endif

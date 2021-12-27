@@ -1,6 +1,18 @@
 #include "syn/nodes/range_declarations.hpp"
 
+#include <utility>
+
+#include "esl/category.hpp"
 #include "esl/component.hpp"
+#include "esl/containers.hpp"
+#include "esl/string.hpp"
+#include "esl/sugar.hpp"
+#include "esl/tiny_vector.hpp"
+
+#include "interface/common.hpp"
+#include "interface/nodes.hpp"
+#include "interface/types.hpp"
+#include "sem/declarations.hpp"
 
 namespace esl {
 
@@ -43,59 +55,54 @@ namespace esl {
 
 }
 
-// TODO
-#if 0
-namespace cynth {
+namespace cynth::syn {
 
-    namespace {
-
-        syn::execution_result decl_execute (auto const & node, sem::context & ctx) {
-            auto decls_result = util::unite_results(sem::complete(syn::eval_decl(ctx)(node)));
-            if (!decls_result)
-                return syn::make_execution_result(decls_result.error());
-            auto decls = *std::move(decls_result);
-
-            auto decl_result = ctx.declare(decls);
-            if (!decl_result)
-                return syn::make_execution_result(decl_result.error());
-
-            return {};
-        }
-
-    }
+    using namespace esl::sugar;
+    namespace target = esl::target;
+    using interface::DisplayResult;
+    using interface::RangeDeclarationResolutionResult;
+    using sem::CompleteRangeDeclaration;
 
     //// RangeDecl ////
 
-    display_result syn::node::RangeDecl::display () const {
-        return cynth::display(declaration) + " in " + cynth::display(range);
+    DisplayResult node::RangeDecl::display () const {
+        return
+            (interface::display || target::category{} <<= *declaration) + " in " +
+            (interface::display || target::category{} <<= *range);
     }
 
-    syn::range_decl_eval_result syn::node::RangeDecl::eval_range_decl (sem::context & ctx) const {
-        auto decl_result = util::unite_results(syn::eval_decl(ctx)(declaration));
-        if (!decl_result)
-            return syn::make_range_decl_eval_result(decl_result.error());
-        auto range_result = util::single(syn::evaluate(ctx)(range));
-        if (!range_result)
-            return syn::make_range_decl_eval_result(decl_result.error());
-        return syn::make_range_decl_eval_result(sem::incomplete_range_decl {
-            .declaration = *decl_result,
-            .range       = *range_result
-        });
+    RangeDeclarationResolutionResult node::RangeDecl::resolveRangeDeclaration (context::Main & ctx) const {
+        return [&] (auto && decls, auto && range) {
+            return esl::init<esl::tiny_vector>(CompleteRangeDeclaration{
+                esl::make_component_vector(std::move(decls)),
+                std::move(range)
+            });
+
+        } || target::result{} <<= args(
+            interface::resolveDeclaration(ctx) || target::category{} <<= *declaration,
+            esl::single || target::result{} <<=
+                interface::processExpression(ctx) || target::category{} <<= *range
+        );
     }
 
     //// TupleRangeDecl ////
 
-    display_result syn::node::TupleRangeDecl::display () const {
-        return "(" + util::join(", ", cynth::display(declarations)) + ")";
+    DisplayResult node::TupleRangeDecl::display () const {
+        using Target = target::nested<target::component_vector, target::category>;
+        return "(" + esl::join(", ", interface::display || Target{} <<= declarations) + ")";
     }
 
-    syn::range_decl_eval_result syn::node::TupleRangeDecl::eval_range_decl (sem::context & ctx) const {
-        syn::range_decl_eval_result result;
-        for (auto & value_tuple: syn::eval_range_decl(ctx)(declarations)) for (auto & value: value_tuple) {
-            result.push_back(std::move(value));
-        }
+    RangeDeclarationResolutionResult node::TupleRangeDecl::resolveRangeDeclaration (context::Main & ctx) const {
+        RangeDeclarationResolutionResult::value_type result;
+        [&] (auto && decls) {
+            for (auto && tuple: decls) for (auto && value: tuple) {
+                result.push_back(std::move(value));
+            }
+
+        } || target::result{} <<= esl::unite_results <<=
+            interface::resolveRangeDeclaration(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            declarations;
         return result;
     }
 
 }
-#endif
