@@ -39,7 +39,8 @@ namespace esl {
     };
 
     /** Overload set from lambda functions. */
-    template <typename... Fs> struct overload_type: Fs... {
+    template <typename... Fs>
+    struct overload_type: Fs... {
         using Fs::operator()...;
     };
     template <typename... Fs> overload_type(Fs...) -> overload_type<Fs...>;

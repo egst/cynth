@@ -170,7 +170,6 @@ namespace cynth::syn::fun_nodes {
                 auto inParams = fun_nodes::resolveParam || target::tiny_vector{} <<= inDecls;
                 auto inTypes  = fun_nodes::declType     || target::nested_tiny_vector_cat{} <<= inDecls;
 
-                auto functionName = c::functionName(c::id(ctx.nextId()));
                 auto & def = ctx.global.storeValue(FunctionDefinition{
                     .implementation = FunctionDefinition::Implementation{
                         .parameters = inParams,
@@ -182,7 +181,7 @@ namespace cynth::syn::fun_nodes {
                         .out = esl::make_component_vector(outTypes)
                     },
                     .closureType = closureType, // If capturing some run-time values.
-                    .name        = functionName
+                    .name        = std::nullopt // Will be generated at deifnition.
                 });
 
                 return sem::value::Function{

@@ -265,7 +265,7 @@ namespace cynth::sem {
         Variant                    implementation;
         type::Function             type;
         std::optional<std::string> closureType; // Run-time closure variable type. No value => No run-time closure.
-        std::string                name;        // Run-time function name
+        std::optional<std::string> name;        // Run-time function name.         No value => Not defined yet.
     };
 
     namespace value {

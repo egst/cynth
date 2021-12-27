@@ -9,6 +9,7 @@
 
 #include "context/main.hpp"
 #include "interface/common.hpp"
+#include "interface/nodes.hpp"
 #include "sem/values.hpp"
 #include "sem/compound.hpp"
 #include "syn/nodes/common/fun_nodes.hpp"

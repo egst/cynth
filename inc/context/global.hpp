@@ -41,7 +41,8 @@ namespace cynth::context {
         std::string instantiate (T const &);
 
         /** Define a function based on its metadata. */
-        std::string define (sem::FunctionDefinition const &);
+        std::string define (sem::FunctionDefinition &);
+        // TODO: Don't forget to set the newly generated name in the passed function's definition.
 
     protected:
         std::size_t id = 0;
