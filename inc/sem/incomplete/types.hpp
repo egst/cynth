@@ -227,8 +227,8 @@ namespace cynth::sem {
         };
 
         struct Function: detail::types::Function<true> {
-            esl::component_vector<CompleteType> out;
             esl::component_vector<CompleteType> in;
+            esl::component_vector<CompleteType> out;
 
             TYPE_INTERFACE;
 

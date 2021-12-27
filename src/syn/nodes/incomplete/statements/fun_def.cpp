@@ -26,7 +26,7 @@ namespace cynth::syn {
     using interface::DisplayResult;
     using interface::StatementProcessingResult;
     using sem::CaptureVector;
-    using sem::CapturedContext;
+    using sem::Closure;
     using sem::CompleteDeclaration;
     using sem::CompleteType;
     using sem::CompleteValue;
@@ -34,8 +34,8 @@ namespace cynth::syn {
     using sem::Integral;
     using sem::NoReturn;
     using sem::ResolvedCapture;
-    using sem::Closure;
     using sem::TypedName;
+    using sem::Variable;
 
     DisplayResult node::FunDef::display () const {
         return
@@ -53,65 +53,118 @@ namespace cynth::syn {
             return {.name = decl.name, .arity = static_cast<Integral>(decl.type.size())};
         }
 
+        esl::tiny_vector<CompleteType> declType (CompleteDeclaration const & decl) {
+            return decl.type;
+        }
+
+        std::string runtimeCapture (
+            context::Main            & ctx,
+            std::vector<std::string> & declarations,
+            std::vector<std::string> & assignments,
+            std::string const        & closureName,
+            std::string const        & type,
+            std::string const        & variable
+        ) {
+            auto captureName = c::variableName(c::id(ctx.nextId()));
+            auto decl        = c::declaration(type, captureName);
+            auto assgn       = c::statement(closureName + c::designatedInitialization(captureName, variable));
+            declarations.push_back(decl);
+            assignments.push_back(assgn);
+            return captureName;
+        }
+
         struct CaptureResult {
             Closure closure;
-            std::string closuteType;
+            std::optional<std::string> closureType;
+            std::optional<std::string> closureVariable;
         };
 
-        esl::result<ResolvedCapturedContext> capture (
+        esl::result<CaptureResult> capture (
             context::Main & ctx,
             std::vector<std::string> const & names,
             std::vector<std::string> const & typeNames
         ) {
-            ResolvedCapturedContext result;
+            CaptureResult            result;
+            std::vector<std::string> declarations; // <type> <name>
+            std::vector<std::string> assignments;  // <closure>.<name> = <var>;
+
+            auto closureName = c::closureVariableName(c::id(ctx.nextId()));
 
             for (auto const & name: names) {
                 auto const & type = ctx.lookup.findType(name);
-                result.types.emplace(std::make_pair(name, type));
+                result.closure.types.emplace(std::make_pair(name, type));
             }
 
-            auto ctxTypeName = c::contextVariableType(c::id(ctx.nextId())); // cth_ctx_<id>
-            std::vector<std::string> declarations;                          // <type> <name>;
-            std::vector<std::string> assignments;                           // <ctxVarName>.<name> = <varName>
-
             for (auto const & name: names) {
-                CaptureVector<ResolvedCapture> tuple;
+                CaptureVector<ResolvedCapture> capturedTuple;
 
                 auto const & tupleVar = ctx.lookup.findValue(name);
 
                 for (auto const & var: tupleVar) {
-                    auto captureResult = [&] (CompleteValue const & varVal) -> esl::result<void> {
-                        tuple.emplace_back(varVal);
-                        return {};
+                    auto captureResult = [&] (CompleteValue const & varVal) {
+                        return [&] (sem::value::Function fun) -> esl::result<void> {
+                            // Capturing a function (a partially run-time value):
+                            if (!fun.closureVariable) {
+                                // Fully comp-time closure:
+                                capturedTuple.emplace_back(varVal);
+                                return {};
+                            }
+                            if (!fun.definition.closureType) // Implementation error.
+                                return esl::result_error{"No closure type in a captured function with a closure variable."};
+                            // Run-time closure:
+                            auto capturedMember = runtimeCapture(
+                                ctx, declarations, assignments, closureName,
+                                *fun.definition.closureType, *fun.closureVariable
+                            );
+                            auto copy = sem::value::Function{
+                                .definition      = fun.definition,
+                                .closureVariable = capturedMember
+                            };
+                            capturedTuple.emplace_back(CompleteValue{copy});
+
+                        } | [&] (auto value) -> esl::result<void> {
+                            // Capturing a comp-time value:
+                            capturedTuple.emplace_back(varVal);
+                            return {};
+
+                        } || target::category{} <<= varVal;
 
                     } | [&] (TypedName const & varName) {
-
+                        // Capturing a run-time variable:
                         return [&] (auto const & type) -> esl::result<void> {
-
-                            auto ctxVarName = c::contextVariableName(c::id(ctx.nextId()));
-                            auto captureName = varName.name; // Could be anything else though, this choice as arbitrary.
-                            auto decl  = c::declaration(type, captureName);
-                            auto assgn = ctxVarName + c::contextVariableInitialization(captureName, varName.name);
-                            declarations.push_back(decl);
-                            assignments.push_back(assgn);
-                            tuple.emplace_back(name);
-
+                            auto capturedMember = runtimeCapture(
+                                ctx, declarations, assignments,
+                                closureName, type, varName.name
+                            );
+                            capturedTuple.emplace_back(TypedName{
+                                .type = varName.type,
+                                .name = capturedMember
+                            });
                         } || target::result{} <<=
-                        interface::translateType || target::category{} <<= varName.type;
-
-                        /***
-                        cth_ctx_<ctxTypeName>
-                        ---
-                        <type> <name>;
-                        ---
-                        <ctxVarName>.<name> = <varName>
-                        ***/
+                            interface::translateType || target::category{} <<= varName.type;
 
                     } || target::category{} <<= var;
                     if (!captureResult) return captureResult.error();
                 }
 
-                result.values.emplace(std::make_pair(name, tuple));
+                result.closure.values.emplace(std::make_pair(name, capturedTuple));
+            }
+
+            if (!declarations.empty() || !assignments.empty()) {
+                // Closure type definition:
+                result.closureType = c::closureVariableType(c::id(ctx.nextId()));
+                auto closureStruct = c::structureDefinition(*result.closureType, declarations);
+                /***
+                struct <closure> {
+                    <declaration1>;
+                    ...
+                };
+                ***/
+                ctx.global.insertType(closureStruct);
+
+                // Closure variable initialization:
+                for (auto const & assgn: assignments)
+                    ctx.insertStatement(assgn);
             }
 
             return result;
@@ -123,37 +176,39 @@ namespace cynth::syn {
         return [&] (
             auto outTypes, auto inDecls,
             auto names, auto typeNames
-        ) -> StatementProcessingResult {
+        ) {
 
-            auto capture = ctx.lookup.capture(names, typeNames);
+            return [&] (auto captured) -> StatementProcessingResult {
+                auto const & [closure, closureType, closureVariable] = captured;
 
-            auto resolvedCapture = resolveCapturedContext(ctx, capture);
+                auto inParams = resolveParam || target::tiny_vector{} <<= inDecls;
+                auto inTypes  = declType     || target::nested_tiny_vector_cat{} <<= inDecls;
 
-            auto & def = ctx.global.storeValue(FunctionDefinition{
-                .implementation = FunctionDefinition::Implementation{
-                    .parameters = resolveParam || target::tiny_vector{} <<= inDecls,
-                    .body       = body,
-                    .context    = {}
-                },
-                .type           = {},
-                .contextType    = {}, // If capturing some run-time values.
-                .name           = {}
-            });
+                auto functionName = c::functionName(c::id(ctx.nextId()));
+                auto & def = ctx.global.storeValue(FunctionDefinition{
+                    .implementation = FunctionDefinition::Implementation{
+                        .parameters = inParams,
+                        .body       = body,
+                        .closure    = closure
+                    },
+                    .type = sem::type::Function{
+                        .in  = esl::make_component_vector(inTypes),
+                        .out = esl::make_component_vector(outTypes)
+                    },
+                    .closureType = closureType, // If capturing some run-time values.
+                    .name        = functionName
+                });
+                auto fun = sem::value::Function{
+                    .definition      = def,
+                    .closureVariable = closureVariable
+                };
+                ctx.lookup.insertValue(*name.name, esl::init<esl::tiny_vector>(
+                    Variable{CompleteValue{fun}}
+                ));
 
-            sem::value::Function value = {
-                .definition = def
-                /*
-                .context      = std::move(capture), // TODO
-                .outType      = esl::make_component_vector(outTypes),
-                .parameters   = esl::make_component_vector(inDecls),
-                .body         = body,
-                .functionName = {},
-                .captureName  = {},
-                */
-            };
+                return NoReturn{};
 
-            // TODO...
-            return {sem::NoReturn{}};
+            } || target::result{} <<= capture(ctx, names, typeNames);
 
         } || target::result{} <<= args(
             interface::resolveType(ctx)        || target::category{} <<= *output,

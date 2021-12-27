@@ -29,19 +29,12 @@ namespace cynth::context {
         //ValueEntry & insertValue (std::string name, ValueEntry const &);
         ValueEntry & insertValue (std::string name, ValueEntry &&);
         TypeEntry  & insertType  (std::string name, TypeEntry  const &);
-        // TODO: Check if there is some code remaning that exprects a esl::result.
+        // TODO: Check if there is some code remaning that exprects an esl::result.
 
         ValueEntry & findValueInside (std::string const & name);
         TypeEntry  & findTypeInside  (std::string const & name);
         ValueEntry & findValue       (std::string const & name);
         TypeEntry  & findType        (std::string const & name);
-
-        // TODO: Might be not needed.
-        sem::CapturedContext capture (
-            std::vector<std::string> const & names,
-            std::vector<std::string> const & typeNames
-        ) const;
-        // TODO: Implement...
 
         Lookup makeChild ();
 

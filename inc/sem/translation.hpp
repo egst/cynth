@@ -699,13 +699,6 @@ namespace cynth {
         }
 
         /***
-        .<var> = <expr>
-        ***/
-        inline std::string closureVariableInitialization (std::string const & var, std::string const & expr) {
-            return c::designatedInitialization(expr, var);
-        }
-
-        /***
         .branch = <number>
         ***/
         inline std::string branchInitialization (std::size_t const & number) {
@@ -1245,7 +1238,7 @@ namespace cynth {
             TypeSpecifier elemType;
 
             std::string name () const {
-                return c::arrayType(std::to_string(size), elemType.merged());
+                return c::arrayType(size, elemType.merged());
             }
 
             std::string definition () const {
