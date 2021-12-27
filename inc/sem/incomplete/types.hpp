@@ -17,45 +17,6 @@
 // Circular dependencies:
 #include "sem/forward.hpp"
 
-// Note: No macros escape this file.
-#define VALUE(Type) \
-    using Value = Type;
-#define STATIC_TYPE_NAME(name) \
-    constexpr static interface::TypeNameConstant typeName = name
-#define TYPE_NAME \
-    interface::TypeNameResult typeName () const
-#define SAME(Type) \
-    interface::SameTypeResult sameType (Type const &) const
-#define COMMON(Type) \
-    interface::CommonTypeResult commonType (Type const &) const
-#define TYPE_INTERFACE \
-    interface::DisplayResult display () const; \
-    interface::TypeTranslationResult translateType() const; \
-    interface::TypeSpecifierTranslationResult translateTypeSpecifier() const; \
-    interface::DefinitionProcessingResult processDefinition ( \
-        context::Main &, \
-        std::optional<ResolvedValue> const & definition \
-    ) const
-    /*
-    interface::ConversionTranslationResult translateConversion ( \
-        context::Main &, \
-        TypedExpression const & from \
-    ) const; \
-    */
-    /*
-    interface::AllocationTranslationResult translateAllocation ( \
-        context::Main &, \
-        std::optional<TypedExpression> const & definition \
-    ) const; \
-    */
-#define INCOMPLETE_TYPE_INTERFACE \
-    interface::TypeCompletionResult completeType (context::Main &) const
-
-/*
-#define DECAY \
-    interface::TypeDecayResult decayType () const
-*/
-
 namespace cynth::sem {
 
     namespace type {
@@ -63,71 +24,72 @@ namespace cynth::sem {
         struct Bool {
             bool constant;
 
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::Bool);
+            using Value = value::Bool;
 
-            STATIC_TYPE_NAME(str::boolean);
+            constexpr static interface::TypeNameConstant typeName = str::boolean;
 
-            COMMON(type::Bool);
-            COMMON(type::Int);
-            COMMON(type::Float);
-            COMMON(type::In);
-            COMMON(type::Const);
-
-            SAME(type::Bool);
-
-            // TODO?
-            //constexpr static CompleteType make ();
+            interface::SameTypeResult sameType (type::Bool const &) const;
         };
 
         struct Int {
             bool constant;
 
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::Int);
+            using Value = value::Int;
 
-            STATIC_TYPE_NAME(str::integral);
+            constexpr static interface::TypeNameConstant typeName = str::integral;
 
-            // implicit common(Bool)
-            COMMON(type::Int);
-            COMMON(type::Float);
-            COMMON(type::In);
-            COMMON(type::Const);
-
-            SAME(type::Int);
+            interface::SameTypeResult sameType (type::Int const &) const;
         };
 
         struct Float {
             bool constant;
 
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::Float);
+            using Value = value::Float;
 
-            STATIC_TYPE_NAME(str::floating);
+            constexpr static interface::TypeNameConstant typeName = str::floating;
 
-            // implicit common(Bool)
-            // implicit common(Int)
-            COMMON(type::Float);
-            COMMON(type::In);
-            COMMON(type::Const);
-
-            SAME(type::Float);
+            interface::SameTypeResult sameType (type::Float const &) const;
         };
 
         /** Strings will not be used in the first versions. */
         struct String {
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::String);
+            using Value = value::String;
 
-            STATIC_TYPE_NAME(str::string);
+            constexpr static interface::TypeNameConstant typeName = str::string;
 
-            COMMON(type::String);
-
-            SAME(type::String);
+            interface::SameTypeResult sameType (type::String const &) const;
         };
 
         namespace detail::types {
@@ -173,55 +135,63 @@ namespace cynth::sem {
         struct In: detail::types::In<true> {
             using detail::types::In<true>::type;
 
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::In);
+            using Value = value::In;
 
             // implicit common(Bool)
             // implicit common(Int)
             // implicit common(Float)
 
-            SAME(type::In);
-
-            //DECAY;
+            interface::SameTypeResult sameType (type::In const &) const;
         };
 
         struct Out: detail::types::Out<true> {
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::Out);
+            using Value = value::Out;
 
-            SAME(type::Out);
-
-            //DECAY;
+            interface::SameTypeResult sameType (type::Out const &) const;
         };
 
         struct Array: detail::types::Array<true> {
-            /*
-            using base = detail::types::Array<true>;
-            using base::type;
-            using base::size;
-            using base::constval;
-            using base::constref;
-            */
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            TYPE_INTERFACE;
+            using Value = value::Array;
 
-            VALUE(value::Array);
-
-            COMMON(type::Array);
-
-            SAME(type::Array);
+            interface::SameTypeResult sameType (type::Array const &) const;
         };
 
         struct Buffer: detail::types::Buffer<true> {
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::Buffer);
+            using Value = value::Buffer;
 
-            COMMON(type::Buffer);
-
-            SAME(type::Buffer);
+            interface::SameTypeResult sameType (type::Buffer const &) const;
 
             static esl::result<type::Buffer> make (Integral);
         };
@@ -230,33 +200,37 @@ namespace cynth::sem {
             esl::component_vector<CompleteType> in;
             esl::component_vector<CompleteType> out;
 
-            TYPE_INTERFACE;
+            interface::DisplayResult                  display                () const;
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DefinitionProcessingResult     processDefinition (
+                context::Main &,
+                std::optional<ResolvedValue> const &
+            ) const;
 
-            VALUE(value::Function);
+            using Value = value::Function;
 
-            COMMON(type::Function);
-
-            SAME(type::Function);
+            interface::SameTypeResult sameType (type::Function const &) const;
         };
 
         struct IncompleteIn: detail::types::In<false> {
-            INCOMPLETE_TYPE_INTERFACE;
+            interface::TypeCompletionResult completeType (context::Main &) const;
         };
 
         struct IncompleteOut: detail::types::Out<false> {
-            INCOMPLETE_TYPE_INTERFACE;
+            interface::TypeCompletionResult completeType (context::Main &) const;
         };
 
         struct IncompleteArray: detail::types::Array<false> {
-            INCOMPLETE_TYPE_INTERFACE;
+            interface::TypeCompletionResult completeType (context::Main &) const;
         };
 
         struct IncompleteBuffer: detail::types::Buffer<false> {
-            INCOMPLETE_TYPE_INTERFACE;
+            interface::TypeCompletionResult completeType (context::Main &) const;
         };
 
         struct IncompleteFunction: detail::types::Function<false> {
-            INCOMPLETE_TYPE_INTERFACE;
+            interface::TypeCompletionResult completeType (context::Main &) const;
         };
 
         struct Unknown {
@@ -306,13 +280,3 @@ namespace cynth::sem {
     };
 
 }
-
-#undef VALUE
-#undef STATIC_TYPE_NAME
-#undef TYPE_NAME
-#undef SAME
-#undef COMMON
-#undef TYPE_INTERFACE
-#undef INCOMPLETE_TYPE_INTERFACE
-
-//#undef DECAY

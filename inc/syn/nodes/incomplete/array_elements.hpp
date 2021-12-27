@@ -8,11 +8,6 @@
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
 
-// Note: No macros escape this file.
-#define ARRAY_INTEFRACE \
-    interface::DisplayResult display () const; \
-    interface::ArrayElementProcessingResult processArrayElement (context::Main &) const
-
 namespace cynth::syn::node {
 
     /** a to b */
@@ -20,7 +15,8 @@ namespace cynth::syn::node {
         esl::component<category::Expression> from;
         esl::component<category::Expression> to;
 
-        ARRAY_INTEFRACE;
+        interface::DisplayResult                display             ()                const;
+        interface::ArrayElementProcessingResult processArrayElement (context::Main &) const;
     };
 
     /** a to b by c */
@@ -29,16 +25,16 @@ namespace cynth::syn::node {
         esl::component<category::Expression> to;
         esl::component<category::Expression> by;
 
-        ARRAY_INTEFRACE;
+        interface::DisplayResult                display             ()                const;
+        interface::ArrayElementProcessingResult processArrayElement (context::Main &) const;
     };
 
     /** ...a */
     struct Spread {
         esl::component<category::Expression> container;
 
-        ARRAY_INTEFRACE;
+        interface::DisplayResult                display             ()                const;
+        interface::ArrayElementProcessingResult processArrayElement (context::Main &) const;
     };
 
 }
-
-#undef ARRAY_INTEFRACE

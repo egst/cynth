@@ -9,12 +9,6 @@
 #include "syn/categories/forward.hpp"
 #include "syn/nodes/incomplete/expressions.hpp"
 
-// Note: No macros escape this file.
-#define DECLARATION_INTERFACE \
-    interface::DisplayResult display () const; \
-    interface::DeclarationResolutionResult resolveDeclaration (context::Main &) const; \
-    interface::StatementProcessingResult processStatement (context::Main &) const;
-
 namespace cynth::syn::node {
 
     /** T a */
@@ -22,16 +16,18 @@ namespace cynth::syn::node {
         node::Name                     name;
         esl::component<category::Type> type;
 
-        DECLARATION_INTERFACE;
+        interface::DisplayResult               display            ()                const;
+        interface::DeclarationResolutionResult resolveDeclaration (context::Main &) const;
+        interface::StatementProcessingResult   processStatement   (context::Main &) const;
     };
 
     /** (T a, ...) */
     struct TupleDecl {
         esl::component_vector<category::Declaration> declarations;
 
-        DECLARATION_INTERFACE;
+        interface::DisplayResult               display            ()                const;
+        interface::DeclarationResolutionResult resolveDeclaration (context::Main &) const;
+        interface::StatementProcessingResult   processStatement   (context::Main &) const;
     };
 
 }
-
-#undef DECLARATION_INTERFACE

@@ -8,11 +8,6 @@
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
 
-// Note: No macros escape this file.
-#define RANGE_DECLARATION_INTERFACE \
-    interface::DisplayResult display () const; \
-    interface::RangeDeclarationResolutionResult resolveRangeDeclaration (context::Main &) const
-
 namespace cynth::syn::node {
 
     /** T e in a */
@@ -20,16 +15,16 @@ namespace cynth::syn::node {
         esl::component<category::Declaration> declaration;
         esl::component<category::Expression>  range;
 
-        RANGE_DECLARATION_INTERFACE;
+        interface::DisplayResult                    display                 ()                const;
+        interface::RangeDeclarationResolutionResult resolveRangeDeclaration (context::Main &) const;
     };
 
     /** (T e in a, ...) */
     struct TupleRangeDecl {
         esl::component_vector<category::RangeDeclaration> declarations;
 
-        RANGE_DECLARATION_INTERFACE;
+        interface::DisplayResult                    display                 ()                const;
+        interface::RangeDeclarationResolutionResult resolveRangeDeclaration (context::Main &) const;
     };
 
 }
-
-#undef RANGE_DECLARATION_INTERFACE

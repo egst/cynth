@@ -10,11 +10,6 @@
 // Circular dependencies:
 #include "syn/categories/forward.hpp"
 
-// Note: No macros escape this file.
-#define TYPE_INTERFACE \
-    interface::DisplayResult display () const; \
-    interface::TypeResolutionResult resolveType (context::Main &) const
-
 namespace cynth::syn::node {
 
     /** T [a]
@@ -25,12 +20,14 @@ namespace cynth::syn::node {
         esl::component<category::Type> type;
         esl::optional_component<category::Pattern> size;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** $ */
     struct Auto {
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** buffer [a] */
@@ -39,14 +36,16 @@ namespace cynth::syn::node {
     struct BufferType {
         esl::component<category::Expression> size;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** T const */
     struct ConstType {
         esl::component<category::Type> type;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** Out (In) */
@@ -54,21 +53,24 @@ namespace cynth::syn::node {
         esl::component<category::Type> output;
         esl::component<category::Type> input;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** T in */
     struct InType {
         esl::component<category::Type> type;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** T out */
     struct OutType {
         esl::component<category::Type> type;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** (T, ...) */
@@ -76,7 +78,8 @@ namespace cynth::syn::node {
         // TODO: Non-unary vector?
         esl::component_vector<category::Type> types;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** T */
@@ -84,16 +87,16 @@ namespace cynth::syn::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         esl::component<std::string> name;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
     /** type T */
     struct TypeDecl {
         node::TypeName name;
 
-        TYPE_INTERFACE;
+        interface::DisplayResult        display     ()                const;
+        interface::TypeResolutionResult resolveType (context::Main &) const;
     };
 
 }
-
-#undef TYPE_INTERFACE

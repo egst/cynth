@@ -21,25 +21,6 @@
 // Circular dependencies:
 #include "sem/forward.hpp"
 
-// Note: No macros escape this file.
-#define GET(Type) \
-    interface::GetResult<Type> get () const
-/*
-#define CONVERT(Type) \
-    interface::ConversionResult<Type> convertValue (context::Main &, Type const &) const
-#define CONVERT_SIMPLE(Type) \
-    interface::ConversionResult<Type> convertValue (Type const &) const
-*/
-#define STATIC_VALUE_TYPE(Type, init) \
-    constexpr static Type valueType = init
-#define DIRECT_VALUE_TYPE(Type) \
-    Type valueType
-#define VALUE_TYPE \
-    interface::ValueTypeResult valueType () const
-#define VALUE_INTERFACE \
-    interface::DisplayResult display () const; \
-    interface::ValueTranslationResult translateValue (context::Main &) const
-
 namespace cynth::sem {
 
     namespace value {
@@ -47,11 +28,12 @@ namespace cynth::sem {
         struct Bool {
             bool value;
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            STATIC_VALUE_TYPE(type::Bool, {});
+            constexpr static type::Bool valueType = {};
 
-            GET(bool);
+            interface::GetResult<bool> get () const;
 
             //CONVERT_SIMPLE(type::Bool);
             //CONVERT_SIMPLE(type::Int);
@@ -63,11 +45,12 @@ namespace cynth::sem {
         struct Int {
             Integral value;
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            STATIC_VALUE_TYPE(type::Int, {});
+            constexpr static type::Int valueType = {};
 
-            GET(Integral);
+            interface::GetResult<Integral> get () const;
 
             //CONVERT_SIMPLE(type::Bool);
             //CONVERT_SIMPLE(type::Int);
@@ -79,11 +62,12 @@ namespace cynth::sem {
         struct Float {
             Floating value;
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            STATIC_VALUE_TYPE(type::Float, {});
+            constexpr static type::Float valueType = {};
 
-            GET(Floating);
+            interface::GetResult<Floating> get () const;
 
             //CONVERT_SIMPLE(type::Bool);
             //CONVERT_SIMPLE(type::Int);
@@ -95,11 +79,12 @@ namespace cynth::sem {
         struct String {
             std::string value;
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            STATIC_VALUE_TYPE(type::String, {});
+            constexpr static type::String valueType = {};
 
-            GET(std::string);
+            interface::GetResult<std::string> get () const;
 
             constexpr static CompleteValue make (std::string); //return sem::value::Sting{.value = value};
         };
@@ -107,9 +92,10 @@ namespace cynth::sem {
         struct In {
             std::string allocation; // run-time allocation variable name
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            DIRECT_VALUE_TYPE(type::In);
+            type::In valueType;
 
             //CONVERT(type::Bool);
             //CONVERT(type::Int);
@@ -121,9 +107,10 @@ namespace cynth::sem {
         struct Out {
             std::string allocation; // run-time allocation variable name
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            DIRECT_VALUE_TYPE(type::Out);
+            type::Out valueType;
 
             //CONVERT(type::Out);
         };
@@ -215,11 +202,10 @@ namespace cynth::sem {
 
             Allocation allocation;
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            DIRECT_VALUE_TYPE(type::Array);
-
-            //GET(std::vector<esl::tiny_vector<CompleteValue>>);
+            type::Array valueType;
 
             //CONVERT(type::Array);
 
@@ -238,9 +224,10 @@ namespace cynth::sem {
         struct Buffer {
             esl::component<std::string> allocation;
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            DIRECT_VALUE_TYPE(type::Buffer);
+            type::Buffer valueType;
 
             //CONVERT(type::Buffer);
 
@@ -294,14 +281,11 @@ namespace cynth::sem {
                 return definition.closureType.has_value();
             }
 
-            VALUE_INTERFACE;
+            interface::DisplayResult          display        ()                const;
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
-            //VALUE_TYPE;
-            //DIRECT_VALUE_TYPE(type::Function);
             type::Function & valueType = definition.type;
             // TODO: I hope this will still satitfy the directTypeName concept.
-
-            //GET(Function);
 
             //CONVERT(type::Function);
             //CONVERT(type::Buffer);
@@ -348,11 +332,3 @@ namespace cynth::sem {
     };
 
 }
-
-#undef GET
-//#undef CONVERT
-//#undef CONVERT_SIMPLE
-#undef STATIC_VALUE_TYPE
-#undef DIRECT_VALUE_TYPE
-#undef VALUE_TYPE
-#undef VALUE_INTERFACE
