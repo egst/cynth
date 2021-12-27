@@ -15,10 +15,10 @@ namespace cynth::syn {
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
 
-    DisplayResult syn::node::Subscript::display () const {
+    DisplayResult node::Subscript::display () const {
     }
 
-    ExpressionProcessingResult syn::node::Subscript::processExpression (context::Main & ctx) const {
+    ExpressionProcessingResult node::Subscript::processExpression (context::Main & ctx) const {
     }
 
 }

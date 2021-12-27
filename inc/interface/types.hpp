@@ -131,6 +131,15 @@ namespace cynth::interface {
 
     // Functions:
 
+    constexpr auto isSimple = esl::overload(
+        [] (simpleType auto const &) -> bool {
+            return true;
+        },
+        [] <type T> (T const &) -> bool requires (!simpleType<T>) {
+            return false;
+        }
+    );
+
     template <interface::has::typeValue T>
     using TypeValue = typename T::TypeValue;
 

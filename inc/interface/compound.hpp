@@ -11,6 +11,12 @@
 #include "interface/forward.hpp"
 #include "interface/values.hpp"
 
+// For resolveParam: (It might be moved elsewhere.)
+#include "sem/numeric_types.hpp"
+#include "sem/values.hpp"
+#include "sem/types.hpp"
+#include "sem/declarations.hpp"
+
 namespace cynth::interface {
 
     // Concepts:
@@ -29,6 +35,18 @@ namespace cynth::interface {
     }
 
     // Functions:
+
+    // TODO: Should this be moved elsewhere? interface/declarations or something?
+    inline sem::FunctionDefinition::Parameter resolveParam (sem::CompleteDeclaration const & decl) {
+        return {.name = decl.name, .arity = static_cast<sem::Integral>(decl.type.size())};
+    }
+    inline esl::tiny_vector<sem::CompleteType> declType (sem::CompleteDeclaration const & decl) {
+        return decl.type;
+    }
+
+    inline std::string expression (sem::TypedExpression const & typed) {
+        return typed.expression;
+    }
 
     constexpr auto translateResolvedValue (context::Main & ctx) {
         return [&ctx] (sem::ResolvedValue const & value) {

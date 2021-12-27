@@ -13,10 +13,6 @@
 
 namespace cynth::syn::fun_nodes {
 
-    sem::FunctionDefinition::Parameter resolveParam (sem::CompleteDeclaration const & decl);
-
-    esl::tiny_vector<sem::CompleteType> declType (sem::CompleteDeclaration const & decl);
-
     struct CaptureResult {
         sem::Closure closure;
         std::optional<std::string> closureType;

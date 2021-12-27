@@ -210,8 +210,6 @@ namespace cynth::sem {
             COMMON(type::Array);
 
             SAME(type::Array);
-
-            static type::Array make (CompleteType const &, Integral);
         };
 
         struct Buffer: detail::types::Buffer<true> {

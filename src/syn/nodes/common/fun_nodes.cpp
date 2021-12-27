@@ -13,6 +13,7 @@
 
 #include "context/main.hpp"
 #include "interface/common.hpp"
+#include "interface/compound.hpp"
 #include "interface/nodes.hpp"
 #include "interface/types.hpp"
 #include "sem/compound.hpp"
@@ -35,14 +36,6 @@ namespace cynth::syn::fun_nodes {
     using sem::NoReturn;
     using sem::ResolvedCapture;
     using sem::TypedName;
-
-    FunctionDefinition::Parameter resolveParam (CompleteDeclaration const & decl) {
-        return {.name = decl.name, .arity = static_cast<Integral>(decl.type.size())};
-    }
-
-    esl::tiny_vector<CompleteType> declType (CompleteDeclaration const & decl) {
-        return decl.type;
-    }
 
     std::string runtimeCapture (
         context::Main            & ctx,
@@ -167,8 +160,8 @@ namespace cynth::syn::fun_nodes {
             return [&] (auto captured) -> esl::result<sem::value::Function> {
                 auto const & [closure, closureType, closureVariable] = captured;
 
-                auto inParams = fun_nodes::resolveParam || target::tiny_vector{} <<= inDecls;
-                auto inTypes  = fun_nodes::declType     || target::nested_tiny_vector_cat{} <<= inDecls;
+                auto inParams = interface::resolveParam || target::tiny_vector{} <<= inDecls;
+                auto inTypes  = interface::declType     || target::nested_tiny_vector_cat{} <<= inDecls;
 
                 auto & def = ctx.global.storeValue(FunctionDefinition{
                     .implementation = FunctionDefinition::Implementation{

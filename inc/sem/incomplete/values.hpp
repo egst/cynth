@@ -163,6 +163,8 @@ namespace cynth::sem {
 
         Vector value;
 
+        ArrayAllocation (Vector const & value);
+
         // Comp-time arrays in for ranges containing arithmetic sequnces will be optimized into
         // `for (int i = <from>; i < <to>; i += <by>)` instead of actual run-time array allocation.
         std::optional<ArithmeticSequence> sequence;
@@ -174,14 +176,13 @@ namespace cynth::sem {
         /**
          *  Allocates a corresponding run-time value (while keeping the comp-time value)
          *  if none has already been allocated and returns name of the alloation variable (this->variable).
-         *  TODO: Do I really need esl::result here?
          */
-        esl::result<std::string> allocate (context::Main &);
+        std::string allocate (context::Main &);
 
         // TODO: Use sequence.type() if available.
         CompleteType type () const;
 
-        //std::optional<ArithmeticSequence> sequentialize ();
+        std::optional<ArithmeticSequence> sequentialize ();
 
         /**
          *  Allocated array values with only const-valued array references to them can be optimized in some cases.

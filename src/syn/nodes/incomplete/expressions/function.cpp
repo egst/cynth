@@ -23,14 +23,14 @@ namespace cynth::syn {
     using sem::CompleteValue;
     using sem::ResolvedValue;
 
-    DisplayResult syn::node::Function::display () const {
+    DisplayResult node::Function::display () const {
         return
             (interface::display || target::category{} <<= *output) + " fn " +
             esl::parenthesized(interface::display || target::category{} <<= *input) + " " +
             (interface::display || target::category{} <<= *body);
     }
 
-    ExpressionProcessingResult syn::node::Function::processExpression (context::Main & ctx) const {
+    ExpressionProcessingResult node::Function::processExpression (context::Main & ctx) const {
         return [&] (auto fun) -> ExpressionProcessingResult {
             return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{fun}});
 

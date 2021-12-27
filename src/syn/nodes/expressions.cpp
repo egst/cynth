@@ -793,10 +793,7 @@ namespace cynth::syn {
     }
 
     //// Array ////
-
-    display_result syn::node::Array::display () const {
-        return "[" + util::join(", ", interface::display(elements)) + "]";
-    }
+    // src/syn/nodes/incomplete/expressions/array.cpp
 
     syn::evaluation_result syn::node::Array::evaluate (sem::context & ctx) const {
         auto result = sem::array_elems(ctx, elements);

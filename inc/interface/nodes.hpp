@@ -5,7 +5,7 @@
 #include "esl/containers.hpp"
 #include "esl/functional.hpp"
 #include "esl/result.hpp"
-#include "esl/concepts.hpp" // variant_member
+#include "esl/concepts.hpp"
 
 #include "context/main.hpp"
 #include "interface/forward.hpp"
@@ -96,10 +96,36 @@ namespace cynth::interface {
     }
 
     constexpr auto processArrayElement (context::Main & ctx) {
-        return [&ctx] (has::processArrayElement auto const & node) -> ArrayElementProcessingResult {
-            return node.processArrayElement(ctx);
+        return esl::overload(
+            [&ctx] (has::processArrayElement auto const & node) -> ArrayElementProcessingResult {
+                return node.processArrayElement(ctx);
+            },
+            [&ctx] <has::processExpression T> (T const & node) -> ArrayElementProcessingResult
+            requires (!has::processArrayElement<T>) {
+                return node.processExpression(ctx);
+                /*
+                if (!result) return result.error();
+                return esl::init<interface::ArrayElementVector>(*result);
+                */
+            }
+        );
+    }
+
+    template <typename Target>
+    constexpr auto processArrayElementsLift (context::Main & ctx) {
+        return [&ctx] (auto const & elems) -> ArrayElementProcessingResult {
+            interface::ArrayElementVector<sem::ResolvedValue> processed;
+            processed.reserve(elems.size()); // Lower-bound size estimate.
+            for (auto const & elem: elems) {
+                auto result = lift<Target>(processArrayElement(ctx))(elem);
+                if (!result) return result.error();
+                processed.insert_back(result->begin(), result->end());
+            }
+            return processed;
         };
     }
+
+    constexpr auto processArrayElementCategories = processArrayElementsLift<esl::target::category>;
 
     constexpr auto processStatement (context::Main & ctx) {
         return esl::overload(

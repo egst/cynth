@@ -21,7 +21,10 @@ namespace cynth::interface {
     // For full declarations, #include "interface/nodes.hpp"
     using StatementProcessingResult        = esl::optional_result<sem::Return>;
     using ExpressionProcessingResult       = esl::result<esl::tiny_vector<sem::ResolvedValue>>;
-    using ArrayElementProcessingResult     = esl::result<std::vector<esl::tiny_vector<sem::ResolvedValue>>>;
+    template <typename T>
+    //using ArrayElementVector               = std::vector<T>; // Optimized for general case array values. (e.g. array[i, j, k], [a, b, c], etc.)
+    using ArrayElementVector               = esl::tiny_vector<T>; // Optimized for single-valued array elements. (e.g. array[index], [a], etc.)
+    using ArrayElementProcessingResult     = esl::result<ArrayElementVector<sem::ResolvedValue>>; // Assuming single-valued array elements.
     using TypeResolutionResult             = esl::result<esl::tiny_vector<sem::CompleteType>>;
     using DeclarationResolutionResult      = esl::result<esl::tiny_vector<sem::CompleteDeclaration>>;
     using RangeDeclarationResolutionResult = esl::result<esl::tiny_vector<sem::CompleteRangeDeclaration>>;

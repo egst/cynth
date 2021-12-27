@@ -41,7 +41,7 @@ namespace cynth::syn {
     using sem::TypedExpression;
     using sem::Variable;
 
-    DisplayResult syn::node::Application::display () const {
+    DisplayResult node::Application::display () const {
         return
             (interface::display || target::category{} <<= *function) +
             esl::parenthesized(interface::display || target::category{} <<= *arguments);
@@ -125,14 +125,15 @@ namespace cynth::syn {
                     }
                     return result; // Successfully evaluated at compile-time.
 
-                } || target::result{} <<= interface::processExpression(funScope) || target::category{} <<= *implementation.body;
+                } || target::result{} <<=
+                    interface::processExpression(funScope) || target::category{} <<= *implementation.body;
 
             } || target::result{} <<= paramDecls(implementation.parameters, type.in);
         }
 
     }
 
-    ExpressionProcessingResult syn::node::Application::processExpression (context::Main & ctx) const {
+    ExpressionProcessingResult node::Application::processExpression (context::Main & ctx) const {
         return [&] (auto f, auto args) -> ExpressionProcessingResult {
             auto valResult = std::move(f).template get<CompleteValue>();
             if (!valResult) return valResult.error();

@@ -11,6 +11,9 @@
 #include "esl/tiny_vector.hpp"
 #include "esl/zip.hpp"
 
+#include "sem/numeric_types.hpp"
+// TODO: Decide where to use std::size_t and where to use sem::Integral
+
 // TODO: Either put this in the `sem::` namespace, or move it out of the `sem/` directory.
 namespace cynth {
 
@@ -486,6 +489,13 @@ namespace cynth {
             return a + " < " + b;
         }
 
+        /***
+        <a> * <b>
+        ***/
+        inline std::string mul (std::string const & a, std::string const & b) {
+            return a + " * " + b;
+        }
+
         //// Built-in types ////
 
         /***
@@ -559,6 +569,14 @@ namespace cynth {
         ***/
         inline std::string infer (std::string const & value) {
             return std::string{} + str::gnuTypeof + "(" + value + ")";
+        }
+
+        /***
+        # GNU typeof extension
+        sizeof(<value>)
+        ***/
+        inline std::string inferSize (std::string const & value) {
+            return std::string{} + "sizeof" + "(" + value + ")";
         }
 
         /***
@@ -703,6 +721,37 @@ namespace cynth {
         ***/
         inline std::string branchInitialization (std::size_t const & number) {
             return c::designatedInitialization(std::to_string(number), def::branchMember);
+        }
+
+        /***
+        # Assignment of individual array values after it has been declared.
+        # Useful for "initialization" of function-allocated arrays from values created later on in the function.
+        <array>[1] = <value1>;
+        <array>[2] = <value2>;
+        ...
+        ***/
+        template <esl::range T>
+        std::string arrayIndividualInitialization (std::string const & array, T const & values) {
+            std::vector<std::string> result;
+            result.reserve(values.size());
+            for (auto const & [i, value]: esl::enumerate(values)) {
+                auto assgn = c::statement(c::assignment(c::arraySubscript(array, i), value));
+                result.push_back(assgn);
+            }
+            return c::join(c::newLine(), result);
+        }
+
+        /***
+        # memcpy to an array after it has been declared.
+        # Useful for "initialization" of function-allocated arrays from another array created later on in the function.
+        memcpy(<array>, <from>, <size> * sizeof(<type>));
+        ***/
+        inline std::string arrayBulkInitialization (
+            std::string const & array, std::string const & from,
+            sem::Integral size, std::string const & type
+        ) {
+            auto sizeArg = c::mul(std::to_string(size), c::inferSize(type));
+            return c::call("memcpy", array, from, sizeArg);
         }
 
         //// Structural access ////
@@ -1234,8 +1283,8 @@ namespace cynth {
         }
 
         struct Array {
-            std::size_t   size;
             TypeSpecifier elemType;
+            sem::Integral size;
 
             std::string name () const {
                 return c::arrayType(size, elemType.merged());

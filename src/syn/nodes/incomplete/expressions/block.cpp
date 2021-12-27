@@ -240,7 +240,7 @@ namespace cynth::syn {
     }
 
     template <bool Program>
-    ExpressionProcessingResult syn::node::Block::process (context::Main & outerScope) const {
+    ExpressionProcessingResult node::Block::process (context::Main & outerScope) const {
         context::Branching branching;
         auto blockScope = outerScope.makeBranchingChild(branching);
         auto & global = outerScope.global;
@@ -337,7 +337,7 @@ namespace cynth::syn {
 
     }
 
-    StatementProcessingResult syn::node::Block::processStatement (context::Main & outerScope) const {
+    StatementProcessingResult node::Block::processStatement (context::Main & outerScope) const {
         auto blockScope = outerScope.makeScopeChild();
 
         return [&] (auto blockResult) -> StatementProcessingResult {

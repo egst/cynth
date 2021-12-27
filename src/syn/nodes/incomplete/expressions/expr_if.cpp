@@ -46,14 +46,14 @@ namespace cynth::syn {
     using sem::ReturnedValues;
     using sem::TypedExpression;
 
-    DisplayResult syn::node::ExprIf::display () const {
+    DisplayResult node::ExprIf::display () const {
         return
             "if "    + esl::parenthesized(interface::display || target::category{} <<= *condition) +
             " "      + (interface::display || target::category{} <<= *positiveBranch) +
             " else " + (interface::display || target::category{} <<= *negativeBranch);
     }
 
-    ExpressionProcessingResult syn::node::ExprIf::processExpression (context::Main & ctx) const {
+    ExpressionProcessingResult node::ExprIf::processExpression (context::Main & ctx) const {
         return [&] (CompleteValue cond) -> ExpressionProcessingResult {
             // Compile-time condition value:
             // Note: No implicit conversions of the if condition will be implemented in the first version.
@@ -209,7 +209,7 @@ namespace cynth::syn {
         interface::processExpression(ctx) || target::category{} <<= *condition;
     }
 
-    StatementProcessingResult syn::node::ExprIf::processStatement (context::Main & ctx) const {
+    StatementProcessingResult node::ExprIf::processStatement (context::Main & ctx) const {
         return if_nodes::processStatement(ctx, *condition, *positiveBranch, *negativeBranch);
     }
 
