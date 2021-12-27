@@ -35,11 +35,13 @@
     interface::DefinitionProcessingResult processDefinition ( \
         context::Main &, \
         std::optional<ResolvedValue> const & definition \
-    ) const; \
+    ) const
+    /*
     interface::ConversionTranslationResult translateConversion ( \
         context::Main &, \
         TypedExpression const & from \
-    ) const;
+    ) const; \
+    */
     /*
     interface::AllocationTranslationResult translateAllocation ( \
         context::Main &, \

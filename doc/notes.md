@@ -665,3 +665,15 @@ for (
 }
 cth_int * var_b = val_f;
 ```
+
+## Translating conversion
+
+```cth
+# (Int a, Bool b)
+(Float, Int) c = (Float, Int) (a, b);
+```
+
+```c
+cth_float var_c0 = ((cth_float) var_a);
+cth_int var_c1 = ((cth_int) var_b);
+```

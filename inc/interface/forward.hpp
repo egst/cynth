@@ -44,7 +44,7 @@ namespace cynth::interface {
     using TypeTranslationResult          = std::string;
     using TypeSpecifierTranslationResult = tpl::TypeSpecifier;
     using TypeCompletionResult           = esl::result<sem::CompleteType>;
-    using ConversionTranslationResult    = esl::result<sem::TypedExpression>;
+    //using ConversionTranslationResult    = esl::result<sem::TypedExpression>;
     using DefinitionProcessingResult     = esl::result<sem::Variable>;
     using DeclarationProcessingResult    = DefinitionProcessingResult;
     //using AllocationTranslationResult = esl::result<sem::TypedExpression>;
@@ -54,9 +54,9 @@ namespace cynth::interface {
     template <typename T>
     using GetResult               = esl::result<T>;
     //using ConversionResult        = esl::result<sem::CompleteValue>;
-    template <typename T>
-    using ConversionResult        = esl::result<typename T::Value>;
-    using DynamicConversionResult = esl::result<sem::CompleteValue>;
+    //template <typename T>
+    //using ConversionResult        = esl::result<typename T::Value>;
+    //using DynamicConversionResult = esl::result<sem::CompleteValue>;
     using ValueTypeResult         = sem::CompleteType;
     using ValueTranslationResult  = esl::result<sem::TypedExpression>;
     using TargetTranslationResult = esl::result<sem::TypedTargetExpression>;

@@ -1,6 +1,7 @@
 #include "syn/nodes/incomplete/expressions/subscript.hpp"
 #include "syn/nodes/expressions.hpp" // To complete circular dependencies.
 
+#include "esl/category.hpp"
 #include "esl/containers.hpp"
 #include "esl/lift.hpp"
 #include "esl/string.hpp"

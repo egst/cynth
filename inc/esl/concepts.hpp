@@ -35,32 +35,40 @@ namespace esl {
 
     namespace detail::concepts {
 
+        /*
         template <typename...> struct some_same_as;
 
         template <typename T, typename U, typename... Us>
         struct some_same_as<T, U, Us...> {
-            static constexpr bool value = std::same_as<T, U> || some_same_as<T, Us...>::value;
+            static constexpr bool value = esl::same_but_cvref<T, U> || some_same_as<T, Us...>::value;
         };
 
         template <typename T, typename U>
         struct some_same_as<T, U> {
-            static constexpr bool value = std::same_as<T, U>;
+            static constexpr bool value = esl::same_but_cvref<T, U>;
         };
 
         template <typename T>
         struct some_same_as<T> {
             static constexpr bool value = false;
         };
+        */
 
     }
 
     /** At least one type is the same. */
     template <typename T, typename... Ts>
-    concept some_same_as = detail::concepts::some_same_as<T, Ts...>::value;
+    //concept some_same_as = detail::concepts::some_same_as<T, Ts...>::value;
+    concept some_same_as = (esl::same_but_cvref<T, Ts> || ...);
 
     /** None of the types are the same. */
     template <typename T, typename... Ts>
-    concept none_same_as = !some_same_as<T, Ts...>;
+    //concept none_same_as = !some_same_as<T, Ts...>;
+    concept none_same_as = (!esl::same_but_cvref<T, Ts> && ...);
+
+    /** All of the types are the same. */
+    template <typename T, typename... Ts>
+    concept all_same_as = (esl::same_but_cvref<T, Ts> && ...);
 
     namespace detail::concepts {
 

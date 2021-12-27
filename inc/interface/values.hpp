@@ -26,6 +26,12 @@ namespace cynth::interface {
     template <typename T>
     concept value = esl::variant_member<T, sem::CompleteValue::variant>;
 
+    template <typename T>
+    concept simpleValue =
+        esl::same_but_cvref<T, sem::value::Bool> ||
+        esl::same_but_cvref<T, sem::value::Int>  ||
+        esl::same_but_cvref<T, sem::value::Float>;
+
     namespace has {
 
         template <typename T, typename Out>
@@ -51,15 +57,19 @@ namespace cynth::interface {
             value.valueType();
         };
 
+        /*
         template <typename T, typename To>
         concept convertSimpleValue = value<T> && requires (T value, To const & other) {
             { value.convertValue(other) } -> std::same_as<ConversionResult<To>>;
         };
+        */
 
+        /*
         template <typename T, typename To>
         concept convertValue = value<T> && requires (T value, context::Main & ctx, To const & other) {
             { value.convertValue(ctx, other) } -> std::same_as<ConversionResult<To>>;
         };
+        */
 
         template <typename T>
         concept translateValue = value<T> && requires (T value, context::Main & ctx) {
@@ -93,6 +103,7 @@ namespace cynth::interface {
         */
     );
 
+    /*
     constexpr auto convertValueTo (context::Main & ctx) {
         return [&ctx] <type To> (To const & to) {
             return esl::overload(
@@ -144,6 +155,7 @@ namespace cynth::interface {
             );
         };
     // TODO: convertSimpleValue?
+    */
 
     inline auto translateValue (context::Main & ctx) {
         return esl::overload(

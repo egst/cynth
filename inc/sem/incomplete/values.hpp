@@ -24,10 +24,12 @@
 // Note: No macros escape this file.
 #define GET(Type) \
     interface::GetResult<Type> get () const
+/*
 #define CONVERT(Type) \
     interface::ConversionResult<Type> convertValue (context::Main &, Type const &) const
 #define CONVERT_SIMPLE(Type) \
     interface::ConversionResult<Type> convertValue (Type const &) const
+*/
 #define STATIC_VALUE_TYPE(Type, init) \
     constexpr static Type valueType = init
 #define DIRECT_VALUE_TYPE(Type) \
@@ -51,9 +53,9 @@ namespace cynth::sem {
 
             GET(bool);
 
-            CONVERT_SIMPLE(type::Bool);
-            CONVERT_SIMPLE(type::Int);
-            CONVERT_SIMPLE(type::Float);
+            //CONVERT_SIMPLE(type::Bool);
+            //CONVERT_SIMPLE(type::Int);
+            //CONVERT_SIMPLE(type::Float);
 
             constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
         };
@@ -67,9 +69,9 @@ namespace cynth::sem {
 
             GET(Integral);
 
-            CONVERT_SIMPLE(type::Bool);
-            CONVERT_SIMPLE(type::Int);
-            CONVERT_SIMPLE(type::Float);
+            //CONVERT_SIMPLE(type::Bool);
+            //CONVERT_SIMPLE(type::Int);
+            //CONVERT_SIMPLE(type::Float);
 
             constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
         };
@@ -83,9 +85,9 @@ namespace cynth::sem {
 
             GET(Floating);
 
-            CONVERT_SIMPLE(type::Bool);
-            CONVERT_SIMPLE(type::Int);
-            CONVERT_SIMPLE(type::Float);
+            //CONVERT_SIMPLE(type::Bool);
+            //CONVERT_SIMPLE(type::Int);
+            //CONVERT_SIMPLE(type::Float);
 
             constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
         };
@@ -109,11 +111,11 @@ namespace cynth::sem {
 
             DIRECT_VALUE_TYPE(type::In);
 
-            CONVERT(type::Bool);
-            CONVERT(type::Int);
-            CONVERT(type::Float);
-            CONVERT(type::In);
-            CONVERT(type::Buffer);
+            //CONVERT(type::Bool);
+            //CONVERT(type::Int);
+            //CONVERT(type::Float);
+            //CONVERT(type::In);
+            //CONVERT(type::Buffer);
         };
 
         struct Out {
@@ -123,7 +125,7 @@ namespace cynth::sem {
 
             DIRECT_VALUE_TYPE(type::Out);
 
-            CONVERT(type::Out);
+            //CONVERT(type::Out);
         };
 
     }
@@ -219,7 +221,7 @@ namespace cynth::sem {
 
             //GET(std::vector<esl::tiny_vector<CompleteValue>>);
 
-            CONVERT(type::Array);
+            //CONVERT(type::Array);
 
             /* TODO?
             static esl::result<CompleteValue> make (
@@ -240,7 +242,7 @@ namespace cynth::sem {
 
             DIRECT_VALUE_TYPE(type::Buffer);
 
-            CONVERT(type::Buffer);
+            //CONVERT(type::Buffer);
 
             //constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
         };
@@ -301,8 +303,8 @@ namespace cynth::sem {
 
             //GET(Function);
 
-            CONVERT(type::Function);
-            CONVERT(type::Buffer);
+            //CONVERT(type::Function);
+            //CONVERT(type::Buffer);
         };
 
         struct Unknown {
@@ -348,7 +350,8 @@ namespace cynth::sem {
 }
 
 #undef GET
-#undef CONVERT
+//#undef CONVERT
+//#undef CONVERT_SIMPLE
 #undef STATIC_VALUE_TYPE
 #undef DIRECT_VALUE_TYPE
 #undef VALUE_TYPE

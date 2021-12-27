@@ -32,9 +32,9 @@ namespace cynth::interface {
 
     template <typename T>
     concept simpleType =
-        std::same_as<T, sem::type::Bool> ||
-        std::same_as<T, sem::type::Int>  ||
-        std::same_as<T, sem::type::Float>;
+        esl::same_but_cvref<T, sem::type::Bool> ||
+        esl::same_but_cvref<T, sem::type::Int>  ||
+        esl::same_but_cvref<T, sem::type::Float>;
 
     namespace has {
 
@@ -104,12 +104,14 @@ namespace cynth::interface {
             { type.processDefinition(ctx, definition) } -> std::same_as<DefinitionProcessingResult>;
         };
 
+        /*
         template <typename T>
         concept translateConversion = type<T> && requires (
             T type, context::Main & ctx, sem::ResolvedValue from
         ) {
             { type.translateConversion(ctx, from) } -> std::same_as<ConversionTranslationResult>;
         };
+        */
 
         /*
         template <typename T>
@@ -315,6 +317,7 @@ namespace cynth::interface {
     }
     */
 
+    /*
     constexpr auto translateConversion (context::Main & ctx, sem::TypedExpression const & from) {
         return esl::overload(
             [&ctx, &from] <has::translateConversion T> (T const & type) -> ConversionTranslationResult {
@@ -325,6 +328,7 @@ namespace cynth::interface {
             }
         );
     }
+    */
 
     constexpr auto completeType (context::Main & ctx) {
         return esl::overload(
