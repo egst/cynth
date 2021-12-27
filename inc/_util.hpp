@@ -1,9 +1,6 @@
 #pragma once
 
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
 #include <vector>
-
 #include <optional>
 
 #include "esl/concepts.hpp"

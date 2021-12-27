@@ -16,6 +16,10 @@
 
 # C++ details
 
+* Explicitly `inline` simple small functions?  
+    I was going to implement everything (except for templates) in cpp files to be consistent,
+    but then I realized, that that might limit the compiler's inlining abilities.
+    I should check what LTO/LTCG options to enable to allow link-time inlining.
 * `std::move` when defererencing results.
 * Check places where return std::move could mess with copy elision.
 * Check if everything is ok with stuff that uses `std::vector<bool>`.  
@@ -40,6 +44,9 @@
     Only include what is needed for the implementation. (I.e. what's in the functions' bodies, not their signatures.)
 
 # Naming
+
+* Name element type members in array-related structures constistently  
+    `type`, `elemType`, `elementType` -> preferably `elementType` to avoid unnecessary abbreviations.
 
 # Structure
 

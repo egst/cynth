@@ -43,7 +43,7 @@ namespace cynth::sem {
     namespace value {
 
         struct Bool {
-            std::optional<bool> value;
+            bool value;
 
             VALUE_INTERFACE;
 
@@ -59,7 +59,7 @@ namespace cynth::sem {
         };
 
         struct Int {
-            std::optional<Integral> value;
+            Integral value;
 
             VALUE_INTERFACE;
 
@@ -75,7 +75,7 @@ namespace cynth::sem {
         };
 
         struct Float {
-            std::optional<Floating> value;
+            Floating value;
 
             VALUE_INTERFACE;
 
@@ -91,7 +91,7 @@ namespace cynth::sem {
         };
 
         struct String {
-            std::optional<std::string> value;
+            std::string value;
 
             VALUE_INTERFACE;
 
@@ -103,7 +103,7 @@ namespace cynth::sem {
         };
 
         struct In {
-            std::optional<std::string> allocation; // run-time allocation variable name
+            std::string allocation; // run-time allocation variable name
 
             VALUE_INTERFACE;
 
@@ -117,7 +117,7 @@ namespace cynth::sem {
         };
 
         struct Out {
-            std::optional<std::string> allocation; // run-time allocation variable name
+            std::string allocation; // run-time allocation variable name
 
             VALUE_INTERFACE;
 

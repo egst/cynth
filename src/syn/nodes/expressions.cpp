@@ -739,99 +739,14 @@ namespace cynth::syn {
         }};
         return syn::make_evaluation_result(lift::result{sem::value::make_bool}(util::land(llhs, lrhs)));
     }
+#endif
 
     //// Application ////
-
-    display_result syn::node::Application::display () const {
-        return interface::display(function) + util::parenthesized(interface::display(arguments));
-    }
-
-    syn::evaluation_result syn::node::Application::evaluate (sem::context & ctx) const {
-        // Definition:
-        auto definition_result = sem::get<sem::value::Function>(util::single(syn::evaluate(ctx)(function)));
-        // TODO: Check if evaluated to a function?
-        if (!definition_result)
-            return syn::make_evaluation_result(definition_result.error());
-        auto definition = *std::move(definition_result);
-
-        // Arguments:
-        auto args_result = util::unite_results(syn::evaluate(ctx)(arguments));
-        if (!args_result)
-            return syn::make_evaluation_result(args_result.error());
-        auto args = *std::move(args_result);
-
-        // Init nested scope:
-        //auto function_scope = ctx;
-        auto function_scope = make_child_context(*definition.value->capture);
-        // Every function has its internal storage for array values:
-        // Note: No other referential values need local function storage for now.
-        // In, out and buffer types are only stored globally right now.
-        function_scope.init_storage<sem::value::ArrayValue>();
-
-        // Parameters:
-        /*auto params_result = util::unite_results(sem::complete(syn::eval_decl(function_scope)(definition.input)));
-        if (!params_result)
-            return syn::make_evaluation_result(params_result.error());
-        auto params = *std::move(params_result);*/
-        auto params = std::move(definition.value->parameters);
-
-        auto paramdef_result = function_scope.define_value(params, args);
-        if (!paramdef_result)
-            return syn::make_evaluation_result(paramdef_result.error());
-
-        auto body_result = util::unite_results(syn::evaluate(function_scope)(definition.value->body));
-        if (!body_result)
-            return syn::make_evaluation_result(body_result.error());
-        auto body = *std::move(body_result);
-        //auto type = sem::complete(syn::eval_type(function_scope)(definition.output));
-        auto type = std::move(definition.value->out_type);
-
-        auto results = sem::copy(ctx)(sem::convert(ctx)(std::move(body), std::move(type)));
-        if (!results)
-            return syn::make_evaluation_result(results.error());
-        return *results;
-    }
+    // src/syn/nodes/incomplete/expressions/application.cpp
 
     //// Array ////
     // src/syn/nodes/incomplete/expressions/array.cpp
 
-    syn::evaluation_result syn::node::Array::evaluate (sem::context & ctx) const {
-        auto result = sem::array_elems(ctx, elements);
-        if (!result)
-            return syn::make_evaluation_result(result.error());
-        auto [values, type] = *std::move(result);
-
-        // Note: There were some unresolved issues in the standard with lambda-capturing structured bindings,
-        // which should now (as of C++20?) be resolved, but clang (10) still hasn't implemented the changes. (Maybe clang 11?)
-        // So until it's fixed in clang, the workaround is to do a capture with an initializer: [&type = type]
-
-        auto converted_result = util::unite_results(lift::component{
-            [&ctx, &type = type] <typename T> (T && value) -> cynth::result<tuple_vector<sem::value::complete>> {
-                auto result = sem::convert(ctx)(std::forward<T>(value), type);
-                if (!result)
-                    return result.error();
-                return util::unite_results(*result);
-            }
-        } (values));
-        if (!converted_result)
-            return syn::make_evaluation_result(converted_result.error());
-        auto converted = *std::move(converted_result);
-        auto stored = ctx.store_value(sem::value::ArrayValue {
-            .value = converted
-        });
-        if (!stored)
-            return syn::make_evaluation_result(stored.error());
-
-        auto array_result = sem::value::make_array (
-            stored.get(),
-            make_component_vector(std::move(type)),
-            static_cast<integral>(stored->value.size())
-        );
-        if (!array_result)
-            return syn::make_evaluation_result(array_result.error());
-        return syn::make_evaluation_result(*array_result);
-    }
-#endif
 
     //// Block ////
     // src/syn/nodes/incomplete/expressions/block.cpp
@@ -846,30 +761,12 @@ namespace cynth::syn {
     syn::evaluation_result syn::node::Bool::evaluate (sem::context &) const {
         return syn::make_evaluation_result(sem::value::make_bool(value));
     }
+#endif
 
     //// Conversion ////
+    // src/syn/nodes/incomplete/expressions/conversion.hpp
 
-    display_result syn::node::Conversion::display () const {
-        return interface::display(type) + util::parenthesized(interface::display(argument));
-    }
-
-    syn::evaluation_result syn::node::Conversion::evaluate (sem::context & ctx) const {
-        auto from = syn::evaluate(ctx)(argument);
-        auto to   = sem::complete(ctx)(syn::eval_type(ctx)(type));
-        if (to.size() == 0)
-            return syn::make_evaluation_result(result_error{"Cannot use the void type in an explicit conversion."});
-        if (from.size() == 0)
-            return syn::make_evaluation_result(result_error{"Cannot use the void value in an explicit conversion."});
-        if (to.size() > from.size())
-            return syn::make_evaluation_result(result_error{"Too little values in a conversion."});
-        if (to.size() < from.size())
-            return syn::make_evaluation_result(result_error{"Too many values in a conversion."});
-        auto result = sem::convert(ctx)(from, to);
-        if (!result)
-            return syn::make_evaluation_result(result.error());
-        return *result;
-    }
-
+#if 0
     //// Div ///
 
     display_result syn::node::Div::display () const {
@@ -902,7 +799,6 @@ namespace cynth::syn {
 
     //// ExprIf ////
     // src/syn/nodes/incomplete/expressions/expr_if.hpp
-
 
 #if 0
     //// Float ////
@@ -1137,89 +1033,12 @@ namespace cynth::syn {
             return syn::make_evaluation_result(results.error());
         return *results;
     }
+#endif
 
     //// Subscript ////
+    // src/syn/nodes/incomplete/expressions/subscript.hpp
 
-    display_result syn::node::Subscript::display () const {
-        return interface::display(container) + " [" + util::join(", ", interface::display(location)) + "]";
-    }
-
-    // TODO: This implementation only allows the simple c-like subscript a[i] with a single index on a single (non-tuple) value.
-    syn::evaluation_result syn::node::Subscript::evaluate (sem::context & ctx) const {
-        //syn::evaluate(container);
-        //return sem::get<bool>(lift::single_evaluation{sem::convert(sem::type::Bool{})}(util::single(location)));
-        auto location_result = sem::array_elems(ctx, location);
-        if (!location_result)
-            return syn::make_evaluation_result(location_result.error());
-        auto [locations, location_type] = *location_result;
-
-        // TODO: Check the location_type?
-        // Simplification: only the first location is taken.
-        // (the util::single(locastions) part is the simplification.
-        // lift::result{util::single} corresponds to an intended behaviour, not a simplification.)
-        //auto r = sem::convert(sem::type::Int{})(util::single(locations));
-
-        auto index_result = sem::get<integral> (
-            sem::convert(ctx)(sem::type::Int{})(lift::result{util::single}(util::single(locations)))
-        );
-        if (!index_result)
-            return syn::make_evaluation_result(index_result.error());
-        integral index = *index_result;
-
-        // Simplification: only the first container is taken:
-        using result_type = result<tuple_vector<sem::value::complete>>;
-        auto result = lift::single_evaluation{util::overload {
-            [&ctx, index] (sem::value::Array const & a) -> result_type {
-                integral size = a.size;
-                if (index >= size)
-                    return {result_error{"Subscript index out of bounds."}};
-                if (index < 0)
-                    return {result_error{"Negative subscripts not supported yet."}};
-                auto results = sem::convert(ctx)(a.value->value[index], a.type);
-                if (!results)
-                    return results.error();
-                return util::unite_results(*results);
-            },
-            [] (auto const &) -> result_type {
-                return {result_error{"Cannot subscript a non-array value."}};
-            }
-        }} (util::single(syn::evaluate(ctx)(container)));
-        if (!result)
-            return syn::make_evaluation_result(result.error());
-
-        return lift::tuple_vector{make_result}(*result);
-    }
-
-    syn::target_eval_result syn::node::Subscript::eval_target (sem::context & ctx) const {
-        // Only the first container is taken. (This is the intended behaviour, not a simplification.)
-        auto container_result = lift::result{util::single}(syn::eval_target(ctx)(container));
-        if (!container_result)
-            return syn::make_target_eval_result(container_result.error());
-
-        auto location_result = sem::array_elems(ctx, location);
-        if (!location_result)
-            return syn::make_target_eval_result(location_result.error());
-        auto [locations, location_type] = *std::move(location_result);
-
-        if (locations.size() == 0)
-            return syn::make_target_eval_result(sem::any_target{sem::subscript_target {
-                .container = *container_result,
-                .location  = {}
-            }});
-
-        // Simplification: Only the first location is taken.
-        auto index_result = util::unite_results (
-            sem::convert(ctx)(sem::type::Int{})(lift::component{util::single}(locations))
-        );
-        if (!index_result)
-            return syn::make_target_eval_result(index_result.error());
-
-        return syn::make_target_eval_result(sem::any_target{sem::subscript_target {
-            .container = *container_result,
-            .location  = *index_result
-        }});
-    }
-
+#if 0
     //// Tuple ////
 
     display_result syn::node::Tuple::display () const {

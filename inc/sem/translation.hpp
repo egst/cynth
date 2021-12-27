@@ -744,13 +744,17 @@ namespace cynth {
         /***
         # memcpy to an array after it has been declared.
         # Useful for "initialization" of function-allocated arrays from another array created later on in the function.
-        memcpy(<array>, <from>, <size> * sizeof(<type>));
+        #memcpy(<array>, <from>, <size> * sizeof(<type>));
+        memcpy(<array>, <from>, sizeof(<array>));
         ***/
         inline std::string arrayBulkInitialization (
-            std::string const & array, std::string const & from,
-            sem::Integral size, std::string const & type
+            std::string const & array, std::string const & from
+            //sem::Integral size, std::string const & type
         ) {
-            auto sizeArg = c::mul(std::to_string(size), c::inferSize(type));
+            //auto sizeArg = c::mul(std::to_string(size), c::inferSize(type));
+            auto sizeArg = c::inferSize(array);
+            // This only works when <array> is an array, not a pointer, which is OK
+            // for "initialization" of allocated array values, but it not OK for a general-case array copy.
             return c::call("memcpy", array, from, sizeArg);
         }
 

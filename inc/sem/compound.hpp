@@ -10,6 +10,7 @@
 #include "context/forward.hpp"
 #include "sem/types.hpp"
 #include "sem/values.hpp"
+#include "sem/numeric_types.hpp"
 
 // TODO: Maybe create the incomplete/complete pair for these declarations too?
 
@@ -27,8 +28,9 @@ namespace cynth::sem {
 
     /** E.g. `var`, `*var`, `var[2]` */
     struct TypedTargetExpression {
-        CompleteType type;
-        std::string  expression;
+        CompleteType  type;
+        sem::Integral size;
+        std::string   expression;
     };
 
 #if 0

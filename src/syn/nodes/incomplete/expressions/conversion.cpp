@@ -22,3 +22,26 @@ namespace cynth::syn {
     }
 
 }
+
+/*
+    display_result syn::node::Conversion::display () const {
+        return interface::display(type) + util::parenthesized(interface::display(argument));
+    }
+
+    syn::evaluation_result syn::node::Conversion::evaluate (sem::context & ctx) const {
+        auto from = syn::evaluate(ctx)(argument);
+        auto to   = sem::complete(ctx)(syn::eval_type(ctx)(type));
+        if (to.size() == 0)
+            return syn::make_evaluation_result(result_error{"Cannot use the void type in an explicit conversion."});
+        if (from.size() == 0)
+            return syn::make_evaluation_result(result_error{"Cannot use the void value in an explicit conversion."});
+        if (to.size() > from.size())
+            return syn::make_evaluation_result(result_error{"Too little values in a conversion."});
+        if (to.size() < from.size())
+            return syn::make_evaluation_result(result_error{"Too many values in a conversion."});
+        auto result = sem::convert(ctx)(from, to);
+        if (!result)
+            return syn::make_evaluation_result(result.error());
+        return *result;
+    }
+*/

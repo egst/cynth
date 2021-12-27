@@ -22,10 +22,6 @@
 #include "sem/values.hpp"
 #include "syn/nodes/common/decl_nodes.hpp"
 
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
-
 namespace cynth::syn {
 
     namespace target = esl::target;

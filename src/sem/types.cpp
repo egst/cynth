@@ -20,10 +20,6 @@
 #include "sem/misc.hpp"
 #include "sem/numeric_types.hpp"
 
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
-
 namespace esl {
 
     using cynth::sem::CompleteType;

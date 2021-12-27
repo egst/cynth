@@ -26,7 +26,7 @@ int main () {
     )code";
 
     std::string s2 = R"code(
-    #include ""
+        #include ""
     )code";
 
     return 0;

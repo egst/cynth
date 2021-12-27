@@ -13,10 +13,6 @@
 #include "sem/declarations.hpp"
 #include "sem/translation.hpp"
 
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
-
 namespace cynth::context {
 #if 0 // TODO
 

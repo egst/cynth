@@ -18,8 +18,8 @@ namespace esl {
      *  It's usually not at all straightforward with all the constructor overloads in STL containers.
      *  TODO: Generalize to any number of elements and reserve.
      */
-    template <template <typename...> typename Container, typename T>
-    constexpr auto init (T && first) {
+    template <template <typename...> typename Container>
+    constexpr auto init = [] <typename T> (T && first) {
         Container<std::remove_cvref_t<T>> result;
         /*if constexpr (detail::misc::reservable_range<Container<T>>) {
             result.reserve(sizeof...(rest) + 1);
@@ -27,7 +27,7 @@ namespace esl {
         result.push_back(std::forward<T>(first));
         //(result.push_back(std::forward<T>(rest)), ...);
         return result;
-    }
+    };
 
     /** Concat using the standart insert method. */
     template <typename T, template <typename...> typename V>

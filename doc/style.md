@@ -5,9 +5,10 @@ I will specify them all once this project reaches the potential for collaboratio
 but for now, the following list of conventions are just some explicit coding style notes for me,
 to keep consistent and stop changing my style during development.
 
-* semantic order of parameters:
-    * source, then destination (`copy(src, dst)`, `assign(value, target)`, ...)
+* TODO: choose semantic order of parameters:
+    * source, then destination (`copy(src, dst)`, `assign(value, target)`, ...)?
 
+* line width: max. 120 characters except for comments and `esl::result_error{"..."}` with a long error message.
 * comments: currently not standardized, but:
     * `/** (*  ...) */` is used to comment interfaces with examples and explanations for the user (caller)
         (some IDE tools pick those up as docblocks. clangd seems to be picking up any comment above a declaration)
