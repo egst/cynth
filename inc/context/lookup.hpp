@@ -37,8 +37,6 @@ namespace cynth::context {
         TypeEntry  & findType        (std::string const & name);
 
         Lookup makeChild ();
-
-    protected:
     };
 
 }

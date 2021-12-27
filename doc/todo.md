@@ -35,6 +35,9 @@
     In more specific internal code, I don't mind using raw pointers as "nullable references" or "referential optionals", it's semantically exactly the same.
     I don't really like it in more high-level general-purpose functions, because of the need to explicitly convert the argument, or take its address,
     which makes it harder to modify interface (e.g. to make a parameter optional) without modifying its use everywhere.
+* In cpp files, don't include headers that are only needed for declarations.  
+    They're should already be in the corresponding hpp file.  
+    Only include what is needed for the implementation. (I.e. what's in the functions' bodies, not their signatures.)
 
 # Naming
 

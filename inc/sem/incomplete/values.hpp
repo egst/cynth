@@ -259,7 +259,7 @@ namespace cynth::sem {
         using Switch = esl::component_vector<value::Function>;
         using Variant = std::variant<
             Implementation, // A "leaf" function with a direct implementation.
-            Switch          // A "switch" function only delegating to other functions.
+            Switch          // A "switch" function only delegating to other functions based on a runtime value.
         >;
 
         Variant                    implementation;

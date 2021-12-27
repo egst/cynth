@@ -11,6 +11,7 @@
 #include "interface/nodes.hpp"
 #include "interface/compound.hpp"
 #include "sem/compound.hpp"
+#include "syn/nodes/common/decl_nodes.hpp"
 
 namespace cynth::syn {
 
@@ -18,6 +19,7 @@ namespace cynth::syn {
     namespace target = esl::target;
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
+    using sem::NoReturn;
 
     DisplayResult node::Definition::display () const {
         return
@@ -27,35 +29,9 @@ namespace cynth::syn {
 
     StatementProcessingResult node::Definition::processStatement (context::Main & ctx) const {
         return [&] (auto decls, auto values) -> StatementProcessingResult {
-            if (decls.empty())
-                return esl::result_error{"No declarations in a definition."};
-            if (values.empty())
-                return esl::result_error{"No values in a definition."};
-            auto valueIterator = values.begin();
-            for (auto const & decl: decls) {
-                if (decl.type.empty())
-                    return esl::result_error{"No types in a declaration."};
-                esl::tiny_vector<sem::Variable> vars;
-                auto count = decl.type.size();
-                if (count > values.end() - valueIterator)
-                    return esl::result_error{"More values than targets in a definition."};
-
-                for (auto const & [type, value]: zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                    auto definitionResult = interface::processDefinition(ctx)(value) || target::category{} <<= type;
-                    if (!definitionResult) return definitionResult.error();
-
-                    vars.push_back(*definitionResult);
-                }
-
-                auto varResult = ctx.lookup.insertValue(decl.name, std::move(vars));
-                if (!varResult) return varResult.error();
-                valueIterator += count;
-            }
-
-            if (valueIterator != values.end())
-                return esl::result_error{"More targets than values in a definition."};
-
-            return {sem::NoReturn{}};
+            auto result = decl_nodes::define(ctx, decls, values);
+            if (!result) return result.error();
+            return NoReturn{};
 
         } || target::result{} <<= args(
             interface::resolveDeclaration(ctx) || target::category{} <<= *target,
