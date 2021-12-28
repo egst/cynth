@@ -12,50 +12,10 @@
 #include "esl/lift.hpp"
 #include "esl/result.hpp"
 
-#include "context/c.hpp"
-#include "context/cynth.hpp"
+#include "context/main.hpp"
 #include "interface/types.hpp"
-#include "interface/runtime.hpp"
 #include "interface/values.hpp"
-#include "sem/misc.hpp"
 #include "sem/numeric_types.hpp"
-
-namespace esl {
-
-    using cynth::sem::CompleteType;
-    using cynth::sem::IncompleteType;
-
-    template <>
-    void component_deleter<CompleteType>::operator () (CompleteType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    CompleteType * component_allocator<CompleteType>::operator () (CompleteType const & other) const {
-        return new CompleteType{other};
-    }
-
-    template <>
-    CompleteType * component_allocator<CompleteType>::operator () (CompleteType && other) const {
-        return new CompleteType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<IncompleteType>::operator () (IncompleteType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType const & other) const {
-        return new IncompleteType{other};
-    }
-
-    template <>
-    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType && other) const {
-        return new IncompleteType{std::move(other)};
-    }
-
-}
 
 namespace cynth::sem {
 #if 0 // TODO
@@ -863,4 +823,41 @@ namespace cynth::sem {
     }
 
 #endif
+}
+
+namespace esl {
+
+    using cynth::sem::CompleteType;
+    using cynth::sem::IncompleteType;
+
+    template <>
+    void component_deleter<CompleteType>::operator () (CompleteType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    CompleteType * component_allocator<CompleteType>::operator () (CompleteType const & other) const {
+        return new CompleteType{other};
+    }
+
+    template <>
+    CompleteType * component_allocator<CompleteType>::operator () (CompleteType && other) const {
+        return new CompleteType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<IncompleteType>::operator () (IncompleteType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType const & other) const {
+        return new IncompleteType{other};
+    }
+
+    template <>
+    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType && other) const {
+        return new IncompleteType{std::move(other)};
+    }
+
 }

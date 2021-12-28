@@ -48,16 +48,20 @@ namespace cynth::interface {
         return typed.expression;
     }
 
+    constexpr auto translateDirectResolvedValue (context::Main & ctx) {
+        return esl::overload(
+            [&ctx] (sem::CompleteValue const & value) -> ValueTranslationResult {
+                return esl::lift<esl::target::category>(interface::translateValue(ctx))(value);
+            },
+            [] (sem::TypedExpression const & expr) -> ValueTranslationResult {
+                return expr;
+            }
+        );
+    }
+
     constexpr auto translateResolvedValue (context::Main & ctx) {
         return [&ctx] (sem::ResolvedValue const & value) {
-            return esl::lift<esl::target::category>(
-                [&ctx] (sem::CompleteValue const & value) -> ValueTranslationResult {
-                    return esl::lift<esl::target::category>(interface::translateValue(ctx))(value);
-                },
-                [] (sem::TypedExpression const & expr) -> ValueTranslationResult {
-                    return expr;
-                }
-            )(value);
+            return esl::lift<esl::target::category>(translateDirectResolvedValue(ctx))(value);
         };
     }
 

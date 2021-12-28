@@ -92,10 +92,12 @@ namespace cynth::interface {
             { type.translateTypeSpecifier() } -> std::same_as<TypeSpecifierTranslationResult>;
         };
 
+        /*
         template <typename T>
         concept completeType = incompleteType<T> && requires (T type, context::Main & ctx) {
             { type.completeType(ctx) } -> std::same_as<TypeCompletionResult>;
         };
+        */
 
         template <typename T>
         concept processDefinition = type<T> && requires (
@@ -330,6 +332,7 @@ namespace cynth::interface {
     }
     */
 
+#if 0
     constexpr auto completeType (context::Main & ctx) {
         return esl::overload(
             [] <type T> (T && type) -> TypeCompletionResult {
@@ -348,7 +351,9 @@ namespace cynth::interface {
             }*/
         );
     };
+#endif
 
+#if 0
     constexpr auto uncompleteType = esl::overload(
         [] <type Type> (Type && type) -> esl::result<sem::IncompleteType> {
             return sem::IncompleteType{sem::CompleteType{std::forward<Type>(type)}};
@@ -363,6 +368,7 @@ namespace cynth::interface {
         }
         // ... declaration?
     */
+#endif
 
 # if 0
     // TODO: Maybe it would be better to return the same type for non-decaying types?

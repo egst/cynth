@@ -5,6 +5,7 @@
 
 #include "esl/concepts.hpp"
 #include "esl/lift.hpp"
+#include "esl/tiny_vector.hpp"
 
 namespace esl {
 
@@ -55,36 +56,42 @@ namespace esl {
 
     namespace detail::view {
 
-        template <typename Derived, typename F>
-        struct lift_impl {
-            template <typename T>
-            using vector_type = std::vector<T>;
+        template <template <typename...> typename Vector = std::vector>
+        struct select_result_vector {
+            template <typename Derived, typename F>
+            struct lift_impl {
+                template <typename T>
+                using vector_type = Vector<T>;
 
-            template <esl::same_template<esl::view> T>
-            constexpr auto operator () (T && target) const {
-                return esl::lift_on_range<vector_type>(derived(), std::forward<T>(target));
-            }
+                template <esl::same_template<esl::view> T>
+                constexpr auto operator () (T && target) const {
+                    return esl::lift_on_range<vector_type>(derived(), std::forward<T>(target));
+                }
 
-            template <esl::same_template<esl::view> T, esl::same_template<esl::view> U>
-            constexpr auto operator () (T && first, U && second) const {
-                return esl::lift_on_range<vector_type>(derived(), std::forward<T>(first), std::forward<U>(second));
-            }
+                template <esl::same_template<esl::view> T, esl::same_template<esl::view> U>
+                constexpr auto operator () (T && first, U && second) const {
+                    return esl::lift_on_range<vector_type>(derived(), std::forward<T>(first), std::forward<U>(second));
+                }
 
-        private:
-            constexpr Derived const & derived () const {
-                return *static_cast<Derived const *>(this);
-            }
+            private:
+                constexpr Derived const & derived () const {
+                    return *static_cast<Derived const *>(this);
+                }
+            };
         };
 
     }
 
     namespace target {
 
-        struct view { constexpr static lift_target_tag tag = {}; };
+        struct view             { constexpr static lift_target_tag tag = {}; };
+        struct view_tiny_result { constexpr static lift_target_tag tag = {}; };
 
     }
 
     template <> struct lift_specialization_map<target::view>:
-        lift_implementation<detail::view::lift_impl> {};
+        lift_implementation<detail::view::select_result_vector<>::lift_impl> {};
+    template <> struct lift_specialization_map<target::view_tiny_result>:
+        lift_implementation<detail::view::select_result_vector<esl::tiny_vector>::lift_impl> {};
 
 }

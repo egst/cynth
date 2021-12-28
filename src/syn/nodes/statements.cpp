@@ -155,7 +155,7 @@ namespace esl {
 
 }
 
-//// Some pieces of old code ////
+// Some old code that might be useful...
 
 // This might be useful when implementing assignments.
 #if 0

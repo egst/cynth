@@ -52,7 +52,8 @@ namespace cynth::interface {
     // Values:
     // For full declarations, #include "interface/values.hpp"
     template <typename T>
-    using GetResult               = esl::result<T>;
+    //using GetResult               = esl::result<T>;
+    using GetResult               = T;
     //using ConversionResult        = esl::result<sem::CompleteValue>;
     //template <typename T>
     //using ConversionResult        = esl::result<typename T::Value>;

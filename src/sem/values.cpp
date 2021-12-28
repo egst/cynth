@@ -2,43 +2,6 @@
 
 #include "esl/component.hpp"
 
-namespace esl {
-
-    using cynth::sem::CompleteValue;
-    using cynth::sem::IncompleteValue;
-
-    template <>
-    void component_deleter<CompleteValue>::operator () (CompleteValue * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    CompleteValue * component_allocator<CompleteValue>::operator () (CompleteValue const & other) const {
-        return new CompleteValue{other};
-    }
-
-    template <>
-    CompleteValue * component_allocator<CompleteValue>::operator () (CompleteValue && other) const {
-        return new CompleteValue{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<IncompleteValue>::operator () (IncompleteValue * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    IncompleteValue * component_allocator<IncompleteValue>::operator () (IncompleteValue const & other) const {
-        return new IncompleteValue{other};
-    }
-
-    template <>
-    IncompleteValue * component_allocator<IncompleteValue>::operator () (IncompleteValue && other) const {
-        return new IncompleteValue{std::move(other)};
-    }
-
-}
-
 // TODO
 #if 0
 namespace cynth {
@@ -414,3 +377,40 @@ namespace cynth {
 
 }
 #endif
+
+namespace esl {
+
+    using cynth::sem::CompleteValue;
+    using cynth::sem::IncompleteValue;
+
+    template <>
+    void component_deleter<CompleteValue>::operator () (CompleteValue * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    CompleteValue * component_allocator<CompleteValue>::operator () (CompleteValue const & other) const {
+        return new CompleteValue{other};
+    }
+
+    template <>
+    CompleteValue * component_allocator<CompleteValue>::operator () (CompleteValue && other) const {
+        return new CompleteValue{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<IncompleteValue>::operator () (IncompleteValue * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    IncompleteValue * component_allocator<IncompleteValue>::operator () (IncompleteValue const & other) const {
+        return new IncompleteValue{other};
+    }
+
+    template <>
+    IncompleteValue * component_allocator<IncompleteValue>::operator () (IncompleteValue && other) const {
+        return new IncompleteValue{std::move(other)};
+    }
+
+}

@@ -34,12 +34,6 @@ namespace cynth::sem {
             constexpr static type::Bool valueType = {};
 
             interface::GetResult<bool> get () const;
-
-            //CONVERT_SIMPLE(type::Bool);
-            //CONVERT_SIMPLE(type::Int);
-            //CONVERT_SIMPLE(type::Float);
-
-            constexpr static CompleteValue make (bool); //return sem::value::Bool{.value = value};
         };
 
         struct Int {
@@ -51,12 +45,6 @@ namespace cynth::sem {
             constexpr static type::Int valueType = {};
 
             interface::GetResult<Integral> get () const;
-
-            //CONVERT_SIMPLE(type::Bool);
-            //CONVERT_SIMPLE(type::Int);
-            //CONVERT_SIMPLE(type::Float);
-
-            constexpr static CompleteValue make (Integral); //return sem::value::Int{.value = value};
         };
 
         struct Float {
@@ -68,12 +56,6 @@ namespace cynth::sem {
             constexpr static type::Float valueType = {};
 
             interface::GetResult<Floating> get () const;
-
-            //CONVERT_SIMPLE(type::Bool);
-            //CONVERT_SIMPLE(type::Int);
-            //CONVERT_SIMPLE(type::Float);
-
-            constexpr static CompleteValue make (Floating); //return sem::value::Float{.value = value};
         };
 
         struct String {
@@ -85,8 +67,6 @@ namespace cynth::sem {
             constexpr static type::String valueType = {};
 
             interface::GetResult<std::string> get () const;
-
-            constexpr static CompleteValue make (std::string); //return sem::value::Sting{.value = value};
         };
 
         struct In {
@@ -96,12 +76,6 @@ namespace cynth::sem {
             interface::ValueTranslationResult translateValue (context::Main &) const;
 
             type::In valueType;
-
-            //CONVERT(type::Bool);
-            //CONVERT(type::Int);
-            //CONVERT(type::Float);
-            //CONVERT(type::In);
-            //CONVERT(type::Buffer);
         };
 
         struct Out {
@@ -111,8 +85,6 @@ namespace cynth::sem {
             interface::ValueTranslationResult translateValue (context::Main &) const;
 
             type::Out valueType;
-
-            //CONVERT(type::Out);
         };
 
     }
@@ -129,6 +101,7 @@ namespace cynth::sem {
 
         // TODO: Implement for T = value::Int, value::Float
         template <typename T>
+
         ArithmeticSequence (T const & from, T const & to, T const & by);
 
         CompleteType  type () const;
@@ -185,6 +158,8 @@ namespace cynth::sem {
          */
         void relax ();
 
+        esl::view<ArrayAllocation::Vector::iterator> trimmedValue (sem::Integral) const;
+
     protected:
         bool constant = true;
     };
@@ -206,18 +181,6 @@ namespace cynth::sem {
             interface::ValueTranslationResult translateValue (context::Main &) const;
 
             type::Array valueType;
-
-            //CONVERT(type::Array);
-
-            /* TODO?
-            static esl::result<CompleteValue> make (
-                value::ArrayValue *,
-                esl::component_vector<CompleteType> &&,
-                Integral
-            );
-            */
-
-            esl::view<ArrayAllocation::Vector::iterator> trimmed_value () const;
         };
 
         // TODO: Do I need to store the generator here?
@@ -228,10 +191,6 @@ namespace cynth::sem {
             interface::ValueTranslationResult translateValue (context::Main &) const;
 
             type::Buffer valueType;
-
-            //CONVERT(type::Buffer);
-
-            //constexpr static esl::result<CompleteValue> make (value::BufferValue *, Integral);
         };
 
     }
@@ -286,9 +245,6 @@ namespace cynth::sem {
 
             type::Function & valueType = definition.type;
             // TODO: I hope this will still satitfy the directTypeName concept.
-
-            //CONVERT(type::Function);
-            //CONVERT(type::Buffer);
         };
 
         struct Unknown {

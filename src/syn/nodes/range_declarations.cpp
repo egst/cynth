@@ -14,47 +14,6 @@
 #include "interface/types.hpp"
 #include "sem/declarations.hpp"
 
-namespace esl {
-
-    using cynth::syn::node::RangeDecl;
-    using cynth::syn::node::TupleRangeDecl;
-
-    template <>
-    void component_deleter<RangeDecl>::operator () (RangeDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    RangeDecl * component_allocator<RangeDecl>::operator () (RangeDecl const & other) const {
-        return new RangeDecl{other};
-    }
-
-    template <>
-    RangeDecl * component_allocator<RangeDecl>::operator () (RangeDecl && other) const {
-        return new RangeDecl{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<TupleRangeDecl>::operator () (TupleRangeDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    TupleRangeDecl * component_allocator<TupleRangeDecl>::operator () (
-        TupleRangeDecl const & other
-    ) const {
-        return new TupleRangeDecl{other};
-    }
-
-    template <>
-    TupleRangeDecl * component_allocator<TupleRangeDecl>::operator () (
-        TupleRangeDecl && other
-    ) const {
-        return new TupleRangeDecl{std::move(other)};
-    }
-
-}
-
 namespace cynth::syn {
 
     using namespace esl::sugar;
@@ -103,6 +62,47 @@ namespace cynth::syn {
             interface::resolveRangeDeclaration(ctx) || target::nested<target::component_vector, target::category>{} <<=
             declarations;
         return result;
+    }
+
+}
+
+namespace esl {
+
+    using cynth::syn::node::RangeDecl;
+    using cynth::syn::node::TupleRangeDecl;
+
+    template <>
+    void component_deleter<RangeDecl>::operator () (RangeDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    RangeDecl * component_allocator<RangeDecl>::operator () (RangeDecl const & other) const {
+        return new RangeDecl{other};
+    }
+
+    template <>
+    RangeDecl * component_allocator<RangeDecl>::operator () (RangeDecl && other) const {
+        return new RangeDecl{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TupleRangeDecl>::operator () (TupleRangeDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TupleRangeDecl * component_allocator<TupleRangeDecl>::operator () (
+        TupleRangeDecl const & other
+    ) const {
+        return new TupleRangeDecl{other};
+    }
+
+    template <>
+    TupleRangeDecl * component_allocator<TupleRangeDecl>::operator () (
+        TupleRangeDecl && other
+    ) const {
+        return new TupleRangeDecl{std::move(other)};
     }
 
 }

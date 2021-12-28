@@ -38,8 +38,9 @@ when (a, b, c) {}
 The condition in `when`, `if` and `while` is syntactically just an explicitly parenthesized tuple of values.
 However, semantically it is restricted to a single value.
 This isn't really consistent with the rest of the language, as every expression, type or declaration is a tuple.
-(Only statements are not tuples.) Some of them are explicitly parenthesized, some are not,
-but other than that there is no fundamental difference.
+(Only statements are not tuples. Though they can be grouped into blocks and singular statements are semantically
+equivalent to single-statement blocks in the same way singular expressions are equivalent to single-value tuples.)
+Some of them are explicitly parenthesized, some are not, but other than that there is no fundamental difference.
 The only difference is, that I haven't come up with semantics for some cases.
 In many of those cases there is really no need to have tuple semantics there,
 but it would just make everything cleaner without exceptions from the "everything is a tuple" semantics.
@@ -54,9 +55,15 @@ while (<value>) <statement>            # while
 <value>(<values>) # function call
 <value>[<value>]  # subscript
 <type> [<value>]  # array element type
+
+[<value> to <value>]            # from..to array element
+[<value> to <value> by <value>] # from..to..by array element
+[...<value>]                    # spread array element
 ```
 
-Function calls on multiple values could have some useful semantics.
+## Functions
+
+Function application with multiple function values could have some useful semantics.
 For example, it could represent function composition:
 
 ```cth
@@ -72,6 +79,15 @@ so I think it should be ok.
 
 An alternative would be to reserve it for something like function overloading, in the sense that
 `(f, g)(a)` would try to apply one of the two functions and chose the one that better fits the type of `a`.
+
+```cth
+(Int (Int), Float (Float)) f = (
+    Int   (Int   x) x + 1,
+    Float (Float x) x + 1.,
+);
+```
+
+## Subscripts
 
 Semantics of subscripts with multiple indices are planned, but their implementation might be skipped for the first version.
 Multiple indices would select a sub-array (by value/copy). Other array elements can also be used as subscript indices:
@@ -128,6 +144,24 @@ Subscripts on a tuple of arrays could simply return a tuple of values (or sub-ar
 # equivalent to:
 (a[n], b[n])
 ```
+
+## Range array elements
+
+Tuples in range array elements will be useful, once I allow arrays of tuples.
+
+```cth
+[(0, 0.) to (10, 1.) by (1, .1)]
+# equivalent to:
+[(0, 0.0), (1, 0.1), (2, 0.2), ..., (8, 0.8), (9, 0.9)]
+
+[...([1, 2, 3], [1., 2., 3.)]
+# equivalent to:
+for (Int a in [1, 2, 3] Int b in [1., 2., 3.]) (a, b)
+# equivalent to:
+[(1, 1.), (2, 2.), (3, 3.)]
+```
+
+## Conditions
 
 The obvious choice of semantics for tuples of condition in the if, when and while constructs
 is either a conjunction or a disjunction. I'll choose conjunction, but I'll keep disjunction as a possibility.

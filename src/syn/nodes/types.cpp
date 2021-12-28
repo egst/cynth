@@ -14,171 +14,6 @@
 #include "sem/types.hpp"
 #include "sem/values.hpp"
 
-namespace esl {
-
-    using cynth::syn::node::ArrayType;
-    using cynth::syn::node::Auto;
-    using cynth::syn::node::BufferType;
-    using cynth::syn::node::ConstType;
-    using cynth::syn::node::FunctionType;
-    using cynth::syn::node::InType;
-    using cynth::syn::node::OutType;
-    using cynth::syn::node::TupleType;
-    using cynth::syn::node::TypeDecl;
-    using cynth::syn::node::TypeName;
-
-    template <>
-    void component_deleter<ArrayType>::operator () (ArrayType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ArrayType * component_allocator<ArrayType>::operator () (ArrayType const & other) const {
-        return new ArrayType{other};
-    }
-
-    template <>
-    ArrayType * component_allocator<ArrayType>::operator () (ArrayType && other) const {
-        return new ArrayType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<Auto>::operator () (Auto * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    Auto * component_allocator<Auto>::operator () (Auto const & other) const {
-        return new Auto{other};
-    }
-
-    template <>
-    Auto * component_allocator<Auto>::operator () (Auto && other) const {
-        return new Auto{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<BufferType>::operator () (BufferType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    BufferType * component_allocator<BufferType>::operator () (BufferType const & other) const {
-        return new BufferType{other};
-    }
-
-    template <>
-    BufferType * component_allocator<BufferType>::operator () (BufferType && other) const {
-        return new BufferType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<ConstType>::operator () (ConstType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    ConstType * component_allocator<ConstType>::operator () (ConstType const & other) const {
-        return new ConstType{other};
-    }
-
-    template <>
-    ConstType * component_allocator<ConstType>::operator () (ConstType && other) const {
-        return new ConstType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<FunctionType>::operator () (FunctionType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    FunctionType * component_allocator<FunctionType>::operator () (FunctionType const & other) const {
-        return new FunctionType{other};
-    }
-
-    template <>
-    FunctionType * component_allocator<FunctionType>::operator () (FunctionType && other) const {
-        return new FunctionType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<InType>::operator () (InType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    InType * component_allocator<InType>::operator () (InType const & other) const {
-        return new InType{other};
-    }
-
-    template <>
-    InType * component_allocator<InType>::operator () (InType && other) const {
-        return new InType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<OutType>::operator () (OutType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    OutType * component_allocator<OutType>::operator () (OutType const & other) const {
-        return new OutType{other};
-    }
-
-    template <>
-    OutType * component_allocator<OutType>::operator () (OutType && other) const {
-        return new OutType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<TupleType>::operator () (TupleType * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    TupleType * component_allocator<TupleType>::operator () (TupleType const & other) const {
-        return new TupleType{other};
-    }
-
-    template <>
-    TupleType * component_allocator<TupleType>::operator () (TupleType && other) const {
-        return new TupleType{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<TypeDecl>::operator () (TypeDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl const & other) const {
-        return new TypeDecl{other};
-    }
-
-    template <>
-    TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl && other) const {
-        return new TypeDecl{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<TypeName>::operator () (TypeName * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    TypeName * component_allocator<TypeName>::operator () (TypeName const & other) const {
-        return new TypeName{other};
-    }
-
-    template <>
-    TypeName * component_allocator<TypeName>::operator () (TypeName && other) const {
-        return new TypeName{std::move(other)};
-    }
-
-}
-
 namespace cynth::syn {
 
     using namespace esl::sugar;
@@ -434,6 +269,171 @@ namespace cynth::syn {
         if (!value)
             return esl::result_error{"Type name not found"};
         return {*value};
+    }
+
+}
+
+namespace esl {
+
+    using cynth::syn::node::ArrayType;
+    using cynth::syn::node::Auto;
+    using cynth::syn::node::BufferType;
+    using cynth::syn::node::ConstType;
+    using cynth::syn::node::FunctionType;
+    using cynth::syn::node::InType;
+    using cynth::syn::node::OutType;
+    using cynth::syn::node::TupleType;
+    using cynth::syn::node::TypeDecl;
+    using cynth::syn::node::TypeName;
+
+    template <>
+    void component_deleter<ArrayType>::operator () (ArrayType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ArrayType * component_allocator<ArrayType>::operator () (ArrayType const & other) const {
+        return new ArrayType{other};
+    }
+
+    template <>
+    ArrayType * component_allocator<ArrayType>::operator () (ArrayType && other) const {
+        return new ArrayType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Auto>::operator () (Auto * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Auto * component_allocator<Auto>::operator () (Auto const & other) const {
+        return new Auto{other};
+    }
+
+    template <>
+    Auto * component_allocator<Auto>::operator () (Auto && other) const {
+        return new Auto{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<BufferType>::operator () (BufferType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    BufferType * component_allocator<BufferType>::operator () (BufferType const & other) const {
+        return new BufferType{other};
+    }
+
+    template <>
+    BufferType * component_allocator<BufferType>::operator () (BufferType && other) const {
+        return new BufferType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<ConstType>::operator () (ConstType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    ConstType * component_allocator<ConstType>::operator () (ConstType const & other) const {
+        return new ConstType{other};
+    }
+
+    template <>
+    ConstType * component_allocator<ConstType>::operator () (ConstType && other) const {
+        return new ConstType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<FunctionType>::operator () (FunctionType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    FunctionType * component_allocator<FunctionType>::operator () (FunctionType const & other) const {
+        return new FunctionType{other};
+    }
+
+    template <>
+    FunctionType * component_allocator<FunctionType>::operator () (FunctionType && other) const {
+        return new FunctionType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<InType>::operator () (InType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    InType * component_allocator<InType>::operator () (InType const & other) const {
+        return new InType{other};
+    }
+
+    template <>
+    InType * component_allocator<InType>::operator () (InType && other) const {
+        return new InType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<OutType>::operator () (OutType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    OutType * component_allocator<OutType>::operator () (OutType const & other) const {
+        return new OutType{other};
+    }
+
+    template <>
+    OutType * component_allocator<OutType>::operator () (OutType && other) const {
+        return new OutType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TupleType>::operator () (TupleType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TupleType * component_allocator<TupleType>::operator () (TupleType const & other) const {
+        return new TupleType{other};
+    }
+
+    template <>
+    TupleType * component_allocator<TupleType>::operator () (TupleType && other) const {
+        return new TupleType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TypeDecl>::operator () (TypeDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl const & other) const {
+        return new TypeDecl{other};
+    }
+
+    template <>
+    TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl && other) const {
+        return new TypeDecl{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TypeName>::operator () (TypeName * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TypeName * component_allocator<TypeName>::operator () (TypeName const & other) const {
+        return new TypeName{other};
+    }
+
+    template <>
+    TypeName * component_allocator<TypeName>::operator () (TypeName && other) const {
+        return new TypeName{std::move(other)};
     }
 
 }
