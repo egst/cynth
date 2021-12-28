@@ -760,6 +760,19 @@ namespace cynth {
             return c::call("memcpy", array, from, sizeArg);
         }
 
+        /***
+        # memcpy to an array with the given size
+        # Useful for "assignment" to arrays or contiguous subarrays.
+        memcpy(<array>, <from>, <size> * sizeof(<type>));
+        ***/
+        inline std::string arrayBulkCopy (
+            std::string const & array, std::string const & from,
+            sem::Integral size, std::string const & type
+        ) {
+            auto sizeArg = c::mul(std::to_string(size), c::inferSize(type));
+            return c::call("memcpy", array, from, sizeArg);
+        }
+
         //// Structural access ////
 
         /***

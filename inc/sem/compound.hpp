@@ -29,7 +29,7 @@ namespace cynth::sem {
     /** E.g. `var`, `*var`, `var[2]` */
     struct TypedTargetExpression {
         CompleteType  type;
-        sem::Integral size;
+        //sem::Integral size;
         std::string   expression;
     };
 

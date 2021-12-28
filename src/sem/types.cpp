@@ -85,12 +85,60 @@ namespace cynth::sem {
 
         // The following helper functions are defined at the bottom of this file.
 
+        DefinitionProcessingResult runtimeSimpleDefinition (
+            context::Main      & ctx,
+            CompleteType const & type,
+            std::string  const & typeName,
+            std::string  const & definition
+        ) {
+            auto varName  = c::variableName(c::id(ctx.nextId()));
+            auto local    = c::definition(c::global(typeName), varName, definition);
+
+            /***
+            local:
+            cth_<type> <var> = <definition>;
+            ***/
+            ctx.insertStatement(local);
+
+            /***
+            var_<i>
+            ***/
+            return Variable{TypedName{type, varName}};
+        }
+
         template <typename Type>
         DefinitionProcessingResult processSimpleDefinition (
-            context::Main &,
-            Type const &,
-            std::optional<ResolvedValue> const &
-        );
+            context::Main                & ctx,
+            Type                   const & type,
+            std::optional<ResolvedValue> & optDef
+        ) {
+            if (type.constant && !optDef)
+                return esl::result_error{"A constant variable must be explicitly initialized."};
+
+            auto definition = optDef ? *optDef : ResolvedValue{TypedExpression{type, Type::defaultExpression()}};
+
+            return [&] (CompleteValue && definition) -> DefinitionProcessingResult {
+                auto valueType = interface::valueType || target::category{} <<= definition;
+                // Note: There will be no implicit conversions in the first version.
+                if (!(interface::sameType(type) || target::category{} <<= valueType))
+                    return esl::result_error{"Initializing from an incompatible type."};
+
+                if (type.constant) {
+                    // Comp-const variable:
+                    return Variable{definition};
+                }
+
+                // Run-time const variable:
+                return [&] (TypedExpression && definition) -> DefinitionProcessingResult {
+                    return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+
+                } || target::result{} <<= interface::translateValue(ctx) || target::category{} <<= std::move(definition);
+
+            } | [&] (TypedExpression && definition) -> DefinitionProcessingResult {
+                return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+
+            } || target::category{} <<= std::move(definition);
+        }
 
     }
 
@@ -531,67 +579,6 @@ namespace cynth::sem {
         ctx.insertStatement(local);
 
         return Variable{CompleteValue{sem::value::Function{fun.definition, varName}}};
-    }
-
-    // Implementing the heper functions defined at the top of this file:
-
-    namespace {
-
-        DefinitionProcessingResult runtimeSimpleDefinition (
-            context::Main      & ctx,
-            CompleteType const & type,
-            std::string  const & typeName,
-            std::string  const & definition
-        ) {
-            auto varName  = c::variableName(c::id(ctx.nextId()));
-            auto local    = c::definition(c::global(typeName), varName, definition);
-
-            /***
-            local:
-            cth_<type> <var> = <definition>;
-            ***/
-            ctx.insertStatement(local);
-
-            /***
-            var_<i>
-            ***/
-            return Variable{TypedName{type, varName}};
-        }
-
-        template <typename Type>
-        DefinitionProcessingResult processSimpleDefinition (
-            context::Main                & ctx,
-            Type                   const & type,
-            std::optional<ResolvedValue> & optDef
-        ) {
-            if (type.constant && !optDef)
-                return esl::result_error{"A constant variable must be explicitly initialized."};
-
-            auto definition = optDef ? *optDef : ResolvedValue{TypedExpression{type, Type::defaultExpression()}};
-
-            return [&] (CompleteValue && definition) -> DefinitionProcessingResult {
-                auto valueType = interface::valueType || target::category{} <<= definition;
-                // Note: There will be no implicit conversions in the first version.
-                if (!(interface::sameType(type) || target::category{} <<= valueType))
-                    return esl::result_error{"Initializing from an incompatible type."};
-
-                if (type.constant) {
-                    // Comp-const variable:
-                    return Variable{definition};
-                }
-
-                // Run-time const variable:
-                return [&] (TypedExpression && definition) -> DefinitionProcessingResult {
-                    return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
-
-                } || target::result{} <<= interface::translateValue(ctx) || target::category{} <<= std::move(definition);
-
-            } | [&] (TypedExpression && definition) -> DefinitionProcessingResult {
-                return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
-
-            } || target::category{} <<= std::move(definition);
-        }
-
     }
 
 }

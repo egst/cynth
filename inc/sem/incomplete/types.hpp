@@ -37,6 +37,11 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
+            ) const;
 
             using Value = value::Bool;
 
@@ -58,6 +63,11 @@ namespace cynth::sem {
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
+            ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
             ) const;
 
             using Value = value::Int;
@@ -81,6 +91,11 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
+            ) const;
 
             using Value = value::Float;
 
@@ -101,6 +116,11 @@ namespace cynth::sem {
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
+            ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
             ) const;
 
             using Value = value::String;
@@ -160,6 +180,11 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
+            ) const;
 
             using Value = value::In;
 
@@ -173,6 +198,11 @@ namespace cynth::sem {
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
+            ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
             ) const;
 
             using Value = value::Out;
@@ -188,6 +218,11 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
+            ) const;
 
             using Value = value::Array;
 
@@ -201,6 +236,11 @@ namespace cynth::sem {
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
+            ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
             ) const;
 
             using Value = value::Buffer;
@@ -220,6 +260,11 @@ namespace cynth::sem {
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
+            ) const;
+            interface::DefinitionProcessingResult     processAssignment (
+                context::Main &,
+                sem::ResolvedValue  const &,
+                sem::ResolvedTarget const &
             ) const;
 
             using Value = value::Function;

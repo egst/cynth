@@ -134,6 +134,8 @@ namespace cynth::syn {
     TargetResolutionResult node::Subscript::resolveTarget (context::Main & ctx) const {
         return [&] (auto elemsResult, auto container) {
             return [&] (sem::type::Array const & type) -> TargetResolutionResult {
+                if (type.constval)
+                    return esl::result_error{"Cannot assign to constant array values."};
                 if (elemsResult.arraySize == 0) {
                     // Whole array:
                     auto lvalue = container.expression;
@@ -141,9 +143,9 @@ namespace cynth::syn {
                     <arr>
                     ***/
                     return esl::init<esl::tiny_vector>(TypedTargetExpression{
-                        .type       = *type.type,
-                        .size       = type.size,
-                        .expression = ""
+                        .type       = type,
+                        //.size       = type.size,
+                        .expression = lvalue
                     });
 
                 } else if (elemsResult.arraySize == 1) {
@@ -158,7 +160,7 @@ namespace cynth::syn {
                         ***/
                         return esl::init<esl::tiny_vector>(TypedTargetExpression{
                             .type       = *type.type,
-                            .size       = 1,
+                            //.size       = 1,
                             .expression = lvalue
                         });
 
@@ -182,7 +184,7 @@ namespace cynth::syn {
                 ***/
                 return esl::init<esl::tiny_vector>(TypedTargetExpression{
                     .type       = *type.type,
-                    .size       = 1,
+                    //.size       = 1,
                     .expression = lvalue
                 });
 

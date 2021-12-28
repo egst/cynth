@@ -23,7 +23,7 @@ namespace cynth::interface {
 
     namespace has {
 
-        // TODO: This should probably be in interface/types instead.
+        /*
         template <typename T>
         concept processAssignment = type<T> && requires (
             T type, context::Main & ctx,
@@ -32,6 +32,7 @@ namespace cynth::interface {
         ) {
             { type.processAssignment(ctx, value, target) } -> std::same_as<AssignmentProcessingResult>;
         };
+        */
 
     }
 
@@ -102,6 +103,7 @@ namespace cynth::interface {
         )(value);
     }
 
+    /*
     constexpr auto processAssignment (context::Main & ctx) {
         return [&ctx] (sem::ResolvedValue const & value, sem::ResolvedTarget const & target) {
             auto type = targetType(target);
@@ -116,5 +118,6 @@ namespace cynth::interface {
             )(type);
         };
     }
+    */
 
 }
