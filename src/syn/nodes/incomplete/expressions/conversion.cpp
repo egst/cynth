@@ -76,26 +76,45 @@ namespace cynth::syn {
             return valName;
         }
 
+        template <interface::simpleType FromType, interface::simpleType Type>
+        esl::result<ResolvedValue> simpleRuntimeValue (
+            FromType        const & fromType,
+            Type            const & type,
+            TypedExpression const & expression
+        ) {
+            if constexpr (esl::same_but_cvref<FromType, Type>)
+                // Same types:
+                return {expression};
+
+            auto converted = c::cast(expression.expression, type.translateType());
+            return {TypedExpression{
+                .type       = type,
+                .expression = converted
+            }};
+        }
+
         esl::result<ResolvedValue> runtimeValue (
             context::Main         & ctx,
             CompleteType    const & type,
             TypedExpression const & expression
         ) {
              return [&] <interface::simpleType FromType, interface::simpleType Type> (
-                FromType fromType, Type const & type
+                FromType const & fromType, Type const & type
             ) -> esl::result<ResolvedValue> {
                 // Simple -> simple:
-                if constexpr (esl::same_but_cvref<FromType, Type>)
-                    // Same types:
-                    return {expression};
+                return simpleRuntimeValue(fromType, type, expression);
 
-                auto converted = c::cast(expression.expression, type.translateType());
-                return {TypedExpression{
-                    .type       = type,
-                    .expression = converted
-                }};
+            } | [&] (sem::type::In fromType, interface::simpleType auto const & type) -> esl::result<ResolvedValue> {
+                // In -> simple:
+                return [&] (interface::simpleType auto const & fromType) -> esl::result<ResolvedValue> {
+                    return simpleRuntimeValue(fromType, type, expression);
 
-            } | [&] (sem::type::Array fromType, sem::type::Array const & type) -> esl::result<ResolvedValue> {
+                } | [&] <typename T> (T const &) -> esl::result<ResolvedValue> requires (!interface::simpleType<T>) {
+                    return esl::result_error{"Compound or referential value type in an input type."}; // Implementation error.
+
+                } || target::category{} <<= *fromType.type;
+
+            } | [&] (sem::type::Array const & fromType, sem::type::Array const & type) -> esl::result<ResolvedValue> {
                 // Array -> array:
                 if (interface::sameTypes(type, fromType))
                     // Same types:
@@ -103,7 +122,7 @@ namespace cynth::syn {
 
                 if (fromType.size < type.size)
                     return esl::result_error{"Arrays can only be converted to smaller sizes."};
-                if (interface::sameTypes || target::category{} <<= args(*fromType.type, *type.type))
+                if (!(interface::sameTypes || target::category{} <<= args(*fromType.type, *type.type)))
                     return esl::result_error{"Conversion of array element types is not supported yet."};
                 if (type.constref && !fromType.constref)
                     return esl::result_error{"Array conversion can't remove constness of the reference."};
@@ -115,7 +134,7 @@ namespace cynth::syn {
                     .expression = expression.expression,
                 }};
 
-            } | [&] (sem::type::Buffer fromType, sem::type::Buffer const & type) -> esl::result<ResolvedValue> {
+            } | [&] (sem::type::Buffer const & fromType, sem::type::Buffer const & type) -> esl::result<ResolvedValue> {
                 // Buffer -> buffer:
                 if (interface::sameTypes(type, fromType))
                     // Same types:
@@ -130,7 +149,7 @@ namespace cynth::syn {
                 }};
 
             } | [&] <typename FromType, typename Type> (
-                FromType fromType, Type const & type
+                FromType const & fromType, Type const & type
             ) -> esl::result<ResolvedValue> {
                 // Other types:
                 if (interface::sameTypes(type, fromType))
@@ -165,6 +184,17 @@ namespace cynth::syn {
                 auto converted = Wrap{static_cast<Data>(value.value)};
                 return {CompleteValue{converted}};
 
+            } | [&] (sem::value::In value, interface::simpleType auto const & type) -> esl::result<ResolvedValue> {
+                // In -> simple:
+                auto fromType = value.valueType;
+                return [&] (interface::simpleType auto const & fromType) -> esl::result<ResolvedValue> {
+                    return simpleRuntimeValue(fromType, type, TypedExpression{fromType, value.allocation});
+
+                } | [&] <typename T> (T const &) -> esl::result<ResolvedValue> requires (!interface::simpleType<T>) {
+                    return esl::result_error{"Compound or referential value type in an input type."}; // Implementation error.
+
+                } || target::category{} <<= *fromType.type;
+
             } | [&] (sem::value::Array value, sem::type::Array const & type) -> esl::result<ResolvedValue> {
                 // Array -> array:
                 auto fromType = value.valueType;
@@ -174,7 +204,7 @@ namespace cynth::syn {
 
                 if (fromType.size < type.size)
                     return esl::result_error{"Arrays can only be converted to smaller sizes."};
-                if (interface::sameTypes || target::category{} <<= args(*fromType.type, *type.type))
+                if (!(interface::sameTypes || target::category{} <<= args(*fromType.type, *type.type)))
                     return esl::result_error{"Conversion of array element types is not supported yet."};
                 if (type.constref && !fromType.constref)
                     return esl::result_error{"Array conversion can't remove constness of the reference."};

@@ -96,17 +96,17 @@ namespace cynth::syn {
                     // Note: This shouldn't be too complicated, but it's not really essential right now.
                 }
 
-            } | [&] (sem::type::Out const & type) -> ExpressionProcessingResult {
+            } | [&] (sem::type::In const & type) -> ExpressionProcessingResult {
                 if (elemsResult.arraySize != 0)
-                    return esl::result_error{"Output types can only be subscripted with an empty subscript."};
+                    return esl::result_error{"Input types can only be subscripted with an empty subscript."};
 
                 return [&] (CompleteValue const & container) -> ExpressionProcessingResult {
                     // Comp-time container:
-                    auto outResult = container.template get<sem::value::Out>();
-                    if (!outResult) return outResult.error();
+                    auto inResult = container.template get<sem::value::In>();
+                    if (!inResult) return inResult.error();
                     return esl::init<esl::tiny_vector>(ResolvedValue{TypedExpression{
                         .type       = *type.type,
-                        .expression = outResult->allocation
+                        .expression = inResult->allocation
                     }});
 
                 } | [&] (TypedExpression const & container) -> ExpressionProcessingResult {
@@ -120,7 +120,7 @@ namespace cynth::syn {
                 } || target::category{} <<= container;
 
             } | [] (auto const &) -> ExpressionProcessingResult {
-                return esl::result_error{"Only arrays and output values can be subscripted."};
+                return esl::result_error{"Only arrays and input values can be subscripted."};
 
             } || target::category{} <<= interface::resolvedValueType(container);
 
@@ -174,7 +174,7 @@ namespace cynth::syn {
 
             } | [&] (sem::type::Out const & type) -> TargetResolutionResult {
                 if (elemsResult.arraySize != 0)
-                    return esl::result_error{"Output types can only be subscripted with an empty subscript."};
+                    return esl::result_error{"Output typed targets can only be subscripted with an empty subscript."};
 
                 auto lvalue = c::dereference(container.expression);
                 /***
@@ -187,7 +187,7 @@ namespace cynth::syn {
                 });
 
             } | [] (auto const &) -> TargetResolutionResult {
-                return esl::result_error{"Only arrays and output values can be subscripted."};
+                return esl::result_error{"Only arrays and output targets can be subscripted."};
 
             } || target::category{} <<= container.type;
 

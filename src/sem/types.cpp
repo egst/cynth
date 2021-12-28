@@ -181,7 +181,7 @@ namespace cynth::sem {
     ) const {
         auto valueType = *type;
         if (!definition) {
-            // Allocating a new value:
+            // No definiton => Allocating a new value:
             return [&] (auto && typeName) -> DefinitionProcessingResult {
                 auto type    = c::global(std::move(typeName));
                 auto varType = c::inputPointerType(type);
@@ -200,77 +200,48 @@ namespace cynth::sem {
                 ctx.global.insertAllocation(alloc);
                 ctx.insertStatement(local);
 
-                return Variable{CompleteValue{sem::value::In{valName, sem::type::In{valueType}}}};
+                return Variable{CompleteValue{sem::value::In{valName, *this}}};
 
             } || target::result{} <<= interface::typeName || target::category{} <<= valueType;
         }
 
         // Creating a reference to an existing value:
-#if 0
-        return [&] (CompleteValue && definition) -> DefinitionProcessingResult {
-
-            /*
-            */
-
-        } | [&] (TypedExpression && definition) -> DefinitionProcessingResult {
-
-            /*
-            return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
-            */
-#endif
-        // TODO: Why don't rvalued parameters work here?
-        [&] (CompleteValue definition) -> DefinitionProcessingResult {
-
-            auto valueType = interface::valueType || target::category{} <<= definition;
+        return [&] (CompleteValue definition) -> DefinitionProcessingResult { // TODO: Why don't rvalued parameters work here?
+            // From comp-time reference => compconst variable:
+            auto fromType = interface::valueType || target::category{} <<= definition;
             // Note: There will be no implicit conversions in the first version.
-            if (!(interface::sameType(*this) || target::category{} <<= valueType))
+            if (!(interface::sameType(*this) || target::category{} <<= fromType))
                 return esl::result_error{"Initializing from an incompatible type."};
 
-            if (type.constant) {
-                // Comp-const variable:
-                return Variable{definition};
-            }
+            return Variable{definition};
 
-            // Run-time const variable:
-            return [&] (TypedExpression && definition) -> DefinitionProcessingResult {
-                return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+        } | [&] (TypedExpression definition) -> DefinitionProcessingResult {
+            // From run-time reference => run-time (const) variable:
+            auto fromType = definition.type;
+            // Note: There will be no implicit conversions in the first version.
+            if (!(interface::sameType(*this) || target::category{} <<= fromType))
+                return esl::result_error{"Initializing from an incompatible type."};
 
-            } || target::result{} <<= interface::translateValue(ctx) || target::category{} <<= definition;
-
-        } | [] (TypedExpression definition) -> DefinitionProcessingResult {
-            return esl::result_error{"TODO"};
-
-        } || target::category{} <<= *std::move(definition);
-
-        return [&] (auto && typeName) -> DefinitionProcessingResult {
-            auto type    = c::global(std::move(typeName));
-            auto varType = c::inputPointerType(type);
-            auto varName = c::variableName(c::id(ctx.nextId()));
-
-#if 0
-            if (definition) {
-                auto local = c::definition(varType, varName, *definition);
+            return [&] (auto && typeName) -> DefinitionProcessingResult {
+                auto type    = c::global(std::move(typeName));
+                auto varType = c::inputPointerType(type);
+                auto varName = c::variableName(c::id(ctx.nextId()));
+                auto local   = c::definition(varType, varName, definition.expression);
 
                 /***
                 local:
-                cth_<type> volatile * var_<j = nextId()> = <definition>;
+                cth_<type> * <var> = <definition>;
                 ***/
-                auto result = ctx.insertStatement(local);
-                if (!result)
-                    return result.error();
+                ctx.insertStatement(local);
 
-            } else {
-                ...
-            }
+                /***
+                <var>
+                ***/
+                return Variable{TypedName{*this, varName}};
 
-            /***
-            var_<j>
-            ***/
-            return varName;
-#endif
+            } || target::result{} <<= interface::typeName || target::category{} <<= valueType;
 
-        } || target::result{} <<= interface::typeName || target::category{} <<= *type;
-
+        } || target::category{} <<= *std::move(definition);
     }
 
 #if 0
