@@ -250,17 +250,8 @@ namespace cynth::syn {
     //// Block ////
     // src/syn/nodes/incomplete/expressions/block.cpp
 
-#if 0 // TODO
     //// Bool ////
-
-    display_result syn::node::Bool::display () const {
-        return value ? "true" : "false";
-    }
-
-    syn::evaluation_result syn::node::Bool::evaluate (sem::context &) const {
-        return syn::make_evaluation_result(sem::value::make_bool(value));
-    }
-#endif
+    // src/syn/nodes/incomplete/expressions/atoms.cpp
 
     //// Conversion ////
     // src/syn/nodes/incomplete/expressions/conversion.hpp
@@ -299,17 +290,8 @@ namespace cynth::syn {
     //// ExprIf ////
     // src/syn/nodes/incomplete/expressions/expr_if.hpp
 
-#if 0
     //// Float ////
-
-    display_result syn::node::Float::display () const {
-        return std::to_string(value);
-    }
-
-    syn::evaluation_result syn::node::Float::evaluate (sem::context &) const {
-        return syn::make_evaluation_result(sem::value::make_float(value));
-    }
-#endif
+    // src/syn/nodes/incomplete/expressions/atoms.hpp
 
     //// Function ////
     // src/syn/nodes/incomplete/expressions/function.cpp
@@ -342,14 +324,7 @@ namespace cynth::syn {
     }
 
     //// Int ////
-
-    display_result syn::node::Int::display () const {
-        return std::to_string(value);
-    }
-
-    syn::evaluation_result syn::node::Int::evaluate (sem::context &) const {
-        return syn::make_evaluation_result(sem::value::make_int(value));
-    }
+    // src/syn/nodes/incomplete/expressions/atoms.cpp
 
     //// Le ////
 
@@ -412,32 +387,12 @@ namespace cynth::syn {
             return syn::make_evaluation_result(results.error());
         return *results;
     }
+#endif
 
     //// Name ////
+    // src/syn/nodes/incomplete/expressions/atoms.hpp
 
-    display_result syn::node::Name::display () const {
-        return *name;
-    }
-
-    syn::evaluation_result syn::node::Name::evaluate (sem::context & ctx) const {
-        return syn::make_evaluation_result(result_error{"TODO"});
-        /*
-        auto value = ctx.find_value(*name);
-        return value
-            ? lift::tuple_vector{make_result}(value->value)
-            : syn::make_evaluation_result(result_error{"Name not found."});
-        */
-    }
-
-    syn::target_eval_result syn::node::Name::eval_target (sem::context & ctx) const {
-        auto result = ctx.find_value(*name);
-        if (!result)
-            return syn::make_target_eval_result(result_error{"Target name not found."});
-        return syn::make_target_eval_result(sem::any_target{sem::direct_target {
-            .value = *result
-        }});
-    }
-
+#if 0
     //// Ne ////
 
     display_result syn::node::Ne::display () const {
@@ -508,18 +463,12 @@ namespace cynth::syn {
             return syn::make_evaluation_result(results.error());
         return *results;
     }
+#endif
 
     //// String ////
+    // src/syn/nodes/incomplete/expressions/atoms.hpp
 
-    display_result syn::node::String::display () const {
-        //return "\"" + value + "\"";
-        return "\"" + *value + "\"";
-    }
-
-    syn::evaluation_result syn::node::String::evaluate (sem::context &) const {
-        return syn::make_evaluation_result(result_error{"Strings are not supported yet."});
-    }
-
+#if 0
     //// Sub ////
 
     display_result syn::node::Sub::display () const {
@@ -537,33 +486,9 @@ namespace cynth::syn {
     //// Subscript ////
     // src/syn/nodes/incomplete/expressions/subscript.hpp
 
-#if 0
     //// Tuple ////
+    // src/syn/nodes/incomplete/expressions/atoms.hpp
 
-    display_result syn::node::Tuple::display () const {
-        return "(" + util::join(", ", interface::display(values)) + ")";
-    }
-
-    syn::evaluation_result syn::node::Tuple::evaluate (sem::context & ctx) const {
-        syn::evaluation_result result;
-        for (auto & value_tuple: syn::evaluate(ctx)(values)) for (auto & value: value_tuple) {
-            result.push_back(std::move(value));
-        }
-        return result;
-    }
-
-    syn::target_eval_result syn::node::Tuple::eval_target (sem::context & ctx) const {
-        tuple_vector<sem::any_target> result;
-        auto values_result = util::unite_results(syn::eval_target(ctx)(values));
-        if (!values_result)
-            return syn::make_target_eval_result(values_result.error());
-        for (auto & value_tuple: *values_result) for (auto & value: value_tuple) {
-            result.push_back(std::move(value));
-        }
-        return result;
-    }
-
-#endif
 }
 
 namespace esl {
