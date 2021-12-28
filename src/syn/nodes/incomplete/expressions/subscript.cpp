@@ -45,8 +45,8 @@ namespace cynth::syn {
                         auto arrayResult = container.template get<sem::value::Array>();
                         if (!arrayResult) return arrayResult.error();
                         auto arrayType = arrayResult->valueType;
-                        arrayType.constref = false;
-                        arrayType.constval = false;
+                        arrayType.constant = false;
+                        interface::loseConstness || target::category{} <<= *arrayType.type;
                         return [&] (ArrayAllocation * alloc) -> ExpressionProcessingResult {
                             auto & copyAlloc = ctx.function.storeValue(*alloc);
                             return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
@@ -71,8 +71,8 @@ namespace cynth::syn {
                         if (!typeResult)
                             return esl::result_error{"Only arrays can be subscripted."};
                         auto arrayType = *typeResult;
-                        arrayType.constref = false;
-                        arrayType.constval = false;
+                        arrayType.constant = false;
+                        interface::loseConstness || target::category{} <<= *arrayType.type;
                         return [&] (auto translType) {
                             auto allocName = array_nodes::arrayAllocation(ctx, translType, elemsResult.arraySize);
                             array_nodes::bulkArrayInitialization(ctx, allocName, container.expression);
@@ -134,7 +134,7 @@ namespace cynth::syn {
     TargetResolutionResult node::Subscript::resolveTarget (context::Main & ctx) const {
         return [&] (auto elemsResult, auto container) {
             return [&] (sem::type::Array const & type) -> TargetResolutionResult {
-                if (type.constval)
+                if (type.constval())
                     return esl::result_error{"Cannot assign to constant array values."};
                 if (elemsResult.arraySize == 0) {
                     // Whole array:

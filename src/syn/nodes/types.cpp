@@ -126,7 +126,7 @@ namespace cynth::syn {
                 return {std::move(type)};
 
             } | [] (sem::type::Array && type) -> esl::result<CompleteType> {
-                type.constref = true;
+                type.constant = true;
                 return {std::move(type)};
 
             } | [] (interface::simpleType auto && type) -> esl::result<CompleteType> {
@@ -168,7 +168,10 @@ namespace cynth::syn {
 
     TypeResolutionResult node::InType::resolveType (context::Main & ctx) const {
         return esl::unite_results || target::result{} <<=
-            [] (sem::type::In && type) -> esl::result<CompleteType> {
+            [] (sem::type::Const && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Input type cannot contain a nested const type."};
+
+            } | [] (sem::type::In && type) -> esl::result<CompleteType> {
                 return {std::move(type)};
 
             } | [] (sem::type::Out && type) -> esl::result<CompleteType> {
@@ -202,7 +205,10 @@ namespace cynth::syn {
 
     TypeResolutionResult node::OutType::resolveType (context::Main & ctx) const {
         return esl::unite_results || target::result{} <<=
-            [] (sem::type::In && type) -> esl::result<CompleteType> {
+            [] (sem::type::Const && type) -> esl::result<CompleteType> {
+                return esl::result_error{"Output type cannot contain a nested const type."};
+
+            } | [] (sem::type::In && type) -> esl::result<CompleteType> {
                 return esl::result_error{"Output type cannot contain a nested input type."};
 
             } | [] (sem::type::Out && type) -> esl::result<CompleteType> {

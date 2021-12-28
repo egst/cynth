@@ -60,6 +60,22 @@ namespace cynth::interface {
             { type.sameType(other) } -> std::same_as<SameTypeResult>;
         };
 
+        template <typename T, typename U>
+        concept identicalType = type<T> && requires (T type, U const & other) {
+            { type.identicalType(other) } -> std::same_as<SameTypeResult>;
+        };
+
+        template <typename T>
+        concept constant = type<T> && requires (T type) {
+            //{ T::constant } -> std::same_as<bool>;
+            { type.constant } -> std::same_as<bool>;
+        };
+
+        template <typename T>
+        concept loseConstness = type<T> && requires (T type) {
+            { type.loseConstness() } -> std::same_as<bool>;
+        };
+
         // There will be no implicit conversions in the first version.
         /*
         template <typename T, typename U>
@@ -135,6 +151,24 @@ namespace cynth::interface {
 
     // Functions:
 
+    constexpr auto constant = esl::overload(
+        [] (interface::has::constant auto const & type) -> bool {
+            return type.constant;
+        },
+        [] <type T> (T const &) -> bool requires (!interface::has::constant<T>) {
+            return false;
+        }
+    );
+
+    constexpr auto loseConstness = esl::overload(
+        [] (interface::has::loseConstness auto const & type) {
+            return type.loseConstness();
+        },
+        [] <type T> (T const &) -> bool requires (!interface::has::loseConstness<T>) {
+            // No-op.
+        }
+    );
+
     constexpr auto isSimple = esl::overload(
         [] (simpleType auto const &) -> bool {
             return true;
@@ -181,6 +215,28 @@ namespace cynth::interface {
             [&t] <type U> (U const & as) -> SameTypeResult
             requires (has::sameType<T, U>) {
                 return t.sameType(as);
+            },
+            [] (type auto const &) -> SameTypeResult {
+                return false;
+            }
+        );
+    };
+
+    constexpr auto identicalTypes = esl::overload(
+        [] <type T, type U> (T const & type, U const & as) -> SameTypeResult
+        requires (has::identicalType<T, U>) {
+            return type.identicalType(as);
+        },
+        [] (type auto const &, type auto const &) -> SameTypeResult {
+            return false;
+        }
+    );
+
+    constexpr auto identicalType = [] <type T> (T const & t) {
+        return esl::overload(
+            [&t] <type U> (U const & as) -> SameTypeResult
+            requires (has::identicalType<T, U>) {
+                return t.identicalType(as);
             },
             [] (type auto const &) -> SameTypeResult {
                 return false;

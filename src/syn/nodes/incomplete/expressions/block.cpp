@@ -161,17 +161,17 @@ namespace cynth::syn {
                         return [&] (auto functions) -> esl::result<void> {
                             if (functions.size() == 1) {
                                 auto const & fun = functions.front();
-                                if (!fun.contextual()) {
+                                if (!fun.runtimeClosure()) {
                                     // A single function with no run-time capture:
                                     blockResult.resolved.push_back(CompleteValue{fun});
                                     return {};
                                 }
 
                                 // A single function with run-time capture:
-                                auto decl = c::declaration(*fun.definition.contextType, name);
+                                auto decl = c::declaration(*fun.definition.closureType, name);
                                 auto copy = sem::value::Function{
                                     .definition      = fun.definition,
-                                    .contextVariable = tupleElement
+                                    .closureVariable = tupleElement
                                 };
                                 blockResult.declarations.push_back(decl);
                                 blockResult.resolved.push_back(CompleteValue{copy});
@@ -183,14 +183,14 @@ namespace cynth::syn {
                             auto & def = global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{esl::make_component_vector(functions)},
                                 .type           = type,
-                                .contextType    = c::contextVariableType(c::id(global.nextId())),
+                                .closureType    = c::closureVariableType(c::id(global.nextId())),
                                 .name           = c::functionName(c::id(global.nextId()))
                             });
                             auto newFun = sem::value::Function{
                                 .definition      = def,
-                                .contextVariable = tupleElement
+                                .closureVariable = tupleElement
                             };
-                            auto decl = c::declaration(*def.contextType, name);
+                            auto decl = c::declaration(*def.closureType, name);
                             blockResult.declarations.push_back(decl);
                             blockResult.resolved.push_back(CompleteValue{newFun});
                             return {};

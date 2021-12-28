@@ -32,26 +32,28 @@ namespace cynth {
         <struct>.internal_member
         <tuple>.e<n>
         ***/
-        constexpr char const * array     = "arr";
-        constexpr char const * boolean   = "bool";
-        constexpr char const * buffer    = "buff";
-        constexpr char const * constant  = "const";
-        constexpr char const * closure   = "closure";
-        constexpr char const * element   = "e";
-        constexpr char const * floating  = "float";
-        constexpr char const * function  = "fun";
-        constexpr char const * global    = "cth";
-        constexpr char const * input     = "in";
-        constexpr char const * integral  = "int";
-        constexpr char const * iterator  = "iter";
-        constexpr char const * member    = "m";
-        constexpr char const * output    = "out";
-        constexpr char const * string    = "str";
-        constexpr char const * structure = "struct";
-        constexpr char const * tuple     = "tup";
-        constexpr char const * value     = "val";
-        constexpr char const * variable  = "var";
-        constexpr char const * variant   = "v";
+        constexpr char const * array           = "arr";
+        constexpr char const * boolean         = "bool";
+        constexpr char const * buffer          = "buff";
+        constexpr char const * constant        = "const";
+        constexpr char const * closure         = "closure";
+        constexpr char const * element         = "e";
+        constexpr char const * floating        = "float";
+        constexpr char const * function        = "fun";
+        constexpr char const * global          = "cth";
+        constexpr char const * input           = "in";
+        constexpr char const * integral        = "int";
+        constexpr char const * iterator        = "iter";
+        constexpr char const * member          = "m";
+        constexpr char const * output          = "out";
+        constexpr char const * string          = "str";
+        constexpr char const * structure       = "struct";
+        constexpr char const * tuple           = "tup";
+        constexpr char const * value           = "val";
+        constexpr char const * variable        = "var";
+        constexpr char const * variant         = "v";
+        constexpr char const * pointer         = "ptr";
+        constexpr char const * constantPointer = "constptr";
 
         // Seaprator in template names:
         //constexpr char const * separator = "__";
@@ -1296,28 +1298,30 @@ namespace cynth {
             std::string type;
             bool constant  = false;
             bool structure = false;
+            bool pointer   = false;
+            bool constptr  = false;
+            // Do not mix pointer and constptr.
+            // TODO: Instead, make pointer a three-state value {none, pointer, constptr}
 
             // TODO: Should I omit the `cth` prefix in the merged form?
             // It would make the merged type names shorter,
             // but keeping the prefix will be simpler to implement and will be more flexible.
             std::string merged () const {
-                if (constant && structure)
-                    return std::string{} + str::constant + delim + str::structure + delim + type;
-                if (constant)
-                    return std::string{} + str::constant + delim + type;
-                if (structure)
-                    return std::string{} + str::structure + delim + type;
-                return type;
+                return
+                    (constant  ? std::string{} + str::constant        + delim : "") +
+                    (constptr  ? std::string{} + str::constantPointer + delim : "") +
+                    (pointer   ? std::string{} + str::pointer         + delim : "") +
+                    (structure ? std::string{} + str::structure       + delim : "") +
+                    type;
             }
 
             std::string full () const {
-                if (constant && structure)
-                    return c::constness(c::structure(c::global(type)));
-                if (structure)
-                    return c::structure(c::global(type));
-                if (constant)
-                    return c::constness(c::global(type));
-                return type;
+                return
+                    (structure  ? std::string{} + "struct "  : "") +
+                    type +
+                    (constant   ? std::string{} + " const"   : "") +
+                    (pointer    ? std::string{} + " *"       : "") +
+                    (constptr   ? std::string{} + " * const" : "");
             }
         };
 

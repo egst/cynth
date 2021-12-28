@@ -24,6 +24,10 @@
 #include "sem/numeric_types.hpp"
 #include "sem/values.hpp"
 
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
+
 namespace esl {
 
     using cynth::sem::CompleteType;
@@ -148,8 +152,28 @@ namespace cynth::sem {
         return std::string{} + "Bool" + (constant ? " const" : "");
     }
 
+    TypeTranslationResult type::Bool::translateType () const {
+        auto name = c::boolType();
+        return constant ? c::constness(name) : name;
+    }
+
+    TypeSpecifierTranslationResult type::Bool::translateTypeSpecifier () const {
+        return tpl::TypeSpecifier{
+            .type     = c::boolType(),
+            .constant = constant
+        };
+    }
+
     SameTypeResult type::Bool::sameType (type::Bool const &) const {
         return true;
+    }
+
+    SameTypeResult type::Bool::identicalType (type::Bool const & other) const {
+        return constant == other.constant;
+    }
+
+    void type::Bool::loseConstness () {
+        constant = false;
     }
 
     DefinitionProcessingResult type::Bool::processDefinition (
@@ -165,8 +189,28 @@ namespace cynth::sem {
         return std::string{} + "Int" + (constant ? " const" : "");
     }
 
+    TypeTranslationResult type::Int::translateType () const {
+        auto name = c::intType();
+        return constant ? c::constness(name) : name;
+    }
+
+    TypeSpecifierTranslationResult type::Int::translateTypeSpecifier () const {
+        return tpl::TypeSpecifier{
+            .type     = c::intType(),
+            .constant = constant
+        };
+    }
+
     SameTypeResult type::Int::sameType (type::Int const &) const {
         return true;
+    }
+
+    SameTypeResult type::Int::identicalType (type::Int const & other) const {
+        return constant == other.constant;
+    }
+
+    void type::Int::loseConstness () {
+        constant = false;
     }
 
     DefinitionProcessingResult type::Int::processDefinition (
@@ -182,8 +226,28 @@ namespace cynth::sem {
         return std::string{} + "Float" + (constant ? " const" : "");
     }
 
+    TypeTranslationResult type::Float::translateType () const {
+        auto name = c::floatType();
+        return constant ? c::constness(name) : name;
+    }
+
+    TypeSpecifierTranslationResult type::Float::translateTypeSpecifier () const {
+        return tpl::TypeSpecifier{
+            .type     = c::floatType(),
+            .constant = constant
+        };
+    }
+
     SameTypeResult type::Float::sameType (type::Float const &) const {
         return true;
+    }
+
+    SameTypeResult type::Float::identicalType (type::Float const & other) const {
+        return constant == other.constant;
+    }
+
+    void type::Float::loseConstness () {
+        constant = false;
     }
 
     DefinitionProcessingResult type::Float::processDefinition (
@@ -199,8 +263,24 @@ namespace cynth::sem {
         return "String";
     }
 
+    TypeTranslationResult type::String::translateType () const {
+        return "cth_str"; // Not implemented.
+    }
+
+    TypeSpecifierTranslationResult type::String::translateTypeSpecifier () const {
+        // Not implemented.
+        return tpl::TypeSpecifier{
+            .type     = "cth_str",
+            .constant = true
+        };
+    }
+
     SameTypeResult type::String::sameType (type::String const &) const {
-        return true;
+        return true; // Not implemented.
+    }
+
+    SameTypeResult type::String::identicalType (type::String const & other) const {
+        return sameType(other);
     }
 
     DefinitionProcessingResult type::String::processDefinition (
@@ -216,8 +296,27 @@ namespace cynth::sem {
         return (interface::display || target::category{} <<= *type) + " in";
     }
 
+    TypeTranslationResult type::In::translateType () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        auto nested = *(interface::translateType || target::category{} <<= *type);
+        return c::inputPointerType(nested);
+    }
+
+    TypeSpecifierTranslationResult type::In::translateTypeSpecifier () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        auto nested = *(interface::translateType || target::category{} <<= *type);
+        return tpl::TypeSpecifier{
+            .type    = nested,
+            .pointer = true
+        };
+    }
+
     SameTypeResult type::In::sameType (type::In const & other) const {
         return interface::sameTypes || target::category{} <<= args(*type, *other.type);
+    }
+
+    SameTypeResult type::In::identicalType (type::In const & other) const {
+        return sameType(other);
     }
 
     DefinitionProcessingResult type::In::processDefinition (
@@ -293,8 +392,28 @@ namespace cynth::sem {
         return (interface::display || target::category{} <<= *type) + " out";
     }
 
+    TypeSpecifierTranslationResult type::Out::translateTypeSpecifier () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        auto nested = *(interface::translateType || target::category{} <<= *type);
+        return tpl::TypeSpecifier{
+            .type     = nested,
+            .constant = true,
+            .constptr = true
+        };
+    }
+
+    TypeTranslationResult type::Out::translateType () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        auto nested = *(interface::translateType || target::category{} <<= *type);
+        return c::outputPointerType(nested);
+    }
+
     SameTypeResult type::Out::sameType (type::Out const & other) const {
         return interface::sameTypes || target::category{} <<= args(*type, *other.type);
+    }
+
+    SameTypeResult type::Out::identicalType (type::Out const & other) const {
+        return sameType(other);
     }
 
     DefinitionProcessingResult type::Out::processDefinition (
@@ -366,16 +485,43 @@ namespace cynth::sem {
 
     //// Array ////
 
+    bool type::Array::constval () const {
+        return interface::constant || target::category{} <<= *type;
+    }
+
     DisplayResult type::Array::display () const {
         return
-            (interface::display || target::category{} <<= *type) + (constval ? " const" : "") +
-            " [" + std::to_string(size) + "]" + (constref ? " const" : "");
+            (interface::display || target::category{} <<= *type) + (constval() ? " const" : "") +
+            " [" + std::to_string(size) + "]" + (constant ? " const" : "");
+    }
+
+    TypeTranslationResult type::Array::translateType () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        auto nested = *(interface::translateType || target::category{} <<= *type);
+        return constant
+            ? c::constness(c::pointer(nested))
+            : c::pointer(nested);
+    }
+
+    TypeSpecifierTranslationResult type::Array::translateTypeSpecifier () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        auto nested = *(interface::translateTypeSpecifier || target::category{} <<= *type);
+        return tpl::TypeSpecifier{
+            .type     = nested.type,
+            .constant = nested.constant,
+            .pointer  = !constant,
+            .constptr = constant
+        };
     }
 
     SameTypeResult type::Array::sameType (type::Array const & other) const {
         return
-            (interface::sameTypes || target::category{} <<= args(*type, *other.type)) &&
+            (interface::identicalTypes || target::category{} <<= args(*type, *other.type)) &&
             size == other.size;
+    }
+
+    SameTypeResult type::Array::identicalType (type::Array const & other) const {
+        return sameType(other) && constant == other.constant;
     }
 
     DefinitionProcessingResult type::Array::processDefinition (
@@ -391,7 +537,7 @@ namespace cynth::sem {
                     if (!interface::sameTypes(*this, definition.valueType))
                         return esl::result_error{"Initializing from an incompatible type."};
 
-                    if (constref)
+                    if (constant)
                         // Compconst reference variable:
                         return Variable{CompleteValue{sem::value::Array{definition.allocation, *this}}};
 
@@ -453,7 +599,7 @@ namespace cynth::sem {
         // Allocating a new array value:
 
         return [&] (auto valueType) -> DefinitionProcessingResult {
-            if (constval)
+            if (constval())
                 return esl::result_error{"Const-valued arrays must be explicitly initialized."};
 
             auto arrayType = ctx.global.instantiate(tpl::Array{std::move(valueType), size});
@@ -466,7 +612,7 @@ namespace cynth::sem {
             ***/
             ctx.function.insertAllocation(alloc);
 
-            if (constref)
+            if (constant)
                 // Compconst reference:
                 return Variable{CompleteValue{sem::value::Array{valName, *this}}};
 
@@ -492,8 +638,25 @@ namespace cynth::sem {
         return "buffer [" + std::to_string(size) + "]";
     }
 
+    TypeTranslationResult type::Buffer::translateType () const {
+        return c::bufferPointer();
+    }
+
+    TypeSpecifierTranslationResult type::Buffer::translateTypeSpecifier () const {
+        // This assumes that the nested type can only be simple, and so will always be translatable.
+        return tpl::TypeSpecifier{
+            .type     = c::floatType(),
+            .constant = true,
+            .constptr = true
+        };
+    }
+
     SameTypeResult type::Buffer::sameType (type::Buffer const & other) const {
         return size == other.size;
+    }
+
+    SameTypeResult type::Buffer::identicalType (type::Buffer const & other) const {
+        return sameType(other);
     }
 
     DefinitionProcessingResult type::Buffer::processDefinition (
@@ -544,6 +707,10 @@ namespace cynth::sem {
         auto outResult = interface::sameTypes || Target{} <<= args(out, other.out);
         auto inResult  = interface::sameTypes || Target{} <<= args(in,  other.in);
         return outResult && inResult && esl::all(*outResult) && esl::all(*inResult);
+    }
+
+    SameTypeResult type::Function::identicalType (type::Function const & other) const {
+        return sameType(other);
     }
 
     DefinitionProcessingResult type::Function::processDefinition (

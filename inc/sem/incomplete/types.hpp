@@ -37,17 +37,15 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Bool;
 
             constexpr static interface::TypeNameConstant typeName = str::boolean;
 
-            interface::SameTypeResult sameType (type::Bool const &) const;
+            interface::SameTypeResult sameType      (type::Bool const &) const;
+            interface::SameTypeResult identicalType (type::Bool const &) const;
+
+            void loseConstness ();
 
             inline static std::string defaultExpression () {
                 return c::boolLiteral(false);
@@ -64,17 +62,15 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Int;
 
             constexpr static interface::TypeNameConstant typeName = str::integral;
 
-            interface::SameTypeResult sameType (type::Int const &) const;
+            interface::SameTypeResult sameType      (type::Int const &) const;
+            interface::SameTypeResult identicalType (type::Int const &) const;
+
+            void loseConstness ();
 
             inline static std::string defaultExpression () {
                 return c::intLiteral(0);
@@ -91,17 +87,15 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Float;
 
             constexpr static interface::TypeNameConstant typeName = str::floating;
 
-            interface::SameTypeResult sameType (type::Float const &) const;
+            interface::SameTypeResult sameType      (type::Float const &) const;
+            interface::SameTypeResult identicalType (type::Float const &) const;
+
+            void loseConstness ();
 
             inline static std::string defaultExpression () {
                 return c::floatLiteral(0);
@@ -110,6 +104,8 @@ namespace cynth::sem {
 
         /** Strings will not be used in the first versions. */
         struct String {
+            constexpr static bool constant = true;
+
             interface::DisplayResult                  display                () const;
             interface::TypeTranslationResult          translateType          () const;
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
@@ -117,17 +113,13 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::String;
 
             constexpr static interface::TypeNameConstant typeName = str::string;
 
-            interface::SameTypeResult sameType (type::String const &) const;
+            interface::SameTypeResult sameType      (type::String const &) const;
+            interface::SameTypeResult identicalType (type::String const &) const;
         };
 
         namespace detail::types {
@@ -154,8 +146,7 @@ namespace cynth::sem {
             struct Array {
                 esl::component<Type<Complete>> type;
                 Size<Complete>                 size;
-                bool                           constval;
-                bool                           constref;
+                bool                           constant;
             };
 
             template <bool Complete>
@@ -171,27 +162,25 @@ namespace cynth::sem {
         }
 
         struct In: detail::types::In<true> {
-            using detail::types::In<true>::type;
-
+            // TODO: Can I move this to the base?
+            constexpr static bool constant = true;
             interface::DisplayResult                  display                () const;
             interface::TypeTranslationResult          translateType          () const;
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
-            ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
             ) const;
 
             using Value = value::In;
 
-            interface::SameTypeResult sameType (type::In const &) const;
+            interface::SameTypeResult sameType      (type::In const &) const;
+            interface::SameTypeResult identicalType (type::In const &) const;
         };
 
         struct Out: detail::types::Out<true> {
+            // TODO: Can I move this to the base?
+            constexpr static bool constant = true;
             interface::DisplayResult                  display                () const;
             interface::TypeTranslationResult          translateType          () const;
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
@@ -199,15 +188,11 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Out;
 
-            interface::SameTypeResult sameType (type::Out const &) const;
+            interface::SameTypeResult sameType      (type::Out const &) const;
+            interface::SameTypeResult identicalType (type::Out const &) const;
         };
 
         struct Array: detail::types::Array<true> {
@@ -218,18 +203,18 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Array;
 
-            interface::SameTypeResult sameType (type::Array const &) const;
+            interface::SameTypeResult sameType      (type::Array const &) const;
+            interface::SameTypeResult identicalType (type::Array const &) const;
+
+            bool constval () const;
         };
 
         struct Buffer: detail::types::Buffer<true> {
+            // TODO: Can I move this to the base?
+            constexpr static bool constant = true;
             interface::DisplayResult                  display                () const;
             interface::TypeTranslationResult          translateType          () const;
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
@@ -237,39 +222,31 @@ namespace cynth::sem {
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Buffer;
 
-            interface::SameTypeResult sameType (type::Buffer const &) const;
+            interface::SameTypeResult sameType      (type::Buffer const &) const;
+            interface::SameTypeResult identicalType (type::Buffer const &) const;
 
             IO io = IO::internal;
         };
 
         struct Function: detail::types::Function<true> {
+            // TODO: Can I move this to the base?
+            constexpr static bool constant = true;
             esl::component_vector<CompleteType> in;
             esl::component_vector<CompleteType> out;
 
-            interface::DisplayResult                  display                () const;
-            interface::TypeTranslationResult          translateType          () const;
-            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
+            interface::DisplayResult                  display () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
                 std::optional<ResolvedValue> &
             ) const;
-            interface::DefinitionProcessingResult     processAssignment (
-                context::Main &,
-                sem::ResolvedValue  const &,
-                sem::ResolvedTarget const &
-            ) const;
 
             using Value = value::Function;
 
-            interface::SameTypeResult sameType (type::Function const &) const;
+            interface::SameTypeResult sameType      (type::Function const &) const;
+            interface::SameTypeResult identicalType (type::Function const &) const;
         };
 
         struct IncompleteIn: detail::types::In<false> {

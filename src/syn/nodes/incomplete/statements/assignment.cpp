@@ -47,7 +47,7 @@ namespace cynth::syn {
                         return esl::result_error{"Assigning incomatible values."};
 
                     return [&] (sem::type::Array const & type) -> esl::result<void> {
-                        if (type.constval)
+                        if (type.constval())
                             return esl::result_error{"Assigning to constant array values."};
 
                         return [&] (auto const & translType) -> esl::result<void> {
