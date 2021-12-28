@@ -81,8 +81,8 @@ namespace cynth::syn::array_nodes {
 
     std::string arrayAllocation (
         context::Main &,
-        std::string const & type,
-        sem::Integral       size
+        tpl::TypeSpecifier const & type,
+        sem::Integral              size
     );
 
     void individualArrayInitialization (

@@ -12,6 +12,7 @@
 #include "esl/concepts.hpp"
 #include "esl/iterator.hpp"
 #include "esl/lift.hpp"
+#include "esl/ranges.hpp"
 #include "esl/type_manip.hpp"
 
 namespace esl {
@@ -339,12 +340,32 @@ namespace esl {
             }
         };
 
+        template <typename Derived, typename F>
+        struct range_lift_impl {
+            template <esl::sized_range T>
+            constexpr auto operator () (T && target) const {
+                return esl::lift_on_range<esl::tiny_vector>(derived(), std::forward<T>(target));
+            }
+
+            template <esl::sized_range T, esl::sized_range U>
+            constexpr auto operator () (T && first, U && second) const {
+                return esl::lift_on_range<esl::tiny_vector>(derived(), std::forward<T>(first), std::forward<U>(second));
+            }
+
+        private:
+
+            constexpr Derived const & derived () const {
+                return *static_cast<Derived const *>(this);
+            }
+        };
+
     }
 
     namespace target {
 
-        struct tiny_vector            { constexpr static lift_target_tag tag = {}; };
-        struct nested_tiny_vector_cat { constexpr static lift_target_tag tag = {}; };
+        struct tiny_vector             { constexpr static lift_target_tag tag = {}; };
+        struct nested_tiny_vector_cat  { constexpr static lift_target_tag tag = {}; };
+        struct sized_range_tiny_result { constexpr static lift_target_tag tag = {}; };
 
     }
 
@@ -355,5 +376,7 @@ namespace esl {
         lift_implementation<detail::tiny_vector::lift_impl> {};
     template <> struct lift_specialization_map<target::nested_tiny_vector_cat>:
         lift_implementation<detail::tiny_vector::nested_lift_impl> {};
+    template <> struct lift_specialization_map<target::sized_range_tiny_result>:
+        lift_implementation<detail::tiny_vector::range_lift_impl> {};
 
 }

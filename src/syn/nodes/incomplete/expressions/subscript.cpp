@@ -11,6 +11,7 @@
 #include "interface/common.hpp"
 #include "interface/compound.hpp"
 #include "interface/nodes.hpp"
+#include "interface/types.hpp"
 #include "sem/types.hpp"
 #include "sem/values.hpp"
 #include "syn/nodes/common/array_nodes.hpp"
@@ -61,7 +62,8 @@ namespace cynth::syn {
                                     sem::value::Array{allocName, arrayType}
                                 }});
 
-                            } || target::result{} <<= interface::translateType || target::category{} <<= *type.type;
+                            } || target::result{} <<= interface::translateTypeSpecifier || target::category{} <<=
+                                *type.type;
 
                         } || target::variant{} <<= arrayResult->allocation;
 
@@ -80,7 +82,7 @@ namespace cynth::syn {
                                 sem::value::Array{allocName, arrayType}
                             }});
 
-                        } || target::result{} <<= interface::translateType || target::category{} <<= *type.type;
+                        } || target::result{} <<= interface::translateTypeSpecifier || target::category{} <<= *type.type;
 
                     } || target::category{} <<= container;
 

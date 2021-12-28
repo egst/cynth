@@ -62,7 +62,7 @@ namespace cynth::syn {
                 }}});
 
             } || target::result{} <<= args(
-                interface::translateType || target::category{} <<= *elemsResult.arrayType->type,
+                interface::translateTypeSpecifier || target::category{} <<= *elemsResult.arrayType->type,
                 interface::expression || target::nested<target::result, target::tiny_vector>{} <<=
                     esl::unite_results <<=
                     interface::translateResolvedValue(ctx) || target::tiny_vector{} <<= elemsResult.values

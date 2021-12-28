@@ -99,10 +99,12 @@ namespace cynth::sem {
         // and is used in a for loop range declaration, it must be declared as a run-time variable,
         // which would go through the sequence elements one by one anyway.
 
-        // TODO: Implement for T = value::Int, value::Float
-        template <typename T>
-
-        ArithmeticSequence (T const & from, T const & to, T const & by);
+        // TODO: Implement for value::Int and value::Float
+        // Update: I don't think this will be possible to do with floats.
+        // I can't really compare the differences between elements reliably.
+        // Or maybe I could extract it from range elements?
+        ArithmeticSequence (Integral const & from, Integral const & to, Integral const & by);
+        //ArithmeticSequence (Floating const & from, Floating const & to, Floating const & by);
 
         CompleteType  type () const;
         sem::Integral size () const;
@@ -125,7 +127,7 @@ namespace cynth::sem {
 
         Vector value;
 
-        ArrayAllocation (Vector const & value);
+        inline ArrayAllocation (Vector const & value): value{value} {}
 
         // Comp-time arrays in for ranges containing arithmetic sequnces will be optimized into
         // `for (int i = <from>; i < <to>; i += <by>)` instead of actual run-time array allocation.
@@ -139,9 +141,9 @@ namespace cynth::sem {
          *  Allocates a corresponding run-time value (while keeping the comp-time value)
          *  if none has already been allocated and returns name of the alloation variable (this->variable).
          */
+        //esl::result<std::string> allocate (context::Main &);
         std::string allocate (context::Main &);
 
-        // TODO: Use sequence.type() if available.
         CompleteType type () const;
 
         std::optional<ArithmeticSequence> sequentialize ();
@@ -158,7 +160,7 @@ namespace cynth::sem {
          */
         void relax ();
 
-        esl::view<ArrayAllocation::Vector::iterator> trimmedValue (sem::Integral) const;
+        esl::view<ArrayAllocation::Vector::iterator> trimmedValue (sem::Integral);
 
     protected:
         bool constant = true;
@@ -185,7 +187,7 @@ namespace cynth::sem {
 
         // TODO: Do I need to store the generator here?
         struct Buffer {
-            esl::component<std::string> allocation;
+            std::string allocation;
 
             interface::DisplayResult          display        ()                const;
             interface::ValueTranslationResult translateValue (context::Main &) const;
@@ -235,7 +237,6 @@ namespace cynth::sem {
             // along with the function value (when returning, or maybe when assigning to another function variable),
             // unlike the allocation variables of arrays, that have a wider (function) scope.
 
-            // TODO: Define in cpp.
             inline bool runtimeClosure () const {
                 return closureVariable && definition.closureType;
             }
@@ -244,7 +245,7 @@ namespace cynth::sem {
             interface::ValueTranslationResult translateValue (context::Main &) const;
 
             type::Function & valueType = definition.type;
-            // TODO: I hope this will still satitfy the directTypeName concept.
+            // TODO: Make sure this still satisfies the has::valueType concept.
         };
 
         struct Unknown {

@@ -239,10 +239,12 @@ namespace cynth::syn::array_nodes {
         } || target::category{} <<= index;
     }
 
+    // TODO: The following hepers should be somewhere more generic than in syn/nodes/common.
+
     std::string arrayAllocation (
-        context::Main     & ctx,
-        std::string const & type,
-        sem::Integral       size
+        context::Main            & ctx,
+        tpl::TypeSpecifier const & type,
+        sem::Integral              size
     ) {
         auto valType = ctx.global.instantiate(tpl::Array{
             .elemType = type,
