@@ -26,7 +26,7 @@ namespace cynth::sem {
     namespace value {
 
         struct Bool {
-            bool value;
+            bool value = false;
 
             interface::DisplayResult          display        ()                const;
             interface::ValueTranslationResult translateValue (context::Main &) const;
@@ -37,7 +37,7 @@ namespace cynth::sem {
         };
 
         struct Int {
-            Integral value;
+            Integral value = 0;
 
             interface::DisplayResult          display        ()                const;
             interface::ValueTranslationResult translateValue (context::Main &) const;
@@ -48,7 +48,7 @@ namespace cynth::sem {
         };
 
         struct Float {
-            Floating value;
+            Floating value = 0;
 
             interface::DisplayResult          display        ()                const;
             interface::ValueTranslationResult translateValue (context::Main &) const;

@@ -35,6 +35,7 @@ namespace cynth::syn {
     using sem::CompleteValue;
     using sem::ResolvedValue;
     using sem::TypedExpression;
+    using sem::FunctionDefinition;
 
     DisplayResult node::Conversion::display () const {
         return
@@ -44,7 +45,39 @@ namespace cynth::syn {
 
     namespace {
 
+        esl::result<std::string> createBuffer (
+            context::Main                             & ctx,
+            sem::Integral                               size,
+            esl::component_vector<CompleteType> const & in,
+            esl::component_vector<CompleteType> const & out,
+            FunctionDefinition                        & definition
+        ) {
+            // Allocate a new buffer:
+            auto valName  = c::bufferValueName(c::id(ctx.nextId()));
+            auto buffType = ctx.global.instantiate(tpl::Buffer{size});
+            auto alloc    = c::definition(buffType, valName, c::zeroInitialization());
+            /***
+            // global:
+            cth_buff$size <val> = {0};
+            ***/
+            ctx.global.insertAllocation(alloc);
+
+            // Assign the generator:
+            if (out.size() != 1 || !out.front().holds_alternative<sem::type::Float>())
+                return esl::result_error{"A buffer generator must return a single float value."};
+            if (in.size() > 1)
+                return esl::result_error{"A buffer generator must take at most one parameter."};
+            bool time = out.size() == 1;
+            if (time && !in.front().holds_alternative<sem::type::Int>())
+                return esl::result_error{"A buffer generator can only take an integral time parameter."};
+            auto funName = ctx.global.defineFunction(definition);
+            ctx.global.registerGenerator(valName, funName, time);
+
+            return valName;
+        }
+
         esl::result<ResolvedValue> runtimeValue (
+            context::Main         & ctx,
             CompleteType    const & type,
             TypedExpression const & expression
         ) {
@@ -82,6 +115,20 @@ namespace cynth::syn {
                     .expression = expression.expression,
                 }};
 
+            } | [&] (sem::type::Buffer fromType, sem::type::Buffer const & type) -> esl::result<ResolvedValue> {
+                // Buffer -> buffer:
+                if (interface::sameTypes(type, fromType))
+                    // Same types:
+                    return {expression};
+
+                if (fromType.size < type.size)
+                    return esl::result_error{"Buffers can only be converted to smaller sizes."};
+
+                return {TypedExpression{
+                    .type       = type,
+                    .expression = expression.expression,
+                }};
+
             } | [&] <typename FromType, typename Type> (
                 FromType fromType, Type const & type
             ) -> esl::result<ResolvedValue> {
@@ -100,6 +147,7 @@ namespace cynth::syn {
        }
 
         esl::result<ResolvedValue> comptimeValue (
+            context::Main       & ctx,
             CompleteType  const & type,
             CompleteValue const & value
         ) {
@@ -138,6 +186,31 @@ namespace cynth::syn {
                     .valueType  = type
                 }}};
 
+            } | [&] (sem::value::Buffer value, sem::type::Buffer const & type) -> esl::result<ResolvedValue> {
+                // Buffer -> buffer:
+                auto fromType = value.valueType;
+                if (interface::sameTypes(type, fromType))
+                    // Same types:
+                    return {CompleteValue{value}};
+
+                if (fromType.size < type.size)
+                    return esl::result_error{"Buffers can only be converted to smaller sizes."};
+
+                return {CompleteValue{sem::value::Buffer{
+                    .allocation = value.allocation,
+                    .valueType  = type
+                }}};
+
+            } | [&] (sem::value::Function value, sem::type::Buffer const & type) -> esl::result<ResolvedValue> {
+                // Function -> buffer:
+                auto fromType = value.valueType;
+                return [&] (auto alloc) -> esl::result<ResolvedValue> {
+                    return {CompleteValue{sem::value::Buffer{
+                        .allocation = alloc,
+                        .valueType  = type
+                    }}};
+                } || target::result{} <<= createBuffer(ctx, type.size, fromType.in, fromType.out, value.definition);
+
             } | [&] (auto value, auto const & type) -> esl::result<ResolvedValue> {
                 // Other types:
                 auto fromType = interface::valueType(value);
@@ -160,14 +233,14 @@ namespace cynth::syn {
         using Target = target::nested<target::result, target::tiny_vector>;
 
         return [&] (auto types, auto values) -> ExpressionProcessingResult {
-            return esl::unite_results || target::result{} <<= [] (auto type, auto value) {
+            return esl::unite_results || target::result{} <<= [&] (auto type, auto value) {
                 return [&, &type = type] (CompleteValue const & value) {
                     // Comp-time value:
-                    return comptimeValue(type, value);
+                    return comptimeValue(ctx, type, value);
 
                 } | [&] (TypedExpression const & expr) {
                     // Run-time value:
-                    return runtimeValue(type, expr);
+                    return runtimeValue(ctx, type, expr);
 
                 } || target::category{} <<= value;
 

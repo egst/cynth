@@ -867,9 +867,11 @@ namespace cynth {
         /***
         struct cth_buff$<size>
         ***/
-        inline std::string bufferType (std::string size) {
-            return c::structure(c::global(c::templateArguments(std::string{} + str::buffer, size)));
+        inline std::string bufferType (sem::Integral size) {
+            return c::structure(c::global(c::templateArguments(std::string{} + str::buffer, std::to_string(size))));
         }
+
+        //// Types ////
 
         /***
         cth_float const * const
@@ -882,7 +884,7 @@ namespace cynth {
         <type>
         ***/
         inline std::string inputType (std::string const & type) {
-            return c::volatility(type);
+            return type;
         }
 
         /***
@@ -1178,8 +1180,16 @@ namespace cynth {
         # Integer literal
         (cth_int) val
         ***/
-        inline std::string intLiteral (int val) {
+        inline std::string intLiteral (sem::Integral val) {
             return c::cast(std::to_string(val), c::intType());
+        }
+
+        /***
+        # Float literal
+        (cth_float) val
+        ***/
+        inline std::string floatLiteral (sem::Floating val) {
+            return c::cast(std::to_string(val), c::floatType());
         }
 
         // TODO: Note that it is also possible to construct arrays with a compound literal:
@@ -1300,10 +1310,10 @@ namespace cynth {
         };
 
         struct Buffer {
-            std::size_t size;
+            sem::Integral size;
 
             std::string name () const {
-                return c::bufferType(std::to_string(size));
+                return c::bufferType(size);
             }
 
             std::string definition () const {

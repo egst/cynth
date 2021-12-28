@@ -17,8 +17,8 @@
 #include "interface/forward.hpp"
 
 // Completing forward declarations:
-#include "sem/types.hpp"
 #include "sem/compound.hpp"
+#include "sem/types.hpp"
 
 namespace cynth::interface {
 

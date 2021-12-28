@@ -160,7 +160,7 @@ namespace cynth::syn {
 
             // Run-time capture or some arguments run-time:
             return [&] (auto args) -> ExpressionProcessingResult {
-                auto name = ctx.global.define(fun.definition);
+                auto name = ctx.global.defineFunction(fun.definition);
                 auto call = fun.closureVariable
                     ? c::call(name, *fun.closureVariable, args)
                     : c::call(name, args);

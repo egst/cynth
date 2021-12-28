@@ -1,7 +1,9 @@
 #include "sem/types.hpp"
 
 #include <functional>
+#include <optional>
 #include <string>
+#include <utility>
 
 #include "esl/boolean.hpp"
 #include "esl/category.hpp"
@@ -11,44 +13,569 @@
 #include "esl/functional.hpp"
 #include "esl/lift.hpp"
 #include "esl/result.hpp"
+#include "esl/sugar.hpp"
 
 #include "context/main.hpp"
+#include "interface/common.hpp"
 #include "interface/types.hpp"
 #include "interface/values.hpp"
+#include "sem/compound.hpp"
 #include "sem/numeric_types.hpp"
+#include "sem/values.hpp"
+
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
+
+namespace esl {
+
+    using cynth::sem::CompleteType;
+    using cynth::sem::IncompleteType;
+
+    // Note: Some of these specializations are needed for the implementations below to work properly.
+    // TODO: Maybe I should move it elsewhere. These specializations are only needed
+    // for code that doesn't know about complete definitions of these types.
+    // However, code in any of the implementation files can include the full definitions,
+    // and so the default specializations can be used instead.
+
+    template <>
+    void component_deleter<CompleteType>::operator () (CompleteType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    CompleteType * component_allocator<CompleteType>::operator () (CompleteType const & other) const {
+        return new CompleteType{other};
+    }
+
+    template <>
+    CompleteType * component_allocator<CompleteType>::operator () (CompleteType && other) const {
+        return new CompleteType{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<IncompleteType>::operator () (IncompleteType * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType const & other) const {
+        return new IncompleteType{other};
+    }
+
+    template <>
+    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType && other) const {
+        return new IncompleteType{std::move(other)};
+    }
+
+}
 
 namespace cynth::sem {
-#if 0 // TODO
+
+    using namespace esl::sugar;
+    namespace target = esl::target;
+    using interface::DefinitionProcessingResult;
+    using interface::DisplayResult;
+    using interface::SameTypeResult;
+    using interface::TypeSpecifierTranslationResult;
+    using interface::TypeTranslationResult;
+    using sem::Variable;
+    using sem::CompleteValue;
+    using sem::TypedExpression;
+    using sem::TypedName;
 
     namespace {
 
-        interface::DefinitionTranslationResult translateSimpleDefinition (
-            context::C & ctx,
-            std::optional<std::string> const & definition,
-            std::string const & typeName
-        ) {
-            auto value   = definition.value_or("0");
-            auto varName = c::variableName(std::to_string(ctx.nextId()));
+        // The following helper functions are defined at the bottom of this file.
 
-            auto local = c::definition(c::typeName(typeName), varName, value);
+        template <typename Type>
+        DefinitionProcessingResult processSimpleDefinition (
+            context::Main &,
+            Type const &,
+            std::optional<ResolvedValue> const &
+        );
+
+    }
+
+    //// Bool ////
+
+    DisplayResult type::Bool::display () const {
+        return "Bool";
+    }
+
+    SameTypeResult type::Bool::sameType (type::Bool const &) const {
+        return true;
+    }
+
+    DefinitionProcessingResult type::Bool::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        return processSimpleDefinition(ctx, *this, definition);
+    }
+
+    //// Int ////
+
+    DisplayResult type::Int::display () const {
+        return "Int";
+    }
+
+    SameTypeResult type::Int::sameType (type::Int const &) const {
+        return true;
+    }
+
+    DefinitionProcessingResult type::Int::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        return processSimpleDefinition(ctx, *this, definition);
+    }
+
+    //// Float ////
+
+    DisplayResult type::Float::display () const {
+        return "Float";
+    }
+
+    SameTypeResult type::Float::sameType (type::Float const &) const {
+        return true;
+    }
+
+    DefinitionProcessingResult type::Float::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        return processSimpleDefinition(ctx, *this, definition);
+    }
+
+    //// String ////
+
+    DisplayResult type::String::display () const {
+        return "String";
+    }
+
+    SameTypeResult type::String::sameType (type::String const &) const {
+        return true;
+    }
+
+    DefinitionProcessingResult type::String::processDefinition (
+        context::Main &,
+        std::optional<ResolvedValue> const &
+    ) const {
+        return esl::result_error{"Strings are not implemented yet."};
+    }
+
+    //// In ////
+
+    DisplayResult type::In::display () const {
+        return (interface::display || target::category{} <<= *type) + " in";
+    }
+
+    SameTypeResult type::In::sameType (type::In const & other) const {
+        return interface::sameTypes || target::category{} <<= args(*type, *other.type);
+    }
+
+    DefinitionProcessingResult type::In::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        auto valueType = *type;
+        if (!definition) {
+            // Allocating a new value:
+            return [&] (auto && typeName) -> DefinitionProcessingResult {
+                auto type    = c::global(std::move(typeName));
+                auto varType = c::inputPointerType(type);
+                auto varName = c::variableName(c::id(ctx.nextId()));
+                auto valType = c::inputType(type);
+                auto valName = c::inputValueName(std::to_string(ctx.nextId()));
+                auto alloc   = c::declaration(valType, valName);
+                auto local   = c::definition(varType, varName, c::addressof(valName));
+
+                /***
+                global:
+                cth_<type> <val>;
+                local:
+                cth_<type> * <var> = &<val>;
+                ***/
+                ctx.global.insertAllocation(alloc);
+                ctx.insertStatement(local);
+
+                return Variable{CompleteValue{sem::value::In{valName, sem::type::In{valueType}}}};
+
+            } || target::result{} <<= interface::typeName || target::category{} <<= valueType;
+        }
+
+        // Creating a reference to an existing value:
+#if 0
+        return [&] (CompleteValue && definition) -> DefinitionProcessingResult {
+
+            /*
+            */
+
+        } | [&] (TypedExpression && definition) -> DefinitionProcessingResult {
+
+            /*
+            return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+            */
+#endif
+        // TODO: Why don't rvalued parameters work here?
+        [&] (CompleteValue definition) -> DefinitionProcessingResult {
+
+            auto valueType = interface::valueType || target::category{} <<= definition;
+            // Note: There will be no implicit conversions in the first version.
+            if (!(interface::sameType(*this) || target::category{} <<= valueType))
+                return esl::result_error{"Initializing from an incompatible type."};
+
+            if (type.constant) {
+                // Comp-const variable:
+                return Variable{definition};
+            }
+
+            // Run-time const variable:
+            return [&] (TypedExpression && definition) -> DefinitionProcessingResult {
+                return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+
+            } || target::result{} <<= interface::translateValue(ctx) || target::category{} <<= definition;
+
+        } | [] (TypedExpression definition) -> DefinitionProcessingResult {
+            return esl::result_error{"TODO"};
+
+        } || target::category{} <<= *std::move(definition);
+
+        return [&] (auto && typeName) -> DefinitionProcessingResult {
+            auto type    = c::global(std::move(typeName));
+            auto varType = c::inputPointerType(type);
+            auto varName = c::variableName(c::id(ctx.nextId()));
+
+#if 0
+            if (definition) {
+                auto local = c::definition(varType, varName, *definition);
+
+                /***
+                local:
+                cth_<type> volatile * var_<j = nextId()> = <definition>;
+                ***/
+                auto result = ctx.insertStatement(local);
+                if (!result)
+                    return result.error();
+
+            } else {
+                ...
+            }
+
+            /***
+            var_<j>
+            ***/
+            return varName;
+#endif
+
+        } || target::result{} <<= interface::typeName || target::category{} <<= *type;
+
+    }
+
+#if 0
+    //// Out ////
+
+    DisplayResult type::Out::display () const {
+        return "T out"; // TODO
+    }
+
+    /*
+    TypeDecayResult type::Out::decayType () const {
+        return *type;
+    }
+    */
+
+    SameTypeResult type::Out::sameType (type::Out const & other) const {
+        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
+    }
+
+    DefinitionProcessingResult type::Out::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        auto typeNameResult = esl::lift<esl::target::component, esl::target::category>(interface::directTypeName)(type);
+        if (!typeNameResult)
+            return typeNameResult.error();
+
+        auto type    = c::typeName(*typeNameResult);
+        auto valType = c::outputValueType(type);
+        auto valName = c::outputValueName(std::to_string(ctx.nextId()));
+        auto varType = c::outputPointerType(valType);
+        auto varName = c::variableName(std::to_string(ctx.nextId()));
+
+        if (definition) {
+            auto local = c::definition(varType, varName, *definition);
 
             /***
             local:
-            cth_<type> var_<i = nextId()> = <definition>;
+            cth_<type> * var_<j = nextId()> = <definition>;
             ***/
             auto result = ctx.insertStatement(local);
             if (!result)
                 return result.error();
 
+        } else {
+
+            auto alloc = c::declaration(valType, valName);
+            auto local = c::definition(varType, varName, c::addressof(valName));
+
             /***
-            var_<i>
+            global:
+            cth_<type> cth_outval_<i = nextId()>;
+            local:
+            cth_<type> * var_<j = nextId()> = &cth_outval_<i>;
             ***/
-            return varName;
+            auto result = esl::chain_results(
+                [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
+                [&ctx, &local] { return ctx.insertStatement(local); }
+            );
+            if (!result)
+                return result.error();
         }
 
+        /***
+        var_<j>
+        ***/
+        return varName;
+    }
+
+    //// Const ////
+
+    DisplayResult type::Const::display () const {
+        return "T const"; // TODO
+    }
+
+    // TODO: This should be somehow linked with the strings configured in sem/translation.hpp
+    /** `T_const` */
+    TypeNameResult type::Const::typeName () const {
+        auto result = esl::lift<esl::target::component, esl::target::category>(interface::typeName)(type);
+        if (!result)
+            return result.error();
+        return *result + "_const";
+    }
+
+    /*
+    TypeDecayResult type::Const::decayType () const {
+        return *type;
+    }
+    */
+
+    SameTypeResult type::Const::sameType (type::Const const & other) const {
+        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
+    }
+
+    DefinitionProcessingResult type::Const::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        if (compval) return {}; // Skip compconst values.
+        return esl::lift<esl::target::component, esl::target::category>(
+            [&ctx, &definition] (type::Array const & type) -> DefinitionProcessingResult {
+                /***
+                struct cth_tup$<type1>$<type2>$... * const var_<nextId()> = <definition|allocated>;
+                ***/
+                return translateArrayDefinition(ctx, true, type, definition);
+            },
+            [&ctx, &definition] <interface::simpleType T> (T const &) -> DefinitionProcessingResult {
+                /***
+                struct cth_<type>_const var_<nextId()> = <definition>;
+                ***/
+                return processSimpleDefinition(ctx, definition, c::constType(T::directTypeName));
+            },
+            [] (auto const &) -> DefinitionProcessingResult {
+                return esl::result_error{"Only simple types and arrays may be marked const."};
+            }
+        )(type);
+    }
+
+    //// Array ////
+
+    // TODO?
+    esl::result<type::Array> type::Array::make (esl::component_vector<CompleteType> && type, sem::Integral size) {
+        if (size <= 0)
+            return esl::result_error{"Array must have a positive size."};
+        auto elemTypeCheck =
+            esl::unite_results(esl::lift<esl::target::component_vector, esl::target::category>(arrayElemTypeCheck)(type));
+        if (!elemTypeCheck)
+            return elemTypeCheck.error();
+        return type::Array{{
+            .type = std::move(type),
+            .size = size
+        }};
+    }
+
+    DisplayResult type::Array::display () const {
+        return "T [n]"; // TODO
+    }
+
+    SameTypeResult type::Array::sameType (type::Array const & other) const {
+        auto result = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(type, other.type);
+        return result && size == other.size && esl::all(*result);
+    }
+
+    DefinitionProcessingResult type::Array::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        return translateArrayDefinition(ctx, false, *this, definition);
+    }
+
+    AllocationTranslationResult type::Array::translateAllocation (
+        context::Main & ctx,
+        std::optional<std::string> const & initialization
+    ) const {
+        // TODO: compval?
+        auto typeNamesResult = arrayTypeNames(*this);
+        if (!typeNamesResult)
+            return typeNamesResult.error();
+        auto typeNames = *typeNamesResult;
+        auto types = c::templateArguments(typeNames);
+        return translateArrayAllocation(ctx, initialization, std::to_string(size), types);
+    }
+
+    //// Buffer ////
+
+    esl::result<type::Buffer> type::Buffer::make (sem::Integral size) {
+        if (size <= 0)
+            return esl::result_error{"Buffer must have a positive size."};
+        return type::Buffer{{
+            .size = size
+        }};
+    }
+
+    DisplayResult type::Buffer::display () const {
+        return "buffer [n]"; // TODO
+    }
+
+    SameTypeResult type::Buffer::sameType (type::Buffer const & other) const {
+        return size == other.size;
+    }
+
+    namespace {
+
+        enum struct BufferKind {
+            internal,
+            input,
+            output
+        };
+
+        std::string bufferValueName (
+            BufferKind kind,
+            std::string const & id
+        ) {
+            switch (kind) {
+            case BufferKind::internal:
+                return c::bufferValueName(id);
+            case BufferKind::input:
+                return c::inputBufferValueName(id);
+            case BufferKind::output:
+                return c::outputBufferValueName(id);
+            }
+        }
+
+        esl::result<std::string> translateBufferAllocation (
+            context::Main & ctx,
+            BufferKind kind,
+            type::Buffer const & type
+        ) {
+            auto valType = c::bufferValueType(std::to_string(type.size));
+            auto valName = bufferValueName(kind, std::to_string(ctx.nextId()));
+            auto alloc   = c::declaration(valType, valName);
+
+            /***
+            global:
+            struct cth_buff$<size> cth_<buff = `buffval`|`inbuffval`|`outbuffval`>_<i = nextId()>;
+            ***/
+            auto allocatedResult = ctx.insertStaticAllocation(alloc);
+
+            /***
+            cth_<buff>_<i>.data;
+            ***/
+            return c::bufferData(valName);
+        }
+
+    }
+
+    DefinitionProcessingResult type::Buffer::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        if (!definition)
+            return esl::result_error{"Buffers must be explicitly initialized."};
+
+        auto varType = c::bufferPointerType();
+        auto varName = c::variableName(std::to_string(ctx.nextId()));
+        auto local   = c::definition(varType, varName, *definition);
+
+        /***
+        local:
+        cth_float const * const var_<i = nextId()> = <definition>;
+        ***/
+        auto result = ctx.insertStatement(local);
+        if (!result)
+            return result.error();
+
+        /***
+        var_<i>
+        ***/
+        return varName;
+    }
+
+    //// Function ////
+
+    DisplayResult type::Function::display () const {
+        return "Output (Input)"; // TODO
+    }
+
+    SameTypeResult type::Function::sameType (type::Function const & other) const {
+        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(out, other.out);
+        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(in, other.in);
+        return
+            outResult && esl::all(*outResult) &&
+            inResult  && esl::all(*inResult);
+    }
+
+    namespace {
+
+        // TODO: Function "allocation".
+
+    }
+
+    DefinitionProcessingResult type::Function::processDefinition (
+        context::Main & ctx,
+        std::optional<ResolvedValue> const & definition
+    ) const {
+        // TODO: Can I really skip declating the contexts?
+        // Inserting the compconst function value would need to handle declaring the context in-place as a literal constant.
+        if (compval) return {}; // Skip compconst values.
+
+        if (!definition)
+            return esl::result_error{"Functions must be initialized explicitly."};
+
+        auto varType = c::infer(*definition);
+        auto varName = c::contextVariableName(std::to_string(ctx.nextId()));
+        auto local   = c::definition(varType, varName, *definition);
+
+        /***
+        local:
+        typeof(<definition>) ctxvar_<nextId()> = <definition>;
+        ***/
+        auto result = ctx.insertStatement(local);
+        if (!result)
+            return result.error();
+
+        return varName;
+    }
+
+#endif
+
+#if 0 // TODO
+    namespace {
+
         template <typename... Ts>
-        interface::AllocationTranslationResult translateArrayAllocation (
-            context::C & ctx,
+        AllocationTranslationResult translateArrayAllocation (
+            context::Main & ctx,
             std::optional<std::string> init,
             std::string size,
             Ts const &... types
@@ -92,8 +619,8 @@ namespace cynth::sem {
             )(type.type));
         }
 
-        interface::DefinitionTranslationResult translateArrayDefinition (
-            context::C & ctx,
+        DefinitionProcessingResult translateArrayDefinition (
+            context::Main & ctx,
             bool constant,
             type::Array const & type,
             std::optional<std::string> const & definition
@@ -148,716 +675,67 @@ namespace cynth::sem {
         };
 
     }
-
-    //// Bool ////
-
-    interface::DisplayResult type::Bool::display () const {
-        return "Bool";
-    }
-
-    interface::SameTypeResult type::Bool::sameType (type::Bool const &) const {
-        return true;
-    }
-
-    interface::CommonTypeResult type::Bool::commonType (type::Bool const &) const {
-        return {type::Bool{}};
-    }
-
-    interface::CommonTypeResult type::Bool::commonType (type::Int const &) const {
-        return {type::Int{}};
-    }
-
-    interface::CommonTypeResult type::Bool::commonType (type::Float const &) const {
-        return {type::Float{}};
-    }
-
-    interface::CommonTypeResult type::Bool::commonType (type::In const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
-    }
-
-    interface::CommonTypeResult type::Bool::commonType (type::Const const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
-    }
-
-    interface::DefinitionTranslationResult type::Bool::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        return translateSimpleDefinition(ctx, definition, type::Bool::directTypeName);
-    }
-
-    //// Int ////
-
-    interface::DisplayResult type::Int::display () const {
-        return "Int";
-    }
-
-    interface::SameTypeResult type::Int::sameType (type::Int const &) const {
-        return true;
-    }
-
-    interface::CommonTypeResult type::Int::commonType (type::Int const &) const {
-        return {type::Int{}};
-    }
-
-    interface::CommonTypeResult type::Int::commonType (type::Float const &) const {
-        return {type::Float{}};
-    }
-
-    interface::CommonTypeResult type::Int::commonType (type::In const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
-    }
-
-    interface::CommonTypeResult type::Int::commonType (type::Const const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
-    }
-
-    interface::DefinitionTranslationResult type::Int::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        return translateSimpleDefinition(ctx, definition, type::Int::directTypeName);
-    }
-
-    //// Float ////
-
-    interface::DisplayResult type::Float::display () const {
-        return "Float";
-    }
-
-    interface::SameTypeResult type::Float::sameType (type::Float const &) const {
-        return true;
-    }
-
-    interface::CommonTypeResult type::Float::commonType (type::Float const &) const {
-        return {type::Float{}};
-    }
-
-    interface::CommonTypeResult type::Float::commonType (type::In const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
-    }
-
-    interface::CommonTypeResult type::Float::commonType (type::Const const & other) const {
-        using target = esl::target::nested<esl::target::component, esl::target::category>;
-        return esl::lift_nary<esl::target::direct, target>(interface::commonType)(*this, other.type);
-    }
-
-    interface::DefinitionTranslationResult type::Float::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        return translateSimpleDefinition(ctx, definition, type::Float::directTypeName);
-    }
-
-    //// String ////
-
-    interface::DisplayResult type::String::display () const {
-        return "String";
-    }
-
-    interface::SameTypeResult type::String::sameType (type::String const &) const {
-        return true;
-    }
-
-    interface::CommonTypeResult type::String::commonType (type::String const &) const {
-        return {type::String{}};
-    }
-
-    interface::DefinitionTranslationResult type::String::translateDefinition (
-        context::C &,
-        std::optional<std::string> const &,
-        bool
-    ) const {
-        return esl::result_error{"Strings are not implemented yet."};
-    }
-
-    //// In ////
-
-    interface::DisplayResult type::In::display () const {
-        return "T in"; // TODO
-    }
-
-    /*
-    interface::TypeDecayResult type::In::decayType () const {
-        return *type;
-    }
-    */
-
-    interface::SameTypeResult type::In::sameType (type::In const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
-    }
-
-    interface::TypeCompletionResult type::IncompleteIn::completeType (context::Cynth & ctx) const {
-        auto result = esl::lift<esl::target::component, esl::target::category>(interface::completeType(ctx))(type);
-        if (!result)
-            return result.error();
-        return {type::In{{
-            .type = *result
-        }}};
-    }
-
-    interface::DefinitionTranslationResult type::In::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        auto typeNameResult = esl::lift<esl::target::component, esl::target::category>(interface::directTypeName)(type);
-        if (!typeNameResult)
-            return typeNameResult.error();
-
-        auto type    = c::typeName(*typeNameResult);
-        auto varType = c::inputPointerType(type);
-        auto varName = c::variableName(std::to_string(ctx.nextId()));
-
-        if (definition) {
-            auto local = c::definition(varType, varName, *definition);
-
-            /***
-            local:
-            cth_<type> volatile * var_<j = nextId()> = <definition>;
-            ***/
-            auto result = ctx.insertStatement(local);
-            if (!result)
-                return result.error();
-
-        } else {
-            auto valType = c::inputValueType(type);
-            auto valName = c::inputValueName(std::to_string(ctx.nextId()));
-            auto alloc   = c::declaration(valType, valName);
-            auto local   = c::definition(varType, varName, c::addressof(valName));
-
-            /***
-            global:
-            cth_<type> volatile cth_inval_<i = nextId()>;
-            local:
-            cth_<type> volatile * var_<j = nextId()> = &cth_inval_<i>;
-            ***/
-            auto result = esl::chain_results(
-                [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
-                [&ctx, &local] { return ctx.insertStatement(local); }
-            );
-            if (!result)
-                return result.error();
-        }
-
-        /***
-        var_<j>
-        ***/
-        return varName;
-    }
-
-    //// Out ////
-
-    interface::DisplayResult type::Out::display () const {
-        return "T out"; // TODO
-    }
-
-    /*
-    interface::TypeDecayResult type::Out::decayType () const {
-        return *type;
-    }
-    */
-
-    interface::SameTypeResult type::Out::sameType (type::Out const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
-    }
-
-    interface::TypeCompletionResult type::IncompleteOut::completeType (context::Cynth & ctx) const {
-        auto result = esl::lift<esl::target::component, esl::target::category>(interface::completeType(ctx))(type);
-        if (!result)
-            return result.error();
-        return {type::Out{{
-            .type = *result
-        }}};
-    }
-
-    interface::DefinitionTranslationResult type::Out::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        auto typeNameResult = esl::lift<esl::target::component, esl::target::category>(interface::directTypeName)(type);
-        if (!typeNameResult)
-            return typeNameResult.error();
-
-        auto type    = c::typeName(*typeNameResult);
-        auto valType = c::outputValueType(type);
-        auto valName = c::outputValueName(std::to_string(ctx.nextId()));
-        auto varType = c::outputPointerType(valType);
-        auto varName = c::variableName(std::to_string(ctx.nextId()));
-
-        if (definition) {
-            auto local = c::definition(varType, varName, *definition);
-
-            /***
-            local:
-            cth_<type> * var_<j = nextId()> = <definition>;
-            ***/
-            auto result = ctx.insertStatement(local);
-            if (!result)
-                return result.error();
-
-        } else {
-
-            auto alloc = c::declaration(valType, valName);
-            auto local = c::definition(varType, varName, c::addressof(valName));
-
-            /***
-            global:
-            cth_<type> cth_outval_<i = nextId()>;
-            local:
-            cth_<type> * var_<j = nextId()> = &cth_outval_<i>;
-            ***/
-            auto result = esl::chain_results(
-                [&ctx, &alloc] { return ctx.insertStaticAllocation(alloc); },
-                [&ctx, &local] { return ctx.insertStatement(local); }
-            );
-            if (!result)
-                return result.error();
-        }
-
-        /***
-        var_<j>
-        ***/
-        return varName;
-    }
-
-    //// Const ////
-
-    interface::DisplayResult type::Const::display () const {
-        return "T const"; // TODO
-    }
-
-    // TODO: This should be somehow linked with the strings configured in sem/translation.hpp
-    /** `T_const` */
-    interface::TypeNameResult type::Const::typeName () const {
-        auto result = esl::lift<esl::target::component, esl::target::category>(interface::typeName)(type);
-        if (!result)
-            return result.error();
-        return *result + "_const";
-    }
-
-    /*
-    interface::TypeDecayResult type::Const::decayType () const {
-        return *type;
-    }
-    */
-
-    interface::SameTypeResult type::Const::sameType (type::Const const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::sameTypes)(type, other.type);
-    }
-
-    interface::CommonTypeResult type::Const::commonType (type::Const const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(interface::commonType)(type, other.type);
-        /*
-        auto result = esl::lift<esl::target::component, esl::target::category>(interface::commonType)(type, other.type);
-        if (!result)
-            return result.error();
-        return {type::Const{{
-            .type = *result
-        }}};
-        */
-    }
-
-    interface::CommonTypeResult type::Const::commonType (type::Array const & other) const {
-        return esl::lift<esl::target::component, esl::target::category>(
-            [&other] (type::Array const & a) -> esl::result<CompleteType> {
-                return a.commonType(other);
-            },
-            [] (auto const & a) -> esl::result<CompleteType> {
-                return esl::result_error{"Non-array const type does not have a common type with an array type."};
-            }
-        )(type);
-    }
-
-    interface::TypeCompletionResult type::IncompleteConst::completeType (context::Cynth & ctx) const {
-        auto result = esl::lift<esl::target::component, esl::target::category>(interface::completeType(ctx))(type);
-        if (!result)
-            return result.error();
-        return {type::Const{{
-            .type = *result
-        }}};
-    }
-
-    interface::DefinitionTranslationResult type::Const::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool compval
-    ) const {
-        if (compval) return {}; // Skip compconst values.
-        return esl::lift<esl::target::component, esl::target::category>(
-            [&ctx, &definition] (type::Array const & type) -> interface::DefinitionTranslationResult {
-                /***
-                struct cth_tup$<type1>$<type2>$... * const var_<nextId()> = <definition|allocated>;
-                ***/
-                return translateArrayDefinition(ctx, true, type, definition);
-            },
-            [&ctx, &definition] <interface::simpleType T> (T const &) -> interface::DefinitionTranslationResult {
-                /***
-                struct cth_<type>_const var_<nextId()> = <definition>;
-                ***/
-                return translateSimpleDefinition(ctx, definition, c::constType(T::directTypeName));
-            },
-            [] (auto const &) -> interface::DefinitionTranslationResult {
-                return esl::result_error{"Only simple types and arrays may be marked const."};
-            }
-        )(type);
-    }
-
-    //// Array ////
-
-    // TODO?
-    esl::result<type::Array> type::Array::make (esl::component_vector<CompleteType> && type, sem::Integral size) {
-        if (size <= 0)
-            return esl::result_error{"Array must have a positive size."};
-        auto elemTypeCheck =
-            esl::unite_results(esl::lift<esl::target::component_vector, esl::target::category>(arrayElemTypeCheck)(type));
-        if (!elemTypeCheck)
-            return elemTypeCheck.error();
-        return type::Array{{
-            .type = std::move(type),
-            .size = size
-        }};
-    }
-
-    interface::DisplayResult type::Array::display () const {
-        return "T [n]"; // TODO
-    }
-
-    interface::SameTypeResult type::Array::sameType (type::Array const & other) const {
-        auto result = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(type, other.type);
-        return result && size == other.size && esl::all(*result);
-    }
-
-    interface::CommonTypeResult type::Array::commonType (type::Array const & other) const {
-        auto results = (esl::lift<esl::target::component_vector, esl::target::category>(
-            [] <typename T, typename U> (T const & a, U const & b) -> std::optional<CompleteType> {
-            //requires (std::sameType_as<T, U> || !std::sameType_as<T, type::Const> && std::sameType_as<U, type::Const>)
-                if (interface::sameTypes(a, b))
-                    return {a};
-                return {};
-            },
-            [] <typename T> (type::Const const & a, T const & b) -> std::optional<CompleteType>
-            requires (!std::same_as<T, type::Const>) {
-                if (interface::sameTypes(a, b))
-                    return {a};
-                if (interface::sameTypes(a, type::Const{{.type = {b}}}))
-                    return {type::Const{{a}}};
-                return {};
-            },
-            [] <typename T> (T const & a, type::Const const & b) -> std::optional<CompleteType>
-            requires (!std::same_as<T, type::Const>) {
-                if (interface::sameTypes(a, b))
-                    return {a};
-                if (interface::sameTypes(type::Const{{.type = {a}}}, b))
-                    return {type::Const{{.type = {a}}}};
-                return {};
-            }
-        )(type, other.type));
-        if (!results)
-            return results.error();
-        auto result = esl::unite_optionals(*results);
-        if (!result)
-            return esl::result_error{"No common type for two arrays because of mismatched elements type."};
-        auto arrayResult = type::Array::make(
-            esl::make_component_vector(*result),
-            std::min(size, other.size)
-        );
-        if (!arrayResult)
-            return arrayResult.error();
-        return {*arrayResult};
-    }
-
-    interface::TypeCompletionResult type::IncompleteArray::completeType (context::Cynth & ctx) const {
-        auto typeResult = esl::unite_results(
-            esl::lift<esl::target::component_vector, esl::target::category>(interface::completeType(ctx))(type)
-        );
-        if (!typeResult)
-            return typeResult.error();
-
-        auto sizeResult = esl::lift<esl::target::component, esl::target::category>(
-            [] (value::Unknown const &) -> esl::result<int> {
-                return esl::result_error{"Unknown array size."};
-            },
-            [&ctx] <interface::value Value> (Value const & value) -> esl::result<int> {
-                auto x = interface::convertValue(ctx)(value, type::Int{});
-                ESL_INSPECT(x);
-                return esl::lift<esl::target::result, esl::target::category>(interface::get<sem::Integral>)(
-                    interface::convertValue(ctx)(value, type::Int{})
-                );
-            }
-        )(size);
-        if (!sizeResult)
-            return sizeResult.error();
-
-        auto arrayResult = type::Array::make(
-            esl::make_component_vector(*typeResult),
-            *sizeResult
-        );
-        if (!arrayResult)
-            return arrayResult.error();
-        return {*arrayResult};
-    }
-
-    interface::DefinitionTranslationResult type::Array::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        return translateArrayDefinition(ctx, false, *this, definition);
-    }
-
-    interface::AllocationTranslationResult type::Array::translateAllocation (
-        context::C & ctx,
-        std::optional<std::string> const & initialization
-    ) const {
-        // TODO: compval?
-        auto typeNamesResult = arrayTypeNames(*this);
-        if (!typeNamesResult)
-            return typeNamesResult.error();
-        auto typeNames = *typeNamesResult;
-        auto types = c::templateArguments(typeNames);
-        return translateArrayAllocation(ctx, initialization, std::to_string(size), types);
-    }
-
-    //// Buffer ////
-
-    esl::result<type::Buffer> type::Buffer::make (sem::Integral size) {
-        if (size <= 0)
-            return esl::result_error{"Buffer must have a positive size."};
-        return type::Buffer{{
-            .size = size
-        }};
-    }
-
-    interface::DisplayResult type::Buffer::display () const {
-        return "buffer [n]"; // TODO
-    }
-
-    interface::CommonTypeResult type::Buffer::commonType (type::Buffer const & other) const {
-        if (size != other.size)
-            return esl::result_error{"No common type for two buffers because of different sizes."};
-        return {*this};
-    }
-
-    interface::SameTypeResult type::Buffer::sameType (type::Buffer const & other) const {
-        return size == other.size;
-    }
-
-    interface::TypeCompletionResult type::IncompleteBuffer::completeType (context::Cynth & ctx) const {
-        auto sizeResult = esl::lift<esl::target::component, esl::target::category>(
-            [] (value::Unknown const &) -> esl::result<sem::Integral> {
-                return esl::result_error{"Unknown array size."};
-            },
-            [&ctx] <interface::value Value> (Value const & value) -> esl::result<sem::Integral> {
-                return esl::lift<esl::target::result, esl::target::category>(interface::get<sem::Integral>)(
-                    interface::convertValue(ctx)(value, type::Int{})
-                );
-            }
-        )(size);
-        if (!sizeResult)
-            return sizeResult.error();
-
-        auto bufferResult = type::Buffer::make(*sizeResult);
-        if (!bufferResult)
-            return bufferResult.error();
-
-        return {*bufferResult};
-    }
-
-    namespace {
-
-        enum struct BufferKind {
-            internal,
-            input,
-            output
-        };
-
-        std::string bufferValueName (
-            BufferKind kind,
-            std::string const & id
-        ) {
-            switch (kind) {
-            case BufferKind::internal:
-                return c::bufferValueName(id);
-            case BufferKind::input:
-                return c::inputBufferValueName(id);
-            case BufferKind::output:
-                return c::outputBufferValueName(id);
-            }
-        }
-
-        esl::result<std::string> translateBufferAllocation (
-            context::C & ctx,
-            BufferKind kind,
-            type::Buffer const & type
-        ) {
-            auto valType = c::bufferValueType(std::to_string(type.size));
-            auto valName = bufferValueName(kind, std::to_string(ctx.nextId()));
-            auto alloc   = c::declaration(valType, valName);
-
-            /***
-            global:
-            struct cth_buff$<size> cth_<buff = `buffval`|`inbuffval`|`outbuffval`>_<i = nextId()>;
-            ***/
-            auto allocatedResult = ctx.insertStaticAllocation(alloc);
-
-            /***
-            cth_<buff>_<i>.data;
-            ***/
-            return c::bufferData(valName);
-        }
-
-    }
-
-    interface::DefinitionTranslationResult type::Buffer::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool
-    ) const {
-        if (!definition)
-            return esl::result_error{"Buffers must be explicitly initialized."};
-
-        auto varType = c::bufferPointerType();
-        auto varName = c::variableName(std::to_string(ctx.nextId()));
-        auto local   = c::definition(varType, varName, *definition);
-
-        /***
-        local:
-        cth_float const * const var_<i = nextId()> = <definition>;
-        ***/
-        auto result = ctx.insertStatement(local);
-        if (!result)
-            return result.error();
-
-        /***
-        var_<i>
-        ***/
-        return varName;
-    }
-
-    //// Function ////
-
-    interface::DisplayResult type::Function::display () const {
-        return "Output (Input)"; // TODO
-    }
-
-    interface::CommonTypeResult type::Function::commonType (type::Function const & other) const {
-        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(out, other.out);
-        if (!outResult)
-            return outResult.error();
-        if (!esl::all(*outResult))
-            return esl::result_error{"No common type for two functions because of diferent output types."};
-        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(in, other.in);
-        if (!inResult)
-            return inResult.error();
-        if (!esl::all(*inResult))
-            return esl::result_error{"No common type for two functions because of diferent input types."};
-        return {*this};
-    }
-
-    interface::SameTypeResult type::Function::sameType (type::Function const & other) const {
-        auto outResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(out, other.out);
-        auto inResult = esl::lift<esl::target::component_vector, esl::target::category>(interface::sameTypes)(in, other.in);
-        return
-            outResult && esl::all(*outResult) &&
-            inResult  && esl::all(*inResult);
-    }
-
-    interface::TypeCompletionResult type::IncompleteFunction::completeType (context::Cynth & ctx) const {
-        auto outResult = esl::unite_results(
-            esl::lift<esl::target::component_vector, esl::target::category>(interface::completeType(ctx))(out)
-        );
-        if (!outResult)
-            return outResult.error();
-        auto inResult = esl::unite_results(
-            esl::lift<esl::target::component_vector, esl::target::category>(interface::completeType(ctx))(in)
-        );
-        if (!inResult)
-            return inResult.error();
-        return {type::Function{{
-            .out = esl::make_component_vector(*outResult),
-            .in  = esl::make_component_vector(*inResult)
-        }}};
-    }
-
-    namespace {
-
-        // TODO: Function "allocation".
-
-    }
-
-    interface::DefinitionTranslationResult type::Function::translateDefinition (
-        context::C & ctx,
-        std::optional<std::string> const & definition,
-        bool compval
-    ) const {
-        // TODO: Can I really skip declating the contexts?
-        // Inserting the compconst function value would need to handle declaring the context in-place as a literal constant.
-        if (compval) return {}; // Skip compconst values.
-
-        if (!definition)
-            return esl::result_error{"Functions must be initialized explicitly."};
-
-        auto varType = c::infer(*definition);
-        auto varName = c::contextVariableName(std::to_string(ctx.nextId()));
-        auto local   = c::definition(varType, varName, *definition);
-
-        /***
-        local:
-        typeof(<definition>) ctxvar_<nextId()> = <definition>;
-        ***/
-        auto result = ctx.insertStatement(local);
-        if (!result)
-            return result.error();
-
-        return varName;
-    }
-
 #endif
-}
 
-namespace esl {
+    // Implementing the heper functions defined at the top of this file:
 
-    using cynth::sem::CompleteType;
-    using cynth::sem::IncompleteType;
+    namespace {
 
-    template <>
-    void component_deleter<CompleteType>::operator () (CompleteType * ptr) const {
-        delete ptr;
-    }
+        DefinitionProcessingResult runtimeSimpleDefinition (
+            context::Main      & ctx,
+            CompleteType const & type,
+            std::string  const & typeName,
+            std::string  const & definition
+        ) {
+            auto varName  = c::variableName(c::id(ctx.nextId()));
+            auto local    = c::definition(c::global(typeName), varName, definition);
 
-    template <>
-    CompleteType * component_allocator<CompleteType>::operator () (CompleteType const & other) const {
-        return new CompleteType{other};
-    }
+            /***
+            local:
+            cth_<type> <var> = <definition>;
+            ***/
+            ctx.insertStatement(local);
 
-    template <>
-    CompleteType * component_allocator<CompleteType>::operator () (CompleteType && other) const {
-        return new CompleteType{std::move(other)};
-    }
+            /***
+            var_<i>
+            ***/
+            return Variable{TypedName{type, varName}};
+        }
 
-    template <>
-    void component_deleter<IncompleteType>::operator () (IncompleteType * ptr) const {
-        delete ptr;
-    }
+        template <typename Type>
+        DefinitionProcessingResult processSimpleDefinition (
+            context::Main                      & ctx,
+            Type                         const & type,
+            std::optional<ResolvedValue> const & optDef
+        ) {
+            if (type.constant && !optDef)
+                return esl::result_error{"A constant variable must be explicitly initialized."};
 
-    template <>
-    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType const & other) const {
-        return new IncompleteType{other};
-    }
+            auto definition = optDef ? *optDef : ResolvedValue{TypedExpression{type, Type::defaultExpression()}};
 
-    template <>
-    IncompleteType * component_allocator<IncompleteType>::operator () (IncompleteType && other) const {
-        return new IncompleteType{std::move(other)};
+            return [&] (CompleteValue && definition) -> DefinitionProcessingResult {
+                auto valueType = interface::valueType || target::category{} <<= definition;
+                // Note: There will be no implicit conversions in the first version.
+                if (!(interface::sameType(type) || target::category{} <<= valueType))
+                    return esl::result_error{"Initializing from an incompatible type."};
+
+                if (type.constant) {
+                    // Comp-const variable:
+                    return Variable{definition};
+                }
+
+                // Run-time const variable:
+                return [&] (TypedExpression && definition) -> DefinitionProcessingResult {
+                    return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+
+                } || target::result{} <<= interface::translateValue(ctx) || target::category{} <<= std::move(definition);
+
+            } | [&] (TypedExpression && definition) -> DefinitionProcessingResult {
+                return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+
+            } || target::category{} <<= std::move(definition);
+        }
+
     }
 
 }

@@ -43,6 +43,10 @@ namespace cynth::sem {
             constexpr static interface::TypeNameConstant typeName = str::boolean;
 
             interface::SameTypeResult sameType (type::Bool const &) const;
+
+            inline static std::string defaultExpression () {
+                return c::boolLiteral(false);
+            }
         };
 
         struct Int {
@@ -61,6 +65,10 @@ namespace cynth::sem {
             constexpr static interface::TypeNameConstant typeName = str::integral;
 
             interface::SameTypeResult sameType (type::Int const &) const;
+
+            inline static std::string defaultExpression () {
+                return c::intLiteral(0);
+            }
         };
 
         struct Float {
@@ -79,6 +87,10 @@ namespace cynth::sem {
             constexpr static interface::TypeNameConstant typeName = str::floating;
 
             interface::SameTypeResult sameType (type::Float const &) const;
+
+            inline static std::string defaultExpression () {
+                return c::floatLiteral(0);
+            }
         };
 
         /** Strings will not be used in the first versions. */

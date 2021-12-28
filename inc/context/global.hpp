@@ -41,8 +41,10 @@ namespace cynth::context {
         std::string instantiate (T const &);
 
         /** Define a function based on its metadata. */
-        std::string define (sem::FunctionDefinition &);
+        std::string defineFunction (sem::FunctionDefinition &);
         // TODO: Don't forget to set the newly generated name in the passed function's definition.
+
+        void registerGenerator (std::string const & buffer, std::string const & function, bool time);
 
     protected:
         std::size_t id = 0;
@@ -53,6 +55,14 @@ namespace cynth::context {
             std::vector<std::string> declarations;
             std::vector<std::string> definitions;
         } functions;
+
+        struct GeneratorEntry {
+            std::string buffer;
+            std::string function;
+            bool time;
+        };
+
+        std::vector<GeneratorEntry> generators;
 
         struct {
             std::unordered_set<std::string> arrayTypes;  // cth_arr$16$const_int
