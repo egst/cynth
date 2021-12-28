@@ -17,7 +17,7 @@
 # C++ details
 
 * Go through all lifted lambdas and check that lvalue and rvalue references are used properly in the parameters.  
-    Taking parameters by value should be avoided - use only rvalue and lvalue (or forwarding) references.
+    Should I use rvalue references or direct vlaues? For some reason rvalue references don't work in some places.
 * Explicitly `inline` simple small functions?  
     I was going to implement everything (except for templates) in cpp files to be consistent,
     but then I realized, that that might limit the compiler's inlining abilities.

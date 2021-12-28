@@ -32,6 +32,7 @@ namespace cynth::interface {
             return a.display();
         };
 
+    /*
     namespace detail::common {
 
         template <typename T>
@@ -47,5 +48,6 @@ namespace cynth::interface {
             ? result.front()
             : esl::parenthesized(esl::join(", ", display(a)));
     };
+    */
 
 }

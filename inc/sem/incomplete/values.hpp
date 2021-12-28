@@ -237,7 +237,7 @@ namespace cynth::sem {
 
             // TODO: Define in cpp.
             inline bool runtimeClosure () const {
-                return definition.closureType.has_value();
+                return closureVariable && definition.closureType;
             }
 
             interface::DisplayResult          display        ()                const;

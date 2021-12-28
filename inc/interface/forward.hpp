@@ -29,7 +29,7 @@ namespace cynth::interface {
     using DeclarationResolutionResult      = esl::result<esl::tiny_vector<sem::CompleteDeclaration>>;
     using RangeDeclarationResolutionResult = esl::result<esl::tiny_vector<sem::CompleteRangeDeclaration>>;
     //using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::ResolvedTarget>>;
-    // Only const values can be compile-time values, so all targets are be run-time (for now).
+    // Only const values can be compile-time values, so all targets are run-time (for now).
     using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::TypedTargetExpression>>;
     using NameExtractionResult             = esl::result<std::vector<std::string>>;
     using TypeNameExtractionResult         = esl::result<std::vector<std::string>>;

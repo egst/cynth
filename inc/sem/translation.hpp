@@ -134,6 +134,8 @@ namespace cynth {
         constexpr char const * iteration = "iter";
         // TODO: Make sure that `struct {...} iter` and `cth_int iter` do not collide with themselves (when nested) or each other.
 
+        constexpr char const * empty = "empty";
+
     }
 
     namespace c {
@@ -874,6 +876,20 @@ namespace cynth {
         //// Types ////
 
         /***
+        struct cth_empty
+        ***/
+        inline std::string emptyType () {
+            return c::structure(c::global(def::empty));
+        }
+
+        /***
+        struct cth_empty {};
+        ***/
+        inline std::string emptyTypeDefinition () {
+            return c::structureDefinition(c::emptyType());
+        }
+
+        /***
         cth_float const * const
         ***/
         inline std::string bufferPointer () {
@@ -888,10 +904,10 @@ namespace cynth {
         }
 
         /***
-        <type> *
+        <type> const *
         ***/
         inline std::string inputPointerType (std::string const & type) {
-            return c::pointer(c::inputType(type));
+            return c::pointer(c::constness(c::inputType(type)));
         }
 
         /***

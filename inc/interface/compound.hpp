@@ -23,6 +23,7 @@ namespace cynth::interface {
 
     namespace has {
 
+        // TODO: This should probably be in interface/types instead.
         template <typename T>
         concept processAssignment = type<T> && requires (
             T type, context::Main & ctx,

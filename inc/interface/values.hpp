@@ -82,11 +82,11 @@ namespace cynth::interface {
 
     template <typename Out>
     constexpr auto get = esl::overload(
-        [] <has::get<Out> T> (T const & value) -> GetResult<Out> {
+        [] <has::get<Out> T> (T const & value) -> esl::result<GetResult<Out>> {
             return value.get();
         },
         // TODO: Why is this ambiguout without `requires (!...)` while other similar functions are ok?
-        [] <value T> (T const &) -> GetResult<Out> requires (!has::get<T, Out>) {
+        [] <value T> (T const &) -> esl::result<GetResult<Out>> requires (!has::get<T, Out>) {
             return esl::result_error{"Value does not contain the requested type."};
         }
     );
