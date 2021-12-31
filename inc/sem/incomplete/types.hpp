@@ -48,7 +48,7 @@ namespace cynth::sem {
             void loseConstness ();
 
             inline static std::string defaultExpression () {
-                return c::boolLiteral(false);
+                return c::booleanLiteral(false);
             }
         };
 
@@ -73,7 +73,7 @@ namespace cynth::sem {
             void loseConstness ();
 
             inline static std::string defaultExpression () {
-                return c::intLiteral(0);
+                return c::integralLiteral(0);
             }
         };
 
@@ -98,7 +98,7 @@ namespace cynth::sem {
             void loseConstness ();
 
             inline static std::string defaultExpression () {
-                return c::floatLiteral(0);
+                return c::floatingLiteral(0);
             }
         };
 

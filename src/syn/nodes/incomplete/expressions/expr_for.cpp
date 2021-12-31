@@ -106,7 +106,7 @@ namespace cynth::syn {
 
                     return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{sem::value::Array{
                         .allocation = &stored,
-                        .valueType  = sem::type::Array::make(*type, size)
+                        .valueType  = sem::type::Array{*type, size}
                     }}});
                 } // else, continue with the run-time algorithm...
             }
@@ -122,7 +122,7 @@ namespace cynth::syn {
                 return [&, size = size] (auto type) -> ExpressionProcessingResult {
                     auto head = c::forBegin(
                         c::iterationStructure(state.declarations, state.initializations),
-                        c::lt(c::iterationPosition(), c::intLiteral(size)),
+                        c::lt(c::iterationPosition(), c::integralLiteral(size)),
                         c::join(",", state.advancements)
                     );
                     for (auto & assgn: state.assignments)

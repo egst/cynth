@@ -153,13 +153,13 @@ namespace cynth::sem {
     }
 
     TypeTranslationResult type::Bool::translateType () const {
-        auto name = c::boolType();
+        auto name = c::booleanType();
         return constant ? c::constness(name) : name;
     }
 
     TypeSpecifierTranslationResult type::Bool::translateTypeSpecifier () const {
         return tpl::TypeSpecifier{
-            .type     = c::boolType(),
+            .type     = c::booleanType(),
             .constant = constant
         };
     }
@@ -190,13 +190,13 @@ namespace cynth::sem {
     }
 
     TypeTranslationResult type::Int::translateType () const {
-        auto name = c::intType();
+        auto name = c::integralType();
         return constant ? c::constness(name) : name;
     }
 
     TypeSpecifierTranslationResult type::Int::translateTypeSpecifier () const {
         return tpl::TypeSpecifier{
-            .type     = c::intType(),
+            .type     = c::integralType(),
             .constant = constant
         };
     }
@@ -227,13 +227,13 @@ namespace cynth::sem {
     }
 
     TypeTranslationResult type::Float::translateType () const {
-        auto name = c::floatType();
+        auto name = c::floatingType();
         return constant ? c::constness(name) : name;
     }
 
     TypeSpecifierTranslationResult type::Float::translateTypeSpecifier () const {
         return tpl::TypeSpecifier{
-            .type     = c::floatType(),
+            .type     = c::floatingType(),
             .constant = constant
         };
     }
@@ -645,7 +645,7 @@ namespace cynth::sem {
     TypeSpecifierTranslationResult type::Buffer::translateTypeSpecifier () const {
         // This assumes that the nested type can only be simple, and so will always be translatable.
         return tpl::TypeSpecifier{
-            .type     = c::floatType(),
+            .type     = c::floatingType(),
             .constant = true,
             .constptr = true
         };

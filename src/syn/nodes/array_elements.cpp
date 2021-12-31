@@ -144,7 +144,7 @@ namespace cynth {
                 } | [&] (std::string const & alloc) -> ArrayElementProcessingResult {
                     esl::tiny_vector<ResolvedValue> range;
                     for (std::size_t i = 0; i < arrayType.size; ++i) {
-                        auto expr = c::arraySubscript(alloc, c::intLiteral(i));
+                        auto expr = c::arraySubscript(alloc, c::integralLiteral(i));
                         range.emplace_back(TypedExpression{*arrayType.type, expr});
                     }
                     return range;
@@ -161,7 +161,7 @@ namespace cynth {
             return [&] (sem::type::Array && arrayType) -> ArrayElementProcessingResult {
                 esl::tiny_vector<ResolvedValue> range;
                 for (std::size_t i = 0; i < arrayType.size; ++i) {
-                    auto expr = c::arraySubscript(std::move(container).expression, c::intLiteral(i));
+                    auto expr = c::arraySubscript(std::move(container).expression, c::integralLiteral(i));
                     range.emplace_back(TypedExpression{*arrayType.type, expr});
                 }
                 return range;

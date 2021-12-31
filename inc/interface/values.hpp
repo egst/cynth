@@ -32,6 +32,11 @@ namespace cynth::interface {
         esl::same_but_cvref<T, sem::value::Int>  ||
         esl::same_but_cvref<T, sem::value::Float>;
 
+    template <typename T>
+    concept numericValue =
+        esl::same_but_cvref<T, sem::value::Int>  ||
+        esl::same_but_cvref<T, sem::value::Float>;
+
     namespace has {
 
         template <typename T, typename Out>

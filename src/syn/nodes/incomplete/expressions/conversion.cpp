@@ -18,12 +18,9 @@
 #include "interface/nodes.hpp"
 #include "interface/types.hpp"
 #include "sem/compound.hpp"
+#include "sem/operations.hpp"
 #include "sem/translation.hpp"
 #include "sem/values.hpp"
-
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
 
 namespace cynth::syn {
 
@@ -76,6 +73,15 @@ namespace cynth::syn {
             return valName;
         }
 
+        template <typename, typename> struct Cast;
+
+        template <> struct Cast<sem::type::Bool,  sem::type::Int>   { constexpr static auto op = sem::runtime::btoi; };
+        template <> struct Cast<sem::type::Int,   sem::type::Bool>  { constexpr static auto op = sem::runtime::itob; };
+        template <> struct Cast<sem::type::Int,   sem::type::Float> { constexpr static auto op = sem::runtime::itof; };
+        template <> struct Cast<sem::type::Float, sem::type::Int>   { constexpr static auto op = sem::runtime::ftoi; };
+        template <> struct Cast<sem::type::Bool,  sem::type::Float> { constexpr static auto op = sem::runtime::btof; };
+        template <> struct Cast<sem::type::Float, sem::type::Bool>  { constexpr static auto op = sem::runtime::ftob; };
+
         template <interface::simpleType FromType, interface::simpleType Type>
         esl::result<ResolvedValue> simpleRuntimeValue (
             FromType        const & fromType,
@@ -86,11 +92,15 @@ namespace cynth::syn {
                 // Same types:
                 return {expression};
 
-            auto converted = c::cast(expression.expression, type.translateType());
-            return {TypedExpression{
-                .type       = type,
-                .expression = converted
-            }};
+            else {
+                // Note: Without the else, this doesn't compile (with clang at least),
+                // because Cast is not specialized for the same types.
+                auto converted = Cast<FromType, Type>::op(expression.expression);
+                return {TypedExpression{
+                    .type       = type,
+                    .expression = converted
+                }};
+            }
         }
 
         esl::result<ResolvedValue> runtimeValue (

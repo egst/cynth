@@ -85,9 +85,8 @@ namespace cynth::syn::for_nodes {
         }
 
         // Comp-time general case array:
-        return [&] (auto valName) {
-            return processRuntimeArray(state, name, type, valName);
-        } || target::result{} <<= alloc.allocate(state.ctx);
+        auto valName = alloc.allocate(state.ctx);
+        return processRuntimeArray(state, name, type, valName);
     }
 
     esl::result<void> State::processAllocations () {
@@ -204,7 +203,7 @@ namespace cynth::syn::for_nodes {
 
             auto head = c::forBegin(
                 c::iterationStructure(state.declarations, state.initializations),
-                c::lt(c::iterationPosition(), c::intLiteral(size)),
+                c::lt(c::iterationPosition(), c::integralLiteral(size)),
                 c::join(",", state.advancements)
             );
             for (auto & assgn: state.assignments)

@@ -1,51 +1,339 @@
 #pragma once
 
 #include <cmath>
+#include <string>
+#include <utility>
 
+#include "esl/concepts.hpp"
+#include "esl/functional.hpp"
+
+#include "interface/types.hpp"
+#include "sem/compound.hpp"
 #include "sem/numeric_types.hpp"
+#include "sem/translation.hpp"
 
 namespace cynth::sem {
 
-    constexpr auto plus  = [] <typename T> (T a)      { return +a;     };
-    constexpr auto minus = [] <typename T> (T a)      { return -a;     };
-    constexpr auto inc   = [] <typename T> (T a)      { return ++a;    };
-    constexpr auto dec   = [] <typename T> (T a)      { return --a;    };
-    constexpr auto add   = [] <typename T> (T a, T b) { return a + b;  };
-    constexpr auto sub   = [] <typename T> (T a, T b) { return a - b;  };
-    constexpr auto mul   = [] <typename T> (T a, T b) { return a * b;  };
-    constexpr auto div   = [] <typename T> (T a, T b) { return a / b;  };
-    constexpr auto mod   = [] <typename T> (T a, T b) { return a % b;  };
-    constexpr auto fmod  = [] <typename T> (T a, T b) { return std::fmod(a, b); };
-    constexpr auto pow   = [] <typename T> (T a, T b) { return std::pow(a, b);  };
-    constexpr auto lt    = [] <typename T> (T a, T b) { return a < b;  };
-    constexpr auto gt    = [] <typename T> (T a, T b) { return a > b;  };
-    constexpr auto le    = [] <typename T> (T a, T b) { return a <= b; };
-    constexpr auto ge    = [] <typename T> (T a, T b) { return a >= b; };
-    constexpr auto eq    = [] <typename T> (T a, T b) { return a == b; };
-    constexpr auto ne    = [] <typename T> (T a, T b) { return a != b; };
-    constexpr auto lnot  = [] <typename T> (T a)      { return !a;     };
-    //constexpr auto land  = [] <typename T> (T a, T b) { return a && b; };
-    //constexpr auto lor   = [] <typename T> (T a, T b) { return a || b; };
-    constexpr auto land  = [] (auto a, auto b)        { return a && b; };
-    constexpr auto lor   = [] (auto a, auto b)        { return a || b; };
-    constexpr auto bnot  = [] <typename T> (T a)      { return ~a;     };
-    constexpr auto band  = [] <typename T> (T a, T b) { return a & b;  };
-    constexpr auto bor   = [] <typename T> (T a, T b) { return a | b;  };
-    constexpr auto bxor  = [] <typename T> (T a, T b) { return a ^ b;  };
+    // The integer division is floored. The modulo represents the corresponding remainder.
+    // To be consitent, the float to int conversion is also floored.
+    // Integer division by zero is undefined behaviour.
+    // Floating-point division by zero behaviour is implementation defined in both the C and the C++ standards,
+    // and thus will depend on the C and C++ compiler used.
 
-    // TODO: Decide if single type (i.e. <typename T> (T a, T b)) or potentially different types (i.e. (auto a, auto b))
-    // Note: land and lor need different types because they must accept lazy values, which are always composed of different ad-hoc created functor types.
+    // Logical and and or operations are currently not short-circuiting at compile-time to simplify implementation.
+    // Compile-time evaluation/execution never produces side-effects, so it shouldn't be a problem.
+    // At run-time they are always shord-circuiting.
 
-    // TODO: Better modulo semantics.
-    // TODO: Better conversions.
+    namespace comptime {
 
-    // TODO: Division by 0? (And other special floating point values...)
+        namespace implementation {
 
-    constexpr auto btoi = [] (bool     a) -> Integral { return a; };
-    constexpr auto itob = [] (Integral a) -> bool     { return a; };
-    constexpr auto itof = [] (Integral a) -> Floating { return a; };
-    constexpr auto ftoi = [] (Floating a) -> Integral { return a; };
-    constexpr auto btof = [] (bool     a) -> Floating { return itof(btoi(a)); };
-    constexpr auto ftob = [] (Floating a) -> bool     { return itob(ftoi(a)); };
+            inline Integral floor (Floating a) {
+                return static_cast<Integral>(std::floor(a));
+            }
+
+            inline Integral idiv (Integral a, Integral b) {
+                return (a - 2 * (a < 0) + 2 * (b < 0)) / b;
+            }
+
+            inline Integral imod (Integral a, Integral b) {
+                return ((a % b) + b) % b;
+            }
+
+            /*
+            inline Floating fmod (Floating a, Floating b) {
+                return std::fmod((std::fmod(a, b) + b), b);
+            }
+            */
+            constexpr auto fmod =
+                [] (esl::same_but_cvref<Floating> auto a, esl::same_but_cvref<Floating> auto b) -> Floating {
+                    return std::fmod((std::fmod(a, b) + b), b);
+                };
+
+            inline Floating fpow (Floating a, Floating b) {
+                return std::pow(a, b);
+            }
+
+            // I'll keep these non-branching implementations for now. Benchmarks suggest that there is only a slight
+            // improvement over equivalent branching algorithms, the performance might depend on the target platform.
+            // TODO: Check if there is a way to leverage the target architechture's division and modulo implementations.
+            // Is it common for processors to implement a flooring division?
+            // I won't bother with this if most current processors do a truncating division natively.
+
+        }
+
+        template <typename T>
+        concept numeric = esl::same_but_cvref<T, Integral> || esl::same_but_cvref<T, Floating>;
+
+        constexpr auto plus  = [] (numeric auto a) { return +a; };
+        constexpr auto minus = [] (numeric auto a) { return -a; };
+        constexpr auto add   = [] <numeric T> (T a, T b) { return a + b; };
+        constexpr auto sub   = [] <numeric T> (T a, T b) { return a - b; };
+        constexpr auto mul   = [] <numeric T> (T a, T b) { return a * b; };
+        constexpr auto div   = esl::overload(implementation::idiv, [] (Floating a, Floating b) { return a / b; });
+        constexpr auto mod   = esl::overload(implementation::imod, implementation::fmod);
+        constexpr auto pow   = implementation::fpow; // Integer exponentiation not supported yet.
+        constexpr auto lt    = [] <numeric T> (T a, T b) { return a < b; };
+        constexpr auto gt    = [] <numeric T> (T a, T b) { return a > b; };
+        constexpr auto le    = [] <numeric T> (T a, T b) { return a <= b; };
+        constexpr auto ge    = [] <numeric T> (T a, T b) { return a >= b; };
+        constexpr auto eq    = [] <numeric T> (T a, T b) { return a == b; };
+        constexpr auto ne    = [] <numeric T> (T a, T b) { return a != b; };
+        constexpr auto lnot  = [] (bool a) { return !a; };
+        constexpr auto land  = [] (bool a, bool b) { return a && b; };
+        constexpr auto lor   = [] (bool a, bool b) { return a || b; };
+        /*
+        constexpr auto inc   = [] (numeric auto a) { return ++a; };
+        constexpr auto dec   = [] (numeric auto a) { return --a; };
+        constexpr auto bnot  = [] (Integral a) { return ~a; };
+        constexpr auto band  = [] (Integral a, Integral b) { return a & b; };
+        constexpr auto bor   = [] (Integral a, Integral b) { return a | b; };
+        constexpr auto bxor  = [] (Integral a, Integral b) { return a ^ b; };
+        */
+
+        constexpr auto btoi = [] (bool     a) -> Integral { return a; };
+        constexpr auto itob = [] (Integral a) -> bool     { return a; };
+        constexpr auto itof = [] (Integral a) -> Floating { return a; };
+        constexpr auto ftoi = [] (Floating a) -> Integral { return implementation::floor(a); };
+        constexpr auto btof = [] (bool     a) -> Floating { return a; };
+        constexpr auto ftob = [] (Floating a) -> bool     { return implementation::floor(a); };
+
+    }
+
+    namespace runtime {
+
+        namespace definition {
+
+            /***
+            int cth_imod (int a, int b) {
+                return ((a % b) + b) % b;
+            }
+            ***/
+            inline std::string imod () {
+                constexpr auto first  = "a";
+                constexpr auto second = "b";
+                return
+                    c::inlineFunctionBegin(
+                        c::integralType(),
+                        c::global(def::integralModulo),
+                        c::declaration(c::integralType(), first),
+                        c::declaration(c::integralType(), second)
+                    ) + c::newLine() +
+                    c::functionBody(c::functionReturn(
+                        c::mod(c::expression(c::add(c::expression(c::mod(first, second)), second)), second)
+                    )) + c::newLine() +
+                    c::end();
+            }
+
+            /***
+            int cth_idiv (int a, int b) {
+                return (a - 2 * (a < 0) + 2 * (b < 0)) / b;
+            }
+            ***/
+            inline std::string idiv () {
+                constexpr auto first  = "a";
+                constexpr auto second = "b";
+                return
+                    c::inlineFunctionBegin(
+                        c::integralType(),
+                        c::global(def::integralDivision),
+                        c::declaration(c::integralType(), first),
+                        c::declaration(c::integralType(), second)
+                    ) + c::newLine() +
+                    c::functionBody(c::functionReturn(
+                        c::div(c::expression(
+                            c::add(
+                                c::sub(
+                                    first,
+                                    c::mul(
+                                        c::integralLiteral(2),
+                                        c::expression(c::lt(first, c::integralLiteral(0)))
+                                    )
+                                ),
+                                c::mul(
+                                    c::integralLiteral(2),
+                                    c::expression(c::lt(second, c::integralLiteral(0)))
+                                )
+                            )
+                        ), second)
+                    )) + c::newLine() +
+                    c::end();
+            }
+
+            /***
+            int cth_floor (float a) {
+                return (int) floorf(a); // alternatively: floor, floorl
+            }
+            ***/
+            inline std::string floor () {
+                constexpr auto arg = "a";
+                return
+                    c::inlineFunctionBegin(
+                        c::integralType(),
+                        c::global(def::floor),
+                        c::declaration(c::integralType(), arg)
+                    ) + c::newLine() +
+                    c::functionBody(c::functionReturn(
+                        c::cast(c::call(def::nativeFloor, arg), c::integralType())
+                    )) + c::newLine() +
+                    c::end();
+            }
+
+            /***
+            float cth_fmod (float a, float b) {
+                return fmodf((fmodf(a, b) + b), b); // alternatively: floor, floorl
+            }
+            ***/
+            inline std::string fmod () {
+                constexpr auto first  = "a";
+                constexpr auto second = "b";
+                return
+                    c::inlineFunctionBegin(
+                        c::integralType(),
+                        c::global(def::floatingModulo),
+                        c::declaration(c::integralType(), first),
+                        c::declaration(c::integralType(), second)
+                    ) + c::newLine() +
+                    c::functionBody(c::functionReturn(
+                        c::call(
+                            def::nativeFloatingModulo,
+                            c::add(
+                                c::call(def::nativeFloatingModulo, first, second),
+                                second
+                            ),
+                            second
+                        )
+                    )) + c::newLine() +
+                    c::end();
+            }
+
+        }
+
+        namespace implementation {
+
+            /***
+            cth_floor(<a>)
+            ***/
+            inline std::string floor (std::string const & a) {
+                return c::call(c::global(def::floor), a);
+            }
+
+            /***
+            cth_idiv(<a>, <b>)
+            ***/
+            inline std::string idiv (std::string const & a, std::string const & b) {
+                return c::call(c::global(def::integralDivision), a, b);
+            }
+
+            /***
+            cth_imod(<a>, <b>)
+            ***/
+            inline std::string imod (std::string const & a, std::string const & b) {
+                return c::call(c::global(def::integralModulo), a, b);
+            }
+
+            /***
+            cth_fmod(<a>, <b>)
+            ***/
+            inline std::string fmod (std::string const & a, std::string const & b) {
+                return c::call(c::global(def::floatingModulo), a, b);
+            }
+
+            /***
+            powf(<a>, <b>)
+            ***/
+            inline std::string fpow (std::string const & a, std::string const & b) {
+                return c::call(c::global(def::nativeExponentiation), a, b);
+            }
+
+            /** Identity. */
+            inline std::string id (std::string const & a) { return a; }
+
+        }
+
+        namespace detail {
+
+            template <typename T>
+            constexpr auto typeParam (auto const & f) {
+                return [&] <typename... Ts> (T const &, Ts &&... args) {
+                    return f(std::forward<Ts>(args)...);
+                };
+            }
+
+            constexpr auto numericTypeParam (auto const & f) {
+                return [&] <typename... Ts> (interface::numericType auto const &, Ts &&... args) {
+                    return f(std::forward<Ts>(args)...);
+                };
+            }
+
+            constexpr auto simpleTypeParam (auto const & f) {
+                return [&] <typename... Ts> (interface::simpleType auto const &, Ts &&... args) {
+                    return f(std::forward<Ts>(args)...);
+                };
+            }
+
+        }
+
+        constexpr auto plus  = detail::numericTypeParam(implementation::id);
+        constexpr auto minus = detail::numericTypeParam(c::negate);
+        constexpr auto add   = detail::numericTypeParam(c::add);
+        constexpr auto sub   = detail::numericTypeParam(c::sub);
+        constexpr auto mul   = detail::numericTypeParam(c::mul);
+        constexpr auto div   = esl::overload(detail::typeParam<type::Int>(implementation::idiv), detail::typeParam<type::Float>(c::div));
+        constexpr auto mod   = esl::overload(detail::typeParam<type::Int>(implementation::imod), detail::typeParam<type::Float>(implementation::fmod));
+        constexpr auto pow   = detail::typeParam<type::Float>(implementation::fpow);
+        constexpr auto lt    = detail::simpleTypeParam(c::lt);
+        constexpr auto gt    = detail::simpleTypeParam(c::gt);
+        constexpr auto le    = detail::simpleTypeParam(c::le);
+        constexpr auto ge    = detail::simpleTypeParam(c::ge);
+        constexpr auto eq    = detail::simpleTypeParam(c::eq);
+        constexpr auto ne    = detail::simpleTypeParam(c::ne);
+        constexpr auto lnot  = detail::typeParam<type::Bool>(c::lnot);
+        constexpr auto land  = detail::typeParam<type::Bool>(c::land);
+        constexpr auto lor   = detail::typeParam<type::Bool>(c::lor);
+
+        /***
+        (int) <val>
+        ***/
+        inline std::string btoi (std::string const & a) {
+            return c::cast(a, c::integralType());
+        }
+
+        /***
+        (bool) <val>
+        ***/
+        inline std::string itob (std::string const & a) {
+            return c::cast(a, c::booleanType());
+        }
+
+        /***
+        (float) <val>
+        ***/
+        inline std::string itof (std::string const & a) {
+            return c::cast(a, c::floatingType());
+        }
+
+        /***
+        cth_floor(<val>)
+        ***/
+        inline std::string ftoi (std::string const & a) {
+            return implementation::floor(a);
+        }
+
+        /***
+        (float) <val>
+        ***/
+        inline std::string btof (std::string const & a) {
+            return c::cast(a, c::floatingType());
+        }
+
+        /***
+        (bool) cth_floor(<val>)
+        ***/
+        inline std::string ftob (std::string const & a) {
+            return c::cast(implementation::floor(a), c::booleanType());
+        }
+
+    }
 
 }

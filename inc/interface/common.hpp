@@ -41,13 +41,14 @@ namespace cynth::interface {
         };
 
     }
+    */
 
-    constexpr auto displayTuple = [] (detail::common::displayableTuple auto const & a) -> DisplayResult {
-        auto result = display(a);
+    template <typename Target = esl::target::direct>
+    constexpr auto displayTuple = [] (esl::sized_range auto const & tuple) -> DisplayResult {
+        auto result = esl::lift<esl::target::sized_range, Target>(display)(tuple);
         return result.size() == 1
             ? result.front()
-            : esl::parenthesized(esl::join(", ", display(a)));
+            : esl::parenthesized(esl::join(", ", result));
     };
-    */
 
 }

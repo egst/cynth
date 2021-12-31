@@ -81,7 +81,7 @@ namespace cynth::sem {
     }
 
     ValueTranslationResult value::Bool::translateValue (context::Main &) const {
-        return TypedExpression{valueType, c::boolLiteral(value)};
+        return TypedExpression{valueType, c::booleanLiteral(value)};
     }
 
     //// Int ////
@@ -95,7 +95,7 @@ namespace cynth::sem {
     }
 
     ValueTranslationResult value::Int::translateValue (context::Main &) const {
-        return TypedExpression{valueType, c::intLiteral(value)};
+        return TypedExpression{valueType, c::integralLiteral(value)};
     }
 
     //// Float ////
@@ -109,7 +109,7 @@ namespace cynth::sem {
     }
 
     ValueTranslationResult value::Float::translateValue (context::Main &) const {
-        return TypedExpression{valueType, c::floatLiteral(value)};
+        return TypedExpression{valueType, c::floatingLiteral(value)};
     }
 
     //// String ////

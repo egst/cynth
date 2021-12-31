@@ -21,8 +21,6 @@ namespace cynth {
 
         // Strings used to construct names:
         /***
-        cth_bool
-        cth_int
         var_<id>
         closurevar_<id>
         itervar_<id>
@@ -126,17 +124,34 @@ namespace cynth {
         // Iteration:
         /***
         struct {
-            cth_int pos;
+            int pos;
             ...
         } iter = {0, ...}
         # or:
-        cth_int iter = 0
+        int iter = 0
         ***/
         constexpr char const * position  = "pos";
         constexpr char const * iteration = "iter";
-        // TODO: Make sure that `struct {...} iter` and `cth_int iter` do not collide with themselves (when nested) or each other.
+        // TODO: Make sure that `struct {...} iter` and `int iter` do not collide with themselves (when nested) or each other.
 
         constexpr char const * empty = "empty";
+
+        // Note: str::floating and str::integral are only used to construct names,
+        // while these are actual C type names.
+        constexpr char const * boolean  = "bool"; // Requires <stdbool.h>.
+        constexpr char const * integral = "int";
+        constexpr char const * floating = "float";
+
+        constexpr char const * integralSuffix = "";  // alternatively: l, ll
+        constexpr char const * floatingSuffix = "f"; // alternatively: l, empty
+
+        constexpr char const * nativeFloatingModulo = "fmodf";  // Alternatively: fmod,  fmodl
+        constexpr char const * nativeFloor          = "floorf"; // Alternatively: floor, floorl
+        constexpr char const * nativeExponentiation = "powf";   // Alternatively: pow,   powl
+        constexpr char const * integralDivision     = "idiv";
+        constexpr char const * integralModulo       = "imod";
+        constexpr char const * floatingModulo       = "fmod";
+        constexpr char const * floor                = "floor";
 
     }
 
@@ -462,7 +477,7 @@ namespace cynth {
         (<type>) <val>
         ***/
         inline std::string cast (std::string const & val, std::string const & type) {
-            return c::global(str::boolean);
+            return "(" + type + ") " + val;
         }
 
         /***
@@ -487,10 +502,24 @@ namespace cynth {
         }
 
         /***
-        <a> < <b>
+        -<a>
         ***/
-        inline std::string lt (std::string const & a, std::string const & b) {
-            return a + " < " + b;
+        inline std::string negate (std::string const & a) {
+            return "-" + a;
+        }
+
+        /***
+        <a> + <b>
+        ***/
+        inline std::string add (std::string const & a, std::string const & b) {
+            return a + " + " + b;
+        }
+
+        /***
+        <a> - <b>
+        ***/
+        inline std::string sub (std::string const & a, std::string const & b) {
+            return a + " - " + b;
         }
 
         /***
@@ -498,6 +527,90 @@ namespace cynth {
         ***/
         inline std::string mul (std::string const & a, std::string const & b) {
             return a + " * " + b;
+        }
+
+        /***
+        <a> * <b>
+        ***/
+        inline std::string div (std::string const & a, std::string const & b) {
+            return a + " / " + b;
+        }
+
+        /***
+        <a> % <b>
+        ***/
+        inline std::string mod (std::string const & a, std::string const & b) {
+            return a + " % " + b;
+        }
+
+        /***
+        <a> < <b>
+        ***/
+        inline std::string lt (std::string const & a, std::string const & b) {
+            return a + " < " + b;
+        }
+
+        /***
+        <a> > <b>
+        ***/
+        inline std::string gt (std::string const & a, std::string const & b) {
+            return a + " > " + b;
+        }
+
+        /***
+        <a> <= <b>
+        ***/
+        inline std::string le (std::string const & a, std::string const & b) {
+            return a + " <= " + b;
+        }
+
+        /***
+        <a> >= <b>
+        ***/
+        inline std::string ge (std::string const & a, std::string const & b) {
+            return a + " >= " + b;
+        }
+
+        /***
+        <a> == <b>
+        ***/
+        inline std::string eq (std::string const & a, std::string const & b) {
+            return a + " == " + b;
+        }
+
+        /***
+        <a> != <b>
+        ***/
+        inline std::string ne (std::string const & a, std::string const & b) {
+            return a + " != " + b;
+        }
+
+        /***
+        !<a>
+        ***/
+        inline std::string lnot (std::string const & a) {
+            return "!" + a;
+        }
+
+        /***
+        <a> && <b>
+        ***/
+        inline std::string land (std::string const & a, std::string const & b) {
+            return a + " && " + b;
+        }
+
+        /***
+        <a> || <b>
+        ***/
+        inline std::string lor (std::string const & a, std::string const & b) {
+            return a + " || " + b;
+        }
+
+        /***
+        return <val>
+        ***/
+        inline std::string functionReturn (std::string const & val) {
+            return "return " + val;
         }
 
         //// Built-in types ////
@@ -593,27 +706,28 @@ namespace cynth {
 
         //// Simple types ////
 
-        // TODO: boolType, intType and floatType should be somehow connected with interface::directTypeName
-
         /***
-        cth_bool
+        bool
         ***/
-        inline std::string boolType () {
-            return c::global(str::boolean);
+        inline std::string booleanType () {
+            //return c::global(str::boolean);
+            return def::boolean;
         }
 
         /***
-        cth_int
+        int
         ***/
-        inline std::string intType () {
-            return c::global(str::integral);
+        inline std::string integralType () {
+            //return c::global(str::integral);
+            return def::integral;
         }
 
         /***
-        cth_float
+        float
         ***/
-        inline std::string floatType () {
-            return c::global(str::floating);
+        inline std::string floatingType () {
+            //return c::global(str::floating);
+            return def::floating;
         }
 
         //// Compound statements ////
@@ -905,10 +1019,10 @@ namespace cynth {
         }
 
         /***
-        cth_float const * const
+        float const * const
         ***/
         inline std::string bufferPointer () {
-            return c::constness(c::pointer(c::constness(c::floatType())));
+            return c::constness(c::pointer(c::constness(c::floatingType())));
         }
 
         /***
@@ -1026,11 +1140,49 @@ namespace cynth {
             return "for (" + newLine + c::indentedJoin(";", init, cond, iter) + ") {";
         }
 
+        /***
+        <out> <name> (<param1>, <param2>, ...) {
+        ***/
+        template <typename... Ts>
+        inline std::string inlineFunctionBegin (
+            std::string const & out, std::string const & name, Ts const &... params
+        ) {
+            return out + " " + name + " (" + c::inlineJoin(",", params...) + ") {";
+        }
+
+        /***
+            <stmt1>;
+            <stmt2>;
+            ...
+            <stmtN>;
+        ***/
+        template <typename... Ts>
+        inline std::string functionBody (
+            Ts const &... params
+        ) {
+            return c::indentedTerminatedJoin(";", params...);
+        }
+
+        /***
+        <out> <name> (
+            <param1>,
+            <param2>,
+            ...
+        ) {
+        ***/
+        template <typename... Ts>
+        inline std::string functionBegin (
+            std::string const & out, std::string const & name, Ts const &... params
+        ) {
+            auto newLine = c::newLine();
+            return out + " " + name + " (" + newLine + c::indentedJoin(",", params...) + newLine + ") {";
+        }
+
         //// Looping ////
 
         /***
         struct {
-            cth_int pos;
+            int pos;
             <decl1>;
             <decl2>;
             ...
@@ -1038,17 +1190,17 @@ namespace cynth {
         ***/
         template <esl::range T, esl::range U>
         std::string iterationStructure (T const & decls, U const & inits) {
-            auto posDecl = c::declaration(c::intType(), def::position);
+            auto posDecl = c::declaration(c::integralType(), def::position);
             auto type    = c::anonymousStructureDefinition(posDecl, decls);
             auto init    = c::inlineInit(inits);
             return c::definition(type, def::iteration, init);
         }
 
         /***
-        cth_int iter = 0
+        int iter = 0
         ***/
         inline std::string iterationVariable () {
-            return c::definition(c::intType(), def::iteration, "0");
+            return c::definition(c::integralType(), def::iteration, "0");
         }
 
         //// Labels ////
@@ -1200,27 +1352,28 @@ namespace cynth {
 
         /***
         # Boolean literal
-        (cth_bool) 0
-        (cth_bool) 1
+        # Requires <stdbool.h>
+        true/false
         ***/
-        inline std::string boolLiteral (bool val) {
-            return c::cast(val ? "1" : "0", c::boolType());
+        inline std::string booleanLiteral (bool val) {
+            //return c::cast(val ? "1" : "0", c::booleanType());
+            return val ? "true" : "false";
         }
 
         /***
         # Integer literal
-        (cth_int) val
+        <val>
         ***/
-        inline std::string intLiteral (sem::Integral val) {
-            return c::cast(std::to_string(val), c::intType());
+        inline std::string integralLiteral (sem::Integral val) {
+            return std::to_string(val) + def::integralSuffix;
         }
 
         /***
         # Float literal
-        (cth_float) val
+        <val>f
         ***/
-        inline std::string floatLiteral (sem::Floating val) {
-            return c::cast(std::to_string(val), c::floatType());
+        inline std::string floatingLiteral (sem::Floating val) {
+            return std::to_string(val) + def::floatingSuffix;
         }
 
         // TODO: Note that it is also possible to construct arrays with a compound literal:
@@ -1352,8 +1505,8 @@ namespace cynth {
             std::string definition () const {
                 return c::structureDefinition(
                     name(),
-                    c::declaration(c::floatType(), def::dataMember),
-                    c::declaration(c::intType(), def::offsetMember)
+                    c::declaration(c::floatingType(), def::dataMember),
+                    c::declaration(c::integralType(), def::offsetMember)
                 );
             }
         };

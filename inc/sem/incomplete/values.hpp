@@ -127,6 +127,7 @@ namespace cynth::sem {
 
         Vector value;
 
+        inline ArrayAllocation () {}
         inline ArrayAllocation (Vector const & value): value{value} {}
 
         // Comp-time arrays in for ranges containing arithmetic sequnces will be optimized into
