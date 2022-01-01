@@ -16,8 +16,10 @@ namespace cynth::syn::node {
     struct Return {
         esl::component<category::Expression> value;
 
-        interface::DisplayResult             display          ()                const;
-        interface::StatementProcessingResult processStatement (context::Main &) const;
+        interface::DisplayResult             display          ()                  const;
+        interface::StatementProcessingResult processStatement (context::Main   &) const;
+        interface::NameExtractionResult      extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult  extractTypeNames (context::Lookup &) const;
     };
 
 }

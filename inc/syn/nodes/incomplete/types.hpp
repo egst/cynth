@@ -22,8 +22,10 @@ namespace cynth::syn::node {
         esl::component<category::Type> type;
         esl::optional_component<category::Pattern> size;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::NameExtractionResult     extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -42,8 +44,10 @@ namespace cynth::syn::node {
     struct BufferType {
         esl::component<category::Expression> size;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult        display          ()                  const;
+        interface::TypeResolutionResult resolveType      (context::Main   &) const;
+        interface::NameExtractionResult extractNames     (context::Lookup &) const;
+        interface::NameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -52,8 +56,10 @@ namespace cynth::syn::node {
     struct ConstType {
         esl::component<category::Type> type;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::NameExtractionResult     extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -63,8 +69,10 @@ namespace cynth::syn::node {
         esl::component<category::Type> output;
         esl::component<category::Type> input;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::NameExtractionResult     extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -73,8 +81,9 @@ namespace cynth::syn::node {
     struct InType {
         esl::component<category::Type> type;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -83,8 +92,9 @@ namespace cynth::syn::node {
     struct OutType {
         esl::component<category::Type> type;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -94,8 +104,10 @@ namespace cynth::syn::node {
         // TODO: Non-unary vector?
         esl::component_vector<category::Type> types;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::NameExtractionResult     extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
     /***
@@ -105,10 +117,12 @@ namespace cynth::syn::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         esl::component<std::string> name;
 
-        interface::DisplayResult        display     ()                const;
-        interface::TypeResolutionResult resolveType (context::Main &) const;
+        interface::DisplayResult            display          ()                  const;
+        interface::TypeResolutionResult     resolveType      (context::Main   &) const;
+        interface::TypeNameExtractionResult extractTypeNames (context::Lookup &) const;
     };
 
+#if 0 // Incomplete types will not be supported in the first version.
     /***
     type T
     ***/
@@ -118,5 +132,6 @@ namespace cynth::syn::node {
         interface::DisplayResult        display     ()                const;
         interface::TypeResolutionResult resolveType (context::Main &) const;
     };
+#endif
 
 }

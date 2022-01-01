@@ -22,7 +22,9 @@ namespace cynth::syn {
     using namespace esl::sugar;
     namespace target = esl::target;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
     using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::NoReturn;
     using sem::Variable;
@@ -44,6 +46,26 @@ namespace cynth::syn {
             return NoReturn{};
 
         } || target::result{} <<= fun_nodes::process(ctx, *output, *input, *body);
+    }
+
+    NameExtractionResult node::FunDef::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        auto names = esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(nestedScope) || target::category{} <<= *output,
+            interface::extractNames(nestedScope) || target::category{} <<= *input,
+            interface::extractNames(nestedScope) || target::category{} <<= *body
+        );
+        outerScope.insertValue(*name.name, {});
+        return names;
+    }
+
+    TypeNameExtractionResult node::FunDef::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *output,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *input,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
+        );
     }
 
 }

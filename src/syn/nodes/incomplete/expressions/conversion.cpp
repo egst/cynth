@@ -28,6 +28,8 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteType;
     using sem::CompleteValue;
     using sem::ResolvedValue;
@@ -290,6 +292,14 @@ namespace cynth::syn {
             interface::resolveType(ctx)       || target::category{} <<= *type,
             interface::processExpression(ctx) || target::category{} <<= *argument
         );
+    }
+
+    NameExtractionResult node::Conversion::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *argument;
+    }
+
+    NameExtractionResult node::Conversion::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *argument;
     }
 
 }

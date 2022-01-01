@@ -17,8 +17,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a && b */
@@ -26,8 +28,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a / b */
@@ -35,8 +39,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a == b */
@@ -44,8 +50,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a >= b */
@@ -53,8 +61,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a > b */
@@ -62,8 +72,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a <= b */
@@ -71,8 +83,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a < b */
@@ -80,16 +94,20 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a - b */
     struct Minus {
         esl::component<category::Expression> argument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a % b */
@@ -97,8 +115,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a * b */
@@ -106,8 +126,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a != b */
@@ -115,16 +137,20 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** !a */
     struct Not {
         esl::component<category::Expression> argument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a || b */
@@ -132,16 +158,20 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a + b */
     struct Plus {
         esl::component<category::Expression> argument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a ** b */
@@ -149,8 +179,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** a - b */
@@ -158,8 +190,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> leftArgument;
         esl::component<category::Expression> rightArgument;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
 }

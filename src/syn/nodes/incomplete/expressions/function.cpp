@@ -20,6 +20,8 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::ResolvedValue;
 
@@ -36,3 +38,23 @@ namespace cynth::syn {
 
         } || target::result{} <<= fun_nodes::process(ctx, *output, *input, *body);
     }
+
+    NameExtractionResult node::Function::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(nestedScope) || target::category{} <<= *input,
+            interface::extractNames(nestedScope) || target::category{} <<= *output,
+            interface::extractNames(nestedScope) || target::category{} <<= *body
+        );
+    }
+
+    TypeNameExtractionResult node::Function::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *input,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *output,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
+        );
+    }
+
+}

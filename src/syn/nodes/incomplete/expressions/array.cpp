@@ -18,12 +18,18 @@
 #include "sem/values.hpp"
 #include "syn/nodes/common/array_nodes.hpp"
 
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
+
 namespace cynth::syn {
 
     namespace target = esl::target;
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::ArrayAllocation;
     using sem::ResolvedValue;
@@ -69,6 +75,20 @@ namespace cynth::syn {
             );
 
         } || target::result{} <<= array_nodes::processElements(ctx, elements);
+    }
+
+    NameExtractionResult node::Array::extractNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            elements;
+    }
+
+    TypeNameExtractionResult node::Array::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractTypeNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            elements;
     }
 
 }

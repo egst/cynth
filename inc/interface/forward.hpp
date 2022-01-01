@@ -31,6 +31,7 @@ namespace cynth::interface {
     //using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::ResolvedTarget>>;
     // Only const values can be compile-time values, so all targets are run-time (for now).
     using TargetResolutionResult           = esl::result<esl::tiny_vector<sem::TypedTargetExpression>>;
+    // TODO: Do I need a result here?
     using NameExtractionResult             = esl::result<std::vector<std::string>>;
     using TypeNameExtractionResult         = esl::result<std::vector<std::string>>;
 

@@ -37,7 +37,9 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
     using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::FunctionDefinition;
     using sem::Integral;
@@ -210,7 +212,25 @@ namespace cynth::syn {
     }
 
     StatementProcessingResult node::ExprIf::processStatement (context::Main & ctx) const {
-        return if_nodes::processStatement(ctx, *condition, *positiveBranch, *negativeBranch);
+        return if_nodes::processStatement(ctx, *condition, *positiveBranch, negativeBranch.get());
+    }
+
+    NameExtractionResult node::ExprIf::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(nestedScope) || target::category{} <<= *condition,
+            interface::extractNames(nestedScope) || target::category{} <<= *positiveBranch,
+            interface::extractNames(nestedScope) || target::category{} <<= *negativeBranch
+        );
+    }
+
+    TypeNameExtractionResult node::ExprIf::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *condition,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *positiveBranch,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *negativeBranch
+        );
     }
 
 }

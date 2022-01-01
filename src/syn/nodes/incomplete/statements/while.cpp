@@ -15,8 +15,10 @@ namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-    using interface::StatementProcessingResult;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
+    using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
 
     DisplayResult node::While::display () const {
         return
@@ -26,7 +28,7 @@ namespace cynth::syn {
 
     StatementProcessingResult node::While::processStatement (context::Main & outerScope) const {
         // TODO: Implement comp-time execution.
-        // TODO: Some impleentation from if_nodes and some from for_nodes could be extracted and re-used here combined.
+        // TODO: Some implementation from if_nodes and some from for_nodes could be extracted and re-used here combined.
         // While is essentialy just an if-like conditional with a for-like loop body (without the range declarations).
         // Meh, the implementation is actually so simple, that I won't bother with this right now.
 
@@ -64,6 +66,22 @@ namespace cynth::syn {
             interface::translateResolvedValue(outerScope) || target::result{} <<=
             esl::single || target::result{} <<=
             interface::processExpression(outerScope) || target::category{} <<= *condition;
+    }
+
+    NameExtractionResult node::While::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(nestedScope) || target::category{} <<= *condition,
+            interface::extractNames(nestedScope) || target::category{} <<= *body
+        );
+    }
+
+    TypeNameExtractionResult node::While::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *condition,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
+        );
     }
 
 }

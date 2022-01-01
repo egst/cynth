@@ -15,8 +15,10 @@ namespace cynth::syn::node {
         esl::component <category::Expression> condition;
         esl::component <category::Statement>  branch;
 
-        interface::DisplayResult             display          ()                const;
-        interface::StatementProcessingResult processStatement (context::Main &) const;
+        interface::DisplayResult             display          ()                  const;
+        interface::StatementProcessingResult processStatement (context::Main   &) const;
+        interface::NameExtractionResult      extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult  extractTypeNames (context::Lookup &) const;
     };
 
 }

@@ -19,7 +19,9 @@ namespace cynth::syn {
     using namespace esl::sugar;
     namespace target = esl::target;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
     using interface::RangeDeclarationResolutionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteRangeDeclaration;
 
     //// RangeDecl ////
@@ -44,6 +46,20 @@ namespace cynth::syn {
         );
     }
 
+    NameExtractionResult node::RangeDecl::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *range,
+            interface::extractNames(ctx) || target::category{} <<= *declaration
+        );
+    }
+
+    TypeNameExtractionResult node::RangeDecl::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *declaration,
+            interface::extractTypeNames(ctx) || target::category{} <<= *range
+        );
+    }
+
     //// TupleRangeDecl ////
 
     DisplayResult node::TupleRangeDecl::display () const {
@@ -52,16 +68,24 @@ namespace cynth::syn {
     }
 
     RangeDeclarationResolutionResult node::TupleRangeDecl::resolveRangeDeclaration (context::Main & ctx) const {
-        RangeDeclarationResolutionResult::value_type result;
-        [&] (auto && decls) {
-            for (auto && tuple: decls) for (auto && value: tuple) {
-                result.push_back(std::move(value));
-            }
-
-        } || target::result{} <<= esl::unite_results <<=
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
             interface::resolveRangeDeclaration(ctx) || target::nested<target::component_vector, target::category>{} <<=
             declarations;
-        return result;
+    }
+
+    NameExtractionResult node::TupleRangeDecl::extractNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            declarations;
+    }
+
+    TypeNameExtractionResult node::TupleRangeDecl::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractTypeNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            declarations;
     }
 
 }

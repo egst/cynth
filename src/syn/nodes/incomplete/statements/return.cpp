@@ -15,8 +15,10 @@ namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-    using interface::StatementProcessingResult;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
+    using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::TypedExpression;
     using sem::Returned;
@@ -54,8 +56,7 @@ namespace cynth::syn {
             return [&] (CompleteValue const & value) {
                 return [&] (sem::value::Function const & fun) -> Returned {
                     // Partially run-time function:
-
-                    auto ctxExpr = fun.contextVariable.value_or("{}");
+                    auto ctxExpr = fun.closureVariable.value_or("{}");
                     auto branch  = ctx.branching.nextBranch();
                     auto ret     = c::returnFunction(i, branch, ctxExpr);
 
@@ -85,6 +86,14 @@ namespace cynth::syn {
         } || target::result{} <<=
             interface::processExpression(ctx) || target::category{} <<=
             *value;
+    }
+
+    NameExtractionResult node::Return::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *value;
+    }
+
+    TypeNameExtractionResult node::Return::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *value;
     }
 
 }

@@ -17,8 +17,10 @@ namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-    using interface::StatementProcessingResult;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
+    using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
     using sem::NoReturn;
 
     DisplayResult node::Definition::display () const {
@@ -36,6 +38,20 @@ namespace cynth::syn {
         } || target::result{} <<= args(
             interface::resolveDeclaration(ctx) || target::category{} <<= *target,
             interface::processExpression(ctx)  || target::category{} <<= *value
+        );
+    }
+
+    NameExtractionResult node::Definition::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *value,
+            interface::extractNames(ctx) || target::category{} <<= *target
+        );
+    }
+
+    TypeNameExtractionResult node::Definition::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *value,
+            interface::extractTypeNames(ctx) || target::category{} <<= *target
         );
     }
 

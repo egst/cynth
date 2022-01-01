@@ -28,6 +28,10 @@ namespace esl {
     template <range T>
     using range_value_type = std::remove_reference_t<decltype(*std::declval<T>().begin())>;
 
+    /** Get iterator type of any range. */
+    template <range T>
+    using range_iterator_type = std::remove_reference_t<decltype(std::declval<T>().begin())>;
+
     /** A range containing a specific type. */
     template <typename T, typename U>
     concept range_of = esl::range<T> && std::convertible_to<esl::range_value_type<T>, U>;
@@ -44,6 +48,9 @@ namespace esl {
     template <typename T, template <typename> typename Constraint>
     concept constrained_sized_range = esl::sized_range<T> && Constraint<esl::range_value_type<T>>::value;
 
+    // Checking if at least move is allowed, because some ranges could contain non-copyable values,
+    // while non-movable values can still be copied from an rvalue.
+
     /** A range with a .push_back() method. */
     template <typename T>
     concept back_pushable_range = range<T> && requires (T target, esl::range_value_type<T> && val) {
@@ -52,8 +59,14 @@ namespace esl {
 
     /** A range with an .insert() method. */
     template <typename T>
-    concept insertable_range = range<T> && requires (T target, esl::range_value_type<T> && val) {
-        target.push_back(std::move(val));
+    concept insertable_range = range<T> && requires (T target, esl::range_iterator_type<T> && it) {
+        target.insert(it, std::make_move_iterator(it), std::make_move_iterator(it));
+    };
+
+    /** A range with a .back_insert() method - a simplified version of the standard .insert() method. */
+    template <typename T>
+    concept back_insertable_range = range<T> && requires (T target, esl::range_iterator_type<T> && it) {
+        target.insert_back(std::make_move_iterator(it), std::make_move_iterator(it));
     };
 
     template <typename T>

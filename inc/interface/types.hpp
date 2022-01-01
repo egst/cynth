@@ -122,7 +122,7 @@ namespace cynth::interface {
 
         template <typename T>
         concept processDefinition = type<T> && requires (
-            T type, context::Main & ctx, std::optional<sem::ResolvedValue> definition
+            T type, context::Main & ctx, sem::ResolvedValue * definition
         ) {
             { type.processDefinition(ctx, definition) } -> std::same_as<DefinitionProcessingResult>;
         };
@@ -359,7 +359,7 @@ namespace cynth::interface {
     constexpr auto processDeclaration (context::Main & ctx) {
         return esl::overload(
             [&ctx] <has::processDefinition T> (T const & type) -> DeclarationProcessingResult {
-                return type.processDefinition(ctx, std::nullopt);
+                return type.processDefinition(ctx, nullptr);
             },
             [] (type auto const &) -> DeclarationProcessingResult {
                 return esl::result_error{"A declaration of this type cannot be translated."};

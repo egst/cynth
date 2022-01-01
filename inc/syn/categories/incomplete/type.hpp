@@ -20,7 +20,7 @@ namespace cynth::syn::category {
             node::InType,
             node::OutType,
             node::TupleType, // TODO: Or TypeTuple?
-            node::TypeDecl,
+            //node::TypeDecl,
             node::TypeName
         >;
 

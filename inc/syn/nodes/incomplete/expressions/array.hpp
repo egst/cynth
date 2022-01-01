@@ -14,8 +14,10 @@ namespace cynth::syn::node {
     struct Array {
         esl::component_vector<category::ArrayElement> elements;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
 }

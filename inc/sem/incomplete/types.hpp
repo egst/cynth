@@ -35,7 +35,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Bool;
@@ -60,7 +60,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Int;
@@ -85,7 +85,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Float;
@@ -111,7 +111,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::String;
@@ -169,7 +169,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::In;
@@ -186,7 +186,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Out;
@@ -201,7 +201,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Array;
@@ -220,7 +220,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Buffer;
@@ -240,7 +240,7 @@ namespace cynth::sem {
             interface::DisplayResult                  display () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
-                std::optional<ResolvedValue> &
+                ResolvedValue *
             ) const;
 
             using Value = value::Function;

@@ -22,12 +22,18 @@
 #include "sem/values.hpp"
 #include "syn/nodes/common/decl_nodes.hpp"
 
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
+
 namespace cynth::syn {
 
     namespace target = esl::target;
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteDeclaration;
     using sem::CompleteType;
     using sem::CompleteValue;
@@ -190,6 +196,20 @@ namespace cynth::syn {
             esl::single || target::result{} <<=
                 interface::processExpression(ctx) || target::category{} <<= *function,
             interface::processExpression(ctx) || target::category{} <<= *arguments
+        );
+    }
+
+    NameExtractionResult node::Application::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *arguments,
+            interface::extractNames(ctx) || target::category{} <<= *function
+        );
+    }
+
+    TypeNameExtractionResult node::Application::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *arguments,
+            interface::extractTypeNames(ctx) || target::category{} <<= *function
         );
     }
 

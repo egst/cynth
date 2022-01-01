@@ -27,7 +27,9 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
     using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
     using sem::ArrayAllocation;
     using sem::CompleteType;
     using sem::CompleteValue;
@@ -197,6 +199,22 @@ namespace cynth::syn {
 
     StatementProcessingResult node::ExprFor::processStatement (context::Main & ctx) const {
         return for_nodes::processStatement(ctx, *declarations, *body);
+    }
+
+    NameExtractionResult node::ExprFor::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(nestedScope) || target::category{} <<= *declarations,
+            interface::extractNames(nestedScope) || target::category{} <<= *body
+        );
+    }
+
+    TypeNameExtractionResult node::ExprFor::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *declarations,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
+        );
     }
 
 }

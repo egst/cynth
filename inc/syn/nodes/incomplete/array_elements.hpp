@@ -15,8 +15,10 @@ namespace cynth::syn::node {
         esl::component<category::Expression> from;
         esl::component<category::Expression> to;
 
-        interface::DisplayResult                display             ()                const;
-        interface::ArrayElementProcessingResult processArrayElement (context::Main &) const;
+        interface::DisplayResult                display             ()                  const;
+        interface::ArrayElementProcessingResult processArrayElement (context::Main   &) const;
+        interface::NameExtractionResult         extractNames        (context::Lookup &) const;
+        interface::TypeNameExtractionResult     extractTypeNames    (context::Lookup &) const;
     };
 
     /** a to b by c */
@@ -27,6 +29,8 @@ namespace cynth::syn::node {
 
         interface::DisplayResult                display             ()                const;
         interface::ArrayElementProcessingResult processArrayElement (context::Main &) const;
+        interface::NameExtractionResult         extractNames        (context::Lookup &) const;
+        interface::TypeNameExtractionResult     extractTypeNames    (context::Lookup &) const;
     };
 
     /** ...a */
@@ -35,6 +39,8 @@ namespace cynth::syn::node {
 
         interface::DisplayResult                display             ()                const;
         interface::ArrayElementProcessingResult processArrayElement (context::Main &) const;
+        interface::NameExtractionResult         extractNames        (context::Lookup &) const;
+        interface::TypeNameExtractionResult     extractTypeNames    (context::Lookup &) const;
     };
 
 }

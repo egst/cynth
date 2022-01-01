@@ -15,9 +15,11 @@ namespace cynth::syn::node {
         esl::component<category::Expression>          container;
         esl::component_vector<category::ArrayElement> location;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
-        interface::TargetResolutionResult     resolveTarget     (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::TargetResolutionResult     resolveTarget     (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
 }

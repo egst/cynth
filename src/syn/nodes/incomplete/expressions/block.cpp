@@ -28,7 +28,9 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
     using interface::StatementProcessingResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteType;
     using sem::CompleteValue;
     using sem::FunctionDefinition;
@@ -364,6 +366,22 @@ namespace cynth::syn {
             };
 
         } || target::result{} <<= processBlock(blockScope, statements);
+    }
+
+    NameExtractionResult node::Block::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractNames(nestedScope) || target::nested<target::component_vector, target::category>{} <<=
+            statements;
+    }
+
+    TypeNameExtractionResult node::Block::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractTypeNames(nestedScope) || target::nested<target::component_vector, target::category>{} <<=
+            statements;
     }
 
 }

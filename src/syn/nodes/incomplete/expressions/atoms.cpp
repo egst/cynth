@@ -30,13 +30,17 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
     using interface::TargetResolutionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::ResolvedValue;
     using sem::Integral;
     using sem::TypedName;
     using sem::TypedExpression;
     using sem::TypedTargetExpression;
+
+    //// Bool ////
 
     DisplayResult node::Bool::display () const {
         return value ? "true" : "false";
@@ -46,6 +50,8 @@ namespace cynth::syn {
         return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{sem::value::Bool{value}}});
     }
 
+    //// Float ////
+
     DisplayResult node::Float::display () const {
         return std::to_string(value);
     }
@@ -54,6 +60,8 @@ namespace cynth::syn {
         return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{sem::value::Float{value}}});
     }
 
+    //// Int ////
+
     DisplayResult node::Int::display () const {
         return std::to_string(value);
     }
@@ -61,6 +69,8 @@ namespace cynth::syn {
     ExpressionProcessingResult node::Int::processExpression (context::Main &) const {
         return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{sem::value::Int{value}}});
     }
+
+    //// Name ////
 
     DisplayResult node::Name::display () const {
         return *name;
@@ -94,6 +104,14 @@ namespace cynth::syn {
         } || target::nested<target::tiny_vector, target::category>{} <<= *value;
     }
 
+    NameExtractionResult node::Name::extractNames (context::Lookup & ctx) const {
+        if (!ctx.findValue(*name))
+            return esl::init<std::vector>(*name);
+        return {};
+    }
+
+    //// String ////
+
     DisplayResult node::String::display () const {
         return "\"" + *value + "\"";
     }
@@ -102,35 +120,39 @@ namespace cynth::syn {
         return esl::result_error{"Strings are not supported yet."};
     }
 
+    //// Tuple ////
+
     DisplayResult node::Tuple::display () const {
         using Target = target::nested<target::component_vector, target::category>;
         return "(" + esl::join(", ", interface::display || Target{} <<= values) + ")";
     }
 
     ExpressionProcessingResult node::Tuple::processExpression (context::Main & ctx) const {
-        ExpressionProcessingResult::value_type result;
-        [&] (auto && decls) {
-            for (auto && tuple: decls) for (auto && value: tuple) {
-                result.push_back(std::move(value));
-            }
-
-        } || target::result{} <<= esl::unite_results <<=
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
             interface::processExpression(ctx) || target::nested<target::component_vector, target::category>{} <<=
             values;
-        return result;
     }
 
     TargetResolutionResult node::Tuple::resolveTarget (context::Main & ctx) const {
-        TargetResolutionResult::value_type result;
-        [&] (auto && decls) {
-            for (auto && tuple: decls) for (auto && value: tuple) {
-                result.push_back(std::move(value));
-            }
-
-        } || target::result{} <<= esl::unite_results <<=
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
             interface::resolveTarget(ctx) || target::nested<target::component_vector, target::category>{} <<=
             values;
-        return result;
+    }
+
+    NameExtractionResult node::Tuple::extractNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            values;
+    }
+
+    TypeNameExtractionResult node::Tuple::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractTypeNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            values;
     }
 
 }

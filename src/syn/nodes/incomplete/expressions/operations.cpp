@@ -32,13 +32,13 @@ namespace cynth::syn {
     namespace target = esl::target;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using interface::TargetResolutionResult;
     using sem::CompleteValue;
     using sem::ResolvedValue;
     using sem::Integral;
-    using sem::TypedName;
     using sem::TypedExpression;
-    using sem::TypedTargetExpression;
 
     namespace {
 
@@ -272,6 +272,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Add::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Add::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// And ////
 
     DisplayResult node::And::display () const {
@@ -289,6 +303,20 @@ namespace cynth::syn {
                 interface::processExpression(ctx) || target::category{} <<= *leftArgument,
                 interface::processExpression(ctx) || target::category{} <<= *rightArgument
             );
+    }
+
+    NameExtractionResult node::And::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::And::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
     }
 
     //// Div ////
@@ -310,6 +338,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Div::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Div::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Eq ////
 
     DisplayResult node::Eq::display () const {
@@ -327,6 +369,20 @@ namespace cynth::syn {
                 interface::processExpression(ctx) || target::category{} <<= *leftArgument,
                 interface::processExpression(ctx) || target::category{} <<= *rightArgument
             );
+    }
+
+    NameExtractionResult node::Eq::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Eq::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
     }
 
     //// Ge ////
@@ -348,6 +404,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Ge::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Ge::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Gt ////
 
     DisplayResult node::Gt::display () const {
@@ -365,6 +435,20 @@ namespace cynth::syn {
                 interface::processExpression(ctx) || target::category{} <<= *leftArgument,
                 interface::processExpression(ctx) || target::category{} <<= *rightArgument
             );
+    }
+
+    NameExtractionResult node::Gt::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Gt::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
     }
 
     //// Le ////
@@ -386,6 +470,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Le::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Le::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Lt ////
 
     DisplayResult node::Lt::display () const {
@@ -405,6 +503,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Lt::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Lt::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Minus ////
 
     DisplayResult node::Minus::display () const {
@@ -418,6 +530,14 @@ namespace cynth::syn {
 
             } || target::nested<target::result, target::tiny_vector>{} <<=
                 interface::processExpression(ctx) || target::category{} <<= *argument;
+    }
+
+    NameExtractionResult node::Minus::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *argument;
+    }
+
+    TypeNameExtractionResult node::Minus::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *argument;
     }
 
     //// Mod ////
@@ -439,6 +559,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Mod::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Mod::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Mul ////
 
     DisplayResult node::Mul::display () const {
@@ -456,6 +590,20 @@ namespace cynth::syn {
                 interface::processExpression(ctx) || target::category{} <<= *leftArgument,
                 interface::processExpression(ctx) || target::category{} <<= *rightArgument
             );
+    }
+
+    NameExtractionResult node::Mul::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Mul::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
     }
 
     //// Ne ////
@@ -477,6 +625,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Ne::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Ne::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Not ////
 
     DisplayResult node::Not::display () const {
@@ -490,6 +652,14 @@ namespace cynth::syn {
 
             } || target::nested<target::result, target::tiny_vector>{} <<=
                 interface::processExpression(ctx) || target::category{} <<= *argument;
+    }
+
+    NameExtractionResult node::Not::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *argument;
+    }
+
+    TypeNameExtractionResult node::Not::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *argument;
     }
 
     //// Or ////
@@ -511,6 +681,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Or::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Or::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Plus ////
 
     DisplayResult node::Plus::display () const {
@@ -524,6 +708,14 @@ namespace cynth::syn {
 
             } || target::nested<target::result, target::tiny_vector>{} <<=
                 interface::processExpression(ctx) || target::category{} <<= *argument;
+    }
+
+    NameExtractionResult node::Plus::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *argument;
+    }
+
+    TypeNameExtractionResult node::Plus::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *argument;
     }
 
     //// Pow ////
@@ -547,6 +739,20 @@ namespace cynth::syn {
             );
     }
 
+    NameExtractionResult node::Pow::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Pow::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
     //// Sub ////
 
     DisplayResult node::Sub::display () const {
@@ -564,6 +770,20 @@ namespace cynth::syn {
                 interface::processExpression(ctx) || target::category{} <<= *leftArgument,
                 interface::processExpression(ctx) || target::category{} <<= *rightArgument
             );
+    }
+
+    NameExtractionResult node::Sub::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractNames(ctx) || target::category{} <<= *rightArgument
+        );
+    }
+
+    TypeNameExtractionResult node::Sub::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *leftArgument,
+            interface::extractTypeNames(ctx) || target::category{} <<= *rightArgument
+        );
     }
 
 }

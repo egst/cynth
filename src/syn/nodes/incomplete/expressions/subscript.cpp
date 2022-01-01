@@ -22,7 +22,9 @@ namespace cynth::syn {
     using namespace esl::sugar;
     using interface::DisplayResult;
     using interface::ExpressionProcessingResult;
+    using interface::NameExtractionResult;
     using interface::TargetResolutionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::ResolvedValue;
     using sem::TypedExpression;
@@ -200,6 +202,26 @@ namespace cynth::syn {
             interface::translateResolvedValue(ctx) || target::result{} <<=
                 esl::single || target::result{} <<=
                 interface::processExpression(ctx) || target::category{} <<= *container
+        );
+    }
+
+    NameExtractionResult node::Subscript::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *container,
+            esl::insert_nested_cat || target::result{} <<=
+                esl::unite_results <<=
+                interface::extractNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+                location
+        );
+    }
+
+    TypeNameExtractionResult node::Subscript::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *container,
+            esl::insert_nested_cat || target::result{} <<=
+                esl::unite_results <<=
+                interface::extractTypeNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+                location
         );
     }
 

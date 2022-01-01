@@ -16,10 +16,12 @@ namespace cynth::syn::node {
     struct Block {
         esl::component_vector<category::Statement> statements;
 
-        interface::DisplayResult              display           ()                const;
-        interface::StatementProcessingResult  processStatement  (context::Main &) const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
-        interface::ExpressionProcessingResult processProgram    (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::StatementProcessingResult  processStatement  (context::Main   &) const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::ExpressionProcessingResult processProgram    (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
 
     private:
         // Generic implementation for both `processProgram` and `processExpression`.

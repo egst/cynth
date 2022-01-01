@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "esl/concepts.hpp"
+#include "esl/functional.hpp"
 #include "esl/iterator.hpp"
 #include "esl/ranges.hpp"
 #include "esl/result.hpp"
@@ -29,20 +30,90 @@ namespace esl {
         return result;
     };
 
-    /** Concat using the standart insert method. */
-    template <typename T, template <typename...> typename V>
-    V<T> insert_cat (V<T> && a, V<T> && b) {
-        a.insert(a.end(), b.begin(), b.end());
-        return std::move(a); // TODO: Why not forward?
+    /** Concat using the standart push method with variadic value parameters. */
+    constexpr auto push_cat =
+        [] <esl::back_pushable_range R, std::same_as<esl::range_value_type<R>>... Ts> (R && r, Ts &&... vals) -> R {
+            R c = std::forward<R>(r);
+            (c.push(vals), ...);
+            return c;
+        };
+
+    namespace detail::containers {
+
+        /** Concat using the standart insert method. */
+        //template <typename T, template <typename...> typename V>
+        template <esl::insertable_range First, esl::insertable_range Second, esl::insertable_range... Rest> requires (
+            (esl::same_but_cvref<First,  Rest> && ...) &&
+            (esl::same_but_cvref<Second, Rest> && ...)
+        ) First insert_cat (First && first, Second && second, Rest &&... rest) {
+            first.insert(
+                first.end(),
+                esl::make_forwarding_iterator<Second>(second.begin()),
+                esl::make_forwarding_iterator<Second>(second.end())
+            );
+
+            if constexpr (sizeof...(rest) > 1)
+                insert_cat(std::forward<First>(first), std::forward<Rest>(rest)...);
+
+            return std::forward<First>(first);
+        };
+
+        /** Concat using the simplified insert_back method in tiny_vector. (Until I implement the standard insert.) */
+        //template <typename T, template <typename...> typename V>
+        template <
+            esl::back_insertable_range First,
+            esl::back_insertable_range Second,
+            esl::back_insertable_range... Rest
+        > requires (
+            (esl::same_but_cvref<First,  Rest> && ...) &&
+            (esl::same_but_cvref<Second, Rest> && ...)
+        ) First insert_back_cat (First && first, Second && second, Rest &&... rest) {
+            first.insert_back(
+                esl::make_forwarding_iterator<Second>(second.begin()),
+                esl::make_forwarding_iterator<Second>(second.end())
+            );
+
+            if constexpr (sizeof...(rest) > 1)
+                insert_back_cat(std::forward<First>(first), std::forward<Rest>(rest)...);
+
+            return std::forward<First>(first);
+        };
+
+        // Note: Exposed as lambda functions to allow passing them to other functions without template parameters.
     }
 
-    /** Concat using the standart push method with variadic value parameters. */
-    template <esl::back_pushable_range R, std::same_as<esl::range_value_type<R>>... Ts>
-    R push_cat (R && r, Ts &&... vals) {
-        R c = std::forward<R>(r);
-        (c.push(vals), ...);
-        return c;
-    }
+    /** Concat using the standart insert method or the simplified insert_back method. */
+    constexpr auto insert_cat = esl::overload(
+        [] <esl::insertable_range... Rs> (Rs &&... ranges) {
+            return detail::containers::insert_cat(std::forward<Rs>(ranges)...);
+        },
+        [] <esl::back_insertable_range... Rs> (Rs &&... ranges) {
+            return detail::containers::insert_back_cat(std::forward<Rs>(ranges)...);
+        }
+    );
+
+    /** Concat/flatten a range of ranges using the standard insert methor or the simplified insert_back method. */
+    constexpr auto insert_nested_cat = esl::overload(
+        [] <esl::range R> (R && range) requires (esl::insertable_range<esl::range_value_type<R>>) {
+            esl::range_value_type<R> result;
+            for (auto && nested: std::forward<R>(range))
+                result.insert(
+                    result.end(),
+                    esl::make_forwarding_iterator<R>(nested.begin()),
+                    esl::make_forwarding_iterator<R>(nested.end())
+                );
+            return result;
+        },
+        [] <esl::range R> (R && range) requires (esl::back_insertable_range<esl::range_value_type<R>>) {
+            esl::range_value_type<R> result;
+            for (auto && nested: std::forward<R>(range))
+                result.insert_back(
+                    esl::make_forwarding_iterator<R>(nested.begin()),
+                    esl::make_forwarding_iterator<R>(nested.end())
+                );
+            return result;
+        }
+    );
 
     /** vector::push_back in a free function for convenience is some specific cases. */
     //template <esl::push_bach_range T>

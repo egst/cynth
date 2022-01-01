@@ -17,6 +17,8 @@ namespace cynth::syn {
     namespace target = esl::target;
     using interface::StatementProcessingResult;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
 
     DisplayResult node::For::display () const {
         return
@@ -28,4 +30,19 @@ namespace cynth::syn {
         return for_nodes::processStatement(ctx, *declarations, *body);
     }
 
+    NameExtractionResult node::For::extractNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(nestedScope) || target::category{} <<= *declarations,
+            interface::extractNames(nestedScope) || target::category{} <<= *body
+        );
+    }
+
+    TypeNameExtractionResult node::For::extractTypeNames (context::Lookup & outerScope) const {
+        auto nestedScope = outerScope.makeChild();
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *declarations,
+            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
+        );
+    }
 }

@@ -16,8 +16,10 @@ namespace cynth::syn::node {
         node::TypeName                 target;
         esl::component<category::Type> type;
 
-        interface::DisplayResult             display          ()                const;
-        interface::StatementProcessingResult processStatement (context::Main &) const;
+        interface::DisplayResult             display          ()                  const;
+        interface::StatementProcessingResult processStatement (context::Main   &) const;
+        interface::NameExtractionResult      extractNames     (context::Lookup &) const;
+        interface::TypeNameExtractionResult  extractTypeNames (context::Lookup &) const;
     };
 
 }

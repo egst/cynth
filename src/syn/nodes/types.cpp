@@ -14,11 +14,17 @@
 #include "sem/types.hpp"
 #include "sem/values.hpp"
 
+// TMP
+#include "esl/debug.hpp"
+#include "esl/macros.hpp"
+
 namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
     using interface::DisplayResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using interface::TypeResolutionResult;
     using sem::CompleteType;
     using sem::CompleteValue;
@@ -66,6 +72,24 @@ namespace cynth::syn {
         );
     }
 
+    NameExtractionResult node::ArrayType::extractNames (context::Lookup & ctx) const {
+        using SizeTarget = target::nested<target::optional_component, target::category>;
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *type,
+            (interface::extractNames(ctx) || SizeTarget{} <<= size)
+                .value_or(NameExtractionResult{})
+        );
+    }
+
+    TypeNameExtractionResult node::ArrayType::extractTypeNames (context::Lookup & ctx) const {
+        using SizeTarget = target::nested<target::optional_component, target::category>;
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *type,
+            (interface::extractTypeNames(ctx) || SizeTarget{} <<= size)
+                .value_or(TypeNameExtractionResult{})
+        );
+    }
+
     //// Auto ////
 
     DisplayResult node::Auto::display () const {
@@ -99,6 +123,14 @@ namespace cynth::syn {
             return esl::init<esl::tiny_vector>(CompleteType{sem::type::Buffer{std::move(size)}});
 
         } || target::result{} <<= std::move(sizeResult);
+    }
+
+    NameExtractionResult node::BufferType::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *size;
+    }
+
+    TypeNameExtractionResult node::BufferType::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *size;
     }
 
     //// ConstType ////
@@ -140,6 +172,14 @@ namespace cynth::syn {
                 interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
+    NameExtractionResult node::ConstType::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *type;
+    }
+
+    TypeNameExtractionResult node::ConstType::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *type;
+    }
+
     //// FunctionType ////
 
     DisplayResult node::FunctionType::display () const {
@@ -157,6 +197,20 @@ namespace cynth::syn {
         } || target::result{} <<= args(
             interface::resolveType(ctx) || target::category{} <<= *output,
             interface::resolveType(ctx) || target::category{} <<= *input
+        );
+    }
+
+    NameExtractionResult node::FunctionType::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *input,
+            interface::extractNames(ctx) || target::category{} <<= *output
+        );
+    }
+
+    TypeNameExtractionResult node::FunctionType::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *input,
+            interface::extractTypeNames(ctx) || target::category{} <<= *output
         );
     }
 
@@ -197,6 +251,10 @@ namespace cynth::syn {
                 interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
+    TypeNameExtractionResult node::InType::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *type;
+    }
+
     //// OutType ////
 
     DisplayResult node::OutType::display () const {
@@ -234,6 +292,10 @@ namespace cynth::syn {
                 interface::resolveType(ctx) || target::category{} <<= *type;
     }
 
+    TypeNameExtractionResult node::OutType::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *type;
+    }
+
     //// TupleType ////
 
     DisplayResult node::TupleType::display () const {
@@ -242,20 +304,29 @@ namespace cynth::syn {
     }
 
     TypeResolutionResult node::TupleType::resolveType (context::Main & ctx) const {
-        TypeResolutionResult::value_type result;
-        [&] (auto && types) {
-            for (auto && tuple: types) for (auto && type: tuple) {
-                result.push_back(std::move(type));
-            }
-
-        } || target::result{} <<= esl::unite_results <<=
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
             interface::resolveType(ctx) || target::nested<target::component_vector, target::category>{} <<=
             types;
-        return result;
+    }
+
+    NameExtractionResult node::TupleType::extractNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            types;
+    }
+
+    TypeNameExtractionResult node::TupleType::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_nested_cat || target::result{} <<=
+            esl::unite_results <<=
+            interface::extractTypeNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
+            types;
     }
 
     //// TypeDecl ////
 
+    /*
     DisplayResult node::TypeDecl::display () const {
         return "type " + interface::display(name);
     }
@@ -263,6 +334,7 @@ namespace cynth::syn {
     TypeResolutionResult node::TypeDecl::resolveType (context::Main &) const {
         return esl::result_error{"Capturing type deduction is not supported yet."};
     }
+    */
 
     //// TypeName ////
 
@@ -277,6 +349,12 @@ namespace cynth::syn {
         return {*value};
     }
 
+    TypeNameExtractionResult node::TypeName::extractTypeNames (context::Lookup & ctx) const {
+        if (!ctx.findType(*name))
+            return esl::init<std::vector>(*name);
+        return {};
+    }
+
 }
 
 namespace esl {
@@ -289,7 +367,7 @@ namespace esl {
     using cynth::syn::node::InType;
     using cynth::syn::node::OutType;
     using cynth::syn::node::TupleType;
-    using cynth::syn::node::TypeDecl;
+    //using cynth::syn::node::TypeDecl;
     using cynth::syn::node::TypeName;
 
     template <>
@@ -412,6 +490,7 @@ namespace esl {
         return new TupleType{std::move(other)};
     }
 
+    /*
     template <>
     void component_deleter<TypeDecl>::operator () (TypeDecl * ptr) const {
         delete ptr;
@@ -426,6 +505,7 @@ namespace esl {
     TypeDecl * component_allocator<TypeDecl>::operator () (TypeDecl && other) const {
         return new TypeDecl{std::move(other)};
     }
+    */
 
     template <>
     void component_deleter<TypeName>::operator () (TypeName * ptr) const {

@@ -25,25 +25,29 @@
 #include "esl/debug.hpp"
 #include "esl/macros.hpp"
 
-namespace cynth {
+namespace cynth::syn {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-    using interface::DisplayResult;
     using interface::ArrayElementProcessingResult;
+    using interface::DisplayResult;
+    using interface::NameExtractionResult;
+    using interface::TypeNameExtractionResult;
     using sem::CompleteValue;
     using sem::TypedExpression;
     using sem::Integral;
     using sem::ResolvedValue;
     using sem::ArrayAllocation;
 
-    DisplayResult syn::node::RangeTo::display () const {
+    //// RangeTo ////
+
+    DisplayResult node::RangeTo::display () const {
         return
             (interface::display || target::category{} <<= *from) + " to " +
             (interface::display || target::category{} <<= *to);
     }
 
-    ArrayElementProcessingResult syn::node::RangeTo::processArrayElement (context::Main & ctx) const {
+    ArrayElementProcessingResult node::RangeTo::processArrayElement (context::Main & ctx) const {
         return [] (CompleteValue && from, CompleteValue && to) {
             // Fully comp-time range:
             return [] <typename Value> (Value && from, Value && to) -> ArrayElementProcessingResult requires (
@@ -81,14 +85,30 @@ namespace cynth {
         );
     }
 
-    DisplayResult syn::node::RangeToBy::display () const {
+    NameExtractionResult node::RangeTo::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *from,
+            interface::extractNames(ctx) || target::category{} <<= *to
+        );
+    }
+
+    TypeNameExtractionResult node::RangeTo::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *from,
+            interface::extractTypeNames(ctx) || target::category{} <<= *to
+        );
+    }
+
+    //// RangeToBy ////
+
+    DisplayResult node::RangeToBy::display () const {
         return
             (interface::display || target::category{} <<= *from) + " to " +
             (interface::display || target::category{} <<= *to)   + " by " +
             (interface::display || target::category{} <<= *by);
     }
 
-    ArrayElementProcessingResult syn::node::RangeToBy::processArrayElement (context::Main & ctx) const {
+    ArrayElementProcessingResult node::RangeToBy::processArrayElement (context::Main & ctx) const {
         return [] (CompleteValue && from, CompleteValue && to, CompleteValue && by) {
             // Fully comp-time range:
             return [] <typename Value> (Value && from, Value && to, Value && by)
@@ -128,11 +148,29 @@ namespace cynth {
         );
     }
 
-    DisplayResult syn::node::Spread::display () const {
+    NameExtractionResult node::RangeToBy::extractNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractNames(ctx) || target::category{} <<= *from,
+            interface::extractNames(ctx) || target::category{} <<= *to,
+            interface::extractNames(ctx) || target::category{} <<= *by
+        );
+    }
+
+    TypeNameExtractionResult node::RangeToBy::extractTypeNames (context::Lookup & ctx) const {
+        return esl::insert_cat || target::result{} <<= args(
+            interface::extractTypeNames(ctx) || target::category{} <<= *from,
+            interface::extractTypeNames(ctx) || target::category{} <<= *to,
+            interface::extractTypeNames(ctx) || target::category{} <<= *by
+        );
+    }
+
+    //// Spread ////
+
+    DisplayResult node::Spread::display () const {
         return "..." + (interface::display || target::category{} <<= *container);
     }
 
-    ArrayElementProcessingResult syn::node::Spread::processArrayElement (context::Main & ctx) const {
+    ArrayElementProcessingResult node::Spread::processArrayElement (context::Main & ctx) const {
         return [] (CompleteValue && container) {
             return [] (sem::value::Array && container) {
                 auto arrayType = container.valueType;
@@ -173,6 +211,14 @@ namespace cynth {
 
         } || target::nested<target::result, target::category>{} <<=
             esl::single || target::result{} <<= interface::processExpression(ctx) || target::category{} <<= *container;
+    }
+
+    NameExtractionResult node::Spread::extractNames (context::Lookup & ctx) const {
+        return interface::extractNames(ctx) || target::category{} <<= *container;
+    }
+
+    TypeNameExtractionResult node::Spread::extractTypeNames (context::Lookup & ctx) const {
+        return interface::extractTypeNames(ctx) || target::category{} <<= *container;
     }
 
 }

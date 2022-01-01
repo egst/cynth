@@ -7,6 +7,7 @@
 #include "esl/result.hpp"
 #include "esl/concepts.hpp"
 
+#include "context/lookup.hpp"
 #include "context/main.hpp"
 #include "interface/forward.hpp"
 
@@ -76,13 +77,13 @@ namespace cynth::interface {
         };
 
         template <typename T>
-        concept extractNames = node<T> && requires (T node) {
-            { node.extractNames() } -> std::same_as<NameExtractionResult>;
+        concept extractNames = node<T> && requires (T node, context::Lookup & ctx) {
+            { node.extractNames(ctx) } -> std::same_as<NameExtractionResult>;
         };
 
         template <typename T>
-        concept extractTypeNames = node<T> && requires (T node) {
-            { node.extractTypeNames() } -> std::same_as<TypeNameExtractionResult>;
+        concept extractTypeNames = node<T> && requires (T node, context::Lookup & ctx) {
+            { node.extractTypeNames(ctx) } -> std::same_as<TypeNameExtractionResult>;
         };
 
     }
@@ -171,22 +172,26 @@ namespace cynth::interface {
         );
     }
 
-    constexpr auto extractNames = esl::overload(
-        [] (has::extractNames auto const & node) -> NameExtractionResult {
-            return node.extractNames();
-        },
-        [] (node auto const &) -> NameExtractionResult {
-            return {}; // No names captured.
-        }
-    );
+    constexpr auto extractNames (context::Lookup & ctx) {
+        return esl::overload(
+            [&] (has::extractNames auto const & node) -> NameExtractionResult {
+                return node.extractNames(ctx);
+            },
+            [] (node auto const &) -> NameExtractionResult {
+                return {}; // No names captured.
+            }
+        );
+    }
 
-    constexpr auto extractTypeNames = esl::overload(
-        [] (has::extractTypeNames auto const & node) -> TypeNameExtractionResult {
-            return node.extractTypeNames();
-        },
-        [] (node auto const &) -> TypeNameExtractionResult {
-            return {}; // No names captured.
-        }
-    );
+    constexpr auto extractTypeNames (context::Lookup & ctx) {
+        return esl::overload(
+            [&] (has::extractTypeNames auto const & node) -> TypeNameExtractionResult {
+                return node.extractTypeNames(ctx);
+            },
+            [] (node auto const &) -> TypeNameExtractionResult {
+                return {}; // No names captured.
+            }
+        );
+    }
 
 }

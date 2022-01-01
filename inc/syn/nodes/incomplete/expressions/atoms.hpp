@@ -45,9 +45,11 @@ namespace cynth::syn::node {
         // TODO: For some reason, not wrapping strings in a component causes segmentation fault.
         esl::component<std::string> name;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
-        interface::TargetResolutionResult     resolveTarget     (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::TargetResolutionResult     resolveTarget     (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** "abc" */
@@ -63,9 +65,11 @@ namespace cynth::syn::node {
     struct Tuple {
         esl::component_vector<category::Expression> values;
 
-        interface::DisplayResult              display           ()                const;
-        interface::ExpressionProcessingResult processExpression (context::Main &) const;
-        interface::TargetResolutionResult     resolveTarget     (context::Main &) const;
+        interface::DisplayResult              display           ()                  const;
+        interface::ExpressionProcessingResult processExpression (context::Main   &) const;
+        interface::TargetResolutionResult     resolveTarget     (context::Main   &) const;
+        interface::NameExtractionResult       extractNames      (context::Lookup &) const;
+        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
 }

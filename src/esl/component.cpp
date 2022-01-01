@@ -8,6 +8,8 @@ namespace esl {
     // but weird stuff is happening otherwise for some reason, which needs to be fixed,
     // but right now this is the quick workaround.
     // This is the only implementation file for the otherwise header-only ESL library.
+    // TODO: Why is this actually needed? Shouldn't it be enough to just #include <string>
+    // in the appropriate headers? Why aren't the default deleter/allocator implementations used?
 
     template <>
     void component_deleter<std::string>::operator () (std::string * ptr) const {

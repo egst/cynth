@@ -52,6 +52,9 @@
 # Structure
 
 * Sort out no longer relevant test files.
+* I probably should combine `extractNames` and `extractTypeNames` into one function to avoid going through the whole tree twice.  
+    Asymptotically, it makes no difference, but in practice it means "unpacking" (`std::visit`)
+    and jumping (dereferencing pointers) through all the polymorphic nodes twice.
 
 # Implementation
 

@@ -19,6 +19,8 @@ namespace cynth::syn::node {
         interface::DisplayResult               display            ()                const;
         interface::DeclarationResolutionResult resolveDeclaration (context::Main &) const;
         interface::StatementProcessingResult   processStatement   (context::Main &) const;
+        interface::NameExtractionResult        extractNames       (context::Lookup &) const;
+        interface::TypeNameExtractionResult    extractTypeNames   (context::Lookup &) const;
     };
 
     /** (T a, ...) */
@@ -28,6 +30,8 @@ namespace cynth::syn::node {
         interface::DisplayResult               display            ()                const;
         interface::DeclarationResolutionResult resolveDeclaration (context::Main &) const;
         interface::StatementProcessingResult   processStatement   (context::Main &) const;
+        interface::NameExtractionResult        extractNames       (context::Lookup &) const;
+        interface::TypeNameExtractionResult    extractTypeNames   (context::Lookup &) const;
     };
 
 }
