@@ -36,7 +36,6 @@ namespace cynth::syn::for_nodes {
         sem::ResolvedValue        // value::Array or a C variable name
     >>;
 
-    // TODO: Implement
     esl::result<std::pair<sem::Integral, RangeVector>> resolveRangeDeclarations (
         context::Main &,
         syn::category::RangeDeclaration

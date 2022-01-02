@@ -92,7 +92,6 @@ namespace cynth::syn {
                     auto value   = *std::move(valueResult);
                     auto resType = interface::valueType || target::category{} <<= value;
 
-                    using Target = target::nested<target::tiny_vector, target::category>;
                     if (!type)
                         type = resType;
                     else if (!(interface::sameTypes || target::category{} <<= args(*type, resType)))

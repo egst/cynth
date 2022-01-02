@@ -1,4 +1,4 @@
-#include "syn/nodes/incomplete/expressions/array.hpp"
+#include "syn/nodes/incomplete/expressions/atoms.hpp"
 #include "syn/nodes/expressions.hpp" // To complete circular dependencies.
 
 // TODO: Cleanup when done.
@@ -19,10 +19,6 @@
 #include "sem/translation.hpp"
 #include "sem/values.hpp"
 #include "syn/nodes/common/array_nodes.hpp"
-
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
 
 namespace cynth::syn {
 
@@ -95,7 +91,7 @@ namespace cynth::syn {
         if (!value)
             return esl::result_error{"Name not found."};
 
-        return esl::unite_results <<= [] (CompleteValue const & value) -> esl::result<TypedTargetExpression> {
+        return esl::unite_results <<= [] (CompleteValue const &) -> esl::result<TypedTargetExpression> {
             return esl::result_error{"Cannot sasign to compconst values."};
 
         } | [] (TypedName const & name) -> esl::result<sem::TypedTargetExpression> {

@@ -11,10 +11,12 @@
 #include "esl/tiny_vector.hpp"
 
 #include "context/main.hpp"
+#include "interface/compound.hpp"
 #include "interface/nodes.hpp"
 #include "interface/types.hpp"
 #include "interface/values.hpp"
 #include "sem/compound.hpp"
+#include "sem/numeric_types.hpp"
 #include "sem/translation.hpp"
 #include "syn/categories/expression.hpp"
 #include "syn/categories/range_declaration.hpp"
@@ -28,11 +30,12 @@ namespace cynth::syn::for_nodes {
     using interface::DisplayResult;
     using sem::ArrayAllocation;
     using sem::CompleteValue;
+    using sem::Integral;
     using sem::NoReturn;
+    using sem::ResolvedValue;
     using sem::TypedExpression;
     using sem::TypedName;
     using sem::Variable;
-    using sem::ResolvedValue;
 
     esl::result<void> processRuntimeArray (
         State                   & state,
@@ -261,5 +264,45 @@ namespace cynth::syn::for_nodes {
         category::RangeDeclaration const &,
         category::Statement        const &
     );
+
+    esl::result<std::pair<sem::Integral, RangeVector>> resolveRangeDeclarations (
+        context::Main & ctx,
+        syn::category::RangeDeclaration declaration
+    ) {
+        std::optional<Integral> size;
+
+        RangeVector ranges;
+
+        auto result = [&] (auto decl) -> esl::result<void> {
+            auto arrayResult = interface::resolvedValueType(*decl.range).template get<sem::type::Array>();
+            if (!arrayResult)
+                return esl::result_error{"Only arrays can be used as for loop ranges."};
+            auto const & arrayType = *arrayResult;
+            auto arraySize = arrayType.size;
+
+            auto const & declTypes = decl.declaration->type;
+            if (declTypes.size() == 0)
+                return esl::result_error{"Less types than values in a range declaration."};
+            if (declTypes.size() > 1)
+                return esl::result_error{"More types than values in a range declaration."};
+            auto const & declType = declTypes.front();
+            if (!(interface::sameTypes || target::category{} <<= args(declType, *arrayType.type)))
+                return esl::result_error{"Incompatible type in a range declaration."};
+
+            if (!size)
+                size = arraySize;
+            else if (*size != arraySize)
+                return esl::result_error{"All ranges in a for loop must be of the same size."};
+
+            ranges.emplace_back(*decl.declaration, *decl.range);
+
+            return {};
+
+        } || target::nested<target::result, target::tiny_vector>{} <<=
+            interface::resolveRangeDeclaration(ctx) || target::category{} <<= declaration;
+        if (!result) return result.error();
+
+        return std::make_pair(*size, ranges);
+    }
 
 }

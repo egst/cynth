@@ -28,8 +28,6 @@ namespace cynth::syn::fun_nodes {
     using interface::DisplayResult;
     using interface::StatementProcessingResult;
     using sem::CaptureVector;
-    using sem::CompleteDeclaration;
-    using sem::CompleteType;
     using sem::CompleteValue;
     using sem::FunctionDefinition;
     using sem::Integral;
@@ -64,7 +62,7 @@ namespace cynth::syn::fun_nodes {
 
         auto closureName = c::closureVariableName(c::id(ctx.nextId()));
 
-        for (auto const & name: names) {
+        for (auto const & name: typeNames) {
             auto type = ctx.lookup.findType(name);
             if (!type)
                 return esl::result_error{"Type name not found."};
@@ -98,7 +96,7 @@ namespace cynth::syn::fun_nodes {
                         capturedTuple.emplace_back(CompleteValue{copy});
                         return {};
 
-                    } | [&] (auto value) -> esl::result<void> {
+                    } | [&] (auto) -> esl::result<void> {
                         // Capturing a comp-time value:
                         capturedTuple.emplace_back(varVal);
                         return {};

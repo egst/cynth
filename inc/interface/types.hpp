@@ -78,7 +78,8 @@ namespace cynth::interface {
 
         template <typename T>
         concept loseConstness = type<T> && requires (T type) {
-            { type.loseConstness() } -> std::same_as<bool>;
+            //{ type.loseConstness() } -> std::same_as<bool>;
+            type.loseConstness();
         };
 
         // There will be no implicit conversions in the first version.
@@ -166,10 +167,10 @@ namespace cynth::interface {
     );
 
     constexpr auto loseConstness = esl::overload(
-        [] (interface::has::loseConstness auto const & type) {
-            return type.loseConstness();
+        [] (interface::has::loseConstness auto & type) {
+            type.loseConstness();
         },
-        [] <type T> (T const &) -> bool requires (!interface::has::loseConstness<T>) {
+        [] <type T> (T const &) requires (!interface::has::loseConstness<T>) {
             // No-op.
         }
     );

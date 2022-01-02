@@ -106,12 +106,12 @@ namespace cynth::sem {
         ArithmeticSequence (Integral const & from, Integral const & to, Integral const & by);
         //ArithmeticSequence (Floating const & from, Floating const & to, Floating const & by);
 
-        CompleteType  type () const;
-        sem::Integral size () const;
+        CompleteType type () const;
+        Integral     size () const;
 
-        CompleteValue const & from () const;
-        CompleteValue const & to   () const;
-        CompleteValue const & by   () const;
+        inline CompleteValue const & from () const { return *definition.from; }
+        inline CompleteValue const & to   () const { return *definition.to;   }
+        inline CompleteValue const & by   () const { return *definition.by;   }
 
     protected:
         struct {
@@ -270,8 +270,7 @@ namespace cynth::sem {
                 return closureVariable && definition.closureType;
             }
 
-            interface::DisplayResult          display        ()                const;
-            interface::ValueTranslationResult translateValue (context::Main &) const;
+            interface::DisplayResult display () const;
 
             type::Function & valueType = definition.type;
             // TODO: Make sure this still satisfies the has::valueType concept.

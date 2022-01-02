@@ -49,7 +49,6 @@ namespace cynth::syn::node {
         interface::ExpressionProcessingResult processExpression (context::Main   &) const;
         interface::TargetResolutionResult     resolveTarget     (context::Main   &) const;
         interface::NameExtractionResult       extractNames      (context::Lookup &) const;
-        interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
     };
 
     /** "abc" */

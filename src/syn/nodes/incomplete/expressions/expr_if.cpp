@@ -72,7 +72,7 @@ namespace cynth::syn {
             // Run-time condition value:
 
             // Note: No implicit conversions of the if condition will be implemented in the first version.
-            if (!cond.type.template holds_alternative<sem::value::Bool>())
+            if (!cond.type.template holds_alternative<sem::type::Bool>())
                 return esl::result_error{"If condition must be a boolean value."};
 
             auto tupleVar = c::tupleVariableName(c::id(ctx.nextId()));

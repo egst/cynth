@@ -45,7 +45,7 @@ namespace cynth::syn {
             if (!elemsResult.arrayType)
                 return esl::result_error{"Array cannot be empty."};
 
-            if (elemsResult.compValues.size() == elemsResult.arraySize) {
+            if (static_cast<Integral>(elemsResult.compValues.size()) == elemsResult.arraySize) {
                 // All values comp-time:
                 auto & alloc = ctx.function.storeValue(ArrayAllocation{
                     esl::make_component_vector(elemsResult.compValues)

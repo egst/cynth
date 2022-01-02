@@ -16,7 +16,7 @@ namespace cynth::sem {
     struct Variable;
     struct ResolvedValue;
     struct ResolvedTarget;
-    struct Capture;
+    //struct Capture;
     struct ResolvedCapture;
     struct Closure;
 

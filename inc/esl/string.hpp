@@ -5,6 +5,7 @@
 #include <concepts>
 #include <cstddef>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -64,8 +65,16 @@ namespace esl {
            return (std::forward<Ts>(vals), ...);
         }
 
-        template <esl::sized_range R, std::same_as<std::string>... Ts>
-        requires (std::same_as<esl::range_value_type<R>, std::string>)
+        inline auto make_string (char const * str) {
+            return std::string_view{str};
+        }
+
+        inline auto const & make_string (std::string const & str) {
+            return str;
+        }
+
+        template <esl::sized_range R, std::convertible_to<std::string>... Ts>
+        requires (std::convertible_to<esl::range_value_type<R>, std::string>)
         std::string join (
             std::string const & delim,
             R const & pieces_range,
@@ -77,9 +86,9 @@ namespace esl {
             if (count == 0) return "";
 
             std::size_t size = 1;
-            ((size += piece_vals.size()), ...);
+            ((size += make_string(piece_vals).size()), ...);
             for (auto const & piece: pieces_range)
-                size += piece.size();
+                size += make_string(piece).size();
             size += (count - 1) * delim.size();
 
             std::vector<char> result;
@@ -92,7 +101,7 @@ namespace esl {
                 ((
                     i < vals_count - (range_count == 0) ? (
                         // do this for every value frow `piece_vals...` but the last one (if there are no more values in `pieces_range`)
-                        result.insert(result.end(), piece_vals.data(), piece_vals.data() + piece_vals.size()),
+                        result.insert(result.end(), make_string(piece_vals).data(), make_string(piece_vals).data() + make_string(piece_vals).size()),
                         result.insert(result.end(), delim.data(), delim.data() + delim.size()),
                         0
                     ) : 0,
@@ -101,21 +110,21 @@ namespace esl {
             }
             // the same thing with the dynamc range:
             for (auto it = pieces_range.begin(); it != pieces_range.end() - 1; ++it) {
-                auto const & piece = *it;
+                auto const & piece = make_string(*it);
                 result.insert(result.end(), piece.data(), piece.data() + piece.size());
                 result.insert(result.end(), delim.data(), delim.data() + delim.size());
             }
 
             if constexpr (vals_count > 0) {
                 if (range_count == 0) {
-                    auto last = detail::string::last(piece_vals...);
+                    auto last = detail::string::last(make_string(piece_vals)...);
                     result.insert(result.end(), last.data(), last.data() + last.size());
                 } else {
-                    auto const & last = *(pieces_range.end() - 1);
+                    auto const & last = make_string(*(pieces_range.end() - 1));
                     result.insert(result.end(), last.data(), last.data() + last.size());
                 }
             } else {
-                auto const & last = *(pieces_range.end() - 1);
+                auto const & last = make_string(*(pieces_range.end() - 1));
                 result.insert(result.end(), last.data(), last.data() + last.size());
             }
 
@@ -126,7 +135,7 @@ namespace esl {
         template <typename... Ts, size_t... Is>
         auto join_tup (std::string const & delim, std::tuple<Ts...> args, std::index_sequence<Is...>) {
             constexpr auto last = sizeof...(Ts) - 1;
-            if constexpr (esl::same_but_cvref<esl::last<Ts...>, std::string>)
+            if constexpr (std::convertible_to<esl::last<Ts...>, std::string>)
                 return detail::string::join(delim, esl::nullrange<std::string>{}, std::get<Is>(args)..., std::get<last>(args));
             else
                 return detail::string::join(delim, std::get<last>(args), std::get<Is>(args)...);

@@ -13,10 +13,6 @@
 #include "interface/compound.hpp"
 #include "sem/compound.hpp"
 
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
-
 namespace cynth::syn {
 
     using namespace esl::sugar;
@@ -73,11 +69,10 @@ namespace cynth::syn {
                         ctx.insertStatement(assgn);
                         return {};
 
-                    } | [&] (auto const & type) -> esl::result<void> {
+                    } | [&] (auto const &) -> esl::result<void> {
                         return esl::result_error{"Cannot assign to this type."};
 
                     } || target::category{} <<= target.type;
-
 
                 } || target::result{} <<= interface::translateResolvedValue(ctx)(value);
                 if (!result) return result.error();

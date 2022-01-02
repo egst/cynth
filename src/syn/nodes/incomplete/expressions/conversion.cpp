@@ -88,7 +88,7 @@ namespace cynth::syn {
 
         template <interface::simpleType FromType, interface::simpleType Type>
         esl::result<ResolvedValue> simpleRuntimeValue (
-            FromType        const & fromType,
+            FromType        const &,
             Type            const & type,
             TypedExpression const & expression
         ) {
@@ -100,19 +100,15 @@ namespace cynth::syn {
                 // Note: Without the else, this doesn't compile (with clang at least),
                 // because Cast is not specialized for the same types.
                 auto converted = Cast<FromType, Type>::op(expression.expression);
-                return {TypedExpression{
-                    .type       = type,
-                    .expression = converted
-                }};
+                return {TypedExpression{type, converted}};
             }
         }
 
         esl::result<ResolvedValue> runtimeValue (
-            context::Main         & ctx,
             CompleteType    const & type,
             TypedExpression const & expression
         ) {
-             return [&] <interface::simpleType FromType, interface::simpleType Type> (
+            return [&] <interface::simpleType FromType, interface::simpleType Type> (
                 FromType const & fromType, Type const & type
             ) -> esl::result<ResolvedValue> {
                 // Simple -> simple:
@@ -185,7 +181,7 @@ namespace cynth::syn {
             CompleteValue const & value
         ) {
             return [&] <interface::simpleValue Value, interface::simpleType Type> (
-                Value value, Type const & type
+                Value value, Type const &
             ) -> esl::result<ResolvedValue> {
                 // Simple -> simple:
                 if constexpr (esl::same_but_cvref<decltype(Value::valueType), Type>)
@@ -274,8 +270,6 @@ namespace cynth::syn {
     }
 
     ExpressionProcessingResult node::Conversion::processExpression (context::Main & ctx) const {
-        using Target = target::nested<target::result, target::tiny_vector>;
-
         return [&] (auto types, auto values) -> ExpressionProcessingResult {
             return esl::unite_results || target::result{} <<= [&] (auto type, auto value) {
                 return [&, &type = type] (CompleteValue const & value) {
@@ -284,7 +278,7 @@ namespace cynth::syn {
 
                 } | [&] (TypedExpression const & expr) {
                     // Run-time value:
-                    return runtimeValue(ctx, type, expr);
+                    return runtimeValue(type, expr);
 
                 } || target::category{} <<= value;
 

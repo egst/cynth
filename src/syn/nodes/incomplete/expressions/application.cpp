@@ -86,10 +86,6 @@ namespace cynth::syn {
             return Variable{*value};
         }
 
-        esl::result<Variable> valueVariable (CompleteValue const & value) {
-            return Variable{value};
-        }
-
         /** Empty result => can't evaluate at compile-time. */
         using ComptimeResult = esl::optional_result<esl::tiny_vector<ResolvedValue>>;
 

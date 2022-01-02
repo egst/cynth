@@ -1,4 +1,4 @@
-#include "syn/nodes/incomplete/expressions/array.hpp"
+#include "syn/nodes/incomplete/expressions/operations.hpp"
 #include "syn/nodes/expressions.hpp" // To complete circular dependencies.
 
 // TODO: Cleanup when done.
@@ -21,10 +21,6 @@
 #include "sem/values.hpp"
 #include "sem/operations.hpp"
 #include "syn/nodes/common/array_nodes.hpp"
-
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
 
 namespace cynth::syn {
 

@@ -110,7 +110,7 @@ namespace cynth::syn {
                         [&] (ReturnedValues const & values, ReturnedValues entry) {
                             entry.insert_back(values.begin(), values.end());
 
-                        } | [&] (ReturnedValues const & values, auto const &) {
+                        } | [&] (ReturnedValues const &, auto const &) {
                             // Ignore those.
 
                         } | [&] (CompleteType const &, auto const &) {
@@ -196,7 +196,7 @@ namespace cynth::syn {
                             [] (auto value) { return std::move(value).template get<sem::value::Function>(); } ||
                             target::tiny_vector{} <<= std::move(values);
 
-                    } | [&] (auto const & type) -> esl::result<void> {
+                    } | [&] (auto const &) -> esl::result<void> {
                         // Compile-time value:
                         // This only happens when there is only one possible return value independent from any runtime conditions.
                         if (values.size() > 1) // Implementation error.
@@ -240,7 +240,6 @@ namespace cynth::syn {
     ExpressionProcessingResult node::Block::process (context::Main & outerScope) const {
         context::Branching branching;
         auto blockScope = outerScope.makeBranchingChild(branching);
-        auto & global = outerScope.global;
 
         if constexpr (Program) {
             return [&] (auto blockResult) -> ExpressionProcessingResult {

@@ -39,7 +39,7 @@ namespace esl {
 
     namespace detail::result {
 
-        template <typename Derived, typename T = result_error>
+        template <typename Derived, typename T = result_error, bool REF = false>
         struct result_base {
             result_base () = default;
 
@@ -57,7 +57,13 @@ namespace esl {
                 return derived().value();
             }
 
-            constexpr T && operator * () && requires (!std::same_as<T, result_error>) {
+            /*
+            constexpr T const & operator * () const & requires (REF && !std::same_as<T, result_error>) {
+                return derived().value();
+            }
+            */
+
+            constexpr T && operator * () && requires (!REF && !std::same_as<T, result_error>) {
                 //return derived().value();
                 return static_cast<Derived &&>(*std::move(this)).value();
             }
@@ -157,9 +163,9 @@ namespace esl {
     };
 
     template <typename T> requires (!std::same_as<T, result_error>)
-    struct reference_result: detail::result::result_base<reference_result<T>, T> {
+    struct reference_result: detail::result::result_base<reference_result<T>, T, true> {
         using value_type = T;
-        using const_type = std::add_const<T>;
+        using const_type = std::add_const_t<T>;
 
         constexpr reference_result (result_error     const & e): content{e}            {}
         constexpr reference_result (result_error     &&      e): content{std::move(e)} {}

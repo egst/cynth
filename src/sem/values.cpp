@@ -176,6 +176,17 @@ namespace cynth::sem {
             CompleteValue{value::Int{by}}
         } {}
 
+    CompleteType ArithmeticSequence::type () const {
+        return interface::valueType || target::category{} <<= *definition.from;
+    }
+
+    Integral ArithmeticSequence::size () const {
+        auto from = *interface::get<Integral>(*definition.from->get<value::Int>());
+        auto to   = *interface::get<Integral>(*definition.from->get<value::Int>());
+        auto by   = *interface::get<Integral>(*definition.from->get<value::Int>());
+        return (to - from - 1) / by + 1; // TODO: Check if this makes sense.
+    }
+
     std::optional<ArithmeticSequence> ArrayAllocation::sequentialize () {
         if (sequence)
             return *sequence;

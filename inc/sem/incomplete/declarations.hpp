@@ -20,12 +20,14 @@ namespace cynth::sem {
     };
 
     struct CompleteRangeDeclaration {
-        esl::component_vector<CompleteDeclaration> declaration;
+        //esl::component_vector<CompleteDeclaration> declaration;
+        esl::component<CompleteDeclaration> declaration;
         esl::component<ResolvedValue> range;
     };
 
     struct IncompleteRangeDeclaration {
-        esl::component_vector<IncompleteDeclaration> declaration;
+        //esl::component_vector<IncompleteDeclaration> declaration;
+        esl::component<IncompleteDeclaration> declaration;
         esl::component<ResolvedValue> range;
     };
 

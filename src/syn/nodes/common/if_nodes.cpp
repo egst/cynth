@@ -101,7 +101,7 @@ namespace cynth::syn::if_nodes {
                                 interface::translateValue(outerScope) || target::category{} <<= negVal
                             );
 
-                        } | [&, i = i] (auto const &, auto const &) -> esl::result<void> {
+                        } | [&] (auto const &, auto const &) -> esl::result<void> {
                             // Implementation error.
                             return esl::result_error{"Returning invalid types in an if statement."};
 
@@ -171,7 +171,7 @@ namespace cynth::syn::if_nodes {
                             returnResult.returned.emplace_back(values);
                             return {};
 
-                        } | [&, i = i] (auto const & type) -> esl::result<void> {
+                        } | [&, i = i] (auto const &) -> esl::result<void> {
                             // Compile-time value:
                             if (values.size() > 1) // Implementation error.
                                 return esl::result_error{"Returning multiple compile-time values in a run-time if statement."};

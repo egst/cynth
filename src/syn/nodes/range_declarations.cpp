@@ -76,12 +76,13 @@ namespace cynth::syn {
     RangeDeclarationResolutionResult node::RangeDecl::resolveRangeDeclaration (context::Main & ctx) const {
         return [&] (auto && decls, auto && range) {
             return esl::init<esl::tiny_vector>(CompleteRangeDeclaration{
-                esl::make_component_vector(std::move(decls)),
+                std::move(decls),
                 std::move(range)
             });
 
         } || target::result{} <<= args(
-            interface::resolveDeclaration(ctx) || target::category{} <<= *declaration,
+            esl::single || target::result{} <<=
+                interface::resolveDeclaration(ctx) || target::category{} <<= *declaration,
             esl::single || target::result{} <<=
                 interface::processExpression(ctx) || target::category{} <<= *range
         );

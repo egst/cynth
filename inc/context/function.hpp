@@ -26,13 +26,6 @@ namespace cynth::context {
         /** Run-time parameter. */
         void insertParameter (std::string const &); // TODO: Implement.
 
-        /** Compile-time allocation. */
-        template <typename Value>
-        Value & storeValue (Value const &);
-
-        template <typename Value>
-        RefvalContainer<Value> & storedValues ();
-
     protected:
         //std::size_t id = 0; // Unused, for now.
 
