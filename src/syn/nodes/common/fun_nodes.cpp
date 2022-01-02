@@ -94,10 +94,7 @@ namespace cynth::syn::fun_nodes {
                             ctx, declarations, assignments, closureName,
                             *fun.definition.closureType, *fun.closureVariable
                         );
-                        auto copy = sem::value::Function{
-                            .definition      = fun.definition,
-                            .closureVariable = capturedMember
-                        };
+                        auto copy = sem::value::Function{fun.definition, capturedMember};
                         capturedTuple.emplace_back(CompleteValue{copy});
                         return {};
 
@@ -164,8 +161,8 @@ namespace cynth::syn::fun_nodes {
             return [&] (auto captured) -> esl::result<sem::value::Function> {
                 auto const & [closure, closureType, closureVariable] = captured;
 
-                auto inParams = interface::resolveParam || target::tiny_vector{} <<= inDecls;
-                auto inTypes  = interface::declType     || target::nested_tiny_vector_cat{} <<= inDecls;
+                auto inParams = interface::resolveParameter || target::tiny_vector{} <<= inDecls;
+                auto inTypes  = interface::declType         || target::nested_tiny_vector_cat{} <<= inDecls;
 
                 auto & def = ctx.global.storeValue(FunctionDefinition{
                     .implementation = FunctionDefinition::Implementation{
@@ -181,18 +178,15 @@ namespace cynth::syn::fun_nodes {
                     .name        = std::nullopt // Will be generated at deifnition.
                 });
 
-                return sem::value::Function{
-                    .definition      = def,
-                    .closureVariable = closureVariable
-                };
+                return sem::value::Function{def, closureVariable};
 
             } || target::result{} <<= fun_nodes::capture(ctx, names, typeNames);
 
         } || target::result{} <<= args(
-            interface::resolveType(ctx)        || target::category{} <<= output,
-            interface::resolveDeclaration(ctx) || target::category{} <<= input,
-            interface::extractNames            || target::category{} <<= body,
-            interface::extractTypeNames        || target::category{} <<= body
+            interface::resolveType(ctx)             || target::category{} <<= output,
+            interface::resolveDeclaration(ctx)      || target::category{} <<= input,
+            interface::extractNames(ctx.lookup)     || target::category{} <<= body,
+            interface::extractTypeNames(ctx.lookup) || target::category{} <<= body
         );
     }
 

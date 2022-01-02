@@ -16,8 +16,42 @@
 #include "sem/declarations.hpp"
 #include "syn/nodes/common/decl_nodes.hpp"
 
-// TMP
-#include "debug.hpp"
+namespace esl {
+
+    using cynth::syn::node::Declaration;
+    using cynth::syn::node::TupleDecl;
+
+    template <>
+    void component_deleter<Declaration>::operator () (Declaration * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Declaration * component_allocator<Declaration>::operator () (Declaration const & other) const {
+        return new Declaration{other};
+    }
+
+    template <>
+    Declaration * component_allocator<Declaration>::operator () (Declaration && other) const {
+        return new Declaration{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<TupleDecl>::operator () (TupleDecl * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    TupleDecl * component_allocator<TupleDecl>::operator () (TupleDecl const & other) const {
+        return new TupleDecl{other};
+    }
+
+    template <>
+    TupleDecl * component_allocator<TupleDecl>::operator () (TupleDecl && other) const {
+        return new TupleDecl{std::move(other)};
+    }
+
+}
 
 namespace cynth::syn {
 
@@ -107,43 +141,6 @@ namespace cynth::syn {
             esl::unite_results <<=
             interface::extractTypeNames(ctx) || target::nested<target::component_vector, target::category>{} <<=
             declarations;
-    }
-
-}
-
-namespace esl {
-
-    using cynth::syn::node::Declaration;
-    using cynth::syn::node::TupleDecl;
-
-    template <>
-    void component_deleter<Declaration>::operator () (Declaration * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    Declaration * component_allocator<Declaration>::operator () (Declaration const & other) const {
-        return new Declaration{other};
-    }
-
-    template <>
-    Declaration * component_allocator<Declaration>::operator () (Declaration && other) const {
-        return new Declaration{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<TupleDecl>::operator () (TupleDecl * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    TupleDecl * component_allocator<TupleDecl>::operator () (TupleDecl const & other) const {
-        return new TupleDecl{other};
-    }
-
-    template <>
-    TupleDecl * component_allocator<TupleDecl>::operator () (TupleDecl && other) const {
-        return new TupleDecl{std::move(other)};
     }
 
 }

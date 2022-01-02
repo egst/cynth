@@ -45,8 +45,8 @@ EXT_CYNTH = .cth
 #ENTRY_POINTS += cynth
 #ENTRY_POINTS += parser
 #ENTRY_POINTS += interpreter
-#ENTRY_POINTS += compiler
-ENTRY_POINTS += test
+ENTRY_POINTS += compiler
+#ENTRY_POINTS += test
 
 # Compiler:
 # (Tested with GCC 10, Clang 10 and 11.)

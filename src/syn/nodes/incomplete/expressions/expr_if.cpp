@@ -112,10 +112,7 @@ namespace cynth::syn {
                                 .closureType    = closureType,
                                 .name           = c::functionName(c::id(ctx.nextId()))
                             });
-                            auto newFun = sem::value::Function{
-                                .definition      = def,
-                                .closureVariable = tupleElement
-                            };
+                            auto newFun = sem::value::Function{def, tupleElement};
 
                             auto posExpr = c::closureLiteral(closureType, 0, posFun.closureVariable);
                             auto negExpr = c::closureLiteral(closureType, 1, negFun.closureVariable);

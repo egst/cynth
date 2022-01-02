@@ -12,22 +12,24 @@
 #include "esl/type_manip.hpp"
 #include "esl/zip.hpp"
 
-//using namespace cynth;
+#include "sem/all.hpp"
+
+using namespace cynth;
 //using esl::lift;
 //namespace target = esl::target;
 //using namespace esl::sugar;
 
 int main () {
 
-    std::string s1 = R"code(
-        int foo (int x) {
-            return x + 1;
-        }
-    )code";
-
-    std::string s2 = R"code(
-        #include ""
-    )code";
+    sem::FunctionDefinition f = {esl::component_vector<sem::value::Function>{}};
+    using T = sem::value::Function;
+    //#define I {}
+    //#define I {"", sem::CompleteType{sem::type::Int{}}}
+    #define I {f}
+    //#define I {esl::component_vector<sem::value::Function>{}}
+    T a = I;
+    T b = I;
+    a = b;
 
     return 0;
 

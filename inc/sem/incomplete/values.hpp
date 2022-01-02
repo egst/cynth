@@ -226,6 +226,34 @@ namespace cynth::sem {
         // TODO: Will optional strings also cause the still unfixed segfault problem?
 
         struct Function {
+            // I'm really starting to hate C++...
+            // All this boiler plate code just because of a referential member?
+            inline Function (
+                FunctionDefinition & definition,
+                std::optional<std::string> closureVariable = std::nullopt
+            ):  definition{definition},
+                closureVariable{std::move(closureVariable)} {}
+
+            inline Function (Function const & other):
+                definition{other.definition},
+                closureVariable{other.closureVariable} {}
+
+            inline Function (Function && other):
+                definition{other.definition},
+                closureVariable{std::move(other.closureVariable)} {}
+
+            inline Function & operator = (Function const & other) {
+                definition      = other.definition;
+                closureVariable = other.closureVariable;
+                return *this;
+            }
+
+            inline Function & operator = (Function && other) {
+                definition      = other.definition;
+                closureVariable = std::move(other.closureVariable);
+                return *this;
+            }
+
             FunctionDefinition &       definition;
             std::optional<std::string> closureVariable; // Run-time closure variable.
 

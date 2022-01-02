@@ -172,10 +172,7 @@ namespace cynth::syn {
 
                                 // A single function with run-time capture:
                                 auto decl = c::declaration(*fun.definition.closureType, name);
-                                auto copy = sem::value::Function{
-                                    .definition      = fun.definition,
-                                    .closureVariable = tupleElement
-                                };
+                                auto copy = sem::value::Function{fun.definition, tupleElement};
                                 blockResult.declarations.push_back(decl);
                                 blockResult.resolved.push_back(CompleteValue{copy});
                                 return {};
@@ -189,10 +186,7 @@ namespace cynth::syn {
                                 .closureType    = c::closureType(c::id(global.nextId())),
                                 .name           = c::functionName(c::id(global.nextId()))
                             });
-                            auto newFun = sem::value::Function{
-                                .definition      = def,
-                                .closureVariable = tupleElement
-                            };
+                            auto newFun = sem::value::Function{def, tupleElement};
                             auto decl = c::declaration(*def.closureType, name);
                             blockResult.declarations.push_back(decl);
                             blockResult.resolved.push_back(CompleteValue{newFun});

@@ -18,7 +18,7 @@ namespace cynth::context {
     }
 
     void Global::registerGenerator (std::string const & buff, std::string const & fun, bool time) {
-        generators.emplace_back(buff, fun, time);
+        generators.push_back(GeneratorEntry{buff, fun, time});
     }
 
     template <typename T>

@@ -126,7 +126,9 @@
 %nterm <cynth::syn::node::FunctionType>    node_function_type
 %nterm <cynth::syn::node::ArrayType>       node_array_type
 %nterm <cynth::syn::node::BufferType>      node_buffer_type
+/*
 %nterm <cynth::syn::node::TypeDecl>        node_type_decl
+*/
 
 /* [declarations] */
 %nterm <cynth::syn::category::Declaration>      paren_decl
@@ -233,7 +235,9 @@ cat_type:
     node_function_type { $$ = $1; } |
     node_array_type    { $$ = $1; } |
     node_buffer_type   { $$ = $1; } |
+    /*
     node_type_decl     { $$ = $1; } |
+    */
     node_const_type    { $$ = $1; } |
     node_in_type       { $$ = $1; } |
     node_out_type      { $$ = $1; } |
@@ -405,10 +409,12 @@ node_buffer_type:
         $$ = {.size = $size};
     }
 
+/*
 node_type_decl:
     TYPE node_type_name[name] {
         $$ = {$name};
     }
+*/
 
 /* [declarations] */
 
@@ -660,7 +666,7 @@ node_subscript:
 
 node_expr_if:
     IF paren_expr[cond] cat_expression[pos] ELSE cat_expression[neg] {
-        $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
+        $$ = {.condition = $cond, .positiveBranch = $pos, .negativeBranch = $neg};
     }
 
 node_expr_for:
@@ -712,10 +718,10 @@ node_return:
 
 node_if:
     IF paren_expr[cond] pure[pos] ELSE pure[neg] {
-        $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
+        $$ = {.condition = $cond, .positiveBranch = $pos, .negativeBranch = $neg};
     } |
     IF paren_expr[cond] pure[pos] SEMI ELSE pure[neg] {
-        $$ = {.condition = $cond, .positive_branch = $pos, .negative_branch = $neg};
+        $$ = {.condition = $cond, .positiveBranch = $pos, .negativeBranch = $neg};
     }
 
 node_when:

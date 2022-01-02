@@ -53,7 +53,7 @@ namespace cynth::syn::array_nodes {
                     // Continue extracting only if no run-time values have been found yet:
                     if (!runtime) compVals.push_back(value);
 
-                } | [&] (TypedExpression const & expr) {
+                } | [&] (TypedExpression const &) {
                     runtime = true;
 
                 } || target::category{} <<= elem;
@@ -67,7 +67,7 @@ namespace cynth::syn::array_nodes {
             if (!elemType)
                 arrayType = {*elemType, arraySize};
 
-            if (runtime || compVals.size() != arraySize)
+            if (runtime || static_cast<Integral>(compVals.size()) != arraySize)
                 compVals.clear();
 
             return ElementsResult{
@@ -88,8 +88,9 @@ namespace cynth::syn::array_nodes {
         a[1]; # compile-time array
         ***/
         constexpr auto comptimeArraySubscript =
-            [] (CompleteType const & type, Integral index, ArrayAllocation const & alloc)
-            -> SingleExpressionProcessingResult {
+            [] (
+                CompleteType const &, Integral index, ArrayAllocation const & alloc
+            ) -> SingleExpressionProcessingResult {
                 // TODO: type probably not needed.
                 return ResolvedValue{
                     alloc.value[index]

@@ -265,11 +265,16 @@ namespace esl {
 
                 // TODO: Ensure that the constructors and assignments that are not valid for this use-case cannot be called.
 
+                constexpr component_vector (): base{} {}
+
                 /*constexpr component_vector              (component_vector const &) = delete;
                 constexpr component_vector & operator = (component_vector const &) = delete;*/
 
-                template <esl::same_but_cvref<T>... Ts> requires (sizeof...(Ts) > 1) // TODO: Some constructor for single values.
+                template <esl::same_but_cvref<T>... Ts> requires (sizeof...(Ts) > 1)
                 constexpr component_vector (Ts &&... vals): base{std::forward<Ts>(vals)...} {}
+
+                template <esl::same_but_cvref<T> U>
+                constexpr component_vector (U && val): base(1, std::forward<U>(val)) {}
 
                 constexpr component_vector (component_vector &&      other): base{std::move(other)} {}
                 constexpr component_vector (component_vector const & other): base{other} {}
@@ -290,10 +295,12 @@ namespace esl {
                 //~component_vector ();
 
                 // std::initializer_list doesn't support move semantics.
+                /*
                 template <std::same_as<value_type>... U>
                 constexpr component_vector (U &&... items): base{} {
                     (push_back(std::forward<U>(items)), ...);
                 }
+                */
 
                 /** Construct from a compatible vector type. */
                 //template <detail::component::compatible_vector<value_type> V>
@@ -302,7 +309,7 @@ namespace esl {
                 constexpr static component_vector make (V && other) {
                     component_vector v;
                     v.reserve(other.size());
-                    for (auto & item: other)
+                    for (auto const & item: other)
                         //v.push_back(component<value_type>{std::move(item)});
                         //v.push_back(std::move(item));
                         v.push_back(std::move(static_cast<value_type>(item)));
@@ -314,7 +321,7 @@ namespace esl {
                 constexpr operator V () const {
                     V copy;
                     copy.reserve(size());
-                    for (auto & item: *this)
+                    for (auto const & item: *this)
                         //copy.push_back(*item);
                         //copy.push_back(item);
                         copy.push_back(static_cast<typename V::value_type>(item));
@@ -330,7 +337,7 @@ namespace esl {
 
     template <template <typename...> typename Base>
     constexpr auto make_basic_component_vector = [] <esl::range T> (T && values) {
-        using value_type = esl::range_value_type<T>;
+        using value_type = std::remove_cvref_t<esl::range_value_type<T>>;
         //return basic_component_vector<value_type, Base>{std::forward<T>(values)};
         return basic_component_vector<value_type, Base>::make(std::forward<T>(values));
     };

@@ -53,7 +53,7 @@
     #include "esl/string.hpp"
     #include "esl/containers.hpp"
 
-    #include "ast/all.hpp"
+    #include "syn/all.hpp"
     #include "sem/numeric_types.hpp"
 
 
@@ -565,48 +565,45 @@ namespace yy {
       // node_subscript
       char dummy54[sizeof (cynth::syn::node::Subscript)];
 
-      // node_type_decl
-      char dummy55[sizeof (cynth::syn::node::TypeDecl)];
-
       // node_type_def
-      char dummy56[sizeof (cynth::syn::node::TypeDef)];
+      char dummy55[sizeof (cynth::syn::node::TypeDef)];
 
       // node_type_name
-      char dummy57[sizeof (cynth::syn::node::TypeName)];
+      char dummy56[sizeof (cynth::syn::node::TypeName)];
 
       // node_when
-      char dummy58[sizeof (cynth::syn::node::When)];
+      char dummy57[sizeof (cynth::syn::node::When)];
 
       // node_while
-      char dummy59[sizeof (cynth::syn::node::While)];
+      char dummy58[sizeof (cynth::syn::node::While)];
 
       // array_elem_list
-      char dummy60[sizeof (esl::component_vector<cynth::syn::category::ArrayElement>)];
+      char dummy59[sizeof (esl::component_vector<cynth::syn::category::ArrayElement>)];
 
       // decl_list
-      char dummy61[sizeof (esl::component_vector<cynth::syn::category::Declaration>)];
+      char dummy60[sizeof (esl::component_vector<cynth::syn::category::Declaration>)];
 
       // expr_list
-      char dummy62[sizeof (esl::component_vector<cynth::syn::category::Expression>)];
+      char dummy61[sizeof (esl::component_vector<cynth::syn::category::Expression>)];
 
       // range_decl_list
-      char dummy63[sizeof (esl::component_vector<cynth::syn::category::RangeDeclaration>)];
+      char dummy62[sizeof (esl::component_vector<cynth::syn::category::RangeDeclaration>)];
 
       // stmt_list
-      char dummy64[sizeof (esl::component_vector<cynth::syn::category::Statement>)];
+      char dummy63[sizeof (esl::component_vector<cynth::syn::category::Statement>)];
 
       // type_list
-      char dummy65[sizeof (esl::component_vector<cynth::syn::category::Type>)];
+      char dummy64[sizeof (esl::component_vector<cynth::syn::category::Type>)];
 
       // start
-      char dummy66[sizeof (int)];
+      char dummy65[sizeof (int)];
 
       // NAME
       // TYPENAME
       // INT
       // FLOAT
       // STRING
-      char dummy67[sizeof (std::string)];
+      char dummy66[sizeof (std::string)];
     };
 
     /// The size of the largest semantic type.
@@ -799,62 +796,61 @@ namespace yy {
         S_node_function_type = 80,               // node_function_type
         S_node_array_type = 81,                  // node_array_type
         S_node_buffer_type = 82,                 // node_buffer_type
-        S_node_type_decl = 83,                   // node_type_decl
-        S_paren_decl = 84,                       // paren_decl
-        S_paren_range_decl = 85,                 // paren_range_decl
-        S_void_decl = 86,                        // void_decl
-        S_node_declaration = 87,                 // node_declaration
-        S_node_range_decl = 88,                  // node_range_decl
-        S_node_range_to = 89,                    // node_range_to
-        S_node_range_to_by = 90,                 // node_range_to_by
-        S_node_spread = 91,                      // node_spread
-        S_paren_expr = 92,                       // paren_expr
-        S_void = 93,                             // void
-        S_node_name = 94,                        // node_name
-        S_node_block = 95,                       // node_block
-        S_node_bool = 96,                        // node_bool
-        S_node_int = 97,                         // node_int
-        S_node_float = 98,                       // node_float
-        S_node_string = 99,                      // node_string
-        S_node_function = 100,                   // node_function
-        S_node_array = 101,                      // node_array
-        S_node_or = 102,                         // node_or
-        S_node_and = 103,                        // node_and
-        S_node_eq = 104,                         // node_eq
-        S_node_ne = 105,                         // node_ne
-        S_node_ge = 106,                         // node_ge
-        S_node_le = 107,                         // node_le
-        S_node_gt = 108,                         // node_gt
-        S_node_lt = 109,                         // node_lt
-        S_node_add = 110,                        // node_add
-        S_node_sub = 111,                        // node_sub
-        S_node_mul = 112,                        // node_mul
-        S_node_div = 113,                        // node_div
-        S_node_mod = 114,                        // node_mod
-        S_node_pow = 115,                        // node_pow
-        S_node_plus = 116,                       // node_plus
-        S_node_minus = 117,                      // node_minus
-        S_node_not = 118,                        // node_not
-        S_node_application = 119,                // node_application
-        S_node_conversion = 120,                 // node_conversion
-        S_node_subscript = 121,                  // node_subscript
-        S_node_expr_if = 122,                    // node_expr_if
-        S_node_expr_for = 123,                   // node_expr_for
-        S_node_definition = 124,                 // node_definition
-        S_node_assignment = 125,                 // node_assignment
-        S_node_function_def = 126,               // node_function_def
-        S_node_type_def = 127,                   // node_type_def
-        S_node_return = 128,                     // node_return
-        S_node_if = 129,                         // node_if
-        S_node_when = 130,                       // node_when
-        S_node_for = 131,                        // node_for
-        S_node_while = 132,                      // node_while
-        S_type_list = 133,                       // type_list
-        S_decl_list = 134,                       // decl_list
-        S_range_decl_list = 135,                 // range_decl_list
-        S_array_elem_list = 136,                 // array_elem_list
-        S_expr_list = 137,                       // expr_list
-        S_stmt_list = 138                        // stmt_list
+        S_paren_decl = 83,                       // paren_decl
+        S_paren_range_decl = 84,                 // paren_range_decl
+        S_void_decl = 85,                        // void_decl
+        S_node_declaration = 86,                 // node_declaration
+        S_node_range_decl = 87,                  // node_range_decl
+        S_node_range_to = 88,                    // node_range_to
+        S_node_range_to_by = 89,                 // node_range_to_by
+        S_node_spread = 90,                      // node_spread
+        S_paren_expr = 91,                       // paren_expr
+        S_void = 92,                             // void
+        S_node_name = 93,                        // node_name
+        S_node_block = 94,                       // node_block
+        S_node_bool = 95,                        // node_bool
+        S_node_int = 96,                         // node_int
+        S_node_float = 97,                       // node_float
+        S_node_string = 98,                      // node_string
+        S_node_function = 99,                    // node_function
+        S_node_array = 100,                      // node_array
+        S_node_or = 101,                         // node_or
+        S_node_and = 102,                        // node_and
+        S_node_eq = 103,                         // node_eq
+        S_node_ne = 104,                         // node_ne
+        S_node_ge = 105,                         // node_ge
+        S_node_le = 106,                         // node_le
+        S_node_gt = 107,                         // node_gt
+        S_node_lt = 108,                         // node_lt
+        S_node_add = 109,                        // node_add
+        S_node_sub = 110,                        // node_sub
+        S_node_mul = 111,                        // node_mul
+        S_node_div = 112,                        // node_div
+        S_node_mod = 113,                        // node_mod
+        S_node_pow = 114,                        // node_pow
+        S_node_plus = 115,                       // node_plus
+        S_node_minus = 116,                      // node_minus
+        S_node_not = 117,                        // node_not
+        S_node_application = 118,                // node_application
+        S_node_conversion = 119,                 // node_conversion
+        S_node_subscript = 120,                  // node_subscript
+        S_node_expr_if = 121,                    // node_expr_if
+        S_node_expr_for = 122,                   // node_expr_for
+        S_node_definition = 123,                 // node_definition
+        S_node_assignment = 124,                 // node_assignment
+        S_node_function_def = 125,               // node_function_def
+        S_node_type_def = 126,                   // node_type_def
+        S_node_return = 127,                     // node_return
+        S_node_if = 128,                         // node_if
+        S_node_when = 129,                       // node_when
+        S_node_for = 130,                        // node_for
+        S_node_while = 131,                      // node_while
+        S_type_list = 132,                       // type_list
+        S_decl_list = 133,                       // decl_list
+        S_range_decl_list = 134,                 // range_decl_list
+        S_array_elem_list = 135,                 // array_elem_list
+        S_expr_list = 136,                       // expr_list
+        S_stmt_list = 137                        // stmt_list
       };
     };
 
@@ -1123,10 +1119,6 @@ namespace yy {
 
       case symbol_kind::S_node_subscript: // node_subscript
         value.move< cynth::syn::node::Subscript > (std::move (that.value));
-        break;
-
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::syn::node::TypeDecl > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
@@ -1796,17 +1788,6 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, cynth::syn::node::TypeDecl&& v)
-        : Base (t)
-        , value (std::move (v))
-      {}
-#else
-      basic_symbol (typename Base::kind_type t, const cynth::syn::node::TypeDecl& v)
-        : Base (t)
-        , value (v)
-      {}
-#endif
-#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, cynth::syn::node::TypeDef&& v)
         : Base (t)
         , value (std::move (v))
@@ -2195,10 +2176,6 @@ switch (yykind)
 
       case symbol_kind::S_node_subscript: // node_subscript
         value.template destroy< cynth::syn::node::Subscript > ();
-        break;
-
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.template destroy< cynth::syn::node::TypeDecl > ();
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
@@ -3499,9 +3476,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 1199,     ///< Last index in yytable_.
-      yynnts_ = 87,  ///< Number of nonterminal symbols.
-      yyfinal_ = 136 ///< Termination state number.
+      yylast_ = 1163,     ///< Last index in yytable_.
+      yynnts_ = 86,  ///< Number of nonterminal symbols.
+      yyfinal_ = 134 ///< Termination state number.
     };
 
 
@@ -3805,10 +3782,6 @@ switch (yykind)
 
       case symbol_kind::S_node_subscript: // node_subscript
         value.copy< cynth::syn::node::Subscript > (YY_MOVE (that.value));
-        break;
-
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.copy< cynth::syn::node::TypeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
@@ -4128,10 +4101,6 @@ switch (yykind)
         value.move< cynth::syn::node::Subscript > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::syn::node::TypeDecl > (YY_MOVE (s.value));
-        break;
-
       case symbol_kind::S_node_type_def: // node_type_def
         value.move< cynth::syn::node::TypeDef > (YY_MOVE (s.value));
         break;
@@ -4245,7 +4214,7 @@ switch (yykind)
   }
 
 } // yy
-#line 4249 "inc/parser.hpp"
+#line 4218 "inc/parser.hpp"
 
 
 // "%code provides" blocks.
@@ -4259,7 +4228,7 @@ switch (yykind)
     }
 
 
-#line 4263 "inc/parser.hpp"
+#line 4232 "inc/parser.hpp"
 
 
 #endif // !YY_YY_INC_PARSER_HPP_INCLUDED

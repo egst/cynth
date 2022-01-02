@@ -200,7 +200,7 @@ namespace cynth::interface {
         [] <has::typeName T> (T const & type) -> TypeNameResult requires (!has::directTypeName<T>) {
             return type.getTypeName();
         },
-        [] <type T> (T const & type) -> TypeNameResult requires (!has::typeName<T> && !has::directTypeName<T>) {
+        [] <type T> (T const &) -> TypeNameResult requires (!has::typeName<T> && !has::directTypeName<T>) {
             return esl::result_error{"This type does not have a name."};
         }
     );

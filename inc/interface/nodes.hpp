@@ -120,7 +120,7 @@ namespace cynth::interface {
             for (auto const & elem: elems) {
                 auto result = lift<Target>(processArrayElement(ctx))(elem);
                 if (!result) return result.error();
-                processed.insert_back(result->begin(), result->end());
+                processed.insert_back(std::make_move_iterator(result->begin()), std::make_move_iterator(result->end()));
             }
             return processed;
         };

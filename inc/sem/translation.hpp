@@ -14,6 +14,8 @@
 #include "sem/numeric_types.hpp"
 // TODO: Decide where to use std::size_t and where to use sem::Integral
 
+// TODO: Cleanup: Many of the function in c:: are not needed anymore.
+
 // TODO: Either put this in the `sem::` namespace, or move it out of the `sem/` directory.
 namespace cynth {
 
@@ -954,7 +956,7 @@ namespace cynth {
             std::vector<std::string> result;
             result.reserve(values.size());
             for (auto const & [i, value]: esl::enumerate(values)) {
-                auto assgn = c::statement(c::assignment(c::arraySubscript(array, i), value));
+                auto assgn = c::statement(c::assignment(c::arraySubscript(array, std::to_string(i)), value));
                 result.push_back(assgn);
             }
             return c::join(c::newLine(), result);
@@ -1074,20 +1076,6 @@ namespace cynth {
         template <typename... Ts>
         std::string templateArguments (Ts const &... args) {
             return esl::join("$", args...);
-        }
-
-        /***
-        const_<type>
-        ***/
-        inline std::string constantSpecifier (std::string const & type) {
-            return std::string {} + str::constant + "_" + str::constant;
-        }
-
-        /***
-        struct__<type>__const
-        ***/
-        inline std::string structureSpecifier (std::string const & type) {
-            return std::string{} + str::structure + "_" + type;
         }
 
         /***

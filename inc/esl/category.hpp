@@ -18,15 +18,15 @@ namespace esl {
 
         template <typename Alt, typename Result, typename Cat>
         Result get (Cat && cat) {
-            return std::holds_alternative<Alt>(cat.value)
-                ? std::get<Alt>(std::forward<Cat>(cat).value)
-                : esl::result_error{"Invalid category alternative requested."};
+            if (!std::holds_alternative<Alt>(cat.value))
+                return esl::result_error{"Invalid category alternative requested."};
+            return std::get<Alt>(std::forward<Cat>(cat).value);
         }
 
     }
 
     // Note: Most categories are kept non-copyable mostly just to make sure, that the copy/move semantics distinction works as expected.
-    template <typename Derived, typename Variant, bool COPYABLE = true>
+    template <typename Derived, typename Variant>
     struct category {
         using variant = Variant;
         variant value;
@@ -34,29 +34,31 @@ namespace esl {
         category () = delete;
         //category (category const &) = delete;
 
-        template <esl::variant_member<variant> T> requires (esl::temporary<T> || COPYABLE)
+        template <esl::variant_member<variant> T>
         constexpr category (T && other):
             value{std::forward<T>(other)} {
             esl::dout << "category{node}\n";
         }
 
-        template <esl::variant_member<variant> T> requires (esl::temporary<T> || COPYABLE)
+        template <esl::variant_member<variant> T>
         constexpr Derived & operator = (T && other) {
             esl::dout << "category = node\n";
             value = std::forward<T>(other);
             return *static_cast<Derived *>(this);
         }
 
-        template <typename T> requires esl::compatible_variant<decltype(T::value), variant> && (esl::temporary<T> || COPYABLE)
+        template <typename T> requires esl::compatible_variant<decltype(T::value), variant>
         constexpr category (T && other):
             value{esl::variant_cast<variant>(esl::forward_like<T>(other.value))} {
             esl::dout << "category{category}\n";
         }
 
-        template <typename T> requires esl::compatible_variant<decltype(T::value), variant> && (esl::temporary<T> || COPYABLE)
+        template <typename T> requires esl::compatible_variant<decltype(T::value), variant>
         constexpr Derived & operator = (T && other) {
             esl::dout << "category = category\n";
-            std::visit([this] <esl::temporary U> (U && other_value) { value = esl::forward_like<T>(other_value); }, esl::forward_like<T>(other.value));
+            std::visit([this] <esl::temporary U> (U && otherValue) {
+                value = esl::forward_like<T>(otherValue);
+            }, esl::forward_like<T>(other.value));
             return *static_cast<Derived *>(this);
         }
 
@@ -86,9 +88,7 @@ namespace esl {
     namespace detail::category {
 
         template <typename T>
-        concept categorial_impl =
-            std::derived_from<T, esl::category<T, typename T::variant, true>> ||
-            std::derived_from<T, esl::category<T, typename T::variant, false>>;
+        concept categorial_impl = std::derived_from<T, esl::category<T, typename T::variant>>;
 
     }
 

@@ -28,7 +28,7 @@ namespace cynth::syn::array_nodes {
         // o[] = x -- assign a value to an out type
 
         inline bool comptime () const {
-            return compValues.size() == arraySize;
+            return static_cast<sem::Integral>(compValues.size()) == arraySize;
         }
     };
 

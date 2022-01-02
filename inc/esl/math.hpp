@@ -30,9 +30,13 @@ namespace esl {
             return pow10_init_seq<T, std::make_index_sequence<EXP>>::value;
         }
 
-        /** Array of powers of ten up to 10^19 */
+        /** Array of powers of ten up to 10^9 */
         template <typename T>
-        constexpr auto pow10_list = pow10_init<T, 19>();
+        constexpr auto pow10_list = pow10_init<T, 8>();
+        // TODO: Choose the max power depending on T. It's 9 only for 32bit unsigned integers,
+        // but for smaller types it won't compile (overflow is checked in compile-time expressions)
+        // and for larger types it won't be enough.
+        // TODO: Check if REPEAT value 8 actually means 10^9... I got kinda lost here.
 
     }
 

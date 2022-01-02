@@ -21,9 +21,58 @@
 #include "sem/numeric_types.hpp"
 #include "sem/values.hpp"
 
-// TMP
-#include "esl/debug.hpp"
-#include "esl/macros.hpp"
+namespace esl {
+
+    using cynth::syn::node::RangeTo;
+    using cynth::syn::node::RangeToBy;
+    using cynth::syn::node::Spread;
+
+    template <>
+    void component_deleter<RangeTo>::operator () (RangeTo * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    RangeTo * component_allocator<RangeTo>::operator () (RangeTo const & other) const {
+        return new RangeTo{other};
+    }
+
+    template <>
+    RangeTo * component_allocator<RangeTo>::operator () (RangeTo && other) const {
+        return new RangeTo{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<RangeToBy>::operator () (RangeToBy * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    RangeToBy * component_allocator<RangeToBy>::operator () (RangeToBy const & other) const {
+        return new RangeToBy{other};
+    }
+
+    template <>
+    RangeToBy * component_allocator<RangeToBy>::operator () (RangeToBy && other) const {
+        return new RangeToBy{std::move(other)};
+    }
+
+    template <>
+    void component_deleter<Spread>::operator () (Spread * ptr) const {
+        delete ptr;
+    }
+
+    template <>
+    Spread * component_allocator<Spread>::operator () (Spread const & other) const {
+        return new Spread{other};
+    }
+
+    template <>
+    Spread * component_allocator<Spread>::operator () (Spread && other) const {
+        return new Spread{std::move(other)};
+    }
+
+}
 
 namespace cynth::syn {
 
@@ -64,11 +113,11 @@ namespace cynth::syn {
                     range.emplace_back(CompleteValue{Wrap{i}});
                 return range;
 
-            } | [] <typename Value> (Value && from, Value && to) -> ArrayElementProcessingResult {
+            } | [] <typename Value> (Value &&, Value &&) -> ArrayElementProcessingResult {
                 // Note: I guess bools could work, but they don't make much sense.
                 return esl::result_error{"Values in a from..to array element must be integers or floats."};
 
-            } | [] (auto && from, auto && to) -> ArrayElementProcessingResult {
+            } | [] (auto &&, auto &&) -> ArrayElementProcessingResult {
                 // Note: There will be no implicit conversion to a common type in the first version.
                 return esl::result_error{"Incompatible types in a from..to array element."};
 
@@ -181,7 +230,7 @@ namespace cynth::syn {
 
                 } | [&] (std::string const & alloc) -> ArrayElementProcessingResult {
                     esl::tiny_vector<ResolvedValue> range;
-                    for (std::size_t i = 0; i < arrayType.size; ++i) {
+                    for (std::size_t i = 0; i < static_cast<std::size_t>(arrayType.size); ++i) {
                         auto expr = c::arraySubscript(alloc, c::integralLiteral(i));
                         range.emplace_back(TypedExpression{*arrayType.type, expr});
                     }
@@ -198,7 +247,7 @@ namespace cynth::syn {
             // Run-time range:
             return [&] (sem::type::Array && arrayType) -> ArrayElementProcessingResult {
                 esl::tiny_vector<ResolvedValue> range;
-                for (std::size_t i = 0; i < arrayType.size; ++i) {
+                for (std::size_t i = 0; i < static_cast<std::size_t>(arrayType.size); ++i) {
                     auto expr = c::arraySubscript(std::move(container).expression, c::integralLiteral(i));
                     range.emplace_back(TypedExpression{*arrayType.type, expr});
                 }
@@ -219,59 +268,6 @@ namespace cynth::syn {
 
     TypeNameExtractionResult node::Spread::extractTypeNames (context::Lookup & ctx) const {
         return interface::extractTypeNames(ctx) || target::category{} <<= *container;
-    }
-
-}
-
-namespace esl {
-
-    using cynth::syn::node::RangeTo;
-    using cynth::syn::node::RangeToBy;
-    using cynth::syn::node::Spread;
-
-    template <>
-    void component_deleter<RangeTo>::operator () (RangeTo * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    RangeTo * component_allocator<RangeTo>::operator () (RangeTo const & other) const {
-        return new RangeTo{other};
-    }
-
-    template <>
-    RangeTo * component_allocator<RangeTo>::operator () (RangeTo && other) const {
-        return new RangeTo{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<RangeToBy>::operator () (RangeToBy * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    RangeToBy * component_allocator<RangeToBy>::operator () (RangeToBy const & other) const {
-        return new RangeToBy{other};
-    }
-
-    template <>
-    RangeToBy * component_allocator<RangeToBy>::operator () (RangeToBy && other) const {
-        return new RangeToBy{std::move(other)};
-    }
-
-    template <>
-    void component_deleter<Spread>::operator () (Spread * ptr) const {
-        delete ptr;
-    }
-
-    template <>
-    Spread * component_allocator<Spread>::operator () (Spread const & other) const {
-        return new Spread{other};
-    }
-
-    template <>
-    Spread * component_allocator<Spread>::operator () (Spread && other) const {
-        return new Spread{std::move(other)};
     }
 
 }

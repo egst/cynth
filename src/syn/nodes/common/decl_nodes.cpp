@@ -35,7 +35,7 @@ namespace cynth::syn::decl_nodes {
                 return esl::result_error{"No types in a declaration."};
             esl::tiny_vector<sem::Variable> vars;
             auto count = decl.type.size();
-            if (count > values.end() - valueIterator)
+            if (static_cast<std::ptrdiff_t>(count) > values.end() - valueIterator)
                 return esl::result_error{"More values than targets in a definition."};
 
             for (auto const & [type, value]: esl::zip(decl.type, esl::view(valueIterator, valueIterator + count))) {

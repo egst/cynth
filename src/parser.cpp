@@ -417,10 +417,6 @@ namespace yy {
         value.YY_MOVE_OR_COPY< cynth::syn::node::Subscript > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.YY_MOVE_OR_COPY< cynth::syn::node::TypeDecl > (YY_MOVE (that.value));
-        break;
-
       case symbol_kind::S_node_type_def: // node_type_def
         value.YY_MOVE_OR_COPY< cynth::syn::node::TypeDef > (YY_MOVE (that.value));
         break;
@@ -722,10 +718,6 @@ namespace yy {
 
       case symbol_kind::S_node_subscript: // node_subscript
         value.move< cynth::syn::node::Subscript > (YY_MOVE (that.value));
-        break;
-
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::syn::node::TypeDecl > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
@@ -1031,10 +1023,6 @@ namespace yy {
         value.copy< cynth::syn::node::Subscript > (that.value);
         break;
 
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.copy< cynth::syn::node::TypeDecl > (that.value);
-        break;
-
       case symbol_kind::S_node_type_def: // node_type_def
         value.copy< cynth::syn::node::TypeDef > (that.value);
         break;
@@ -1334,10 +1322,6 @@ namespace yy {
 
       case symbol_kind::S_node_subscript: // node_subscript
         value.move< cynth::syn::node::Subscript > (that.value);
-        break;
-
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        value.move< cynth::syn::node::TypeDecl > (that.value);
         break;
 
       case symbol_kind::S_node_type_def: // node_type_def
@@ -1882,10 +1866,6 @@ namespace yy {
         yylhs.value.emplace< int > (); // Modified.
         break;
 
-      case symbol_kind::S_node_type_decl: // node_type_decl
-        yylhs.value.emplace< int > (); // Modified.
-        break;
-
       case symbol_kind::S_node_type_def: // node_type_def
         yylhs.value.emplace< int > (); // Modified.
         break;
@@ -1953,1293 +1933,1279 @@ namespace yy {
           switch (yyn)
             {
   case 2: // start: %empty
-#line 202 "gen/parser.y"
+#line 206 "gen/parser.y"
            {
         result = {};
     }
-#line 1961 "src/parser.cpp"
+#line 1941 "src/parser.cpp"
     break;
 
   case 3: // start: stmt_list
-#line 205 "gen/parser.y"
+#line 209 "gen/parser.y"
                     {
         result = {YY_MOVE (yystack_[0].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
-#line 1969 "src/parser.cpp"
+#line 1949 "src/parser.cpp"
     break;
 
   case 4: // start: stmt_list SEMI
-#line 208 "gen/parser.y"
+#line 212 "gen/parser.y"
                          {
         result = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
-#line 1977 "src/parser.cpp"
+#line 1957 "src/parser.cpp"
     break;
 
   case 5: // cat_declaration: node_declaration
-#line 215 "gen/parser.y"
+#line 219 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::Declaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Declaration > ()); }
-#line 1983 "src/parser.cpp"
+#line 1963 "src/parser.cpp"
     break;
 
   case 6: // cat_declaration: paren_decl
-#line 216 "gen/parser.y"
+#line 220 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::Declaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Declaration > ()); }
-#line 1989 "src/parser.cpp"
+#line 1969 "src/parser.cpp"
     break;
 
   case 7: // cat_range_decl: node_range_decl
-#line 219 "gen/parser.y"
+#line 223 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::RangeDecl > ()); }
-#line 1995 "src/parser.cpp"
+#line 1975 "src/parser.cpp"
     break;
 
   case 8: // cat_range_decl: paren_range_decl
-#line 220 "gen/parser.y"
+#line 224 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::RangeDeclaration > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::RangeDeclaration > ()); }
-#line 2001 "src/parser.cpp"
+#line 1981 "src/parser.cpp"
     break;
 
   case 9: // cat_array_elem: node_range_to
-#line 223 "gen/parser.y"
+#line 227 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::RangeTo > ()); }
-#line 2007 "src/parser.cpp"
+#line 1987 "src/parser.cpp"
     break;
 
   case 10: // cat_array_elem: node_range_to_by
-#line 224 "gen/parser.y"
+#line 228 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::RangeToBy > ()); }
-#line 2013 "src/parser.cpp"
+#line 1993 "src/parser.cpp"
     break;
 
   case 11: // cat_array_elem: node_spread
-#line 225 "gen/parser.y"
+#line 229 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Spread > ()); }
-#line 2019 "src/parser.cpp"
+#line 1999 "src/parser.cpp"
     break;
 
   case 12: // cat_array_elem: cat_expression
-#line 226 "gen/parser.y"
+#line 230 "gen/parser.y"
                      { yylhs.value.as < cynth::syn::category::ArrayElement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2025 "src/parser.cpp"
+#line 2005 "src/parser.cpp"
     break;
 
   case 13: // cat_type: node_auto
-#line 229 "gen/parser.y"
+#line 233 "gen/parser.y"
                        { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Auto > ()); }
-#line 2031 "src/parser.cpp"
+#line 2011 "src/parser.cpp"
     break;
 
   case 14: // cat_type: node_type_name
-#line 230 "gen/parser.y"
+#line 234 "gen/parser.y"
                        { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeName > ()); }
-#line 2037 "src/parser.cpp"
+#line 2017 "src/parser.cpp"
     break;
 
   case 15: // cat_type: node_function_type
-#line 231 "gen/parser.y"
+#line 235 "gen/parser.y"
                        { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::FunctionType > ()); }
-#line 2043 "src/parser.cpp"
+#line 2023 "src/parser.cpp"
     break;
 
   case 16: // cat_type: node_array_type
-#line 232 "gen/parser.y"
+#line 236 "gen/parser.y"
                        { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ArrayType > ()); }
-#line 2049 "src/parser.cpp"
+#line 2029 "src/parser.cpp"
     break;
 
   case 17: // cat_type: node_buffer_type
-#line 233 "gen/parser.y"
-                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::BufferType > ()); }
-#line 2055 "src/parser.cpp"
-    break;
-
-  case 18: // cat_type: node_type_decl
-#line 234 "gen/parser.y"
-                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeDecl > ()); }
-#line 2061 "src/parser.cpp"
-    break;
-
-  case 19: // cat_type: node_const_type
-#line 235 "gen/parser.y"
-                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ConstType > ()); }
-#line 2067 "src/parser.cpp"
-    break;
-
-  case 20: // cat_type: node_in_type
-#line 236 "gen/parser.y"
-                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::InType > ()); }
-#line 2073 "src/parser.cpp"
-    break;
-
-  case 21: // cat_type: node_out_type
 #line 237 "gen/parser.y"
-                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::OutType > ()); }
-#line 2079 "src/parser.cpp"
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::BufferType > ()); }
+#line 2035 "src/parser.cpp"
     break;
 
-  case 22: // cat_type: paren_type
-#line 238 "gen/parser.y"
-                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ()); }
-#line 2085 "src/parser.cpp"
-    break;
-
-  case 23: // cat_expression: expr_or
+  case 18: // cat_type: node_const_type
 #line 241 "gen/parser.y"
-               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2091 "src/parser.cpp"
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ConstType > ()); }
+#line 2041 "src/parser.cpp"
     break;
 
-  case 24: // cat_expression: expr_right
+  case 19: // cat_type: node_in_type
 #line 242 "gen/parser.y"
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::InType > ()); }
+#line 2047 "src/parser.cpp"
+    break;
+
+  case 20: // cat_type: node_out_type
+#line 243 "gen/parser.y"
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::OutType > ()); }
+#line 2053 "src/parser.cpp"
+    break;
+
+  case 21: // cat_type: paren_type
+#line 244 "gen/parser.y"
+                       { yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ()); }
+#line 2059 "src/parser.cpp"
+    break;
+
+  case 22: // cat_expression: expr_or
+#line 247 "gen/parser.y"
                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2097 "src/parser.cpp"
+#line 2065 "src/parser.cpp"
     break;
 
-  case 25: // cat_statement: pure
-#line 245 "gen/parser.y"
-                   { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ()); }
-#line 2103 "src/parser.cpp"
+  case 23: // cat_expression: expr_right
+#line 248 "gen/parser.y"
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
+#line 2071 "src/parser.cpp"
     break;
 
-  case 26: // cat_statement: cat_expression
-#line 246 "gen/parser.y"
-                   { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2109 "src/parser.cpp"
-    break;
-
-  case 27: // pure: node_declaration
+  case 24: // cat_statement: pure
 #line 251 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Declaration > ()); }
-#line 2115 "src/parser.cpp"
+                   { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ()); }
+#line 2077 "src/parser.cpp"
     break;
 
-  case 28: // pure: node_definition
+  case 25: // cat_statement: cat_expression
 #line 252 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Definition > ()); }
-#line 2121 "src/parser.cpp"
+                   { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
+#line 2083 "src/parser.cpp"
     break;
 
-  case 29: // pure: node_assignment
-#line 253 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Assignment > ()); }
-#line 2127 "src/parser.cpp"
-    break;
-
-  case 30: // pure: node_type_def
-#line 254 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeDef > ()); }
-#line 2133 "src/parser.cpp"
-    break;
-
-  case 31: // pure: node_function_def
-#line 255 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::FunDef > ()); }
-#line 2139 "src/parser.cpp"
-    break;
-
-  case 32: // pure: node_return
-#line 256 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Return > ()); }
-#line 2145 "src/parser.cpp"
-    break;
-
-  case 33: // pure: node_if
+  case 26: // pure: node_declaration
 #line 257 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::If > ()); }
-#line 2151 "src/parser.cpp"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Declaration > ()); }
+#line 2089 "src/parser.cpp"
     break;
 
-  case 34: // pure: node_for
+  case 27: // pure: node_definition
 #line 258 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::For > ()); }
-#line 2157 "src/parser.cpp"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Definition > ()); }
+#line 2095 "src/parser.cpp"
     break;
 
-  case 35: // pure: node_while
+  case 28: // pure: node_assignment
 #line 259 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::While > ()); }
-#line 2163 "src/parser.cpp"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Assignment > ()); }
+#line 2101 "src/parser.cpp"
     break;
 
-  case 36: // pure: node_when
+  case 29: // pure: node_type_def
 #line 260 "gen/parser.y"
-                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::When > ()); }
-#line 2169 "src/parser.cpp"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeDef > ()); }
+#line 2107 "src/parser.cpp"
     break;
 
-  case 37: // expr_or: node_or
+  case 30: // pure: node_function_def
+#line 261 "gen/parser.y"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::FunDef > ()); }
+#line 2113 "src/parser.cpp"
+    break;
+
+  case 31: // pure: node_return
+#line 262 "gen/parser.y"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Return > ()); }
+#line 2119 "src/parser.cpp"
+    break;
+
+  case 32: // pure: node_if
 #line 263 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Or > ()); }
-#line 2175 "src/parser.cpp"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::If > ()); }
+#line 2125 "src/parser.cpp"
     break;
 
-  case 38: // expr_or: expr_and
+  case 33: // pure: node_for
 #line 264 "gen/parser.y"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::For > ()); }
+#line 2131 "src/parser.cpp"
+    break;
+
+  case 34: // pure: node_while
+#line 265 "gen/parser.y"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::While > ()); }
+#line 2137 "src/parser.cpp"
+    break;
+
+  case 35: // pure: node_when
+#line 266 "gen/parser.y"
+                      { yylhs.value.as < cynth::syn::category::Statement > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::When > ()); }
+#line 2143 "src/parser.cpp"
+    break;
+
+  case 36: // expr_or: node_or
+#line 269 "gen/parser.y"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Or > ()); }
+#line 2149 "src/parser.cpp"
+    break;
+
+  case 37: // expr_or: expr_and
+#line 270 "gen/parser.y"
              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2181 "src/parser.cpp"
+#line 2155 "src/parser.cpp"
     break;
 
-  case 39: // expr_and: node_and
-#line 267 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::And > ()); }
-#line 2187 "src/parser.cpp"
-    break;
-
-  case 40: // expr_and: expr_eq
-#line 268 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2193 "src/parser.cpp"
-    break;
-
-  case 41: // expr_eq: node_eq
-#line 271 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Eq > ()); }
-#line 2199 "src/parser.cpp"
-    break;
-
-  case 42: // expr_eq: node_ne
-#line 272 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Ne > ()); }
-#line 2205 "src/parser.cpp"
-    break;
-
-  case 43: // expr_eq: expr_ord
+  case 38: // expr_and: node_and
 #line 273 "gen/parser.y"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::And > ()); }
+#line 2161 "src/parser.cpp"
+    break;
+
+  case 39: // expr_and: expr_eq
+#line 274 "gen/parser.y"
              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2211 "src/parser.cpp"
+#line 2167 "src/parser.cpp"
     break;
 
-  case 44: // expr_ord: node_ge
-#line 276 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Ge > ()); }
-#line 2217 "src/parser.cpp"
-    break;
-
-  case 45: // expr_ord: node_le
+  case 40: // expr_eq: node_eq
 #line 277 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Le > ()); }
-#line 2223 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Eq > ()); }
+#line 2173 "src/parser.cpp"
     break;
 
-  case 46: // expr_ord: node_gt
+  case 41: // expr_eq: node_ne
 #line 278 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Gt > ()); }
-#line 2229 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Ne > ()); }
+#line 2179 "src/parser.cpp"
     break;
 
-  case 47: // expr_ord: node_lt
+  case 42: // expr_eq: expr_ord
 #line 279 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Lt > ()); }
-#line 2235 "src/parser.cpp"
-    break;
-
-  case 48: // expr_ord: expr_add
-#line 280 "gen/parser.y"
              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2241 "src/parser.cpp"
+#line 2185 "src/parser.cpp"
     break;
 
-  case 49: // expr_add: node_add
+  case 43: // expr_ord: node_ge
+#line 282 "gen/parser.y"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Ge > ()); }
+#line 2191 "src/parser.cpp"
+    break;
+
+  case 44: // expr_ord: node_le
 #line 283 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Add > ()); }
-#line 2247 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Le > ()); }
+#line 2197 "src/parser.cpp"
     break;
 
-  case 50: // expr_add: node_sub
+  case 45: // expr_ord: node_gt
 #line 284 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Sub > ()); }
-#line 2253 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Gt > ()); }
+#line 2203 "src/parser.cpp"
     break;
 
-  case 51: // expr_add: expr_mul
+  case 46: // expr_ord: node_lt
 #line 285 "gen/parser.y"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Lt > ()); }
+#line 2209 "src/parser.cpp"
+    break;
+
+  case 47: // expr_ord: expr_add
+#line 286 "gen/parser.y"
              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2259 "src/parser.cpp"
+#line 2215 "src/parser.cpp"
     break;
 
-  case 52: // expr_mul: node_mul
-#line 288 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Mul > ()); }
-#line 2265 "src/parser.cpp"
-    break;
-
-  case 53: // expr_mul: node_div
+  case 48: // expr_add: node_add
 #line 289 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Div > ()); }
-#line 2271 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Add > ()); }
+#line 2221 "src/parser.cpp"
     break;
 
-  case 54: // expr_mul: node_mod
+  case 49: // expr_add: node_sub
 #line 290 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Mod > ()); }
-#line 2277 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Sub > ()); }
+#line 2227 "src/parser.cpp"
     break;
 
-  case 55: // expr_mul: expr_pow
+  case 50: // expr_add: expr_mul
 #line 291 "gen/parser.y"
              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2283 "src/parser.cpp"
+#line 2233 "src/parser.cpp"
     break;
 
-  case 56: // expr_pow: node_pow
+  case 51: // expr_mul: node_mul
 #line 294 "gen/parser.y"
-             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Pow > ()); }
-#line 2289 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Mul > ()); }
+#line 2239 "src/parser.cpp"
     break;
 
-  case 57: // expr_pow: expr_pre
+  case 52: // expr_mul: node_div
 #line 295 "gen/parser.y"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Div > ()); }
+#line 2245 "src/parser.cpp"
+    break;
+
+  case 53: // expr_mul: node_mod
+#line 296 "gen/parser.y"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Mod > ()); }
+#line 2251 "src/parser.cpp"
+    break;
+
+  case 54: // expr_mul: expr_pow
+#line 297 "gen/parser.y"
              { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2295 "src/parser.cpp"
+#line 2257 "src/parser.cpp"
     break;
 
-  case 58: // expr_pre: node_minus
-#line 298 "gen/parser.y"
-               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Minus > ()); }
-#line 2301 "src/parser.cpp"
-    break;
-
-  case 59: // expr_pre: node_plus
-#line 299 "gen/parser.y"
-               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Plus > ()); }
-#line 2307 "src/parser.cpp"
-    break;
-
-  case 60: // expr_pre: node_not
+  case 55: // expr_pow: node_pow
 #line 300 "gen/parser.y"
-               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Not > ()); }
-#line 2313 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Pow > ()); }
+#line 2263 "src/parser.cpp"
     break;
 
-  case 61: // expr_pre: expr_post
+  case 56: // expr_pow: expr_pre
 #line 301 "gen/parser.y"
-               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2319 "src/parser.cpp"
+             { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
+#line 2269 "src/parser.cpp"
     break;
 
-  case 62: // expr_post: node_application
+  case 57: // expr_pre: node_minus
 #line 304 "gen/parser.y"
-                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Application > ()); }
-#line 2325 "src/parser.cpp"
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Minus > ()); }
+#line 2275 "src/parser.cpp"
     break;
 
-  case 63: // expr_post: node_conversion
+  case 58: // expr_pre: node_plus
 #line 305 "gen/parser.y"
-                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Conversion > ()); }
-#line 2331 "src/parser.cpp"
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Plus > ()); }
+#line 2281 "src/parser.cpp"
     break;
 
-  case 64: // expr_post: node_subscript
+  case 59: // expr_pre: node_not
 #line 306 "gen/parser.y"
-                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Subscript > ()); }
-#line 2337 "src/parser.cpp"
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Not > ()); }
+#line 2287 "src/parser.cpp"
     break;
 
-  case 65: // expr_post: expr_atom
+  case 60: // expr_pre: expr_post
 #line 307 "gen/parser.y"
-                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2343 "src/parser.cpp"
+               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
+#line 2293 "src/parser.cpp"
     break;
 
-  case 66: // expr_atom: node_name
+  case 61: // expr_post: node_application
 #line 310 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Name > ()); }
-#line 2349 "src/parser.cpp"
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Application > ()); }
+#line 2299 "src/parser.cpp"
     break;
 
-  case 67: // expr_atom: node_bool
+  case 62: // expr_post: node_conversion
 #line 311 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Bool > ()); }
-#line 2355 "src/parser.cpp"
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Conversion > ()); }
+#line 2305 "src/parser.cpp"
     break;
 
-  case 68: // expr_atom: node_int
+  case 63: // expr_post: node_subscript
 #line 312 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Int > ()); }
-#line 2361 "src/parser.cpp"
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Subscript > ()); }
+#line 2311 "src/parser.cpp"
     break;
 
-  case 69: // expr_atom: node_float
+  case 64: // expr_post: expr_atom
 #line 313 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Float > ()); }
-#line 2367 "src/parser.cpp"
+                     { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
+#line 2317 "src/parser.cpp"
     break;
 
-  case 70: // expr_atom: node_string
-#line 314 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::String > ()); }
-#line 2373 "src/parser.cpp"
-    break;
-
-  case 71: // expr_atom: node_block
-#line 315 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Block > ()); }
-#line 2379 "src/parser.cpp"
-    break;
-
-  case 72: // expr_atom: node_array
+  case 65: // expr_atom: node_name
 #line 316 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Array > ()); }
-#line 2385 "src/parser.cpp"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Name > ()); }
+#line 2323 "src/parser.cpp"
     break;
 
-  case 73: // expr_atom: paren_expr
+  case 66: // expr_atom: node_bool
 #line 317 "gen/parser.y"
-                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2391 "src/parser.cpp"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Bool > ()); }
+#line 2329 "src/parser.cpp"
     break;
 
-  case 74: // expr_right: node_expr_if
+  case 67: // expr_atom: node_int
+#line 318 "gen/parser.y"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Int > ()); }
+#line 2335 "src/parser.cpp"
+    break;
+
+  case 68: // expr_atom: node_float
+#line 319 "gen/parser.y"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Float > ()); }
+#line 2341 "src/parser.cpp"
+    break;
+
+  case 69: // expr_atom: node_string
 #line 320 "gen/parser.y"
-                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ExprIf > ()); }
-#line 2397 "src/parser.cpp"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::String > ()); }
+#line 2347 "src/parser.cpp"
     break;
 
-  case 75: // expr_right: node_expr_for
+  case 70: // expr_atom: node_block
 #line 321 "gen/parser.y"
-                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ExprFor > ()); }
-#line 2403 "src/parser.cpp"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Block > ()); }
+#line 2353 "src/parser.cpp"
     break;
 
-  case 76: // expr_right: node_function
+  case 71: // expr_atom: node_array
 #line 322 "gen/parser.y"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Array > ()); }
+#line 2359 "src/parser.cpp"
+    break;
+
+  case 72: // expr_atom: paren_expr
+#line 323 "gen/parser.y"
+                { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
+#line 2365 "src/parser.cpp"
+    break;
+
+  case 73: // expr_right: node_expr_if
+#line 326 "gen/parser.y"
+                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ExprIf > ()); }
+#line 2371 "src/parser.cpp"
+    break;
+
+  case 74: // expr_right: node_expr_for
+#line 327 "gen/parser.y"
+                  { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::ExprFor > ()); }
+#line 2377 "src/parser.cpp"
+    break;
+
+  case 75: // expr_right: node_function
+#line 328 "gen/parser.y"
                   { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Function > ()); }
-#line 2409 "src/parser.cpp"
+#line 2383 "src/parser.cpp"
     break;
 
-  case 77: // expr_assgn_target: expr_post
-#line 325 "gen/parser.y"
+  case 76: // expr_assgn_target: expr_post
+#line 331 "gen/parser.y"
               { yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()); }
-#line 2415 "src/parser.cpp"
+#line 2389 "src/parser.cpp"
     break;
 
-  case 78: // paren_type: OPAREN cat_type CPAREN
-#line 330 "gen/parser.y"
+  case 77: // paren_type: OPAREN cat_type CPAREN
+#line 336 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::category::Type > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ());
     }
-#line 2423 "src/parser.cpp"
+#line 2397 "src/parser.cpp"
     break;
 
-  case 79: // paren_type: OPAREN type_list CPAREN
-#line 333 "gen/parser.y"
+  case 78: // paren_type: OPAREN type_list CPAREN
+#line 339 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Type> > ())};
     }
-#line 2431 "src/parser.cpp"
+#line 2405 "src/parser.cpp"
     break;
 
-  case 80: // paren_type: OPAREN type_list COMMA CPAREN
-#line 336 "gen/parser.y"
+  case 79: // paren_type: OPAREN type_list COMMA CPAREN
+#line 342 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Type> > ())};
     }
-#line 2439 "src/parser.cpp"
+#line 2413 "src/parser.cpp"
     break;
 
-  case 81: // void_type: OPAREN CPAREN
-#line 341 "gen/parser.y"
+  case 80: // void_type: OPAREN CPAREN
+#line 347 "gen/parser.y"
                   {
         yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{};
     }
-#line 2447 "src/parser.cpp"
+#line 2421 "src/parser.cpp"
     break;
 
-  case 82: // void_type: VOID
-#line 344 "gen/parser.y"
+  case 81: // void_type: VOID
+#line 350 "gen/parser.y"
          {
         yylhs.value.as < cynth::syn::category::Type > () = cynth::syn::node::TupleType{};
     }
-#line 2455 "src/parser.cpp"
+#line 2429 "src/parser.cpp"
     break;
 
-  case 83: // node_auto: AUTO
-#line 349 "gen/parser.y"
+  case 82: // node_auto: AUTO
+#line 355 "gen/parser.y"
          {
         yylhs.value.as < cynth::syn::node::Auto > () = {};
     }
-#line 2463 "src/parser.cpp"
+#line 2437 "src/parser.cpp"
     break;
 
-  case 84: // node_type_name: TYPENAME
-#line 354 "gen/parser.y"
+  case 83: // node_type_name: TYPENAME
+#line 360 "gen/parser.y"
                    {
         yylhs.value.as < cynth::syn::node::TypeName > () = {YY_MOVE (yystack_[0].value.as < std::string > ())};
     }
-#line 2471 "src/parser.cpp"
+#line 2445 "src/parser.cpp"
     break;
 
-  case 85: // node_const_type: cat_type CONST
-#line 359 "gen/parser.y"
+  case 84: // node_const_type: cat_type CONST
+#line 365 "gen/parser.y"
                          {
         yylhs.value.as < cynth::syn::node::ConstType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
-#line 2479 "src/parser.cpp"
+#line 2453 "src/parser.cpp"
     break;
 
-  case 86: // node_in_type: cat_type IN
-#line 364 "gen/parser.y"
+  case 85: // node_in_type: cat_type IN
+#line 370 "gen/parser.y"
                       {
         yylhs.value.as < cynth::syn::node::InType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
-#line 2487 "src/parser.cpp"
+#line 2461 "src/parser.cpp"
     break;
 
-  case 87: // node_out_type: cat_type OUT
-#line 369 "gen/parser.y"
+  case 86: // node_out_type: cat_type OUT
+#line 375 "gen/parser.y"
                        {
         yylhs.value.as < cynth::syn::node::OutType > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
-#line 2495 "src/parser.cpp"
+#line 2469 "src/parser.cpp"
     break;
 
-  case 88: // node_function_type: cat_type paren_type
-#line 374 "gen/parser.y"
+  case 87: // node_function_type: cat_type paren_type
+#line 380 "gen/parser.y"
                                  {
         yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
-#line 2503 "src/parser.cpp"
+#line 2477 "src/parser.cpp"
     break;
 
-  case 89: // node_function_type: void_type paren_type
-#line 377 "gen/parser.y"
+  case 88: // node_function_type: void_type paren_type
+#line 383 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
-#line 2511 "src/parser.cpp"
+#line 2485 "src/parser.cpp"
     break;
 
-  case 90: // node_function_type: cat_type void_type
-#line 380 "gen/parser.y"
+  case 89: // node_function_type: cat_type void_type
+#line 386 "gen/parser.y"
                                 {
         yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
-#line 2519 "src/parser.cpp"
+#line 2493 "src/parser.cpp"
     break;
 
-  case 91: // node_function_type: void_type void_type
-#line 383 "gen/parser.y"
+  case 90: // node_function_type: void_type void_type
+#line 389 "gen/parser.y"
                                  {
         yylhs.value.as < cynth::syn::node::FunctionType > () = {.output = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
-#line 2527 "src/parser.cpp"
+#line 2501 "src/parser.cpp"
     break;
 
-  case 92: // node_array_type: cat_type OBRACK cat_expression CBRACK
-#line 388 "gen/parser.y"
+  case 91: // node_array_type: cat_type OBRACK cat_expression CBRACK
+#line 394 "gen/parser.y"
                                                       {
         yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .size = cynth::syn::category::Pattern{YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ())}};
     }
-#line 2535 "src/parser.cpp"
+#line 2509 "src/parser.cpp"
     break;
 
-  case 93: // node_array_type: cat_type OBRACK AUTO CBRACK
-#line 391 "gen/parser.y"
+  case 92: // node_array_type: cat_type OBRACK AUTO CBRACK
+#line 397 "gen/parser.y"
                                       {
         yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .size = esl::optional_component<cynth::syn::category::Pattern>{}};
     }
-#line 2543 "src/parser.cpp"
+#line 2517 "src/parser.cpp"
     break;
 
-  case 94: // node_array_type: cat_type OBRACK CBRACK
-#line 394 "gen/parser.y"
+  case 93: // node_array_type: cat_type OBRACK CBRACK
+#line 400 "gen/parser.y"
                                  {
         yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Type > ()), .size = esl::optional_component<cynth::syn::category::Pattern>{}};
     }
-#line 2551 "src/parser.cpp"
+#line 2525 "src/parser.cpp"
     break;
 
-  case 95: // node_array_type: cat_type OBRACK cat_declaration CBRACK
-#line 397 "gen/parser.y"
+  case 94: // node_array_type: cat_type OBRACK cat_declaration CBRACK
+#line 403 "gen/parser.y"
                                                             {
         yylhs.value.as < cynth::syn::node::ArrayType > () = {.type = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .size = cynth::syn::category::Pattern{YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ())}};
     }
-#line 2559 "src/parser.cpp"
+#line 2533 "src/parser.cpp"
     break;
 
-  case 96: // node_buffer_type: BUFFER OBRACK cat_expression CBRACK
-#line 402 "gen/parser.y"
+  case 95: // node_buffer_type: BUFFER OBRACK cat_expression CBRACK
+#line 408 "gen/parser.y"
                                               {
         yylhs.value.as < cynth::syn::node::BufferType > () = {.size = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2567 "src/parser.cpp"
+#line 2541 "src/parser.cpp"
     break;
 
-  case 97: // node_type_decl: TYPE node_type_name
-#line 407 "gen/parser.y"
-                              {
-        yylhs.value.as < cynth::syn::node::TypeDecl > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::node::TypeName > ())};
-    }
-#line 2575 "src/parser.cpp"
-    break;
-
-  case 98: // paren_range_decl: OPAREN cat_range_decl CPAREN
-#line 414 "gen/parser.y"
+  case 96: // paren_range_decl: OPAREN cat_range_decl CPAREN
+#line 422 "gen/parser.y"
                                          {
         yylhs.value.as < cynth::syn::category::RangeDeclaration > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::RangeDeclaration > ());
     }
-#line 2583 "src/parser.cpp"
+#line 2549 "src/parser.cpp"
     break;
 
-  case 99: // paren_range_decl: OPAREN range_decl_list CPAREN
-#line 417 "gen/parser.y"
+  case 97: // paren_range_decl: OPAREN range_decl_list CPAREN
+#line 425 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::category::RangeDeclaration > () = cynth::syn::node::TupleRangeDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > ())};
     }
-#line 2591 "src/parser.cpp"
+#line 2557 "src/parser.cpp"
     break;
 
-  case 100: // paren_range_decl: OPAREN range_decl_list COMMA CPAREN
-#line 420 "gen/parser.y"
+  case 98: // paren_range_decl: OPAREN range_decl_list COMMA CPAREN
+#line 428 "gen/parser.y"
                                               {
         yylhs.value.as < cynth::syn::category::RangeDeclaration > () = cynth::syn::node::TupleRangeDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > ())};
     }
-#line 2599 "src/parser.cpp"
+#line 2565 "src/parser.cpp"
     break;
 
-  case 101: // paren_decl: OPAREN cat_declaration CPAREN
-#line 425 "gen/parser.y"
+  case 99: // paren_decl: OPAREN cat_declaration CPAREN
+#line 433 "gen/parser.y"
                                           {
         yylhs.value.as < cynth::syn::category::Declaration > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ());
     }
-#line 2607 "src/parser.cpp"
+#line 2573 "src/parser.cpp"
     break;
 
-  case 102: // paren_decl: OPAREN decl_list CPAREN
-#line 428 "gen/parser.y"
+  case 100: // paren_decl: OPAREN decl_list CPAREN
+#line 436 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::category::Declaration > () = cynth::syn::node::TupleDecl{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Declaration> > ())};
     }
-#line 2615 "src/parser.cpp"
+#line 2581 "src/parser.cpp"
     break;
 
-  case 103: // paren_decl: OPAREN decl_list COMMA CPAREN
-#line 431 "gen/parser.y"
+  case 101: // paren_decl: OPAREN decl_list COMMA CPAREN
+#line 439 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::category::Declaration > () = cynth::syn::node::TupleDecl{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Declaration> > ())};
     }
-#line 2623 "src/parser.cpp"
+#line 2589 "src/parser.cpp"
     break;
 
-  case 104: // void_decl: OPAREN CPAREN
-#line 436 "gen/parser.y"
+  case 102: // void_decl: OPAREN CPAREN
+#line 444 "gen/parser.y"
                   {
         yylhs.value.as < cynth::syn::category::Declaration > () = cynth::syn::node::TupleDecl{};
     }
-#line 2631 "src/parser.cpp"
+#line 2597 "src/parser.cpp"
     break;
 
-  case 105: // node_declaration: cat_type node_name
-#line 441 "gen/parser.y"
+  case 103: // node_declaration: cat_type node_name
+#line 449 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::Declaration > () = {.name = YY_MOVE (yystack_[0].value.as < cynth::syn::node::Name > ()), .type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ())};
     }
-#line 2639 "src/parser.cpp"
+#line 2605 "src/parser.cpp"
     break;
 
-  case 106: // node_range_decl: cat_declaration IN cat_expression
-#line 446 "gen/parser.y"
+  case 104: // node_range_decl: cat_declaration IN cat_expression
+#line 454 "gen/parser.y"
                                                    {
         yylhs.value.as < cynth::syn::node::RangeDecl > () = {.declaration = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Declaration > ()), .range = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2647 "src/parser.cpp"
+#line 2613 "src/parser.cpp"
     break;
 
-  case 107: // node_range_to: cat_expression TO cat_expression
-#line 453 "gen/parser.y"
+  case 105: // node_range_to: cat_expression TO cat_expression
+#line 461 "gen/parser.y"
                                                {
         yylhs.value.as < cynth::syn::node::RangeTo > () = {.from = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .to = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2655 "src/parser.cpp"
+#line 2621 "src/parser.cpp"
     break;
 
-  case 108: // node_range_to_by: cat_expression TO cat_expression BY cat_expression
-#line 458 "gen/parser.y"
+  case 106: // node_range_to_by: cat_expression TO cat_expression BY cat_expression
+#line 466 "gen/parser.y"
                                                                      {
         yylhs.value.as < cynth::syn::node::RangeToBy > () = {.from = YY_MOVE (yystack_[4].value.as < cynth::syn::category::Expression > ()), .to = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .by = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2663 "src/parser.cpp"
+#line 2629 "src/parser.cpp"
     break;
 
-  case 109: // node_spread: ELIP cat_expression
-#line 463 "gen/parser.y"
+  case 107: // node_spread: ELIP cat_expression
+#line 471 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::Spread > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2671 "src/parser.cpp"
+#line 2637 "src/parser.cpp"
     break;
 
-  case 110: // paren_expr: OPAREN cat_expression CPAREN
-#line 470 "gen/parser.y"
+  case 108: // paren_expr: OPAREN cat_expression CPAREN
+#line 478 "gen/parser.y"
                                          {
         yylhs.value.as < cynth::syn::category::Expression > () = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ());
     }
-#line 2679 "src/parser.cpp"
+#line 2645 "src/parser.cpp"
     break;
 
-  case 111: // paren_expr: OPAREN expr_list CPAREN
-#line 473 "gen/parser.y"
+  case 109: // paren_expr: OPAREN expr_list CPAREN
+#line 481 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::category::Expression > () = cynth::syn::node::Tuple{YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Expression> > ())};
     }
-#line 2687 "src/parser.cpp"
+#line 2653 "src/parser.cpp"
     break;
 
-  case 112: // paren_expr: OPAREN expr_list COMMA CPAREN
-#line 476 "gen/parser.y"
+  case 110: // paren_expr: OPAREN expr_list COMMA CPAREN
+#line 484 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::category::Expression > () = cynth::syn::node::Tuple{YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Expression> > ())};
     }
-#line 2695 "src/parser.cpp"
+#line 2661 "src/parser.cpp"
     break;
 
-  case 113: // void: OPAREN CPAREN
-#line 481 "gen/parser.y"
+  case 111: // void: OPAREN CPAREN
+#line 489 "gen/parser.y"
                   {
         yylhs.value.as < cynth::syn::category::Expression > () = cynth::syn::node::Tuple{};
     }
-#line 2703 "src/parser.cpp"
+#line 2669 "src/parser.cpp"
     break;
 
-  case 114: // node_name: NAME
-#line 486 "gen/parser.y"
+  case 112: // node_name: NAME
+#line 494 "gen/parser.y"
                {
         yylhs.value.as < cynth::syn::node::Name > () = {YY_MOVE (yystack_[0].value.as < std::string > ())};
     }
-#line 2711 "src/parser.cpp"
+#line 2677 "src/parser.cpp"
     break;
 
-  case 115: // node_block: OBRACE CBRACE
-#line 491 "gen/parser.y"
+  case 113: // node_block: OBRACE CBRACE
+#line 499 "gen/parser.y"
                   {
         yylhs.value.as < cynth::syn::node::Block > () = {};
     }
-#line 2719 "src/parser.cpp"
+#line 2685 "src/parser.cpp"
     break;
 
-  case 116: // node_block: OBRACE stmt_list CBRACE
-#line 494 "gen/parser.y"
+  case 114: // node_block: OBRACE stmt_list CBRACE
+#line 502 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::node::Block > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
-#line 2727 "src/parser.cpp"
+#line 2693 "src/parser.cpp"
     break;
 
-  case 117: // node_block: OBRACE stmt_list SEMI CBRACE
-#line 497 "gen/parser.y"
+  case 115: // node_block: OBRACE stmt_list SEMI CBRACE
+#line 505 "gen/parser.y"
                                        {
         yylhs.value.as < cynth::syn::node::Block > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Statement> > ())};
     }
-#line 2735 "src/parser.cpp"
+#line 2701 "src/parser.cpp"
     break;
 
-  case 118: // node_bool: TRUE
-#line 504 "gen/parser.y"
+  case 116: // node_bool: TRUE
+#line 512 "gen/parser.y"
          {
         yylhs.value.as < cynth::syn::node::Bool > () = {true};
     }
-#line 2743 "src/parser.cpp"
+#line 2709 "src/parser.cpp"
     break;
 
-  case 119: // node_bool: FALSE
-#line 507 "gen/parser.y"
+  case 117: // node_bool: FALSE
+#line 515 "gen/parser.y"
           {
         yylhs.value.as < cynth::syn::node::Bool > () = {false};
     }
-#line 2751 "src/parser.cpp"
+#line 2717 "src/parser.cpp"
     break;
 
-  case 120: // node_int: INT
-#line 512 "gen/parser.y"
+  case 118: // node_int: INT
+#line 520 "gen/parser.y"
         {
         yylhs.value.as < cynth::syn::node::Int > () = {esl::stoi<cynth::sem::Integral>(YY_MOVE (yystack_[0].value.as < std::string > ()))}; // TODO: The sem::Integral type should be obtainable from syn::node::Int
     }
-#line 2759 "src/parser.cpp"
+#line 2725 "src/parser.cpp"
     break;
 
-  case 121: // node_float: FLOAT
-#line 517 "gen/parser.y"
+  case 119: // node_float: FLOAT
+#line 525 "gen/parser.y"
           {
         yylhs.value.as < cynth::syn::node::Float > () = {std::stof(YY_MOVE (yystack_[0].value.as < std::string > ()))};
     }
-#line 2767 "src/parser.cpp"
+#line 2733 "src/parser.cpp"
     break;
 
-  case 122: // node_string: STRING
-#line 522 "gen/parser.y"
+  case 120: // node_string: STRING
+#line 530 "gen/parser.y"
            {
         yylhs.value.as < cynth::syn::node::String > () = {esl::trim(YY_MOVE (yystack_[0].value.as < std::string > ()))};
     }
-#line 2775 "src/parser.cpp"
+#line 2741 "src/parser.cpp"
     break;
 
-  case 123: // node_function: cat_type FN paren_decl cat_expression
-#line 527 "gen/parser.y"
+  case 121: // node_function: cat_type FN paren_decl cat_expression
+#line 535 "gen/parser.y"
                                                          {
         yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2783 "src/parser.cpp"
+#line 2749 "src/parser.cpp"
     break;
 
-  case 124: // node_function: void_type FN paren_decl cat_expression
-#line 530 "gen/parser.y"
+  case 122: // node_function: void_type FN paren_decl cat_expression
+#line 538 "gen/parser.y"
                                                           {
         yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2791 "src/parser.cpp"
+#line 2757 "src/parser.cpp"
     break;
 
-  case 125: // node_function: cat_type FN void_decl cat_expression
-#line 533 "gen/parser.y"
+  case 123: // node_function: cat_type FN void_decl cat_expression
+#line 541 "gen/parser.y"
                                                         {
         yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2799 "src/parser.cpp"
+#line 2765 "src/parser.cpp"
     break;
 
-  case 126: // node_function: void_type FN void_decl cat_expression
-#line 536 "gen/parser.y"
+  case 124: // node_function: void_type FN void_decl cat_expression
+#line 544 "gen/parser.y"
                                                          {
         yylhs.value.as < cynth::syn::node::Function > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2807 "src/parser.cpp"
+#line 2773 "src/parser.cpp"
     break;
 
-  case 127: // node_array: OBRACK CBRACK
-#line 541 "gen/parser.y"
+  case 125: // node_array: OBRACK CBRACK
+#line 549 "gen/parser.y"
                   {
         yylhs.value.as < cynth::syn::node::Array > () = {};
     }
-#line 2815 "src/parser.cpp"
+#line 2781 "src/parser.cpp"
     break;
 
-  case 128: // node_array: OBRACK array_elem_list CBRACK
-#line 544 "gen/parser.y"
+  case 126: // node_array: OBRACK array_elem_list CBRACK
+#line 552 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::node::Array > () = {YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ())};
     }
-#line 2823 "src/parser.cpp"
+#line 2789 "src/parser.cpp"
     break;
 
-  case 129: // node_array: OBRACK array_elem_list SEMI CBRACK
-#line 547 "gen/parser.y"
+  case 127: // node_array: OBRACK array_elem_list SEMI CBRACK
+#line 555 "gen/parser.y"
                                              {
         yylhs.value.as < cynth::syn::node::Array > () = {YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ())};
     }
-#line 2831 "src/parser.cpp"
+#line 2797 "src/parser.cpp"
     break;
 
-  case 130: // node_or: expr_or OR expr_and
-#line 554 "gen/parser.y"
+  case 128: // node_or: expr_or OR expr_and
+#line 562 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::node::Or > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2839 "src/parser.cpp"
+#line 2805 "src/parser.cpp"
     break;
 
-  case 131: // node_and: expr_and AND expr_eq
-#line 559 "gen/parser.y"
+  case 129: // node_and: expr_and AND expr_eq
+#line 567 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::And > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2847 "src/parser.cpp"
+#line 2813 "src/parser.cpp"
     break;
 
-  case 132: // node_eq: expr_eq EQ expr_ord
-#line 564 "gen/parser.y"
+  case 130: // node_eq: expr_eq EQ expr_ord
+#line 572 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::node::Eq > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2855 "src/parser.cpp"
+#line 2821 "src/parser.cpp"
     break;
 
-  case 133: // node_ne: expr_eq NE expr_ord
-#line 569 "gen/parser.y"
+  case 131: // node_ne: expr_eq NE expr_ord
+#line 577 "gen/parser.y"
                                   {
         yylhs.value.as < cynth::syn::node::Ne > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2863 "src/parser.cpp"
+#line 2829 "src/parser.cpp"
     break;
 
-  case 134: // node_ge: expr_ord GE expr_add
-#line 574 "gen/parser.y"
+  case 132: // node_ge: expr_ord GE expr_add
+#line 582 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::Ge > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2871 "src/parser.cpp"
+#line 2837 "src/parser.cpp"
     break;
 
-  case 135: // node_le: expr_ord LE expr_add
-#line 579 "gen/parser.y"
+  case 133: // node_le: expr_ord LE expr_add
+#line 587 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::Le > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2879 "src/parser.cpp"
+#line 2845 "src/parser.cpp"
     break;
 
-  case 136: // node_gt: expr_ord GT expr_add
-#line 584 "gen/parser.y"
+  case 134: // node_gt: expr_ord GT expr_add
+#line 592 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::Gt > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2887 "src/parser.cpp"
+#line 2853 "src/parser.cpp"
     break;
 
-  case 137: // node_lt: expr_ord LT expr_add
-#line 589 "gen/parser.y"
+  case 135: // node_lt: expr_ord LT expr_add
+#line 597 "gen/parser.y"
                                    {
         yylhs.value.as < cynth::syn::node::Lt > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2895 "src/parser.cpp"
+#line 2861 "src/parser.cpp"
     break;
 
-  case 138: // node_add: expr_add ADD expr_mul
-#line 594 "gen/parser.y"
+  case 136: // node_add: expr_add ADD expr_mul
+#line 602 "gen/parser.y"
                                     {
         yylhs.value.as < cynth::syn::node::Add > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2903 "src/parser.cpp"
+#line 2869 "src/parser.cpp"
     break;
 
-  case 139: // node_sub: expr_add SUB expr_mul
-#line 599 "gen/parser.y"
+  case 137: // node_sub: expr_add SUB expr_mul
+#line 607 "gen/parser.y"
                                     {
         yylhs.value.as < cynth::syn::node::Sub > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2911 "src/parser.cpp"
+#line 2877 "src/parser.cpp"
     break;
 
-  case 140: // node_mul: expr_mul MUL expr_pow
-#line 604 "gen/parser.y"
+  case 138: // node_mul: expr_mul MUL expr_pow
+#line 612 "gen/parser.y"
                                     {
         yylhs.value.as < cynth::syn::node::Mul > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2919 "src/parser.cpp"
+#line 2885 "src/parser.cpp"
     break;
 
-  case 141: // node_div: expr_mul DIV expr_pow
-#line 609 "gen/parser.y"
+  case 139: // node_div: expr_mul DIV expr_pow
+#line 617 "gen/parser.y"
                                     {
         yylhs.value.as < cynth::syn::node::Div > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2927 "src/parser.cpp"
+#line 2893 "src/parser.cpp"
     break;
 
-  case 142: // node_mod: expr_mul MOD expr_pow
-#line 614 "gen/parser.y"
+  case 140: // node_mod: expr_mul MOD expr_pow
+#line 622 "gen/parser.y"
                                     {
         yylhs.value.as < cynth::syn::node::Mod > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2935 "src/parser.cpp"
+#line 2901 "src/parser.cpp"
     break;
 
-  case 143: // node_pow: expr_pre POW expr_pow
-#line 619 "gen/parser.y"
+  case 141: // node_pow: expr_pre POW expr_pow
+#line 627 "gen/parser.y"
                                     {
         yylhs.value.as < cynth::syn::node::Pow > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2943 "src/parser.cpp"
+#line 2909 "src/parser.cpp"
     break;
 
-  case 144: // node_minus: SUB expr_pre
-#line 624 "gen/parser.y"
+  case 142: // node_minus: SUB expr_pre
+#line 632 "gen/parser.y"
                       {
         yylhs.value.as < cynth::syn::node::Minus > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2951 "src/parser.cpp"
+#line 2917 "src/parser.cpp"
     break;
 
-  case 145: // node_plus: ADD expr_pre
-#line 629 "gen/parser.y"
+  case 143: // node_plus: ADD expr_pre
+#line 637 "gen/parser.y"
                       {
         yylhs.value.as < cynth::syn::node::Plus > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2959 "src/parser.cpp"
+#line 2925 "src/parser.cpp"
     break;
 
-  case 146: // node_not: NOT expr_pre
-#line 634 "gen/parser.y"
+  case 144: // node_not: NOT expr_pre
+#line 642 "gen/parser.y"
                       {
         yylhs.value.as < cynth::syn::node::Not > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2967 "src/parser.cpp"
+#line 2933 "src/parser.cpp"
     break;
 
-  case 147: // node_application: expr_post paren_expr
-#line 639 "gen/parser.y"
+  case 145: // node_application: expr_post paren_expr
+#line 647 "gen/parser.y"
                                               {
         yylhs.value.as < cynth::syn::node::Application > () = {.function = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .arguments = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2975 "src/parser.cpp"
+#line 2941 "src/parser.cpp"
     break;
 
-  case 148: // node_application: expr_post void
-#line 642 "gen/parser.y"
+  case 146: // node_application: expr_post void
+#line 650 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::node::Application > () = {.function = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .arguments = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2983 "src/parser.cpp"
+#line 2949 "src/parser.cpp"
     break;
 
-  case 149: // node_conversion: cat_type paren_expr
-#line 647 "gen/parser.y"
+  case 147: // node_conversion: cat_type paren_expr
+#line 655 "gen/parser.y"
                                         {
         yylhs.value.as < cynth::syn::node::Conversion > () = {.type = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Type > ()), .argument = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 2991 "src/parser.cpp"
+#line 2957 "src/parser.cpp"
     break;
 
-  case 150: // node_subscript: expr_post OBRACK array_elem_list CBRACK
-#line 652 "gen/parser.y"
+  case 148: // node_subscript: expr_post OBRACK array_elem_list CBRACK
+#line 660 "gen/parser.y"
                                                                  {
         yylhs.value.as < cynth::syn::node::Subscript > () = {.container = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .location = YY_MOVE (yystack_[1].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ())};
     }
-#line 2999 "src/parser.cpp"
+#line 2965 "src/parser.cpp"
     break;
 
-  case 151: // node_subscript: expr_post OBRACK CBRACK
-#line 655 "gen/parser.y"
+  case 149: // node_subscript: expr_post OBRACK CBRACK
+#line 663 "gen/parser.y"
                                        {
         yylhs.value.as < cynth::syn::node::Subscript > () = {.container = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .location = {}};
     }
-#line 3007 "src/parser.cpp"
+#line 2973 "src/parser.cpp"
     break;
 
-  case 152: // node_expr_if: IF paren_expr cat_expression ELSE cat_expression
-#line 660 "gen/parser.y"
+  case 150: // node_expr_if: IF paren_expr cat_expression ELSE cat_expression
+#line 668 "gen/parser.y"
                                                                      {
-        yylhs.value.as < cynth::syn::node::ExprIf > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
+        yylhs.value.as < cynth::syn::node::ExprIf > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .positiveBranch = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .negativeBranch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3015 "src/parser.cpp"
+#line 2981 "src/parser.cpp"
     break;
 
-  case 153: // node_expr_for: FOR paren_range_decl cat_expression
-#line 665 "gen/parser.y"
+  case 151: // node_expr_for: FOR paren_range_decl cat_expression
+#line 673 "gen/parser.y"
                                                     {
         yylhs.value.as < cynth::syn::node::ExprFor > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::syn::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3023 "src/parser.cpp"
+#line 2989 "src/parser.cpp"
     break;
 
-  case 154: // node_definition: cat_declaration ASSGN cat_expression
-#line 672 "gen/parser.y"
+  case 152: // node_definition: cat_declaration ASSGN cat_expression
+#line 680 "gen/parser.y"
                                                       {
         yylhs.value.as < cynth::syn::node::Definition > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Declaration > ()), .value = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3031 "src/parser.cpp"
+#line 2997 "src/parser.cpp"
     break;
 
-  case 155: // node_assignment: expr_assgn_target ASSGN cat_expression
-#line 677 "gen/parser.y"
+  case 153: // node_assignment: expr_assgn_target ASSGN cat_expression
+#line 685 "gen/parser.y"
                                                         {
         yylhs.value.as < cynth::syn::node::Assignment > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), .value = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3039 "src/parser.cpp"
+#line 3005 "src/parser.cpp"
     break;
 
-  case 156: // node_type_def: TYPE node_type_name ASSGN cat_type
-#line 682 "gen/parser.y"
+  case 154: // node_type_def: TYPE node_type_name ASSGN cat_type
+#line 690 "gen/parser.y"
                                                      {
         yylhs.value.as < cynth::syn::node::TypeDef > () = {.target = YY_MOVE (yystack_[2].value.as < cynth::syn::node::TypeName > ()), .type = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
-#line 3047 "src/parser.cpp"
+#line 3013 "src/parser.cpp"
     break;
 
-  case 157: // node_function_def: cat_type node_name paren_decl cat_expression
-#line 687 "gen/parser.y"
+  case 155: // node_function_def: cat_type node_name paren_decl cat_expression
+#line 695 "gen/parser.y"
                                                                       {
         yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3055 "src/parser.cpp"
+#line 3021 "src/parser.cpp"
     break;
 
-  case 158: // node_function_def: void_type node_name paren_decl cat_expression
-#line 690 "gen/parser.y"
+  case 156: // node_function_def: void_type node_name paren_decl cat_expression
+#line 698 "gen/parser.y"
                                                                        {
         yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3063 "src/parser.cpp"
+#line 3029 "src/parser.cpp"
     break;
 
-  case 159: // node_function_def: cat_type node_name void_decl cat_expression
-#line 693 "gen/parser.y"
+  case 157: // node_function_def: cat_type node_name void_decl cat_expression
+#line 701 "gen/parser.y"
                                                                      {
         yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3071 "src/parser.cpp"
+#line 3037 "src/parser.cpp"
     break;
 
-  case 160: // node_function_def: void_type node_name void_decl cat_expression
-#line 696 "gen/parser.y"
+  case 158: // node_function_def: void_type node_name void_decl cat_expression
+#line 704 "gen/parser.y"
                                                                       {
         yylhs.value.as < cynth::syn::node::FunDef > () = {.output = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Type > ()), .input = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Declaration > ()), .name = YY_MOVE (yystack_[2].value.as < cynth::syn::node::Name > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3079 "src/parser.cpp"
+#line 3045 "src/parser.cpp"
     break;
 
-  case 161: // node_return: RETURN cat_expression
-#line 701 "gen/parser.y"
+  case 159: // node_return: RETURN cat_expression
+#line 709 "gen/parser.y"
                                {
         yylhs.value.as < cynth::syn::node::Return > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3087 "src/parser.cpp"
+#line 3053 "src/parser.cpp"
     break;
 
-  case 162: // node_return: RETURN void
-#line 704 "gen/parser.y"
+  case 160: // node_return: RETURN void
+#line 712 "gen/parser.y"
                      {
         yylhs.value.as < cynth::syn::node::Return > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3095 "src/parser.cpp"
+#line 3061 "src/parser.cpp"
     break;
 
-  case 163: // node_return: RETURN
-#line 707 "gen/parser.y"
+  case 161: // node_return: RETURN
+#line 715 "gen/parser.y"
            {
         yylhs.value.as < cynth::syn::node::Return > () = {cynth::syn::category::Expression{cynth::syn::node::Tuple{}}};
     }
-#line 3103 "src/parser.cpp"
+#line 3069 "src/parser.cpp"
     break;
 
-  case 164: // node_if: IF paren_expr pure ELSE pure
-#line 712 "gen/parser.y"
-                                                 {
-        yylhs.value.as < cynth::syn::node::If > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Statement > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
-    }
-#line 3111 "src/parser.cpp"
-    break;
-
-  case 165: // node_if: IF paren_expr pure SEMI ELSE pure
-#line 715 "gen/parser.y"
-                                                      {
-        yylhs.value.as < cynth::syn::node::If > () = {.condition = YY_MOVE (yystack_[4].value.as < cynth::syn::category::Expression > ()), .positive_branch = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Statement > ()), .negative_branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
-    }
-#line 3119 "src/parser.cpp"
-    break;
-
-  case 166: // node_when: WHEN paren_expr cat_statement
+  case 162: // node_if: IF paren_expr pure ELSE pure
 #line 720 "gen/parser.y"
+                                                 {
+        yylhs.value.as < cynth::syn::node::If > () = {.condition = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Expression > ()), .positiveBranch = YY_MOVE (yystack_[2].value.as < cynth::syn::category::Statement > ()), .negativeBranch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
+    }
+#line 3077 "src/parser.cpp"
+    break;
+
+  case 163: // node_if: IF paren_expr pure SEMI ELSE pure
+#line 723 "gen/parser.y"
+                                                      {
+        yylhs.value.as < cynth::syn::node::If > () = {.condition = YY_MOVE (yystack_[4].value.as < cynth::syn::category::Expression > ()), .positiveBranch = YY_MOVE (yystack_[3].value.as < cynth::syn::category::Statement > ()), .negativeBranch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
+    }
+#line 3085 "src/parser.cpp"
+    break;
+
+  case 164: // node_when: WHEN paren_expr cat_statement
+#line 728 "gen/parser.y"
                                              {
         yylhs.value.as < cynth::syn::node::When > () = {.condition = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .branch = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
-#line 3127 "src/parser.cpp"
+#line 3093 "src/parser.cpp"
     break;
 
-  case 167: // node_for: FOR paren_range_decl pure
-#line 725 "gen/parser.y"
+  case 165: // node_for: FOR paren_range_decl pure
+#line 733 "gen/parser.y"
                                           {
         yylhs.value.as < cynth::syn::node::For > () = {.declarations = YY_MOVE (yystack_[1].value.as < cynth::syn::category::RangeDeclaration > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
-#line 3135 "src/parser.cpp"
+#line 3101 "src/parser.cpp"
     break;
 
-  case 168: // node_while: WHILE paren_expr cat_statement
-#line 730 "gen/parser.y"
+  case 166: // node_while: WHILE paren_expr cat_statement
+#line 738 "gen/parser.y"
                                                {
         yylhs.value.as < cynth::syn::node::While > () = {.condition = YY_MOVE (yystack_[1].value.as < cynth::syn::category::Expression > ()), .body = YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
-#line 3143 "src/parser.cpp"
+#line 3109 "src/parser.cpp"
     break;
 
-  case 169: // array_elem_list: cat_array_elem
-#line 737 "gen/parser.y"
+  case 167: // array_elem_list: cat_array_elem
+#line 745 "gen/parser.y"
                           {
         yylhs.value.as < esl::component_vector<cynth::syn::category::ArrayElement> > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::ArrayElement > ())};
     }
-#line 3151 "src/parser.cpp"
+#line 3117 "src/parser.cpp"
     break;
 
-  case 170: // array_elem_list: array_elem_list COMMA cat_array_elem
-#line 740 "gen/parser.y"
+  case 168: // array_elem_list: array_elem_list COMMA cat_array_elem
+#line 748 "gen/parser.y"
                                                      {
         yylhs.value.as < esl::component_vector<cynth::syn::category::ArrayElement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::ArrayElement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::ArrayElement> > ()));
     }
-#line 3159 "src/parser.cpp"
+#line 3125 "src/parser.cpp"
     break;
 
-  case 171: // stmt_list: cat_statement
-#line 745 "gen/parser.y"
+  case 169: // stmt_list: cat_statement
+#line 753 "gen/parser.y"
                          {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Statement> > () = {YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ())};
     }
-#line 3167 "src/parser.cpp"
+#line 3133 "src/parser.cpp"
     break;
 
-  case 172: // stmt_list: stmt_list SEMI cat_statement
-#line 748 "gen/parser.y"
+  case 170: // stmt_list: stmt_list SEMI cat_statement
+#line 756 "gen/parser.y"
                                              {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Statement> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Statement > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Statement> > ()));
     }
-#line 3175 "src/parser.cpp"
+#line 3141 "src/parser.cpp"
     break;
 
-  case 173: // type_list: cat_type COMMA cat_type
-#line 753 "gen/parser.y"
+  case 171: // type_list: cat_type COMMA cat_type
+#line 761 "gen/parser.y"
                                            {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Type> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Type > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ())};
     }
-#line 3183 "src/parser.cpp"
+#line 3149 "src/parser.cpp"
     break;
 
-  case 174: // type_list: type_list COMMA cat_type
-#line 756 "gen/parser.y"
+  case 172: // type_list: type_list COMMA cat_type
+#line 764 "gen/parser.y"
                                          {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Type> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Type > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Type> > ()));
     }
-#line 3191 "src/parser.cpp"
+#line 3157 "src/parser.cpp"
     break;
 
-  case 175: // expr_list: cat_expression COMMA cat_expression
-#line 761 "gen/parser.y"
+  case 173: // expr_list: cat_expression COMMA cat_expression
+#line 769 "gen/parser.y"
                                                        {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Expression> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ())};
     }
-#line 3199 "src/parser.cpp"
+#line 3165 "src/parser.cpp"
     break;
 
-  case 176: // expr_list: expr_list COMMA cat_expression
-#line 764 "gen/parser.y"
+  case 174: // expr_list: expr_list COMMA cat_expression
+#line 772 "gen/parser.y"
                                                {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Expression> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Expression > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Expression> > ()));
     }
-#line 3207 "src/parser.cpp"
+#line 3173 "src/parser.cpp"
     break;
 
-  case 177: // decl_list: cat_declaration COMMA cat_declaration
-#line 769 "gen/parser.y"
+  case 175: // decl_list: cat_declaration COMMA cat_declaration
+#line 777 "gen/parser.y"
                                                          {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Declaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::Declaration > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::Declaration > ())};
     }
-#line 3215 "src/parser.cpp"
+#line 3181 "src/parser.cpp"
     break;
 
-  case 178: // decl_list: decl_list COMMA cat_declaration
-#line 772 "gen/parser.y"
+  case 176: // decl_list: decl_list COMMA cat_declaration
+#line 780 "gen/parser.y"
                                                 {
         yylhs.value.as < esl::component_vector<cynth::syn::category::Declaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::Declaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::Declaration> > ()));
     }
-#line 3223 "src/parser.cpp"
+#line 3189 "src/parser.cpp"
     break;
 
-  case 179: // range_decl_list: cat_range_decl COMMA cat_range_decl
-#line 777 "gen/parser.y"
+  case 177: // range_decl_list: cat_range_decl COMMA cat_range_decl
+#line 785 "gen/parser.y"
                                                        {
         yylhs.value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > () = {YY_MOVE (yystack_[2].value.as < cynth::syn::category::RangeDeclaration > ()), YY_MOVE (yystack_[0].value.as < cynth::syn::category::RangeDeclaration > ())};
     }
-#line 3231 "src/parser.cpp"
+#line 3197 "src/parser.cpp"
     break;
 
-  case 180: // range_decl_list: range_decl_list COMMA cat_range_decl
-#line 780 "gen/parser.y"
+  case 178: // range_decl_list: range_decl_list COMMA cat_range_decl
+#line 788 "gen/parser.y"
                                                      {
         yylhs.value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > () = esl::push_back(YY_MOVE (yystack_[0].value.as < cynth::syn::category::RangeDeclaration > ()), YY_MOVE (yystack_[2].value.as < esl::component_vector<cynth::syn::category::RangeDeclaration> > ()));
     }
-#line 3239 "src/parser.cpp"
+#line 3205 "src/parser.cpp"
     break;
 
 
-#line 3243 "src/parser.cpp"
+#line 3209 "src/parser.cpp"
 
             default:
               break;
@@ -3424,358 +3390,350 @@ namespace yy {
 
 
 
-  const short parser::yypact_ninf_ = -133;
+  const short parser::yypact_ninf_ = -245;
 
-  const signed char parser::yytable_ninf_ = -82;
+  const signed char parser::yytable_ninf_ = -81;
 
   const short
   parser::yypact_[] =
   {
-     597,  -133,  -133,  -133,  -133,  -133,   -22,   -22,    33,   -22,
-      63,   -21,   997,  -133,  -133,  -133,   717,    41,   637,  -133,
-     470,   470,   470,    91,   551,   107,  -133,  -133,  -133,    88,
-      95,   -17,   178,     4,   195,  -133,   105,    61,  -133,  -133,
-     143,  -133,    52,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,   160,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,   161,  1037,   597,   597,   391,   597,
-     597,   175,  1037,   -22,    33,    63,   757,   110,  -133,    94,
-      36,  -133,  -133,   490,   -20,     3,  -133,   114,   139,   142,
-    -133,   -13,  1037,   797,  -133,  -133,   168,  -133,  -133,  -133,
-      46,   149,  -133,    57,  -133,  -133,  -133,   177,  -133,  -133,
-    -133,   837,  -133,  -133,  -133,   177,  1037,   470,   470,   470,
-     470,   470,   470,   470,   470,   470,   470,   470,   470,   470,
-     470,   877,   677,  -133,  -133,  1037,   177,   173,  -133,  -133,
-     177,   597,   191,    -7,  -133,   241,    60,   187,   157,  -133,
-    -133,   174,  -133,  -133,  -133,  1127,   188,  1037,  1037,  -133,
-      87,  1149,  1127,  -133,  -133,  1146,  -133,  1037,  -133,   359,
-    -133,  1087,  -133,   917,  -133,   524,  -133,  -133,  1037,   203,
-     957,  -133,  1100,  1037,  1037,   205,  -133,   551,   207,   210,
-    1037,  1037,  -133,    95,   -17,   178,   178,     4,     4,     4,
-       4,   195,   195,  -133,  -133,  -133,  -133,  -133,  -133,   102,
-    -133,  1037,  1037,  1164,  1037,  1037,  -133,  1037,  1077,   212,
-     544,    96,  1037,   391,  -133,  1119,  -133,   634,  -133,   634,
-    1123,  -133,  -133,  -133,   634,  -133,  -133,  -133,  -133,  -133,
-     202,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,   -22,    33,   367,
-    -133,    94,     8,  1077,  -133,  -133,  -133,  -133,  1037,  1077,
-    1077,  -133,  -133
+     581,  -245,  -245,  -245,  -245,  -245,   -24,   -24,    -2,   -24,
+      19,    -3,   981,  -245,  -245,  -245,   701,    33,   621,  -245,
+     485,   485,   485,    47,   437,    11,  -245,  -245,  -245,    16,
+      12,    58,   163,   157,   191,  -245,    42,   -14,  -245,  -245,
+      64,  -245,    49,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,    72,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,    51,  1021,   581,   581,    52,   581,   581,
+      85,  1021,   -24,    -2,   741,  1121,  -245,    28,    45,  -245,
+    -245,   109,    97,   107,  -245,   136,   137,   138,  -245,   -21,
+    1021,   781,  -245,  -245,    62,  -245,  -245,  -245,    67,   287,
+    -245,   -25,  -245,  -245,  -245,    93,  -245,  -245,  -245,   821,
+    -245,  -245,  -245,    93,  1021,   485,   485,   485,   485,   485,
+     485,   485,   485,   485,   485,   485,   485,   485,   485,   861,
+     661,  -245,  -245,  1021,    93,   106,  -245,  -245,    93,   581,
+     115,    -6,  -245,   374,   213,   116,   141,  -245,  -245,   155,
+    -245,  -245,  -245,   417,   128,  1021,  1021,    57,  1108,   417,
+    -245,  -245,  1099,  -245,  1021,  -245,   434,  -245,   495,  -245,
+     901,  -245,   541,  -245,  -245,  1021,   148,   941,  -245,  1071,
+    1021,  1021,   156,  -245,   437,   181,   183,  1021,  1021,  -245,
+      12,    58,   163,   163,   157,   157,   157,   157,   191,   191,
+    -245,  -245,  -245,  -245,  -245,  -245,    68,  -245,  1021,  1021,
+    1128,  1021,  1021,  -245,  1021,  1061,   134,   241,    95,  1021,
+      52,  -245,  1078,  -245,   658,  -245,   658,  1095,  -245,  -245,
+    -245,   658,  -245,  -245,  -245,  -245,  -245,   192,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,   -24,    -2,   618,  -245,    28,    -1,
+    1061,  -245,  -245,  -245,  -245,  1021,  1061,  1061,  -245,  -245
   };
 
   const unsigned char
   parser::yydefact_[] =
   {
-       2,   114,    84,   120,   121,   122,     0,     0,     0,     0,
-       0,     0,   163,   118,   119,    83,     0,     0,     0,    82,
-       0,     0,     0,     0,     0,     0,    26,   171,    25,    23,
-      38,    40,    43,    48,    51,    55,    57,    61,    65,    24,
-       0,    22,     0,    13,    14,    19,    20,    21,    15,    16,
-      17,    18,     6,    27,    73,    66,    71,    67,    68,    69,
-      70,    76,    72,    37,    39,    41,    42,    44,    45,    46,
-      47,    49,    50,    52,    53,    54,    56,    59,    58,    60,
-      62,    63,    64,    74,    75,    28,    29,    31,    30,    32,
-      33,    36,    34,    35,     3,     0,     0,     0,     0,     0,
-       0,    97,     0,     0,     0,     0,     0,     0,   161,    61,
-       0,   162,    81,     0,     0,     0,     5,     0,     0,     0,
-     115,     0,     0,     0,   127,   169,    12,     9,    10,    11,
-       0,     0,   145,     0,   144,   146,     1,     0,    85,    86,
-      87,     0,    88,    90,   149,   105,     0,     0,     0,     0,
+       2,   112,    83,   118,   119,   120,     0,     0,     0,     0,
+       0,     0,   161,   116,   117,    82,     0,     0,     0,    81,
+       0,     0,     0,     0,     0,     0,    25,   169,    24,    22,
+      37,    39,    42,    47,    50,    54,    56,    60,    64,    23,
+       0,    21,     0,    13,    14,    18,    19,    20,    15,    16,
+      17,     6,    26,    72,    65,    70,    66,    67,    68,    69,
+      75,    71,    36,    38,    40,    41,    43,    44,    45,    46,
+      48,    49,    51,    52,    53,    55,    58,    57,    59,    61,
+      62,    63,    73,    74,    27,    28,    30,    29,    31,    32,
+      35,    33,    34,     3,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,   159,    60,     0,   160,
+      80,     0,     0,     0,     5,     0,     0,     0,   113,     0,
+       0,     0,   125,   167,    12,     9,    10,    11,     0,     0,
+     143,     0,   142,   144,     1,     0,    84,    85,    86,     0,
+      87,    89,   147,   103,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,   147,   148,     0,     0,     0,    89,    91,
-       0,     4,     0,     0,   166,     0,     0,     0,     0,     8,
-       7,     0,   153,   167,   168,     0,     0,     0,     0,    97,
-     113,     0,     0,    78,   105,     0,   101,     0,   110,     0,
-      79,     0,   102,     0,   111,     0,   116,   109,     0,     0,
-       0,   128,     0,     0,     0,    83,    94,     0,     0,     0,
-       0,     0,   154,   130,   131,   132,   133,   134,   135,   136,
-     137,   138,   139,   140,   141,   142,   143,   113,   151,     0,
-     155,     0,     0,     0,     0,     0,   172,     0,     0,     0,
-       0,     0,     0,     0,    98,     0,    99,   156,    96,   173,
-       0,   177,   175,    80,   174,   103,   178,   112,   176,   117,
-     107,   129,   170,   104,   123,   125,    93,    95,    92,   157,
-     159,   150,   124,   126,   158,   160,   152,     0,     0,     0,
-     164,    77,     0,     0,   106,   179,   100,   180,     0,     0,
-       0,   165,   108
+       0,   145,   146,     0,     0,     0,    88,    90,     0,     4,
+       0,     0,   164,     0,     0,     0,     0,     8,     7,     0,
+     151,   165,   166,     0,     0,     0,     0,   111,     0,     0,
+      77,   103,     0,    99,     0,   108,     0,    78,     0,   100,
+       0,   109,     0,   114,   107,     0,     0,     0,   126,     0,
+       0,     0,    82,    93,     0,     0,     0,     0,     0,   152,
+     128,   129,   130,   131,   132,   133,   134,   135,   136,   137,
+     138,   139,   140,   141,   111,   149,     0,   153,     0,     0,
+       0,     0,     0,   170,     0,     0,     0,     0,     0,     0,
+       0,    96,     0,    97,   154,    95,   171,     0,   175,   173,
+      79,   172,   101,   176,   110,   174,   115,   105,   127,   168,
+     102,   121,   123,    92,    94,    91,   155,   157,   148,   122,
+     124,   156,   158,   150,     0,     0,     0,   162,    76,     0,
+       0,   104,   177,    98,   178,     0,     0,     0,   163,   106
   };
 
   const short
   parser::yypgoto_[] =
   {
-    -133,  -133,   198,    72,   -92,    39,   220,   -96,   -69,  -133,
-      99,   103,   -45,   155,    54,   171,   120,    18,  -133,  -133,
-    -133,   335,     0,  -133,     6,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -106,    17,  -132,   226,  -133,  -133,  -133,  -133,
-      -1,   240,   -10,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
-    -133,  -133,  -133,  -133,   100,  -133,   246
+    -245,  -245,   184,   170,  -244,   -10,   206,   -87,   -69,  -245,
+      78,    79,    32,   143,    54,   240,   297,    18,  -245,  -245,
+    -245,   279,     0,  -245,   216,  -245,  -245,  -245,  -245,  -245,
+    -245,  -110,     6,    27,   286,  -245,  -245,  -245,  -245,    70,
+     221,   -11,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,  -245,
+    -245,  -245,  -245,    74,  -245,   218
   };
 
   const short
   parser::yydefgoto_[] =
   {
-      -1,    23,   107,    25,   178,   125,    26,    27,    28,    29,
-      30,    31,    32,    33,    34,    35,    36,   109,    38,    39,
-      40,    41,   110,    43,    44,    45,    46,    47,    48,    49,
-      50,    51,    52,   179,   214,    53,   180,   127,   128,   129,
-      54,   164,    55,    56,    57,    58,    59,    60,    61,    62,
+      -1,    23,   105,    25,   176,   123,    26,    27,    28,    29,
+      30,    31,    32,    33,    34,    35,    36,   107,    38,    39,
+      40,    41,   108,    43,    44,    45,    46,    47,    48,    49,
+      50,    51,   177,   211,    52,   178,   125,   126,   127,    53,
+     162,    54,    55,    56,    57,    58,    59,    60,    61,    62,
       63,    64,    65,    66,    67,    68,    69,    70,    71,    72,
       73,    74,    75,    76,    77,    78,    79,    80,    81,    82,
       83,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-      93,   117,   118,   181,   130,   119,    94
+     115,   116,   179,   128,   117,    93
   };
 
   const short
   parser::yytable_[] =
   {
-      42,   174,   248,   195,   184,    96,    97,    95,   100,   205,
-     196,     1,   102,   221,   145,   249,   101,    42,    37,   206,
-     133,   133,   133,   144,   143,    99,   197,   173,   149,   150,
-     183,   213,   170,   198,   242,    37,   163,   167,   245,   220,
-     155,   156,   169,    19,     1,     2,     3,     4,     5,     6,
-     166,     7,     8,     9,    10,     1,    11,    12,    13,    14,
-     241,    15,    98,     1,   244,   167,   166,     2,   209,   210,
-      16,    19,    17,   120,    18,   246,    19,    20,    21,   138,
-     211,   167,   -77,    22,   139,   140,   167,    19,   114,   167,
-     161,   136,    19,   141,   162,    19,    42,    42,   133,    42,
-      42,   -81,   187,   194,   225,   226,   144,   143,   163,   246,
-     169,   189,   144,   143,    37,    37,   -81,    37,    37,   195,
-     252,   188,   -81,   161,   137,   210,   196,   162,   146,   138,
-     144,   143,   147,   169,   139,   140,   281,   199,   148,   123,
-     132,   134,   135,   141,   200,    19,   160,   133,   133,   133,
-     133,   133,   133,   133,   133,   133,   133,   133,   133,   133,
-     133,   295,   201,   297,   165,   203,   194,   133,   138,   202,
-     177,    42,   204,   139,   140,   133,   143,     2,   123,   290,
-     253,    -5,   141,   171,    19,   133,   105,   254,    11,    37,
-     144,   143,   133,    15,   208,   133,   185,   255,    24,   133,
-     247,   133,   167,   112,   256,    42,   212,   194,    19,   231,
-     232,   252,   133,   218,   113,    24,   144,   143,   131,   131,
-     131,   293,   258,    37,   301,   151,   152,   153,   154,   298,
-     173,   183,   108,   157,   158,   159,   115,   271,   126,   276,
-     194,   277,   116,   143,   278,     2,   223,   251,   292,   272,
-     143,   224,   111,   133,   105,   133,    11,   143,     0,   143,
-     133,    15,   239,   121,   143,     0,   291,   261,     0,     0,
-     175,   112,     0,   266,     0,     0,    19,     0,     0,   145,
-       0,     0,   170,     0,   114,     0,   299,     0,   144,   143,
-     163,     0,   169,   292,    24,    24,   176,    24,    24,   292,
-     292,     0,     0,     0,   191,   300,   227,   228,   229,   230,
-       0,   291,     0,     0,     0,   115,   172,   291,   291,   182,
-       0,   191,   186,     0,   116,   177,   115,   177,   233,   234,
-     235,   236,   114,     0,     0,     0,     0,     0,     0,   217,
-       0,     0,   207,   115,     0,   131,   131,   131,   131,   131,
-     131,   131,   131,   131,   131,   131,   131,   131,   131,   142,
-       0,   219,     0,     2,     0,   243,   222,   116,     0,    24,
-       1,     0,   105,   250,    11,     0,     0,   168,     0,    15,
-       0,   115,   126,   257,     0,   240,   138,     0,   167,   263,
-     259,   139,   140,   176,    19,     2,   123,   264,     0,   176,
-     141,   116,    19,    24,   105,     0,    11,   172,   182,     0,
-     176,    15,     0,     0,     0,     0,     0,   262,     0,     0,
-     175,   116,     0,   268,     0,     0,    19,   116,   270,     0,
-     126,     0,     0,   274,   275,     0,     0,     0,   116,     0,
-     279,   280,   142,     0,     0,   168,   289,     0,   142,     0,
-       0,   176,     0,   176,     0,     0,     0,     0,   250,     0,
-       0,   282,   283,     0,   284,   285,   142,   286,   168,     0,
-       0,     0,   294,     1,     2,     3,     4,     5,     0,   116,
-       0,   116,     0,   105,     0,    11,   116,    13,    14,     0,
-      15,   289,     0,     1,     0,     0,     0,   289,   289,   123,
-       0,    17,     0,    18,   137,    19,    20,    21,     0,   138,
-       0,   142,    22,   192,   139,   140,     0,     0,   302,   123,
-     193,     0,     0,   141,     0,    19,   142,     1,     2,     3,
-       4,     5,     6,     0,     7,     8,     9,    10,     0,    11,
-      12,    13,    14,     0,    15,     0,     0,     1,     0,     0,
-       0,     0,   142,    16,     1,    17,   269,    18,     0,    19,
-      20,    21,     0,   138,     0,   137,    22,   192,   139,   140,
-     138,     0,     0,   167,   193,   139,   140,   141,   142,    19,
-     123,     0,     0,     0,   141,   142,    19,     0,     0,     0,
-       0,     0,   142,     0,   142,     0,     0,     0,     0,   142,
-       1,     2,     3,     4,     5,     6,     0,     7,     8,     9,
-      10,     0,    11,    12,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,   142,     0,    16,   168,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,   138,    13,    14,     0,    15,   139,   140,
-       0,     0,     0,   167,     0,   122,   123,   141,    17,    19,
-      18,   124,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,   122,   123,     0,    17,     0,
-      18,   238,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,    16,   112,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,   123,   190,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,   123,   112,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,   215,     0,     0,
-       0,     0,     0,     0,     0,     0,    16,     0,    17,     0,
-      18,   216,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,   123,   237,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,   123,   267,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,   122,   123,     0,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,   106,     0,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   103,     0,     0,   104,     0,
-     105,     0,    11,     0,    13,    14,     0,    15,     0,     0,
-       0,     0,     0,     0,     0,     0,   123,     0,    17,     0,
-      18,     0,    19,    20,    21,     0,     0,     0,     0,    22,
-       1,     2,     3,     4,     5,   287,     0,     7,   288,     9,
-      10,     2,    11,    12,    13,    14,     0,    15,     0,     0,
-     105,     0,    11,     0,     2,     0,    16,    15,    17,     0,
-      18,     0,    19,   105,     0,    11,   260,   265,     0,     0,
-      15,     0,    19,     2,     0,     0,     0,     2,     0,   260,
-     273,     2,   105,     0,    11,    19,   105,     0,    11,    15,
-     105,     0,    11,    15,     0,     0,     0,    15,   175,   296,
-       2,     0,   260,   112,    19,     0,   167,     0,    19,   105,
-       0,    11,    19,   137,     0,     0,    15,     0,   138,     0,
-       0,     0,   192,   139,   140,   260,     0,     0,   123,   193,
-       0,    19,   141,   138,    19,     0,     0,   192,   139,   140,
-       0,     0,     0,   167,   193,     0,     0,   141,     0,    19
+      42,   202,     1,   245,   165,    94,   292,   -76,   294,   172,
+      19,   203,   182,   143,    98,   159,   246,    42,    37,   160,
+     131,   131,   131,     2,   141,   210,   171,    97,   165,   181,
+     101,   168,   144,   217,    19,    37,     1,     2,     3,     4,
+       5,     6,   167,     7,     8,     9,    10,   134,    11,    12,
+      13,    14,     1,    15,   238,   146,     2,   159,   241,   164,
+     145,   160,    16,   164,    17,   118,    18,    11,    19,    20,
+      21,   -80,    15,   169,   165,    22,    95,    96,   165,    99,
+      19,   173,   243,   158,    19,   163,   -80,    19,   205,   206,
+     207,   207,   -80,    -5,   142,    42,    42,   131,    42,    42,
+     191,   208,   278,   147,   148,   141,   183,   161,   167,   186,
+       2,   141,     1,    37,    37,   243,    37,    37,   192,   249,
+     192,    11,   209,   135,   244,   193,    15,   193,   136,   141,
+     194,   167,   189,   137,   138,   165,   110,   195,   121,   190,
+     249,    19,   139,   290,    19,   131,   131,   131,   131,   131,
+     131,   131,   131,   131,   131,   131,   131,   131,   131,   196,
+     198,   200,   255,   191,   250,   131,   197,   199,   201,    42,
+     218,   251,   185,   131,   141,   142,   287,   161,   252,   222,
+     223,   142,   268,   131,    24,   253,   112,    37,   141,   131,
+     273,   239,   131,   153,   154,   242,   131,   269,   131,   142,
+     111,    24,    42,   191,   129,   129,   129,   228,   229,   131,
+     149,   150,   151,   152,   141,   274,     1,   275,   106,   295,
+      37,   298,   113,   220,   124,   221,   100,   171,   181,   155,
+     156,   157,   136,   109,   236,   119,   191,   137,   138,     0,
+     141,     0,   165,     0,     1,   289,   139,   141,    19,     0,
+     131,     0,   131,     0,   141,     0,   141,   131,   142,     0,
+     136,   141,     0,   288,   189,   137,   138,   175,     0,     0,
+     165,   190,     0,     0,   139,   143,    19,     0,   168,    24,
+      24,   174,    24,    24,   142,     0,   141,     0,   188,   167,
+     289,   297,   224,   225,   226,   227,   289,   289,     0,     0,
+     113,   170,   114,   140,   180,   188,   136,   184,   288,   215,
+     113,   137,   138,     0,   288,   288,   121,   130,   132,   133,
+     139,   166,    19,   214,     0,     0,   204,   113,     0,   129,
+     129,   129,   129,   129,   129,   129,   129,   129,   129,   129,
+     129,   129,   129,   248,     0,   216,     0,     0,     0,   240,
+     219,     0,     0,    24,   296,     0,   142,   247,   161,     0,
+       0,     0,   258,     0,     0,   113,   124,   254,   263,   237,
+       0,     0,     0,   256,     0,     0,   174,     0,     2,   112,
+     261,     0,   174,   114,   140,     0,    24,   166,     0,    11,
+     140,   170,   180,   174,    15,   230,   231,   232,   233,     0,
+     259,     0,     0,   173,   110,     0,   265,     0,   140,    19,
+     166,   267,     0,   124,     0,     0,   271,   272,     0,     0,
+     175,     2,   175,   276,   277,   114,     0,   112,     0,   286,
+       0,     0,    11,     0,   174,     0,   174,    15,     2,     0,
+       1,   247,     0,     0,   279,   280,   165,   281,   282,    11,
+     283,   135,    19,   140,    15,   291,   136,     0,     0,   114,
+       0,   137,   138,   165,   260,     0,   121,   140,     0,    19,
+     139,     0,    19,     0,   286,     0,     0,     0,   114,     0,
+     286,   286,     0,     0,   114,     0,     0,     0,     1,     2,
+       3,     4,     5,   140,     0,   114,     0,     0,     0,     2,
+      11,   299,    13,    14,     0,    15,     0,     0,     0,     0,
+      11,     0,     0,     0,   121,    15,    17,     0,    18,   140,
+      19,    20,    21,     0,   257,   262,   140,    22,     0,     0,
+      19,     0,     0,   140,     0,   140,   114,     0,   114,     0,
+     140,     0,     0,   114,     1,     2,     3,     4,     5,     6,
+       0,     7,     8,     9,    10,     0,    11,    12,    13,    14,
+       0,    15,     0,     0,     0,   140,     0,     0,   166,     0,
+      16,     0,    17,   266,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,     6,
+       0,     7,     8,     9,    10,     0,    11,    12,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+      16,     0,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     1,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,   136,    13,    14,
+       0,    15,   137,   138,     0,     0,     0,   121,     0,   120,
+     121,   139,    17,    19,    18,   122,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,   136,    13,    14,
+       0,    15,   137,   138,     0,     0,     0,   165,     0,   120,
+     121,   139,    17,    19,    18,   235,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+      16,   110,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+     121,   187,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+     121,   110,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,   212,     0,     0,     0,     0,     0,     0,     0,     0,
+      16,     0,    17,     0,    18,   213,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+     121,   234,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+     121,   264,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,   120,
+     121,     0,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+     104,     0,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   102,
+       0,     0,   103,     0,     0,     0,    11,     0,    13,    14,
+       0,    15,     0,     0,     0,     0,     0,     0,     0,     0,
+     121,     0,    17,     0,    18,     0,    19,    20,    21,     0,
+       0,     0,     0,    22,     1,     2,     3,     4,     5,   284,
+       0,     7,   285,     9,    10,     2,    11,    12,    13,    14,
+       0,    15,     2,     0,     0,     0,    11,     0,     0,     0,
+      16,    15,    17,    11,    18,     0,    19,     0,    15,     2,
+     257,   270,     0,     2,     0,     0,    19,   173,   293,     0,
+      11,     0,     0,    19,    11,    15,     0,     0,     0,    15,
+       0,     0,   135,     0,   257,   110,     0,   136,   257,     0,
+      19,   189,   137,   138,    19,   135,     0,   121,   190,     0,
+     136,   139,     0,    19,     0,   137,   138,   136,     0,     0,
+     121,   189,   137,   138,   139,     0,    19,   165,   190,     0,
+       0,   139,     0,    19
   };
 
   const short
   parser::yycheck_[] =
   {
-       0,    97,     9,    23,   100,     6,     7,    29,     9,    22,
-      30,     3,    33,   145,    24,    22,    10,    17,     0,    32,
-      20,    21,    22,    24,    24,     8,    23,    96,    45,    46,
-      99,   137,    42,    30,   166,    17,    37,    29,   170,   145,
-      36,    37,    42,    35,     3,     4,     5,     6,     7,     8,
-      14,    10,    11,    12,    13,     3,    15,    16,    17,    18,
-     166,    20,    29,     3,   170,    29,    14,     4,    22,    23,
-      29,    35,    31,    32,    33,   171,    35,    36,    37,    19,
-      34,    29,    21,    42,    24,    25,    29,    35,    16,    29,
-      29,     0,    35,    33,    33,    35,    96,    97,    98,    99,
-     100,    14,   103,   113,   149,   150,   107,   107,   109,   205,
-     110,   105,   113,   113,    96,    97,    29,    99,   100,    23,
-      24,   104,    35,    29,    14,    23,    30,    33,    21,    19,
-     131,   131,    44,   133,    24,    25,    34,    23,    43,    29,
-      20,    21,    22,    33,    30,    35,    41,   147,   148,   149,
-     150,   151,   152,   153,   154,   155,   156,   157,   158,   159,
-     160,   253,    23,   255,    21,    23,   176,   167,    19,    30,
-      98,   171,    30,    24,    25,   175,   176,     4,    29,   248,
-      23,    21,    33,    22,    35,   185,    13,    30,    15,   171,
-     191,   191,   192,    20,    26,   195,    21,    23,     0,   199,
-       9,   201,    29,    30,    30,   205,    29,   217,    35,   155,
-     156,    24,   212,   141,    16,    17,   217,   217,    20,    21,
-      22,     9,    34,   205,   293,    47,    48,    49,    50,    27,
-     299,   300,    12,    38,    39,    40,    16,    34,    18,    34,
-     250,    34,    16,   243,    34,     4,   147,   175,   248,   210,
-     250,   148,    12,   253,    13,   255,    15,   257,    -1,   259,
-     260,    20,   162,    17,   264,    -1,   248,   195,    -1,    -1,
-      29,    30,    -1,   201,    -1,    -1,    35,    -1,    -1,   289,
-      -1,    -1,   292,    -1,   212,    -1,   287,    -1,   289,   289,
-     291,    -1,   292,   293,    96,    97,    98,    99,   100,   299,
-     300,    -1,    -1,    -1,   106,   288,   151,   152,   153,   154,
-      -1,   293,    -1,    -1,    -1,    95,    96,   299,   300,    99,
-      -1,   123,   102,    -1,    98,   253,   106,   255,   157,   158,
-     159,   160,   260,    -1,    -1,    -1,    -1,    -1,    -1,   141,
-      -1,    -1,   122,   123,    -1,   147,   148,   149,   150,   151,
-     152,   153,   154,   155,   156,   157,   158,   159,   160,    24,
-      -1,   141,    -1,     4,    -1,   167,   146,   141,    -1,   171,
-       3,    -1,    13,   175,    15,    -1,    -1,    42,    -1,    20,
-      -1,   161,   162,   185,    -1,   165,    19,    -1,    29,    30,
-     192,    24,    25,   195,    35,     4,    29,   199,    -1,   201,
-      33,   175,    35,   205,    13,    -1,    15,   187,   188,    -1,
-     212,    20,    -1,    -1,    -1,    -1,    -1,   197,    -1,    -1,
-      29,   195,    -1,   203,    -1,    -1,    35,   201,   208,    -1,
-     210,    -1,    -1,   213,   214,    -1,    -1,    -1,   212,    -1,
-     220,   221,   107,    -1,    -1,   110,   248,    -1,   113,    -1,
-      -1,   253,    -1,   255,    -1,    -1,    -1,    -1,   260,    -1,
-      -1,   241,   242,    -1,   244,   245,   131,   247,   133,    -1,
-      -1,    -1,   252,     3,     4,     5,     6,     7,    -1,   253,
-      -1,   255,    -1,    13,    -1,    15,   260,    17,    18,    -1,
-      20,   293,    -1,     3,    -1,    -1,    -1,   299,   300,    29,
-      -1,    31,    -1,    33,    14,    35,    36,    37,    -1,    19,
-      -1,   176,    42,    23,    24,    25,    -1,    -1,   298,    29,
-      30,    -1,    -1,    33,    -1,    35,   191,     3,     4,     5,
-       6,     7,     8,    -1,    10,    11,    12,    13,    -1,    15,
-      16,    17,    18,    -1,    20,    -1,    -1,     3,    -1,    -1,
-      -1,    -1,   217,    29,     3,    31,    32,    33,    -1,    35,
-      36,    37,    -1,    19,    -1,    14,    42,    23,    24,    25,
-      19,    -1,    -1,    29,    30,    24,    25,    33,   243,    35,
-      29,    -1,    -1,    -1,    33,   250,    35,    -1,    -1,    -1,
-      -1,    -1,   257,    -1,   259,    -1,    -1,    -1,    -1,   264,
-       3,     4,     5,     6,     7,     8,    -1,    10,    11,    12,
-      13,    -1,    15,    16,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,   289,    -1,    29,   292,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    19,    17,    18,    -1,    20,    24,    25,
-      -1,    -1,    -1,    29,    -1,    28,    29,    33,    31,    35,
-      33,    34,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    28,    29,    -1,    31,    -1,
-      33,    34,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    30,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    30,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    30,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    -1,    31,    -1,
-      33,    34,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    30,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    30,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    28,    29,    -1,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    -1,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    -1,    11,    -1,
-      13,    -1,    15,    -1,    17,    18,    -1,    20,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    29,    -1,    31,    -1,
-      33,    -1,    35,    36,    37,    -1,    -1,    -1,    -1,    42,
-       3,     4,     5,     6,     7,     8,    -1,    10,    11,    12,
-      13,     4,    15,    16,    17,    18,    -1,    20,    -1,    -1,
-      13,    -1,    15,    -1,     4,    -1,    29,    20,    31,    -1,
-      33,    -1,    35,    13,    -1,    15,    29,    30,    -1,    -1,
-      20,    -1,    35,     4,    -1,    -1,    -1,     4,    -1,    29,
-      30,     4,    13,    -1,    15,    35,    13,    -1,    15,    20,
-      13,    -1,    15,    20,    -1,    -1,    -1,    20,    29,    30,
-       4,    -1,    29,    30,    35,    -1,    29,    -1,    35,    13,
-      -1,    15,    35,    14,    -1,    -1,    20,    -1,    19,    -1,
-      -1,    -1,    23,    24,    25,    29,    -1,    -1,    29,    30,
-      -1,    35,    33,    19,    35,    -1,    -1,    23,    24,    25,
-      -1,    -1,    -1,    29,    30,    -1,    -1,    33,    -1,    35
+       0,    22,     3,     9,    29,    29,   250,    21,   252,    96,
+      35,    32,    99,    24,     8,    29,    22,    17,     0,    33,
+      20,    21,    22,     4,    24,   135,    95,    29,    29,    98,
+      33,    42,    21,   143,    35,    17,     3,     4,     5,     6,
+       7,     8,    42,    10,    11,    12,    13,     0,    15,    16,
+      17,    18,     3,    20,   164,    43,     4,    29,   168,    14,
+      44,    33,    29,    14,    31,    32,    33,    15,    35,    36,
+      37,    14,    20,    22,    29,    42,     6,     7,    29,     9,
+      35,    29,   169,    41,    35,    21,    29,    35,    26,    22,
+      23,    23,    35,    21,    24,    95,    96,    97,    98,    99,
+     111,    34,    34,    45,    46,   105,    21,    37,   108,   103,
+       4,   111,     3,    95,    96,   202,    98,    99,    23,    24,
+      23,    15,    29,    14,     9,    30,    20,    30,    19,   129,
+      23,   131,    23,    24,    25,    29,    30,    30,    29,    30,
+      24,    35,    33,     9,    35,   145,   146,   147,   148,   149,
+     150,   151,   152,   153,   154,   155,   156,   157,   158,    23,
+      23,    23,    34,   174,    23,   165,    30,    30,    30,   169,
+     143,    30,   102,   173,   174,   105,   245,   107,    23,   147,
+     148,   111,    34,   183,     0,    30,    16,   169,   188,   189,
+      34,   164,   192,    36,    37,   168,   196,   207,   198,   129,
+      16,    17,   202,   214,    20,    21,    22,   153,   154,   209,
+      47,    48,    49,    50,   214,    34,     3,    34,    12,    27,
+     202,   290,    16,   145,    18,   146,    10,   296,   297,    38,
+      39,    40,    19,    12,   160,    17,   247,    24,    25,    -1,
+     240,    -1,    29,    -1,     3,   245,    33,   247,    35,    -1,
+     250,    -1,   252,    -1,   254,    -1,   256,   257,   188,    -1,
+      19,   261,    -1,   245,    23,    24,    25,    97,    -1,    -1,
+      29,    30,    -1,    -1,    33,   286,    35,    -1,   289,    95,
+      96,    97,    98,    99,   214,    -1,   286,    -1,   104,   289,
+     290,   285,   149,   150,   151,   152,   296,   297,    -1,    -1,
+      94,    95,    16,    24,    98,   121,    19,   101,   290,   139,
+     104,    24,    25,    -1,   296,   297,    29,    20,    21,    22,
+      33,    42,    35,   139,    -1,    -1,   120,   121,    -1,   145,
+     146,   147,   148,   149,   150,   151,   152,   153,   154,   155,
+     156,   157,   158,   173,    -1,   139,    -1,    -1,    -1,   165,
+     144,    -1,    -1,   169,   284,    -1,   286,   173,   288,    -1,
+      -1,    -1,   192,    -1,    -1,   159,   160,   183,   198,   163,
+      -1,    -1,    -1,   189,    -1,    -1,   192,    -1,     4,   209,
+     196,    -1,   198,    97,   105,    -1,   202,   108,    -1,    15,
+     111,   185,   186,   209,    20,   155,   156,   157,   158,    -1,
+     194,    -1,    -1,    29,    30,    -1,   200,    -1,   129,    35,
+     131,   205,    -1,   207,    -1,    -1,   210,   211,    -1,    -1,
+     250,     4,   252,   217,   218,   139,    -1,   257,    -1,   245,
+      -1,    -1,    15,    -1,   250,    -1,   252,    20,     4,    -1,
+       3,   257,    -1,    -1,   238,   239,    29,   241,   242,    15,
+     244,    14,    35,   174,    20,   249,    19,    -1,    -1,   173,
+      -1,    24,    25,    29,    30,    -1,    29,   188,    -1,    35,
+      33,    -1,    35,    -1,   290,    -1,    -1,    -1,   192,    -1,
+     296,   297,    -1,    -1,   198,    -1,    -1,    -1,     3,     4,
+       5,     6,     7,   214,    -1,   209,    -1,    -1,    -1,     4,
+      15,   295,    17,    18,    -1,    20,    -1,    -1,    -1,    -1,
+      15,    -1,    -1,    -1,    29,    20,    31,    -1,    33,   240,
+      35,    36,    37,    -1,    29,    30,   247,    42,    -1,    -1,
+      35,    -1,    -1,   254,    -1,   256,   250,    -1,   252,    -1,
+     261,    -1,    -1,   257,     3,     4,     5,     6,     7,     8,
+      -1,    10,    11,    12,    13,    -1,    15,    16,    17,    18,
+      -1,    20,    -1,    -1,    -1,   286,    -1,    -1,   289,    -1,
+      29,    -1,    31,    32,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    10,    11,    12,    13,    -1,    15,    16,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    -1,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,     3,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    19,    17,    18,
+      -1,    20,    24,    25,    -1,    -1,    -1,    29,    -1,    28,
+      29,    33,    31,    35,    33,    34,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    19,    17,    18,
+      -1,    20,    24,    25,    -1,    -1,    -1,    29,    -1,    28,
+      29,    33,    31,    35,    33,    34,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    30,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    30,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    30,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    -1,    31,    -1,    33,    34,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    30,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    30,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    28,
+      29,    -1,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    -1,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    -1,    11,    -1,    -1,    -1,    15,    -1,    17,    18,
+      -1,    20,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      29,    -1,    31,    -1,    33,    -1,    35,    36,    37,    -1,
+      -1,    -1,    -1,    42,     3,     4,     5,     6,     7,     8,
+      -1,    10,    11,    12,    13,     4,    15,    16,    17,    18,
+      -1,    20,     4,    -1,    -1,    -1,    15,    -1,    -1,    -1,
+      29,    20,    31,    15,    33,    -1,    35,    -1,    20,     4,
+      29,    30,    -1,     4,    -1,    -1,    35,    29,    30,    -1,
+      15,    -1,    -1,    35,    15,    20,    -1,    -1,    -1,    20,
+      -1,    -1,    14,    -1,    29,    30,    -1,    19,    29,    -1,
+      35,    23,    24,    25,    35,    14,    -1,    29,    30,    -1,
+      19,    33,    -1,    35,    -1,    24,    25,    19,    -1,    -1,
+      29,    23,    24,    25,    33,    -1,    35,    29,    30,    -1,
+      -1,    33,    -1,    35
   };
 
   const unsigned char
@@ -3786,32 +3744,31 @@ namespace yy {
       36,    37,    42,    53,    54,    55,    58,    59,    60,    61,
       62,    63,    64,    65,    66,    67,    68,    69,    70,    71,
       72,    73,    74,    75,    76,    77,    78,    79,    80,    81,
-      82,    83,    84,    87,    92,    94,    95,    96,    97,    98,
+      82,    83,    86,    91,    93,    94,    95,    96,    97,    98,
       99,   100,   101,   102,   103,   104,   105,   106,   107,   108,
      109,   110,   111,   112,   113,   114,   115,   116,   117,   118,
      119,   120,   121,   122,   123,   124,   125,   126,   127,   128,
-     129,   130,   131,   132,   138,    29,    92,    92,    29,    85,
-      92,    76,    33,     8,    11,    13,    29,    54,    58,    69,
-      74,    93,    30,    54,    55,    58,    87,   133,   134,   137,
-      32,   138,    28,    29,    34,    57,    58,    89,    90,    91,
-     136,    54,    68,    74,    68,    68,     0,    14,    19,    24,
-      25,    33,    73,    74,    92,    94,    21,    44,    43,    45,
-      46,    47,    48,    49,    50,    36,    37,    38,    39,    40,
-      41,    29,    33,    92,    93,    21,    14,    29,    73,    74,
-      94,    22,    58,    60,    59,    29,    54,    55,    56,    85,
-      88,   135,    58,    60,    59,    21,    58,    92,    85,    76,
-      30,    54,    23,    30,    94,    23,    30,    23,    30,    23,
-      30,    23,    30,    23,    30,    22,    32,    58,    26,    22,
-      23,    34,    29,    84,    86,    20,    34,    54,    55,    58,
-      84,    86,    58,    62,    63,    64,    64,    65,    65,    65,
-      65,    66,    66,    67,    67,    67,    67,    30,    34,   136,
-      58,    84,    86,    54,    84,    86,    59,     9,     9,    22,
-      54,    55,    24,    23,    30,    23,    30,    54,    34,    54,
-      29,    55,    58,    30,    54,    30,    55,    30,    58,    32,
-      58,    34,    57,    30,    58,    58,    34,    34,    34,    58,
-      58,    34,    58,    58,    58,    58,    58,     8,    11,    54,
-      60,    69,    74,     9,    58,    56,    30,    56,    27,    92,
-      85,    60,    58
+     129,   130,   131,   137,    29,    91,    91,    29,    84,    91,
+      76,    33,     8,    11,    29,    54,    58,    69,    74,    92,
+      30,    54,    55,    58,    86,   132,   133,   136,    32,   137,
+      28,    29,    34,    57,    58,    88,    89,    90,   135,    54,
+      68,    74,    68,    68,     0,    14,    19,    24,    25,    33,
+      73,    74,    91,    93,    21,    44,    43,    45,    46,    47,
+      48,    49,    50,    36,    37,    38,    39,    40,    41,    29,
+      33,    91,    92,    21,    14,    29,    73,    74,    93,    22,
+      58,    60,    59,    29,    54,    55,    56,    84,    87,   134,
+      58,    60,    59,    21,    58,    91,    84,    30,    54,    23,
+      30,    93,    23,    30,    23,    30,    23,    30,    23,    30,
+      23,    30,    22,    32,    58,    26,    22,    23,    34,    29,
+      83,    85,    20,    34,    54,    55,    58,    83,    85,    58,
+      62,    63,    64,    64,    65,    65,    65,    65,    66,    66,
+      67,    67,    67,    67,    30,    34,   135,    58,    83,    85,
+      54,    83,    85,    59,     9,     9,    22,    54,    55,    24,
+      23,    30,    23,    30,    54,    34,    54,    29,    55,    58,
+      30,    54,    30,    55,    30,    58,    32,    58,    34,    57,
+      30,    58,    58,    34,    34,    34,    58,    58,    34,    58,
+      58,    58,    58,    58,     8,    11,    54,    60,    69,    74,
+       9,    58,    56,    30,    56,    27,    91,    84,    60,    58
   };
 
   const unsigned char
@@ -3819,23 +3776,22 @@ namespace yy {
   {
        0,    52,    53,    53,    53,    55,    55,    56,    56,    57,
       57,    57,    57,    54,    54,    54,    54,    54,    54,    54,
-      54,    54,    54,    58,    58,    59,    59,    60,    60,    60,
-      60,    60,    60,    60,    60,    60,    60,    61,    61,    62,
-      62,    63,    63,    63,    64,    64,    64,    64,    64,    65,
-      65,    65,    66,    66,    66,    66,    67,    67,    68,    68,
-      68,    68,    69,    69,    69,    69,    70,    70,    70,    70,
-      70,    70,    70,    70,    71,    71,    71,    72,    73,    73,
-      73,    74,    74,    75,    76,    77,    78,    79,    80,    80,
-      80,    80,    81,    81,    81,    81,    82,    83,    85,    85,
-      85,    84,    84,    84,    86,    87,    88,    89,    90,    91,
-      92,    92,    92,    93,    94,    95,    95,    95,    96,    96,
-      97,    98,    99,   100,   100,   100,   100,   101,   101,   101,
-     102,   103,   104,   105,   106,   107,   108,   109,   110,   111,
-     112,   113,   114,   115,   117,   116,   118,   119,   119,   120,
-     121,   121,   122,   123,   124,   125,   127,   126,   126,   126,
-     126,   128,   128,   128,   129,   129,   130,   131,   132,   136,
-     136,   138,   138,   133,   133,   137,   137,   134,   134,   135,
-     135
+      54,    54,    58,    58,    59,    59,    60,    60,    60,    60,
+      60,    60,    60,    60,    60,    60,    61,    61,    62,    62,
+      63,    63,    63,    64,    64,    64,    64,    64,    65,    65,
+      65,    66,    66,    66,    66,    67,    67,    68,    68,    68,
+      68,    69,    69,    69,    69,    70,    70,    70,    70,    70,
+      70,    70,    70,    71,    71,    71,    72,    73,    73,    73,
+      74,    74,    75,    76,    77,    78,    79,    80,    80,    80,
+      80,    81,    81,    81,    81,    82,    84,    84,    84,    83,
+      83,    83,    85,    86,    87,    88,    89,    90,    91,    91,
+      91,    92,    93,    94,    94,    94,    95,    95,    96,    97,
+      98,    99,    99,    99,    99,   100,   100,   100,   101,   102,
+     103,   104,   105,   106,   107,   108,   109,   110,   111,   112,
+     113,   114,   116,   115,   117,   118,   118,   119,   120,   120,
+     121,   122,   123,   124,   126,   125,   125,   125,   125,   127,
+     127,   127,   128,   128,   129,   130,   131,   135,   135,   137,
+     137,   132,   132,   136,   136,   133,   133,   134,   134
   };
 
   const signed char
@@ -3848,18 +3804,17 @@ namespace yy {
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     3,     3,
-       4,     2,     1,     1,     1,     2,     2,     2,     2,     2,
-       2,     2,     4,     4,     3,     4,     4,     2,     3,     3,
-       4,     3,     3,     4,     2,     2,     3,     3,     5,     2,
-       3,     3,     4,     2,     1,     2,     3,     4,     1,     1,
-       1,     1,     1,     4,     4,     4,     4,     2,     3,     4,
+       1,     1,     1,     1,     1,     1,     1,     3,     3,     4,
+       2,     1,     1,     1,     2,     2,     2,     2,     2,     2,
+       2,     4,     4,     3,     4,     4,     3,     3,     4,     3,
+       3,     4,     2,     2,     3,     3,     5,     2,     3,     3,
+       4,     2,     1,     2,     3,     4,     1,     1,     1,     1,
+       1,     4,     4,     4,     4,     2,     3,     4,     3,     3,
        3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
-       3,     3,     3,     3,     2,     2,     2,     2,     2,     2,
-       4,     3,     5,     3,     3,     3,     4,     4,     4,     4,
-       4,     2,     2,     1,     5,     6,     3,     3,     3,     1,
-       3,     1,     3,     3,     3,     3,     3,     3,     3,     3,
-       3
+       3,     3,     2,     2,     2,     2,     2,     2,     4,     3,
+       5,     3,     3,     3,     4,     4,     4,     4,     4,     2,
+       2,     1,     5,     6,     3,     3,     3,     1,     3,     1,
+       3,     3,     3,     3,     3,     3,     3,     3,     3
   };
 
 
@@ -3882,8 +3837,8 @@ namespace yy {
   "expr_right", "expr_assgn_target", "paren_type", "void_type",
   "node_auto", "node_type_name", "node_const_type", "node_in_type",
   "node_out_type", "node_function_type", "node_array_type",
-  "node_buffer_type", "node_type_decl", "paren_decl", "paren_range_decl",
-  "void_decl", "node_declaration", "node_range_decl", "node_range_to",
+  "node_buffer_type", "paren_decl", "paren_range_decl", "void_decl",
+  "node_declaration", "node_range_decl", "node_range_to",
   "node_range_to_by", "node_spread", "paren_expr", "void", "node_name",
   "node_block", "node_bool", "node_int", "node_float", "node_string",
   "node_function", "node_array", "node_or", "node_and", "node_eq",
@@ -3903,25 +3858,24 @@ namespace yy {
   const short
   parser::yyrline_[] =
   {
-       0,   202,   202,   205,   208,   215,   216,   219,   220,   223,
-     224,   225,   226,   229,   230,   231,   232,   233,   234,   235,
-     236,   237,   238,   241,   242,   245,   246,   251,   252,   253,
-     254,   255,   256,   257,   258,   259,   260,   263,   264,   267,
-     268,   271,   272,   273,   276,   277,   278,   279,   280,   283,
-     284,   285,   288,   289,   290,   291,   294,   295,   298,   299,
-     300,   301,   304,   305,   306,   307,   310,   311,   312,   313,
-     314,   315,   316,   317,   320,   321,   322,   325,   330,   333,
-     336,   341,   344,   349,   354,   359,   364,   369,   374,   377,
-     380,   383,   388,   391,   394,   397,   402,   407,   414,   417,
-     420,   425,   428,   431,   436,   441,   446,   453,   458,   463,
-     470,   473,   476,   481,   486,   491,   494,   497,   504,   507,
-     512,   517,   522,   527,   530,   533,   536,   541,   544,   547,
-     554,   559,   564,   569,   574,   579,   584,   589,   594,   599,
-     604,   609,   614,   619,   624,   629,   634,   639,   642,   647,
-     652,   655,   660,   665,   672,   677,   682,   687,   690,   693,
-     696,   701,   704,   707,   712,   715,   720,   725,   730,   737,
-     740,   745,   748,   753,   756,   761,   764,   769,   772,   777,
-     780
+       0,   206,   206,   209,   212,   219,   220,   223,   224,   227,
+     228,   229,   230,   233,   234,   235,   236,   237,   241,   242,
+     243,   244,   247,   248,   251,   252,   257,   258,   259,   260,
+     261,   262,   263,   264,   265,   266,   269,   270,   273,   274,
+     277,   278,   279,   282,   283,   284,   285,   286,   289,   290,
+     291,   294,   295,   296,   297,   300,   301,   304,   305,   306,
+     307,   310,   311,   312,   313,   316,   317,   318,   319,   320,
+     321,   322,   323,   326,   327,   328,   331,   336,   339,   342,
+     347,   350,   355,   360,   365,   370,   375,   380,   383,   386,
+     389,   394,   397,   400,   403,   408,   422,   425,   428,   433,
+     436,   439,   444,   449,   454,   461,   466,   471,   478,   481,
+     484,   489,   494,   499,   502,   505,   512,   515,   520,   525,
+     530,   535,   538,   541,   544,   549,   552,   555,   562,   567,
+     572,   577,   582,   587,   592,   597,   602,   607,   612,   617,
+     622,   627,   632,   637,   642,   647,   650,   655,   660,   663,
+     668,   673,   680,   685,   690,   695,   698,   701,   704,   709,
+     712,   715,   720,   723,   728,   733,   738,   745,   748,   753,
+     756,   761,   764,   769,   772,   777,   780,   785,   788
   };
 
   void
@@ -3953,9 +3907,9 @@ namespace yy {
 
 
 } // yy
-#line 3957 "src/parser.cpp"
+#line 3911 "src/parser.cpp"
 
-#line 784 "gen/parser.y"
+#line 792 "gen/parser.y"
 
 
 void yy::parser::error (std::string const & msg) {

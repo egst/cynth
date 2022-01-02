@@ -1,10 +1,10 @@
-#include "ast/categories/range_declaration.hpp"
+#include "syn/categories/range_declaration.hpp"
 
 #include "esl/component.hpp"
 
 namespace esl {
 
-    using cynth::ast::category::RangeDeclaration;
+    using cynth::syn::category::RangeDeclaration;
 
     template <>
     void component_deleter<RangeDeclaration>::operator () (RangeDeclaration * ptr) const {

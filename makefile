@@ -106,7 +106,7 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	$(call INFO,Generating the parser...)
 	$(GEN_PARSER)
 	$(call INFO,Tweaking the generated parser a bit...)
-	sed -i 's/yylhs.value.emplace< cynth::ast::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
+	sed -i 's/yylhs.value.emplace< cynth::syn::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 #	$(call INFO,Moving the generated parser header file to the correct location...)
 #	mv $(SRC)$(IMPL_PARSER)$(EXT_HEAD) $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 

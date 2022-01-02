@@ -110,7 +110,7 @@ namespace esl::sugar {
     }
 
     template <typename F, detail::targetable T>
-    constexpr auto operator || (F && f, T && t) {
+    constexpr auto operator || (F && f, T &&) {
         return esl::lift_nested<T>(std::forward<F>(f));
     }
 

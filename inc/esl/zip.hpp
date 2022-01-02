@@ -115,8 +115,12 @@ namespace esl {
             return std::get<0>(containers).empty();
         }
 
-        const_iterator begin () const {
+        const_iterator begin () const requires (Enum) {
             return std::apply([] (auto &&... containers) { return iterator{0, containers.cbegin()...}; }, containers);
+        }
+
+        const_iterator begin () const requires (!Enum) {
+            return std::apply([] (auto &&... containers) { return iterator{containers.cbegin()...}; }, containers);
         }
 
         const_iterator end () const {
@@ -131,8 +135,12 @@ namespace esl {
             return end();
         }
 
-        iterator begin () {
+        iterator begin () requires (Enum) {
             return std::apply([] (auto &&... containers) { return iterator{0, containers.begin()...}; }, containers);
+        }
+
+        iterator begin () requires (!Enum) {
+            return std::apply([] (auto &&... containers) { return iterator{containers.begin()...}; }, containers);
         }
 
         iterator end () {

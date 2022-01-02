@@ -146,7 +146,7 @@ namespace cynth::sem {
             struct Array {
                 esl::component<Type<Complete>> type;
                 Size<Complete>                 size;
-                bool                           constant;
+                bool                           constant = false;
             };
 
             template <bool Complete>
