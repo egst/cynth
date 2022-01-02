@@ -53,7 +53,7 @@ namespace cynth::syn {
             /***
                 <body>
             ***/
-            outerScope.mergeNestedChild(loopScope);
+            outerScope.mergeChild(loopScope);
 
             /***
             }

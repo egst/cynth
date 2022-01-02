@@ -39,10 +39,10 @@ namespace cynth::syn {
 
     StatementProcessingResult node::FunDef::processStatement (context::Main & ctx) const {
         return [&] (auto fun) -> StatementProcessingResult {
-            ctx.lookup.insertValue(*name.name, esl::init<esl::tiny_vector>(
+            auto result = ctx.lookup.insertValue(*name.name, esl::init<esl::tiny_vector>(
                 Variable{CompleteValue{fun}}
             ));
-
+            if (!result) return result.error();
             return NoReturn{};
 
         } || target::result{} <<= fun_nodes::process(ctx, *output, *input, *body);
@@ -55,7 +55,8 @@ namespace cynth::syn {
             interface::extractNames(nestedScope) || target::category{} <<= *input,
             interface::extractNames(nestedScope) || target::category{} <<= *body
         );
-        outerScope.insertValue(*name.name, {});
+        auto result = outerScope.insertValue(*name.name, {});
+        if (!result) return result.error();
         return names;
     }
 

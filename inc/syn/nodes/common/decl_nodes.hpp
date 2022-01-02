@@ -16,4 +16,10 @@ namespace cynth::syn::decl_nodes {
         esl::tiny_vector<sem::ResolvedValue>       const &
     );
 
+    esl::result<void> declare (
+        context::Main & ctx,
+        esl::tiny_vector<sem::CompleteDeclaration> const &,
+        bool parameters = false
+    );
+
 }

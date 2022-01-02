@@ -134,6 +134,7 @@ namespace cynth::sem {
         using base::base;
     };
 
+    /*
     namespace detail::compound {
 
         using CaptureVariant = std::variant<
@@ -147,6 +148,7 @@ namespace cynth::sem {
         using base = esl::category<Capture, detail::compound::CaptureVariant>;
         using base::base;
     };
+    */
 
     namespace detail::compound {
 
@@ -168,7 +170,7 @@ namespace cynth::sem {
     struct Closure {
         using TypeMap       = std::unordered_map<std::string, CaptureVector<CompleteType>>;
         using ValueMap      = std::unordered_map<std::string, CaptureVector<ResolvedCapture>>;
-        using UnresolvedMap = std::unordered_map<std::string, CaptureVector<Capture>>; // TODO: Might be not needed.
+        //using UnresolvedMap = std::unordered_map<std::string, CaptureVector<Capture>>; // TODO: Might be not needed.
 
         TypeMap  types;
         ValueMap values;

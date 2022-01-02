@@ -7,18 +7,24 @@
 #include <vector>
 
 #include "context/forward.hpp"
+#include "context/storage.hpp"
 #include "sem/values.hpp"
 
 namespace cynth::context {
 
-    struct Function {
+    using FunctionStorage = Storage<sem::ArrayAllocation>;
+
+    struct Function: FunctionStorage {
         friend Main;
 
         template <typename T>
         using RefvalContainer = std::forward_list<T>;
 
         /** Run-time allocation. */
-        void insertAllocation (std::string);
+        void insertAllocation (std::string const &);
+
+        /** Run-time parameter. */
+        void insertParameter (std::string const &); // TODO: Implement.
 
         /** Compile-time allocation. */
         template <typename Value>
@@ -33,11 +39,8 @@ namespace cynth::context {
         // Function lifetime run-time allocations:
         std::vector<std::string> data;
 
-        // Function lifetime compile-time storage:
-        std::tuple<
-            RefvalContainer<sem::ArrayAllocation>
-            // ...
-        > referential;
+        // Run-time parameter declarations:
+        esl::tiny_vector<std::string> parameters;
     };
 
 }

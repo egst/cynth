@@ -112,9 +112,9 @@ namespace cynth::sem {
 
         template <typename Type>
         DefinitionProcessingResult processSimpleDefinition (
-            context::Main & ctx,
-            Type    const & type,
-            ResolvedValue * optDef
+            context::Main       & ctx,
+            Type          const & type,
+            ResolvedValue const * optDef
         ) {
             if (type.constant && !optDef)
                 return esl::result_error{"A constant variable must be explicitly initialized."};
@@ -177,8 +177,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Bool::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         return processSimpleDefinition(ctx, *this, definition);
     }
@@ -214,8 +214,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Int::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         return processSimpleDefinition(ctx, *this, definition);
     }
@@ -251,8 +251,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Float::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         return processSimpleDefinition(ctx, *this, definition);
     }
@@ -285,7 +285,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::String::processDefinition (
         context::Main &,
-        ResolvedValue *
+        ResolvedValue const *
     ) const {
         return esl::result_error{"Strings are not implemented yet."};
     }
@@ -320,8 +320,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::In::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         auto valueType = *type;
         if (!definition) {
@@ -417,8 +417,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Out::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         auto valueType = *type;
         if (!definition) {
@@ -525,13 +525,13 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Array::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
 
         if (definition) {
             // Referencing another value:
-            return [&] (CompleteValue & definition) -> DefinitionProcessingResult {
+            return [&] (CompleteValue const & definition) -> DefinitionProcessingResult {
                 // Initializing from a comp-time value:
                 return [&] (sem::value::Array & definition) -> DefinitionProcessingResult {
                     if (!interface::sameTypes(*this, definition.valueType))
@@ -602,7 +602,7 @@ namespace cynth::sem {
             if (constval())
                 return esl::result_error{"Const-valued arrays must be explicitly initialized."};
 
-            auto arrayType = ctx.global.instantiate(tpl::Array{std::move(valueType), size});
+            auto arrayType = ctx.global.instantiateType(tpl::Array{std::move(valueType), size});
             auto valName   = c::valueName(std::to_string(ctx.nextId()));
             auto alloc     = c::definition(arrayType, valName, c::zeroInitialization());
 
@@ -660,8 +660,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Buffer::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         if (!definition)
             return esl::result_error{"Buffers must be explicitly initialized."};
@@ -714,8 +714,8 @@ namespace cynth::sem {
     }
 
     DefinitionProcessingResult type::Function::processDefinition (
-        context::Main & ctx,
-        ResolvedValue * definition
+        context::Main       & ctx,
+        ResolvedValue const * definition
     ) const {
         if (!definition)
             return esl::result_error{"Functions must be initialized explicitly."};

@@ -14,6 +14,10 @@
 #include "interface/types.hpp"
 #include "sem/compound.hpp"
 #include "sem/declarations.hpp"
+#include "syn/nodes/common/decl_nodes.hpp"
+
+// TMP
+#include "debug.hpp"
 
 namespace cynth::syn {
 
@@ -26,24 +30,14 @@ namespace cynth::syn {
     using interface::TypeNameExtractionResult;
     using sem::CompleteDeclaration;
     using sem::NoReturn;
-    using sem::Variable;
 
     namespace {
 
         StatementProcessingResult processStatementImpl (context::Main & ctx, interface::node auto const & decl) {
             return [&] (auto && decls) -> StatementProcessingResult {
-                for (auto && decl: std::move(decls)) {
-                    auto result = [&] (auto && vars) {
-                        return ctx.lookup.insertValue(std::move(decl).name, std::move(std::move(vars)));
-
-                    } || target::result{} <<= esl::unite_results <<=
-                    [&ctx] (auto && type) -> esl::result<Variable> {
-                        return interface::processDeclaration(ctx)(std::move(type));
-
-                    } || target::nested<target::component_vector_tiny_result, target::category>{} <<=
-                        std::move(decl).type;
-                    if (!result) return result.error();
-                }
+                auto result = decl_nodes::declare(ctx, decls);
+                if (!result)
+                    return result.error();
 
                 return {NoReturn{}};
 
@@ -74,7 +68,8 @@ namespace cynth::syn {
 
     NameExtractionResult node::Declaration::extractNames (context::Lookup & ctx) const {
         auto names = interface::extractNames(ctx) || target::category{} <<= *type;
-        ctx.insertValue(*name.name, {});
+        auto result = ctx.insertValue(*name.name, {});
+        if (!result) return result.error();
         return names;
     }
 

@@ -105,7 +105,7 @@ namespace cynth::syn {
                             auto & posFun = *posResult;
                             auto & negFun = *negResult;
 
-                            auto closureType = c::closureVariableType(c::id(ctx.nextId()));
+                            auto closureType = c::closureType(c::id(ctx.nextId()));
                             auto & def = ctx.global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{posFun, negFun},
                                 .type           = type,
@@ -181,8 +181,7 @@ namespace cynth::syn {
                     if (!result) return result.error();
                 }
 
-                auto tupleSpec = tpl::Tuple{tupleTypes};
-                auto tupleType = ctx.global.instantiate(tupleSpec);
+                auto tupleType = ctx.global.instantiateType(tpl::Tuple{tupleTypes});
                 auto posExpr   = c::structureLiteral(tupleType, posTupleVals);
                 auto negExpr   = c::structureLiteral(tupleType, negTupleVals);
                 auto expr      = c::ternary(cond.expression, posExpr, negExpr);

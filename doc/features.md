@@ -187,3 +187,25 @@ Bool someFalse = if  (checks) false else true;
 Bool allFalse  = if (!checks) true  else false;
 Bool someTrue  = if (!checks) false else true;
 ```
+
+# Recursion
+
+Recursion is currently not possible, but I plan to add a `self` keyword for that purpose:
+
+```cth
+Int (Int) factorial = Int fn (Int x) if (x == 0) 1 else x + self(x - 1);
+```
+
+I don't have any ideas yet about mutual references between functions...
+
+```cth
+(Int (Int) f, Int (Int) g) = {
+    Int (Int) (Int (Int)) f = Int (Int) fn (Int (Int) g)
+        Int fn (Int x) if (x == 0) 1 else x * g(x - 1);
+
+    Int (Int) (Int (Int)) g = Int (Int) fn (Int (Int) f)
+        Int fn (Int x) if (x == 0) 1 else x + f(x - 1);
+
+    return (f(g(...)), g(f(...))); # TODO: How to represent this?
+};
+```

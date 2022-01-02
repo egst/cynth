@@ -10,11 +10,15 @@
 #include "interface/types.hpp"
 #include "sem/compound.hpp"
 
+// TMP
+#include "debug.hpp"
+
 namespace cynth::syn::decl_nodes {
 
     using namespace esl::sugar;
     namespace target = esl::target;
     using sem::Variable;
+    using sem::TypedName;
 
     esl::result<void> define (
         context::Main & ctx,
@@ -41,12 +45,44 @@ namespace cynth::syn::decl_nodes {
                 vars.push_back(*definitionResult);
             }
 
-            ctx.lookup.insertValue(decl.name, std::move(vars));
+            auto result = ctx.lookup.insertValue(decl.name, std::move(vars));
+            if (!result) return result.error();
             valueIterator += count;
         }
 
         if (valueIterator != values.end())
             return esl::result_error{"More targets than values in a definition."};
+
+        return {};
+    }
+
+    esl::result<void> declare (
+        context::Main & ctx,
+        esl::tiny_vector<sem::CompleteDeclaration> const & decls,
+        bool parameters
+    ) {
+        for (auto && decl: std::move(decls)) {
+            auto result = [&] (auto && vars) {
+                return ctx.lookup.insertValue(std::move(decl).name, std::move(std::move(vars)));
+
+            } || target::result{} <<= esl::unite_results <<=
+            [&, parameters] (auto && type) -> esl::result<Variable> {
+                if (parameters) {
+                    return [&] (auto && translType) -> esl::result<Variable> {
+                        auto name = c::variableName(c::id(ctx.nextId()));
+                        auto decl = c::declaration(translType, name);
+                        ctx.function.insertParameter(decl);
+                        return Variable{TypedName{type, name}};
+
+                    } || target::result{} <<= interface::translateType(std::move(type));
+                }
+                return interface::processDeclaration(ctx)(std::move(type));
+
+            } || target::nested<target::component_vector_tiny_result, target::category>{} <<=
+                std::move(decl).type;
+
+            if (!result) return result.error();
+        }
 
         return {};
     }

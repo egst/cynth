@@ -246,7 +246,7 @@ namespace cynth::syn::array_nodes {
         tpl::TypeSpecifier const & type,
         sem::Integral              size
     ) {
-        auto valType = ctx.global.instantiate(tpl::Array{
+        auto valType = ctx.global.instantiateType(tpl::Array{
             .elemType = type,
             .size     = size
         }); // cth_arr$<size>$<type>

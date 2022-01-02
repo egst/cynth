@@ -133,7 +133,7 @@ namespace cynth::syn::fun_nodes {
 
         if (!declarations.empty() || !assignments.empty()) {
             // Closure type definition:
-            result.closureType = c::closureVariableType(c::id(ctx.nextId()));
+            result.closureType = c::closureType(c::id(ctx.nextId()));
             auto closureStruct = c::structureDefinition(*result.closureType, declarations);
             /***
             struct <closure> {

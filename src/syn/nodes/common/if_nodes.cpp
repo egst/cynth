@@ -265,7 +265,7 @@ namespace cynth::syn::if_nodes {
             for (auto const & ret: returnStmts)
                 outerScope.insertStatement(c::indented(ret));
             */
-            outerScope.mergeNestedChild(branchScope);
+            outerScope.mergeChild(branchScope);
             outerScope.insertStatement(end);
 
             return returnResult;
@@ -300,7 +300,7 @@ namespace cynth::syn::if_nodes {
             outerScope.insertStatement(ifHead);
             for (auto const & ret: result.posReturnStmts)
                 outerScope.insertStatement(c::indented(ret));
-            outerScope.mergeNestedChild(posBranchScope);
+            outerScope.mergeChild(posBranchScope);
 
             /***
             } else {
@@ -311,7 +311,7 @@ namespace cynth::syn::if_nodes {
                 outerScope.insertStatement(elseHead);
                 for (auto const & ret: result.negReturnStmts)
                     outerScope.insertStatement(c::indented(ret));
-                outerScope.mergeNestedChild(negBranchScope);
+                outerScope.mergeChild(negBranchScope);
             }
 
             /***

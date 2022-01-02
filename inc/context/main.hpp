@@ -12,12 +12,17 @@
 #include "context/function.hpp"
 #include "context/global.hpp"
 #include "context/lookup.hpp"
+#include "sem/compound.hpp"
 
 namespace cynth::context {
 
     struct Main {
+        Global    & global;
+        Function  & function;
+        Branching & branching;
+        Lookup      lookup;
 
-        Main (
+        inline Main (
             Global    & global,
             Function  & function,
             Branching & branching
@@ -25,29 +30,47 @@ namespace cynth::context {
             function{function},
             branching{branching} {}
 
-        Main makeScopeChild     ();
-        Main makeBranchingChild (Branching &);
-        Main makeFunctionChild  (Function &);
+        inline Main makeScopeChild () {
+            return {global, function, branching, lookup.makeChild(), ++indent};
+        }
 
-        void mergeNestedChild   (Main const &) {}
-        void mergeFunctionChild (Main const &) {}
+        inline Main makeBranchingChild (Branching & branching) {
+            return {global, function, branching, lookup.makeChild(), ++indent};
+        }
 
-        void insertStatement (std::string);
+        Main makeFunctionChild (Function & function) {
+            return {global, function, branching, lookup.makeChild(), 0};
+        }
+
+        /* Note: mergeFunctionChild probably won't be neded.
+        void mergeNestedChild   (Main const &); // Perform this after makeScopeChild and makeBranchingChild
+        void mergeFunctionChild (Main const &); // Perform this after makeFunctionChild
+        */
+
+        void mergeChild (Main const &);
+
+        /** Insert a local statement. */
+        void insertStatement (std::string const &);
 
         /** Number of local statements. */
-        bool count () const;
+        inline bool count () const {
+            return statements.size();
+        }
 
         /** Check if any local statements present. */
-        bool empty () const;
+        inline bool empty () const {
+            return statements.empty();
+        }
 
         // TODO: I might limit the uniqueness of these ids to functions (or something) in the future.
         // For now, this simply counts the global incremental id.
-        std::size_t nextId ();
+        inline std::size_t nextId () {
+            return global.nextId();
+        }
 
-        Global    & global;
-        Function  & function;
-        Branching & branching;
-        Lookup      lookup;
+        /** Define a function based on its metadata. */
+        esl::result<Global::FunctionId> defineFunction (sem::FunctionDefinition &);
+        // TODO: Don't forget to set the newly generated name in the passed function's definition.
 
     protected:
         // TODO: Don't forget about the indent.
@@ -56,6 +79,18 @@ namespace cynth::context {
         std::size_t indent = 0;
 
         std::vector<std::string> statements; // including stuff like: `if (...) {`, `for (...) {`, `{`, `}`
+
+        inline Main (
+            Global    &  global,
+            Function  &  function,
+            Branching &  branching,
+            Lookup    && lookup,
+            std::size_t  indent
+        ):  global{global},
+            function{function},
+            branching{branching},
+            lookup{std::move(lookup)},
+            indent{indent} {}
     };
 
 #if 0

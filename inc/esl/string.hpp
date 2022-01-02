@@ -169,6 +169,18 @@ namespace esl {
         return detail::string::std_stoi<T>(str.substr(0, pos )) * esl::pow10<T>(std::stoi(str.substr(pos + 1, str.size())));
     }
 
+    inline std::string indent (std::string const & indentation, std::string const & newline, std::string const & str) {
+        auto lines = esl::split(newline, str);
+        if (lines.size() < 2) { // Just a small optimization to avoid more allocations.
+            return indentation + str;
+        }
+        std::vector<std::string> result;
+        for (auto const & line: lines) {
+            result.push_back(indentation + line);
+        }
+        return esl::join(newline, result);
+    }
+
     inline std::string pretty (std::string const & str) {
         std::size_t const line_count = std::count(str.begin(), str.end(), '\n') + 1;
         std::vector<std::string> result;

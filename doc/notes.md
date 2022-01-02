@@ -11,7 +11,7 @@ statically (globally) allocated input values with `inval_` etc. and all of them 
 For now, this identifier is a simple integer value that is counted and incrnmented
 from the begining of the translation process with every new id request (with every new name).
 This identifier is then appended as a decimal number to the names.
-This could relatively quickly lead to rather large identifier names, so I'll encode it in hex or base64
+This could relatively quickly lead to rather large identifier names, so I'll encode it in hex or some other more compact representation
 or something like that to save some space, but for now I'm keeping it decimal.
 Also, I could decrement the counted identifier back to some number before entering a block or a function or something,
 but that could be unnecessarilly complicated.

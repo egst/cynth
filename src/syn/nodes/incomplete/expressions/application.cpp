@@ -105,7 +105,8 @@ namespace cynth::syn {
             for (auto const & [name, capture]: implementation.closure->values) {
                 auto varsResult = esl::unite_results <<= captureVariable || target::tiny_vector{} <<= capture;
                 if (!varsResult) return varsResult.error();
-                funScope.lookup.insertValue(name, *std::move(varsResult));
+                auto result = funScope.lookup.insertValue(name, *std::move(varsResult));
+                if (!result) return result.error();
             }
             for (auto const & [name, type]: implementation.closure->types) {
                 funScope.lookup.insertType(name, {type});
@@ -166,10 +167,9 @@ namespace cynth::syn {
 
             // Run-time capture or some arguments run-time:
             return [&] (auto args) -> ExpressionProcessingResult {
-                auto name = ctx.global.defineFunction(fun.definition);
-                auto call = fun.closureVariable
-                    ? c::call(name, *fun.closureVariable, args)
-                    : c::call(name, args);
+                auto id = ctx.defineFunction(fun.definition);
+                if (!id) return id.error();
+                auto call = c::call(id->name, fun.closureVariable.value_or(c::emptyValue()), args);
                 auto resultName = c::tupleVariableName(c::id(ctx.nextId()));
                 auto resultDef  = c::definition(c::autoType(), resultName, call);
 

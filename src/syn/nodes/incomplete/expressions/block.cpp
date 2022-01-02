@@ -145,15 +145,16 @@ namespace cynth::syn {
         };
 
         esl::result<BlockExpressionResult> processBlockExpression (
-            context::Global global,
-            std::string tupleVar,
-            esl::tiny_vector<Returned> returned
+            context::Global & global,
+            std::string const * tupleVar,
+            esl::tiny_vector<Returned> const & returned
         ) {
             BlockExpressionResult blockResult;
 
             for (auto const & [i, entry]: esl::enumerate(returned)) {
                 auto name         = c::tupleElementName(i);
-                auto tupleElement = c::tupleElement(tupleVar, i);
+                auto tupleElement = tupleVar ? c::tupleElement(*tupleVar, i) : "<result>";
+                // TODO: Take care of nullptr tupleVar properly...
 
                 auto result = [&] (ReturnedValues const & values) {
                     return [&] (sem::type::Function const & type) -> esl::result<void> {
@@ -185,7 +186,7 @@ namespace cynth::syn {
                             auto & def = global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{esl::make_component_vector(functions)},
                                 .type           = type,
-                                .closureType    = c::closureVariableType(c::id(global.nextId())),
+                                .closureType    = c::closureType(c::id(global.nextId())),
                                 .name           = c::functionName(c::id(global.nextId()))
                             });
                             auto newFun = sem::value::Function{
@@ -247,65 +248,30 @@ namespace cynth::syn {
         auto blockScope = outerScope.makeBranchingChild(branching);
         auto & global = outerScope.global;
 
-        auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
-
-        auto result = [&] (auto blockResult) -> ExpressionProcessingResult {
-            if (!blockResult.always)
-                return esl::result_error{"Block expression does not always return."};
-                // Note: This actually includes the case when it never returns.
-
-            // Fully compile-time block expression:
-            if (!blockResult.runtime) {
-                esl::tiny_vector<ResolvedValue> result;
-                for (auto const & entry: blockResult.returned) {
-                    auto returnedResult = entry.template get<ReturnedValues>();
-                    if (!returnedResult) // Implementation error.
-                        return esl::result_error{"Unknown value of a compile-time return."};
-                    auto const & returned = *returnedResult;
-                    if (returned.size() == 0)
-                        return {}; // Returning void.
-                    if (returned.size() > 1) // Implementation error.
-                        return esl::result_error{"More than one compile-time return."};
-                    result.push_back(returned.front());
-                }
-                return result;
-            }
-
-            // At least partially run-time block expression:
-
+        if constexpr (Program) {
             return [&] (auto blockResult) -> ExpressionProcessingResult {
-                auto head = c::blockExpressionBegin(tupleVar);
-                auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
-                auto ret  = c::indented(c::blockExpressionReturn());
-                auto end  = c::statement(c::blockExpressionEnd());
+                return [&] (auto blockResult) -> ExpressionProcessingResult {
+                    auto init = c::returnInitFromDeclarations(blockResult.declarations);
+                    auto ret  = c::mainReturn();
 
-                /***
-                __auto_type <tupvar> = ({
+                    /***
                     __label__ ret;
                     struct result {
                         <type1> e0;
                         <type2> e1;
                         // ...
-                    };
-                    struct result result;
+                    } result;
                     <body>
-                    ret: result;
-                });
-                ***/
-                outerScope.insertStatement(head);
-                blockScope.insertStatement(init);
-                outerScope.mergeNestedChild(blockScope);
-                blockScope.insertStatement(ret);
-                outerScope.insertStatement(end);
+                    ret:
+                    ***/
+                    outerScope.insertStatement(init);
+                    outerScope.mergeChild(blockScope);
+                    outerScope.insertStatement(ret);
 
-                return blockResult.resolved;
-            } || target::result{} <<= processBlockExpression(outerScope.global, tupleVar, blockResult.returned);
+                    return blockResult.resolved;
+                } || target::result{} <<= processBlockExpression(outerScope.global, nullptr, blockResult.returned);
 
-        } || target::result{} <<= processBlock(blockScope, statements);
-
-        if (!result) return result.error();
-
-        if constexpr (Program) {
+            } || target::result{} <<= processBlock(blockScope, statements);
 
             /*** TODO: Initialization output.
             cth_init_output = <result>;
@@ -335,7 +301,62 @@ namespace cynth::syn {
 
             return {};
 
-        } else return result;
+        } else {
+            auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
+
+            return [&] (auto blockResult) -> ExpressionProcessingResult {
+                if (!blockResult.always)
+                    return esl::result_error{"Block expression does not always return."};
+                    // Note: This actually includes the case when it never returns.
+
+                // Fully compile-time block expression:
+                if (!blockResult.runtime) {
+                    esl::tiny_vector<ResolvedValue> result;
+                    for (auto const & entry: blockResult.returned) {
+                        auto returnedResult = entry.template get<ReturnedValues>();
+                        if (!returnedResult) // Implementation error.
+                            return esl::result_error{"Unknown value of a compile-time return."};
+                        auto const & returned = *returnedResult;
+                        if (returned.size() == 0)
+                            return {}; // Returning void.
+                        if (returned.size() > 1) // Implementation error.
+                            return esl::result_error{"More than one compile-time return."};
+                        result.push_back(returned.front());
+                    }
+                    return result;
+                }
+
+                // At least partially run-time block expression:
+
+                return [&] (auto blockResult) -> ExpressionProcessingResult {
+                    auto head = c::blockExpressionBegin(tupleVar);
+                    auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
+                    auto ret  = c::indented(c::blockExpressionReturn());
+                    auto end  = c::statement(c::blockExpressionEnd());
+
+                    /***
+                    __auto_type <tupvar> = ({
+                        __label__ ret;
+                        struct result {
+                            <type1> e0;
+                            <type2> e1;
+                            // ...
+                        } result;
+                        <body>
+                        ret: result;
+                    });
+                    ***/
+                    outerScope.insertStatement(head);
+                    outerScope.insertStatement(init);
+                    outerScope.mergeChild(blockScope);
+                    outerScope.insertStatement(ret);
+                    outerScope.insertStatement(end);
+
+                    return blockResult.resolved;
+                } || target::result{} <<= processBlockExpression(outerScope.global, &tupleVar, blockResult.returned);
+
+            } || target::result{} <<= processBlock(blockScope, statements);
+        }
 
     }
 
@@ -356,7 +377,7 @@ namespace cynth::syn {
                 }
                 ***/
                 outerScope.insertStatement(head);
-                outerScope.mergeNestedChild(blockScope);
+                outerScope.mergeChild(blockScope);
                 outerScope.insertStatement(end);
             }
 

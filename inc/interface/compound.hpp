@@ -39,9 +39,32 @@ namespace cynth::interface {
     // Functions:
 
     // TODO: Should this be moved elsewhere? interface/declarations or something?
-    inline sem::FunctionDefinition::Parameter resolveParam (sem::CompleteDeclaration const & decl) {
+
+    inline sem::FunctionDefinition::Parameter resolveParameter (sem::CompleteDeclaration const & decl) {
         return {.name = decl.name, .arity = static_cast<sem::Integral>(decl.type.size())};
     }
+
+    template <esl::sized_range P, esl::sized_range T> requires (
+        esl::same_but_cvref<esl::range_value_type<P>, sem::FunctionDefinition::Parameter> &&
+        esl::same_but_cvref<esl::range_value_type<T>, sem::CompleteType>
+    ) esl::result<esl::tiny_vector<sem::CompleteDeclaration>> parameterDeclarations (
+        P const & parameters,
+        T const & types
+    ) {
+        esl::tiny_vector<sem::CompleteDeclaration> result;
+        auto typeIter = types.begin();
+        for (auto param: parameters) {
+            std::size_t count = param.arity;
+            if (typeIter + count >= types.end()) // Implementation error.
+                return esl::result_error{"More parameters than types."};
+            result.push_back(sem::CompleteDeclaration{
+                esl::make_component_vector(esl::view{typeIter, count}),
+                param.name
+            });
+        }
+        return result;
+    }
+
     inline esl::tiny_vector<sem::CompleteType> declType (sem::CompleteDeclaration const & decl) {
         return decl.type;
     }

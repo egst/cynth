@@ -77,7 +77,8 @@ namespace cynth::syn {
                     // Define iteration elements:
                     for (auto & [name, alloc]: state.allocations) {
                         auto var = Variable{alloc->value[i]};
-                        loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
+                        auto result = loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
+                        if (!result) return result.error();
                     }
 
                     // Evaluate the loop body:
@@ -117,8 +118,10 @@ namespace cynth::syn {
 
             auto loopScope = outerScope.makeScopeChild();
             state.processAllocations();
-            for (auto const & [name, var]: std::move(state.variables))
-                loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
+            for (auto const & [name, var]: std::move(state.variables)) {
+                auto result = loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
+                if (!result) return result.error();
+            }
 
             return [&, size = size] (auto expr) -> ExpressionProcessingResult {
                 return [&, size = size] (auto type) -> ExpressionProcessingResult {
@@ -165,7 +168,7 @@ namespace cynth::syn {
                     /***
                         <body>
                     ***/
-                    outerScope.mergeNestedChild(loopScope);
+                    outerScope.mergeChild(loopScope);
 
                     /***
                         val_f[iter] = <result>;

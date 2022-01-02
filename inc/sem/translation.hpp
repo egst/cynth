@@ -30,6 +30,7 @@ namespace cynth {
         <struct>.internal_member
         <tuple>.e<n>
         ***/
+        constexpr char const * argument        = "arg";
         constexpr char const * array           = "arr";
         constexpr char const * boolean         = "bool";
         constexpr char const * buffer          = "buff";
@@ -293,7 +294,7 @@ namespace cynth {
 
         /**
          *  For now, I'll jsut use the unique id numbers in decimal
-         *  but I might switch do hex or base64 representation later.
+         *  but I might switch do hex or some other more compact representation later.
          *  TODO: Update code everyghere to use this function instead of std::to_string.
          */
         template <std::integral T>
@@ -416,10 +417,17 @@ namespace cynth {
         }
 
         /***
+        closure
+        ***/
+        inline std::string closureArgumentName () {
+            return str::closure;
+        }
+
+        /***
         # Function closure type
         cth_closure_<id>
         ***/
-        inline std::string closureVariableType (std::string const & id) {
+        inline std::string closureType (std::string const & id) {
             return c::global(std::string{} + str::closure + "_" + id);
         }
 
@@ -625,12 +633,33 @@ namespace cynth {
         namespace detail::translation {
 
             template <typename... Ts>
-            inline std::string structureDefinition (std::optional<std::string> const & name, Ts const &... decls) {
-                auto head     = std::string{} + "struct " + (name ? *name + " " : "") + "{";
+            inline std::string compoundDefinition (
+                std::string                const &    kind,
+                std::optional<std::string> const &    name,
+                Ts                         const &... items
+            ) {
+                auto head     = std::string{} + kind + " " + (name ? *name + " " : "") + "{";
                 auto newLine  = c::newLine();
-                auto contents = c::indentedTerminatedJoin(";", decls...);
+                auto contents = c::indentedTerminatedJoin(";", items...);
                 return head + (!contents.empty() ? newLine + contents + newLine : "") + "}";
-                // When empty: `struct <name> {}`
+                // When empty: `<kind> <name> {}`
+            }
+
+            template <esl::sized_range T>
+            inline std::string prefixedCompoundDefinition (
+                std::string                const & kind, // "struct" or "union"
+                std::string                const & prefix,
+                std::optional<std::string> const & name,
+                T                                  items
+            ) {
+                for (auto const & [i, item]: esl::enumerate(items))
+                    item += std::string{} + " " + prefix + std::to_string(i);
+
+                auto head     = std::string{} + kind + " " + (name ? *name + " " : "") + "{";
+                auto newLine  = c::newLine();
+                auto contents = c::indentedTerminatedJoin(";", items);
+                return head + (!contents.empty() ? newLine + contents + newLine : "") + "}";
+                // When empty: `<kind> <name> {}`
             }
 
         }
@@ -644,7 +673,7 @@ namespace cynth {
         ***/
         template <typename... Ts>
         inline std::string structureDefinition (std::string const & name, Ts const &... decls) {
-            return detail::translation::structureDefinition(std::make_optional(name), decls...);
+            return detail::translation::compoundDefinition("struct", std::make_optional(name), decls...);
         }
 
         /***
@@ -656,7 +685,79 @@ namespace cynth {
         ***/
         template <typename... Ts>
         inline std::string anonymousStructureDefinition (Ts const &... decls) {
-            return detail::translation::structureDefinition(std::nullopt, decls...);
+            return detail::translation::compoundDefinition("struct", std::nullopt, decls...);
+        }
+
+        /***
+        struct <name> {
+            <type1> e0;
+            <type2> e1;
+            ...
+        }
+        ***/
+        template <esl::sized_range T>
+        inline std::string tupleStructureDefinition (std::string const & name, T const & types = esl::nullrange<>{}) {
+            return detail::translation::prefixedCompoundDefinition("struct", str::tuple, std::make_optional(name), types);
+        }
+
+        /***
+        struct {
+            <type1> e0;
+            <type2> e1;
+            ...
+        }
+        ***/
+        template <esl::sized_range T>
+        inline std::string anonymousTupleStructureDefinition (T const & types = esl::nullrange<>{}) {
+            return detail::translation::prefixedCompoundDefinition("struct", str::tuple, std::nullopt, types);
+        }
+
+        /***
+        union <name> {
+            <decl1>;
+            <decl2>;
+            ...
+        }
+        ***/
+        template <typename... Ts>
+        inline std::string unionDefinition (std::string const & name, Ts const &... decls) {
+            return detail::translation::compoundDefinition("union", std::make_optional(name), decls...);
+        }
+
+        /***
+        union {
+            <decl1>;
+            <decl2>;
+            ...
+        }
+        ***/
+        template <typename... Ts>
+        inline std::string anonymousUnionDefinition (Ts const &... decls) {
+            return detail::translation::compoundDefinition("union", std::nullopt, decls...);
+        }
+
+        /***
+        union <name> {
+            <type1> v0;
+            <type2> v1;
+            ...
+        }
+        ***/
+        template <esl::sized_range T>
+        inline std::string variantUnionDefinition (std::string const & name, T const & types) {
+            return detail::translation::prefixedCompoundDefinition("union", str::variant, std::make_optional(name), types);
+        }
+
+        /***
+        union {
+            <type1> v0;
+            <type2> v1;
+            ...
+        }
+        ***/
+        template <esl::sized_range T>
+        inline std::string anonymousVariantUnionDefinition (T const & types = esl::nullrange<>{}) {
+            return detail::translation::prefixedCompoundDefinition("union", str::variant, std::nullopt, types);
         }
 
         /***
@@ -951,6 +1052,20 @@ namespace cynth {
             return c::memberAccess(def::returnVariable, c::returnElementName(number));
         }
 
+        /***
+        <structure>.data
+        ***/
+        inline std::string closureData (std::string const & structure, std::size_t variant) {
+            return structure + "." + def::closureDataMember + "." + str::variant + std::to_string(variant);
+        }
+
+        /***
+        <structure>.branch
+        ***/
+        inline std::string closureBranch (std::string const & structure) {
+            return structure + "." + def::branchMember;
+        }
+
         //// Templates ////
 
         /***
@@ -1115,6 +1230,28 @@ namespace cynth {
         }
 
         /***
+        swith (<val>) {
+        ***/
+        inline std::string switchBegin (std::string const & val) {
+            return std::string{} + "if (" + val + ") {";
+        }
+
+        /***
+        case <num>: <`default:`>?
+            <stmt1>
+            <stmt2>
+            ...
+            <`break;`>?
+        ***/
+        template <typename... Ts>
+        inline std::string switchCase (std::size_t num, bool defolt, bool brek, Ts const &... stmts) {
+            auto newLine = c::newLine();
+            auto indent  = c::indentation();
+            auto label   = std::string{} + "case " + std::to_string(num) + ":" + (defolt ? " default:" : "");
+            return label + newLine + c::indentedJoin("", stmts...) + newLine + (brek ? indent + "break;" : "");
+        }
+
+        /***
         while (<cond>) {
         ***/
         inline std::string whileBegin (std::string const & cond) {
@@ -1151,19 +1288,6 @@ namespace cynth {
         }
 
         /***
-            <stmt1>;
-            <stmt2>;
-            ...
-            <stmtN>;
-        ***/
-        template <typename... Ts>
-        inline std::string functionBody (
-            Ts const &... params
-        ) {
-            return c::indentedTerminatedJoin(";", params...);
-        }
-
-        /***
         <out> <name> (
             <param1>,
             <param2>,
@@ -1174,8 +1298,44 @@ namespace cynth {
         inline std::string functionBegin (
             std::string const & out, std::string const & name, Ts const &... params
         ) {
-            auto newLine = c::newLine();
-            return out + " " + name + " (" + newLine + c::indentedJoin(",", params...) + newLine + ") {";
+            return out + " " + name + " (" + c::indentedJoin(",", params...) + ") {";
+        }
+
+        /***
+        <type1> arg1,
+        <type2> arg2,
+        ...
+        ***/
+        template <esl::sized_range T>
+        inline std::string functionParameters (T types) {
+            for (auto const & [i, type]: esl::enumerate(types))
+                type += std::string{} + " " + str::argument + std::to_string(i);
+            return c::join(",", types);
+        }
+
+        /***
+        arg1,
+        arg2,
+        ...
+        ***/
+        template <esl::sized_range T>
+        inline std::string functionArguments (T types) {
+            for (auto const & [i, type]: esl::enumerate(types))
+                type = str::argument + std::to_string(i);
+            return c::join(",", types);
+        }
+
+        /***
+            <stmt1>;
+            <stmt2>;
+            ...
+            <stmtN>;
+        ***/
+        template <typename... Ts>
+        inline std::string functionBody (
+            Ts const &... params
+        ) {
+            return c::indentedTerminatedJoin(";", params...);
         }
 
         //// Looping ////
@@ -1272,10 +1432,11 @@ namespace cynth {
         }
 
         /***
-        ret: <TODO>;
+        ret:
         ***/
         inline std::string mainReturn () {
-            return c::statement(c::label(def::returnLabel) + " /* TODO */");
+            // TODO...
+            return c::label(def::returnLabel);
         }
 
         /***
@@ -1311,6 +1472,20 @@ namespace cynth {
                     c::statement(c::assignment(*value, dataTarget));
             }
             return c::statement(c::assignment(branchString, branchTarget));
+        }
+
+        /***
+        <type> result;
+        ***/
+        inline std::string functionResultInit (std::string type) {
+            return c::declaration(type, def::returnVariable);
+        }
+
+        /***
+        return result;
+        ***/
+        inline std::string functionResultReturn () {
+            return c::functionReturn(def::returnVariable);
         }
 
         //// Attributes ////
@@ -1414,6 +1589,13 @@ namespace cynth {
                 c::structure(type),
                 c::branchInitialization(branch)
             );
+        }
+
+        /***
+        (struct cth_empty) {}
+        ***/
+        inline std::string emptyValue () {
+            return "(" + c::structure(c::global(def::empty)) + ") {}";
         }
 
         //// Unsorted (TODO) ////

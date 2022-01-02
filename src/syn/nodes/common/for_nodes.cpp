@@ -196,8 +196,10 @@ namespace cynth::syn::for_nodes {
 
             state.processAllocations();
             auto loopScope = outerScope.makeScopeChild();
-            for (auto const & [name, var]: std::move(state.variables))
-                loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
+            for (auto const & [name, var]: std::move(state.variables)) {
+                auto result = loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
+                if (!result) return result.error();
+            }
             auto bodyResult = interface::processStatement(loopScope) || target::category{} <<= body;
             if (!bodyResult) return bodyResult.error();
 
@@ -234,7 +236,7 @@ namespace cynth::syn::for_nodes {
             /***
                 <body>
             ***/
-            outerScope.mergeNestedChild(loopScope);
+            outerScope.mergeChild(loopScope);
 
             /***
             }

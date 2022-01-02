@@ -9,7 +9,9 @@ namespace cynth::context {
     struct Branching {
         friend Main;
 
-        std::size_t nextBranch ();
+        inline std::size_t nextBranch () {
+            return branch++;
+        }
 
     protected:
         std::size_t branch;
