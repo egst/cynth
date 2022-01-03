@@ -29,9 +29,6 @@ SRC_FILES      += $(wildcard $(SRC)*/*/*/*$(EXT_IMPL))
 SRC_FILES      += $(wildcard $(SRC)*/*/*/*/*$(EXT_IMPL))
 SRC_FILES      += $(wildcard $(SRC)*/*/*/*/*/*$(EXT_IMPL))
 SRC_FILES      += $(GEN_SRC_FILES)
-ENTRY_FILES     = $(ENTRY_POINTS:%=$(ENTRY)%$(EXT_IMPL))
-BIN_SRC_FILES   = $(SRC_FILES:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ))
-BIN_ENTRY_FILES = $(ENTRY_FILES:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ))
 
 # Note: The O2 optimization might be necessary to avoid problems with long mangled names of complex variant types.
 BASIC_OPTIONS = -I$(INC) -std=$(STD)

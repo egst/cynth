@@ -2,11 +2,14 @@ include setup.mk
 
 #### TARGETS ####
 
+ENTRY_FILES     = $(ENTRY_POINTS:%=$(ENTRY)%$(EXT_IMPL))
+BIN_SRC_FILES   = $(SRC_FILES:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ))
+BIN_ENTRY_FILES = $(ENTRY_FILES:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ))
+BIN_DIST_FILES  = $(ENTRY_FILES:$(ENTRY)%$(EXT_IMPL)=$(BIN_DIST)%$(EXT_EXE))
+
 .PHONY: all clean test clean-dist clean-bin clean-dep clean-gen
 
 all: $(BIN_SRC_FILES) $(BIN_ENTRY_FILES) $(BIN_DIST_FILES)
-
-deps: $(DEP_SRC_FILES) $(DEP_ENTRY_FILES)
 
 compile: $(BIN_SRC_FILES) $(BIN_ENTRY_FILES)
 

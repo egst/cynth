@@ -1,27 +1,18 @@
-include ../setup.mk
+include setup.mk
 
 #### CONFIG ####
 
 GEN_SRC_FILES   = $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(SRC)$(IMPL_LEXER)$(EXT_IMPL)
 GEN_FILES       = $(INC)$(HEAD_PARSER)$(EXT_HEAD) $(GEN_SRC_FILES)
 
-# Generate basic dependencies (header files change -> recompile object files):
-#GEN_DEPS       = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MT '$1 $2' -MF $@ $<
-GEN_DEPS       = mkdir -p $(dir $@); $(GCC) $(BASIC_OPTIONS) $(DEP_OPTIONS) -MM -MG -MT $1 -MF $@ $<
-GEN_SRC_DEPS   = $(call GEN_DEPS,$(<:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ)))
-GEN_ENTRY_DEPS = $(call GEN_DEPS,$(<:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ)))
-
-# Generate lexer:
-GEN_LEXER = $(FLEX) $(LEX_OPTIONS) -o $(SRC)$(IMPL_LEXER)$(EXT_IMPL) $(GEN)lexer.l
-
-# Generate parser:
+GEN_LEXER  = $(FLEX) $(LEX_OPTIONS) -o $(SRC)$(IMPL_LEXER)$(EXT_IMPL) $(GEN)lexer.l
 GEN_PARSER = $(BISON) $(BISON_OPTIONS) --defines=$(INC)$(HEAD_PARSER)$(EXT_HEAD) -o $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(GEN)parser.y
 
 #### TARGETS ####
 
 .PHONY: all clean
 
-.all: $(GEN_FILES)
+all: $(GEN_FILES)
 
 # Removing generated parser & lexer files:
 clean:
