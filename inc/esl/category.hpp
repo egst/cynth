@@ -37,12 +37,10 @@ namespace esl {
         template <esl::variant_member<variant> T>
         constexpr category (T && other):
             value{std::forward<T>(other)} {
-            esl::dout << "category{node}\n";
         }
 
         template <esl::variant_member<variant> T>
         constexpr Derived & operator = (T && other) {
-            esl::dout << "category = node\n";
             value = std::forward<T>(other);
             return *static_cast<Derived *>(this);
         }
@@ -50,12 +48,10 @@ namespace esl {
         template <typename T> requires esl::compatible_variant<decltype(T::value), variant>
         constexpr category (T && other):
             value{esl::variant_cast<variant>(esl::forward_like<T>(other.value))} {
-            esl::dout << "category{category}\n";
         }
 
         template <typename T> requires esl::compatible_variant<decltype(T::value), variant>
         constexpr Derived & operator = (T && other) {
-            esl::dout << "category = category\n";
             std::visit([this] <esl::temporary U> (U && otherValue) {
                 value = esl::forward_like<T>(otherValue);
             }, esl::forward_like<T>(other.value));

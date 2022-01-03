@@ -12,15 +12,14 @@ STD = c++20
 INC       = inc/
 SRC       = src/
 DEP_SRC   = dep/src/
-DEP_ENTRY = dep/
+DEP_ENTRY = dep/entry/
 DEP_LINK  = dep/link/
 BIN_SRC   = obj/src/
-BIN_ENTRY = obj/
+BIN_ENTRY = obj/entry/
 BIN_DIST  = dist/
 GEN       = gen/
 TESTS     = tests/
 ENTRY     = entry/
-#ENTRY    =
 
 # Generated files location:
 # (Excluding the SRC or INC directory and the EXT_IMPL or EXT_HEAD extension.)
@@ -45,8 +44,8 @@ EXT_CYNTH = .cth
 #ENTRY_POINTS += cynth
 #ENTRY_POINTS += parser
 #ENTRY_POINTS += interpreter
-ENTRY_POINTS += compiler
 #ENTRY_POINTS += test
+ENTRY_POINTS += compiler
 
 # Compiler:
 # (Tested with GCC 10, Clang 10 and 11.)
@@ -62,10 +61,12 @@ BISON = bison
 
 # Additional compiler options:
 # (Do not set the -std, -I and -O options here.)
-ADDITIONAL_OPTIONS  = -static -Wall -Wextra -Wno-missing-braces -pedantic -fdiagnostics-color=always
+ADDITIONAL_OPTIONS  = -static -Wall -Wextra -pedantic
+ADDITIONAL_OPTIONS += -Wno-missing-braces
+ADDITIONAL_OPTIONS += -fdiagnostics-color=always
 ADDITIONAL_OPTIONS += -ftemplate-backtrace-limit=0
-#ADDITIONAL_OPTIONS += -fsanitize=undefined
 ADDITIONAL_OPTIONS += -fvisibility-inlines-hidden
+#ADDITIONAL_OPTIONS += -fsanitize=undefined
 
 # More additional options:
 # * linkage (with the chosen compiler)
@@ -73,8 +74,8 @@ ADDITIONAL_OPTIONS += -fvisibility-inlines-hidden
 # * flex lexer
 # * bison parser
 LINK_OPTIONS   = -fdiagnostics-color=always
-#LINK_OPTIONS  += -fsanitize=undefined
 LINK_OPTIONS  += -fvisibility-inlines-hidden
+#LINK_OPTIONS  += -fsanitize=undefined
 DEP_OPTIONS    =
 FLEX_OPTIONS   =
 BISON_OPTIONS  = -Wcounterexamples

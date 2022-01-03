@@ -12,11 +12,14 @@
 #include "esl/zip.hpp"
 
 #include "sem/numeric_types.hpp"
+
+// TMP
+#include "debug.hpp"
+
 // TODO: Decide where to use std::size_t and where to use sem::Integral
-
 // TODO: Cleanup: Many of the function in c:: are not needed anymore.
-
 // TODO: Either put this in the `sem::` namespace, or move it out of the `sem/` directory.
+
 namespace cynth {
 
     namespace str {
@@ -165,16 +168,12 @@ namespace cynth {
         /***
         \t...\t
         ***/
-        inline std::string indentation (int n = 1) {
-            return esl::repeat(str::indent, n);
-        }
+        std::string indentation (int n = 1);
 
         /***
         \t...\t<stmt>
         ***/
-        inline std::string indented (std::string stmt, int n = 1) {
-            return indentation(n) + stmt;
-        }
+        std::string indented (std::string stmt, int n = 1);
 
         inline std::string newLine () {
             return str::newLine;
@@ -209,7 +208,8 @@ namespace cynth {
         template <typename... Ts>
         std::string indentedJoin (std::string const & sep, Ts const &... args) {
             auto indent = c::indentation();
-            return indent + esl::join(sep + c::newLine() + indent, args...);
+            auto joined = esl::join(sep + c::newLine() + indent, args...);
+            return joined.empty() ? "" : indent + joined;
         }
 
         /***
@@ -217,7 +217,8 @@ namespace cynth {
         ***/
         template <typename... Ts>
         std::string inlineTerminatedJoin (std::string const & sep, Ts const &... args) {
-            return esl::join(sep + " " , args...) + sep;
+            auto joined = esl::join(sep + " " , args...);
+            return joined.empty() ? "" : joined + sep;
         }
 
         /***
@@ -228,7 +229,8 @@ namespace cynth {
         ***/
         template <typename... Ts>
         std::string terminatedJoin (std::string const & sep, Ts const &... args) {
-            return esl::join(sep + c::newLine(), args...) + sep;
+            auto joined = esl::join(sep + c::newLine(), args...);
+            return joined.empty() ? "" : joined + sep;
         }
 
         /***
@@ -241,7 +243,9 @@ namespace cynth {
         template <typename... Ts>
         std::string indentedTerminatedJoin (std::string const & sep, Ts const &... args) {
             auto indent = c::indentation();
-            return indent + esl::join(sep + c::newLine() + indent, args...) + sep;
+            auto joined = indent + esl::join(sep + c::newLine() + indent, args...);
+            std::cout << "joined: " << joined << '\n';
+            return joined.empty() ? "" : joined + sep;
         }
 
         /**
@@ -254,43 +258,29 @@ namespace cynth {
         /***
         (<expr>)
         ***/
-        inline std::string expression (std::string const & expr) {
-            constexpr bool neatParentheses = true; // TODO: Put this in some global config.
-            if constexpr (neatParentheses)
-                return esl::parenthesized(expr);
-            else
-                return "(" + expr + ")";
-        }
+        std::string expression (std::string const & expr);
 
         /***
         <stmt>;
         ***/
-        inline std::string statement (std::string const & stmt) {
-            return stmt + ";";
-        }
+        std::string statement (std::string const & stmt);
 
         /***
         [<expr>]
         ***/
-        inline std::string brackets (std::string const & expr) {
-            return "[" + expr + "]";
-        }
+        std::string brackets (std::string const & expr);
 
         //// Declarations & definitions ////
 
         /***
         <type> <name>
         ***/
-        inline std::string declaration (std::string const & type, std::string const & name) {
-            return type + " " + name;
-        }
+        std::string declaration (std::string const & type, std::string const & name);
 
         /***
         <type> <name> = <val>
         ***/
-        inline std::string definition (std::string const & type, std::string const & name, std::string const & val) {
-            return type + " " + name + " = " + val;
-        }
+        std::string definition (std::string const & type, std::string const & name, std::string const & val);
 
         //// Naming ////
 
@@ -307,116 +297,80 @@ namespace cynth {
         /***
         cth_<name>
         ***/
-        inline std::string global (std::string const & name) {
-            return std::string{} + str::global + "_" + name;
-        }
+        std::string global (std::string const & name);
 
         /***
         # Statically allocated value
         val_<id> (no global prefix)
         ***/
-        inline std::string valueName (std::string const & id) {
-            return std::string{} + str::value + "_" + id;
-        }
+        std::string valueName (std::string const & id);
 
         /***
         # Statically allocated output value
         cth_outval_<id>
         ***/
-        inline std::string outputValueName (std::string const & id) {
-            return c::global(std::string{} + str::output + str::value + "_" + id);
-        }
+        std::string outputValueName (std::string const & id);
 
         /***
         # Statically allocated input value
         cth_inval_<id>
         ***/
-        inline std::string inputValueName (std::string const & id) {
-            return c::global(std::string{} + str::input + str::value + "_" + id);
-        }
+        std::string inputValueName (std::string const & id);
 
         /***
         # Statically allocated buffer value
         cth_buffval_<id>
         ***/
-        inline std::string bufferValueName (std::string const & id) {
-            return c::global(std::string{} + str::buffer + str::value + "_" + id);
-        }
+        std::string bufferValueName (std::string const & id);
 
         /***
         # Statically allocated input buffer value
         cth_inbuffval_<id>
         ***/
-        inline std::string inputBufferValueName (std::string const & id) {
-            return c::global(std::string{} + str::input + str::buffer + str::value + "_" + id);
-        }
+        std::string inputBufferValueName (std::string const & id);
 
         /***
         # Statically allocated output buffer value
         cth_outbuffval_<id>
         ***/
-        inline std::string outputBufferValueName (std::string const & id) {
-            return c::global(std::string{} + str::output + str::buffer + str::value + "_" + id);
-        }
+        std::string outputBufferValueName (std::string const & id);
 
         /***
         # Local variable
         var_<id>
         ***/
-        inline std::string variableName (std::string const & id) {
-            return std::string{} + str::variable + "_" + id;
-        }
-
-        /***
-        # For loop iteration variable
-        itervar_<id>
-        ***/
-        /* TODO: Maybe won't be needed.
-        inline std::string iterationVariableName (std::string const & id) {
-            return std::string{} + str::iterator + str::variable + "_" + id;
-        }
-        */
+        std::string variableName (std::string const & id);
 
         /***
         # Local tuple variable - returning from blocks.
         tupvar_<id>
         ***/
-        inline std::string tupleVariableName (std::string const & id) {
-            return std::string{} + str::tuple + str::variable + "_" + id;
-        }
+        std::string tupleVariableName (std::string const & id);
 
         // TODO: Might be not needed.
         /***
         # Struct member name
         m_<id>
         ***/
-        inline std::string memberName (std::string const & id) {
-            return std::string{} + str::member + "_" + id;
-        }
+        std::string memberName (std::string const & id);
 
         /***
         # Tuple struct member name
         e<number>
         ***/
-        inline std::string tupleElementName (std::size_t number) {
-            return std::string{} + str::element + std::to_string(number);
-        }
+        std::string tupleElementName (std::size_t number);
 
         /***
         # Result struct member name
         e<number>
         ***/
-        inline std::string returnElementName (std::size_t number) {
-            return std::string{} + str::element + std::to_string(number);
-        }
+        std::string returnElementName (std::size_t number);
 
         /***
         # Local variable holding a function's closure
         closurevar_<id>
         ***/
-        inline std::string closureVariableName (std::string const & id) {
-            return std::string{} + str::closure + str::variable + "_" + id;
-        }
+        std::string closureVariableName (std::string const & id);
 
         /***
         closure
@@ -429,39 +383,29 @@ namespace cynth {
         # Function closure type
         cth_closure_<id>
         ***/
-        inline std::string closureType (std::string const & id) {
-            return c::global(std::string{} + str::closure + "_" + id);
-        }
+        std::string closureType (std::string const & id);
 
         /***
         cth_fun_<id>
         ***/
-        inline std::string functionName (std::string const & id) {
-            return c::global(std::string{} + str::function + "_" + id);
-        }
+        std::string functionName (std::string const & id);
 
         //// Built-in operations ////
 
         /***
         *<val>
         ***/
-        inline std::string dereference (std::string const & val) {
-            return "*" + val;
-        }
+        std::string dereference (std::string const & val);
 
         /***
         &<val>
         ***/
-        inline std::string addressof (std::string const & val) {
-            return "&" + val;
-        }
+        std::string addressof (std::string const & val);
 
         /***
         <array>[<index>]
         ***/
-        inline std::string arraySubscript (std::string const & array, std::string const & index) {
-            return array + "[" + index + "]";
-        }
+        std::string arraySubscript (std::string const & array, std::string const & index);
 
         /***
         <f>(
@@ -486,30 +430,22 @@ namespace cynth {
         /***
         (<type>) <val>
         ***/
-        inline std::string cast (std::string const & val, std::string const & type) {
-            return "(" + type + ") " + val;
-        }
+        std::string cast (std::string const & val, std::string const & type);
 
         /***
         ++<val>
         ***/
-        inline std::string increment (std::string const & val) {
-            return "++" + val;
-        }
+        std::string increment (std::string const & val);
 
         /***
         <target> += <diff>
         ***/
-        inline std::string advance (std::string const & target, std::string const & diff) {
-            return target + " += " + diff;
-        }
+        std::string advance (std::string const & target, std::string const & diff);
 
         /***
         <cond> ? <pos> : <neg>
         ***/
-        inline std::string ternary (std::string const & cond, std::string const & pos, std::string const & neg) {
-            return cond + " ? " + pos + " : " + neg;
-        }
+        std::string ternary (std::string const & cond, std::string const & pos, std::string const & neg);
 
         /***
         -<a>
@@ -628,9 +564,7 @@ namespace cynth {
         /***
         struct <name>
         ***/
-        inline std::string structure (std::string const & name) {
-            return std::string{} + "struct " + name;
-        }
+        std::string structure (std::string const & name);
 
         namespace detail::translation {
 
@@ -765,73 +699,52 @@ namespace cynth {
         /***
         <type> const
         ***/
-        inline std::string constness (std::string const & type) {
-            return type + " const";
-        }
+        std::string constness (std::string const & type);
 
         /***
         <type> volatile
         ***/
-        inline std::string volatility (std::string const & type) {
-            return type + " volatile";
-        }
+        std::string volatility (std::string const & type);
 
         /***
         <type> *
         ***/
-        inline std::string pointer (std::string const & type) {
-            return type + " *";
-        }
+        std::string pointer (std::string const & type);
 
         /***
         # GNU typeof extension
         typeof(<value>)
         ***/
-        inline std::string infer (std::string const & value) {
-            return std::string{} + str::gnuTypeof + "(" + value + ")";
-        }
+        std::string infer (std::string const & value);
 
         /***
         # GNU typeof extension
         sizeof(<value>)
         ***/
-        inline std::string inferSize (std::string const & value) {
-            return std::string{} + "sizeof" + "(" + value + ")";
-        }
+        std::string inferSize (std::string const & value);
 
         /***
         # GNU auto type extension
         __auto_type
         ***/
-        inline std::string autoType () {
-            return str::gnuAuto;
-        }
+        std::string autoType ();
 
         //// Simple types ////
 
         /***
         bool
         ***/
-        inline std::string booleanType () {
-            //return c::global(str::boolean);
-            return def::boolean;
-        }
+        std::string booleanType ();
 
         /***
         int
         ***/
-        inline std::string integralType () {
-            //return c::global(str::integral);
-            return def::integral;
-        }
+        std::string integralType ();
 
         /***
         float
         ***/
-        inline std::string floatingType () {
-            //return c::global(str::floating);
-            return def::floating;
-        }
+        std::string floatingType ();
 
         //// Compound statements ////
 
@@ -844,7 +757,7 @@ namespace cynth {
         }
         ***/
         template <typename... Ts>
-        inline std::string block (Ts const &... stmts) {
+        std::string block (Ts const &... stmts) {
             auto newLine = c::newLine();
             return "{" + newLine + c::terminatedJoin(";", stmts...) + newLine + "}";
         }
@@ -859,7 +772,7 @@ namespace cynth {
         })
         ***/
         template <typename... Ts>
-        inline std::string blockExpression (Ts const &... stmts) {
+        std::string blockExpression (Ts const &... stmts) {
             auto newLine = c::newLine();
             return "({" + newLine + c::terminatedJoin(";", stmts...) + newLine + "})";
         }
@@ -869,25 +782,19 @@ namespace cynth {
         /***
         <dst> = <src>
         ***/
-        inline std::string assignment (std::string const & src, std::string const & dst) {
-            return dst + " = " + src;
-        }
+        std::string assignment (std::string const & src, std::string const & dst);
 
         /***
         *<dst> = <src>
         ***/
-        inline std::string valueAssignment (std::string const & src, std::string const & dst) {
-            return c::assignment(c::dereference(dst), src);
-        }
+        std::string valueAssignment (std::string const & src, std::string const & dst);
 
         //// Initialization ////
 
         /***
         .<dst> = <src>
         ***/
-        inline std::string designatedInitialization (std::string const & src, std::string const & dst) {
-            return "." + dst + " = " + src;
-        }
+        std::string designatedInitialization (std::string const & src, std::string const & dst);
 
         /***
         # Brace initialization (with line breaks)
@@ -924,25 +831,17 @@ namespace cynth {
         /***
         .data = <expr>
         ***/
-        inline std::string dataInitialization (std::string const & expr) {
-            return c::designatedInitialization(expr, def::dataMember);
-        }
+        std::string dataInitialization (std::string const & expr);
 
         /***
         .data.v<number> = <expr>
         ***/
-        inline std::string closureDataInitialization (std::size_t number, std::string const & expr) {
-            return c::designatedInitialization(
-                expr, std::string{} + def::dataMember + "." + str::variant + std::to_string(number)
-            );
-        }
+        std::string closureDataInitialization (std::size_t number, std::string const & expr);
 
         /***
         .branch = <number>
         ***/
-        inline std::string branchInitialization (std::size_t const & number) {
-            return c::designatedInitialization(std::to_string(number), def::branchMember);
-        }
+        std::string branchInitialization (std::size_t const & number);
 
         /***
         # Assignment of individual array values after it has been declared.
@@ -968,105 +867,76 @@ namespace cynth {
         #memcpy(<array>, <from>, <size> * sizeof(<type>));
         memcpy(<array>, <from>, sizeof(<array>));
         ***/
-        inline std::string arrayBulkInitialization (
+        std::string arrayBulkInitialization (
             std::string const & array, std::string const & from
             //sem::Integral size, std::string const & type
-        ) {
-            //auto sizeArg = c::mul(std::to_string(size), c::inferSize(type));
-            auto sizeArg = c::inferSize(array);
-            // This only works when <array> is an array, not a pointer, which is OK
-            // for "initialization" of allocated array values, but it not OK for a general-case array copy.
-            return c::call("memcpy", array, from, sizeArg);
-        }
+        );
 
         /***
         # memcpy to an array with the given size
         # Useful for "assignment" to arrays or contiguous subarrays.
         memcpy(<array>, <from>, <size> * sizeof(<type>));
         ***/
-        inline std::string arrayBulkCopy (
+        std::string arrayBulkCopy (
             std::string const & array, std::string const & from,
             sem::Integral size, std::string const & type
-        ) {
-            auto sizeArg = c::mul(std::to_string(size), c::inferSize(type));
-            return c::call("memcpy", array, from, sizeArg);
-        }
+        );
 
         //// Structural access ////
 
         /***
         <structure>.<member>
         ***/
-        inline std::string memberAccess (std::string const & structure, std::string const & member) {
-            return structure + "." + member;
-        }
+        std::string memberAccess (std::string const & structure, std::string const & member);
 
         /***
         <structure>.e<number>
         ***/
-        inline std::string tupleElement (std::string const & structure, std::size_t number) {
-            return c::memberAccess(structure, c::tupleElementName(number));
-        }
+        std::string tupleElement (std::string const & structure, std::size_t number);
 
         /***
         # Union "variant"/"alternative"
         <structure>.v<number>
         ***/
-        inline std::string unionVariant (std::string const & structure, std::size_t number) {
-            return c::memberAccess(structure, str::variant + std::to_string(number));
-        }
+        std::string unionVariant (std::string const & structure, std::size_t number);
 
         /***
         # Buffer wrapper raw data
         <structure>.data
         ***/
-        inline std::string bufferData (std::string const & structure) {
-            return structure + "." + def::dataMember;
-        }
+        std::string bufferData (std::string const & structure);
 
         /***
         # Buffer wrapper offset
         <structure>.offset
         ***/
-        inline std::string bufferOffset (std::string const & structure) {
-            return structure + "." + def::dataMember;
-        }
+        std::string bufferOffset (std::string const & structure);
 
         /***
         iter.pos
         ***/
-        inline std::string iterationPosition () {
-            return std::string{} + def::iteration + "." + def::position;
-        }
+        std::string iterationPosition ();
 
         /***
         iter
         ***/
-        inline std::string simpleIterationPosition () {
-            return def::iteration;
-        }
+        std::string simpleIterationPosition ();
 
         /***
         # Result struct member access
         result.e<number>
         ***/
-        inline std::string returnElement (std::size_t number) {
-            return c::memberAccess(def::returnVariable, c::returnElementName(number));
-        }
+        std::string returnElement (std::size_t number);
 
         /***
         <structure>.data
         ***/
-        inline std::string closureData (std::string const & structure, std::size_t variant) {
-            return structure + "." + def::closureDataMember + "." + str::variant + std::to_string(variant);
-        }
+        std::string closureData (std::string const & structure, std::size_t variant);
 
         /***
         <structure>.branch
         ***/
-        inline std::string closureBranch (std::string const & structure) {
-            return structure + "." + def::branchMember;
-        }
+        std::string closureBranch (std::string const & structure);
 
         //// Templates ////
 
@@ -1091,70 +961,49 @@ namespace cynth {
         # alternatively:
         typeof(<type> [<size>])
         ***/
-        inline std::string arrayType (std::size_t size, std::string const & type) {
-            return c::structure(
-                c::global(c::templateArguments(std::string{} + str::array, std::to_string(size), type))
-            );
-            //return std::string{} + str::gnuTypeof + "(" + type + " " + "[" + size + "])";
-        }
+        std::string arrayType (std::size_t size, std::string const & type);
 
         /***
         struct cth_buff$<size>
         ***/
-        inline std::string bufferType (sem::Integral size) {
-            return c::structure(c::global(c::templateArguments(std::string{} + str::buffer, std::to_string(size))));
-        }
+        std::string bufferType (sem::Integral size);
 
         //// Types ////
 
         /***
         struct cth_empty
         ***/
-        inline std::string emptyType () {
-            return c::structure(c::global(def::empty));
-        }
+        std::string emptyType ();
 
         /***
         struct cth_empty {};
         ***/
-        inline std::string emptyTypeDefinition () {
-            return c::structureDefinition(c::emptyType());
-        }
+        std::string emptyTypeDefinition ();
 
         /***
         float const * const
         ***/
-        inline std::string bufferPointer () {
-            return c::constness(c::pointer(c::constness(c::floatingType())));
-        }
+        std::string bufferPointer ();
 
         /***
         <type>
         ***/
-        inline std::string inputType (std::string const & type) {
-            return type;
-        }
+        std::string inputType (std::string const & type);
 
         /***
         <type> const *
         ***/
-        inline std::string inputPointerType (std::string const & type) {
-            return c::pointer(c::constness(c::inputType(type)));
-        }
+        std::string inputPointerType (std::string const & type);
 
         /***
         <type>
         ***/
-        inline std::string outputType (std::string const & type) {
-            return type;
-        }
+        std::string outputType (std::string const & type);
 
         /***
         <type> *
         ***/
-        inline std::string outputPointerType (std::string const & type) {
-            return c::pointer(c::outputType(type));
-        }
+        std::string outputPointerType (std::string const & type);
 
         //// Compound head (begin) & end ////
 
@@ -1170,9 +1019,7 @@ namespace cynth {
         # Extracting a returned value from an expression block.
         __auto_type <var> = ({
         ***/
-        inline std::string blockExpressionBegin (std::string const & var) {
-            return c::definition(c::autoType(), var, c::blockExpressionBegin());
-        }
+        std::string blockExpressionBegin (std::string const & var);
 
         /***
         # GNU statement expression extension
@@ -1180,6 +1027,13 @@ namespace cynth {
         ***/
         inline std::string blockExpressionEnd () {
             return "({";
+        }
+
+        /***
+        {
+        ***/
+        inline std::string blockBegin () {
+            return "}";
         }
 
         /***
@@ -1192,16 +1046,14 @@ namespace cynth {
         /***
         {
         ***/
-        inline std::string blockBegin () {
+        inline std::string blockbegin () {
             return "{";
         }
 
         /***
         if (<cond>) {
         ***/
-        inline std::string ifBegin (std::string const & cond) {
-            return std::string{} + "if (" + cond + ") {";
-        }
+        std::string ifBegin (std::string const & cond);
 
         /***
         else {
@@ -1220,9 +1072,7 @@ namespace cynth {
         /***
         swith (<val>) {
         ***/
-        inline std::string switchBegin (std::string const & val) {
-            return std::string{} + "if (" + val + ") {";
-        }
+        std::string switchBegin (std::string const & val);
 
         /***
         case <num>: <`default:`>?
@@ -1232,7 +1082,7 @@ namespace cynth {
             <`break;`>?
         ***/
         template <typename... Ts>
-        inline std::string switchCase (std::size_t num, bool defolt, bool brek, Ts const &... stmts) {
+        std::string switchCase (std::size_t num, bool defolt, bool brek, Ts const &... stmts) {
             auto newLine = c::newLine();
             auto indent  = c::indentation();
             auto label   = std::string{} + "case " + std::to_string(num) + ":" + (defolt ? " default:" : "");
@@ -1242,16 +1092,12 @@ namespace cynth {
         /***
         while (<cond>) {
         ***/
-        inline std::string whileBegin (std::string const & cond) {
-            return "while (" + cond + ") {";
-        }
+        std::string whileBegin (std::string const & cond);
 
         /***
         for (<init>; <cond>; <iter>) {
         ***/
-        inline std::string inlineForBegin (std::string const & init, std::string const & cond, std::string const & iter) {
-            return "for (" + c::join(";", init, cond, iter) + ") {";
-        }
+        std::string inlineForBegin (std::string const & init, std::string const & cond, std::string const & iter);
 
         /***
         for (
@@ -1260,16 +1106,13 @@ namespace cynth {
             <iter>
         ) {
         ***/
-        inline std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter) {
-            auto newLine = c::newLine();
-            return "for (" + newLine + c::indentedJoin(";", init, cond, iter) + ") {";
-        }
+        std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter);
 
         /***
         <out> <name> (<param1>, <param2>, ...) {
         ***/
         template <typename... Ts>
-        inline std::string inlineFunctionBegin (
+        std::string inlineFunctionBegin (
             std::string const & out, std::string const & name, Ts const &... params
         ) {
             return out + " " + name + " (" + c::inlineJoin(",", params...) + ") {";
@@ -1283,7 +1126,7 @@ namespace cynth {
         ) {
         ***/
         template <typename... Ts>
-        inline std::string functionBegin (
+        std::string functionBegin (
             std::string const & out, std::string const & name, Ts const &... params
         ) {
             return out + " " + name + " (" + c::indentedJoin(",", params...) + ") {";
@@ -1295,7 +1138,7 @@ namespace cynth {
         ...
         ***/
         template <esl::sized_range T>
-        inline std::string functionParameters (T types) {
+        std::string functionParameters (T types) {
             for (auto const & [i, type]: esl::enumerate(types))
                 type += std::string{} + " " + str::argument + std::to_string(i);
             return c::join(",", types);
@@ -1307,7 +1150,7 @@ namespace cynth {
         ...
         ***/
         template <esl::sized_range T>
-        inline std::string functionArguments (T types) {
+        std::string functionArguments (T types) {
             for (auto const & [i, type]: esl::enumerate(types))
                 type = str::argument + std::to_string(i);
             return c::join(",", types);
@@ -1320,7 +1163,7 @@ namespace cynth {
             <stmtN>;
         ***/
         template <typename... Ts>
-        inline std::string functionBody (
+        std::string functionBody (
             Ts const &... params
         ) {
             return c::indentedTerminatedJoin(";", params...);
@@ -1347,33 +1190,25 @@ namespace cynth {
         /***
         int iter = 0
         ***/
-        inline std::string iterationVariable () {
-            return c::definition(c::integralType(), def::iteration, "0");
-        }
+        std::string iterationVariable ();
 
         //// Labels ////
 
         /***
         goto <label>
         ***/
-        inline std::string jump (std::string label) {
-            return std::string{} + "goto " + label;
-        }
+        std::string jump (std::string label);
 
         /***
         <label>:
         ***/
-        inline std::string label (std::string label) {
-            return label + ":";
-        }
+        std::string label (std::string label);
 
         /***
         # GNU extension - local labels
         __label__ <name>
         ***/
-        inline std::string labelDeclaration (std::string const & name) {
-            return std::string{} + str::gnuLabel + " " + name;
-        }
+        std::string labelDeclaration (std::string const & name);
 
         //// Returning ////
 
@@ -1387,7 +1222,7 @@ namespace cynth {
         } result;
         ***/
         template <esl::sized_range T> requires (std::convertible_to<esl::range_value_type<T>, std::string>)
-        inline std::string returnInit (T const & types) {
+        std::string returnInit (T const & types) {
             esl::tiny_vector<std::string> decls;
             decls.reserve(decls.size());
             for (auto const & [i, type]: esl::enumerate(types))
@@ -1406,7 +1241,7 @@ namespace cynth {
         } result;
         ***/
         template <esl::sized_range T> requires (std::convertible_to<esl::range_value_type<T>, std::string>)
-        inline std::string returnInitFromDeclarations (T const & decls) {
+        std::string returnInitFromDeclarations (T const & decls) {
             return
                 c::statement(c::labelDeclaration(def::returnLabel)) + c::newLine() +
                 c::statement(c::declaration(c::structureDefinition(def::returnType, decls), def::returnVariable));
@@ -1415,66 +1250,42 @@ namespace cynth {
         /***
         ret: result;
         ***/
-        inline std::string blockExpressionReturn () {
-            return c::statement(c::label(def::returnLabel) + " " + def::returnVariable);
-        }
+        std::string blockExpressionReturn ();
 
         /***
         ret:
         ***/
-        inline std::string mainReturn () {
-            // TODO...
-            return c::label(def::returnLabel);
-        }
+        std::string mainReturn ();
 
         /***
         goto ret;
         ***/
-        inline std::string returnJump () {
-            return c::statement(c::jump(def::returnLabel));
-        }
+        std::string returnJump ();
 
         /***
         result.e<number> = <value>;
         ***/
-        inline std::string returnValue (std::size_t number, std::string const & value) {
-            auto target  = c::returnElement(number);
-            return c::statement(c::assignment(value, target));
-        }
+        std::string returnValue (std::size_t number, std::string const & value);
 
         /***
         result.e<number>.branch = <branch>;
         result.e<number>.data.v<branch> = <expr>; # optionally
         ***/
-        inline std::string returnFunction (
+        std::string returnFunction (
             std::size_t number,
             std::size_t branch,
             std::optional<std::string> const & value
-        ) {
-            auto branchString = std::to_string(branch);
-            auto branchTarget = c::memberAccess(c::returnElement(number), def::branchMember);
-            if (value) {
-                auto dataTarget = c::memberAccess(c::returnElement(number), def::closureDataMember);
-                return
-                    c::statement(c::assignment(branchString, branchTarget)) + c::newLine() +
-                    c::statement(c::assignment(*value, dataTarget));
-            }
-            return c::statement(c::assignment(branchString, branchTarget));
-        }
+        );
 
         /***
         <type> result;
         ***/
-        inline std::string functionResultInit (std::string type) {
-            return c::declaration(type, def::returnVariable);
-        }
+        std::string functionResultInit (std::string type);
 
         /***
         return result;
         ***/
-        inline std::string functionResultReturn () {
-            return c::functionReturn(def::returnVariable);
-        }
+        std::string functionResultReturn ();
 
         //// Attributes ////
 
@@ -1482,34 +1293,22 @@ namespace cynth {
         # GNU extension
         __attribute__((<attr>))
         ***/
-        inline std::string attribute (std::string const & attr) {
-            return std::string{} + str::gnuAttribute + "((" + attr + "))";
-        }
+        std::string attribute (std::string const & attr);
 
         /** Avoids warnings about unused declarations with -Wall. */
-        inline std::string unused () {
-            return c::attribute("unused");
-        }
+        std::string unused ();
 
         /** Could be useful for some IO declarations. */
-        inline std::string used () {
-            return c::attribute("used");
-        }
+        std::string used ();
 
         /** A hot branch or a function. */
-        inline std::string hot () {
-            return c::attribute("hot");
-        }
+        std::string hot ();
 
         /** A cold branch or a function. */
-        inline std::string cold () {
-            return c::attribute("cold");
-        }
+        std::string cold ();
 
         /** A pure function. */
-        inline std::string pure () {
-            return c::attribute("pure");
-        }
+        std::string pure ();
 
         //// Literals ////
 
@@ -1518,26 +1317,19 @@ namespace cynth {
         # Requires <stdbool.h>
         true/false
         ***/
-        inline std::string booleanLiteral (bool val) {
-            //return c::cast(val ? "1" : "0", c::booleanType());
-            return val ? "true" : "false";
-        }
+        std::string booleanLiteral (bool val);
 
         /***
         # Integer literal
         <val>
         ***/
-        inline std::string integralLiteral (sem::Integral val) {
-            return std::to_string(val) + def::integralSuffix;
-        }
+        std::string integralLiteral (sem::Integral val);
 
         /***
         # Float literal
         <val>f
         ***/
-        inline std::string floatingLiteral (sem::Floating val) {
-            return std::to_string(val) + def::floatingSuffix;
-        }
+        std::string floatingLiteral (sem::Floating val);
 
         // TODO: Note that it is also possible to construct arrays with a compound literal:
         // (int [4]) {1, 2, 3, 4}
@@ -1551,7 +1343,7 @@ namespace cynth {
         }
         ***/
         template <typename... Ts>
-        inline std::string structureLiteral (std::string const & structure, Ts const &... inits) {
+        std::string structureLiteral (std::string const & structure, Ts const &... inits) {
             return c::cast(c::init(inits...), structure);
         }
 
@@ -1561,30 +1353,16 @@ namespace cynth {
             .data.v<branch> = <expr> # optionally
         }
         ***/
-        inline std::string closureLiteral (
+        std::string closureLiteral (
             std::string                const & type,
             std::size_t                const & branch,
             std::optional<std::string> const & expr
-        ) {
-            if (expr)
-                return c::structureLiteral(
-                    c::structure(type),
-                    c::branchInitialization(branch),
-                    c::closureDataInitialization(branch, *expr)
-                );
-
-            return c::structureLiteral(
-                c::structure(type),
-                c::branchInitialization(branch)
-            );
-        }
+        );
 
         /***
         (struct cth_empty) {}
         ***/
-        inline std::string emptyValue () {
-            return "(" + c::structure(c::global(def::empty)) + ") {}";
-        }
+        std::string emptyValue ();
 
         //// Unsorted (TODO) ////
 
@@ -1629,23 +1407,8 @@ namespace cynth {
             // TODO: Should I omit the `cth` prefix in the merged form?
             // It would make the merged type names shorter,
             // but keeping the prefix will be simpler to implement and will be more flexible.
-            std::string merged () const {
-                return
-                    (constant  ? std::string{} + str::constant        + delim : "") +
-                    (constptr  ? std::string{} + str::constantPointer + delim : "") +
-                    (pointer   ? std::string{} + str::pointer         + delim : "") +
-                    (structure ? std::string{} + str::structure       + delim : "") +
-                    type;
-            }
-
-            std::string full () const {
-                return
-                    (structure  ? std::string{} + "struct "  : "") +
-                    type +
-                    (constant   ? std::string{} + " const"   : "") +
-                    (pointer    ? std::string{} + " *"       : "") +
-                    (constptr   ? std::string{} + " * const" : "");
-            }
+            std::string merged () const;
+            std::string full   () const;
         };
 
         inline std::string mergeTypeSpecifier (TypeSpecifier spec) {
@@ -1656,47 +1419,22 @@ namespace cynth {
             TypeSpecifier elemType;
             sem::Integral size;
 
-            std::string name () const {
-                return c::arrayType(size, elemType.merged());
-            }
-
-            std::string definition () const {
-                return std::string{} + "typedef " + elemType.full() + " " + name() + " [" + std::to_string(size) + "]";
-            }
+            std::string name       () const;
+            std::string definition () const;
         };
 
         struct Buffer {
             sem::Integral size;
 
-            std::string name () const {
-                return c::bufferType(size);
-            }
-
-            std::string definition () const {
-                return c::structureDefinition(
-                    name(),
-                    c::declaration(c::floatingType(), def::dataMember),
-                    c::declaration(c::integralType(), def::offsetMember)
-                );
-            }
+            std::string name       () const;
+            std::string definition () const;
         };
 
         struct Tuple {
             esl::tiny_vector<TypeSpecifier> types;
 
-            std::string name () const {
-                return c::tupleType(
-                    esl::lift<esl::target::vector>(mergeTypeSpecifier)(types)
-                );
-            }
-
-            std::string definition () const {
-                std::vector<std::string> decls;
-                decls.reserve(types.size());
-                for (auto const & [i, s]: esl::enumerate(types))
-                    decls.push_back(c::declaration(s.full(), c::tupleElementName(i)));
-                return c::structureDefinition(name(), decls);
-            }
+            std::string name       () const;
+            std::string definition () const;
         };
 
     }

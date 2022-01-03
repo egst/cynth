@@ -72,6 +72,9 @@ namespace cynth::context {
         esl::result<Global::FunctionId> defineFunction (sem::FunctionDefinition &);
         // TODO: Don't forget to set the newly generated name in the passed function's definition.
 
+        /** Assembles the final C program. */
+        std::string assemble () const;
+
     protected:
         // TODO: Don't forget about the indent.
         // Increase it in scope children. Reset it for function children.

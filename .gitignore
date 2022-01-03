@@ -1,5 +1,5 @@
 tmp/
-dep/
+dep/*
 obj/
 dist/
 notes/

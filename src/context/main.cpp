@@ -213,4 +213,12 @@ namespace cynth::context {
         return Global::FunctionId{*def.name, *def.closureType};
     }
 
+    std::string Main::assemble () const {
+        auto local = c::join("", statements);
+
+        // TODO...
+
+        return local;
+    }
+
 }

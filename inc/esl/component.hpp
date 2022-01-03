@@ -34,30 +34,25 @@ namespace esl {
 
             constexpr base ():
                 ptr{nullptr} {
-                esl::dout << "component{}\n";
             }
 
             // Copy-construct from a reference.
             constexpr base (T const & val):
                 ptr{component_allocator<T>{}(val)} {
-                esl::dout << "component{ref val}\n";
             }
 
             constexpr Derived & operator = (T const & val) {
                 reset(component_allocator<T>{}(val));
-                esl::dout << "component = ref val\n";
                 return derived();
             }
 
             // Move-construct from a temporary reference.
             constexpr base (T && val):
                 ptr{component_allocator<T>{}(std::move(val))} {
-                esl::dout << "component{tmp val}\n";
             }
 
             constexpr Derived & operator = (T && val) {
                 reset(component_allocator<T>{}(std::move(val)));
-                esl::dout << "component = tmp val\n";
                 return derived();
             }
 
@@ -66,13 +61,11 @@ namespace esl {
             base (base && other):
                 ptr{other.get()} {
                 other.ptr = nullptr;
-                esl::dout << "component{tmp component}\n";
             }
 
             Derived & operator = (base && other) {
                 reset(other.get());
                 other.release();
-                esl::dout << "component = tmp component\n";
                 return derived();
             }
 
@@ -81,19 +74,16 @@ namespace esl {
             // The new component is an owner of a newly allocated object.
             base (base const & other):
                 ptr{other.get() ? component_allocator<T>{}(other.value()) : nullptr} {
-                esl::dout << "component{component}\n";
             }
 
             Derived & operator = (base const & other) {
                 reset(other.get() ? component_allocator<T>{}(other.value()) : nullptr);
-                esl::dout << "component = component\n";
                 return derived();
             }
 
             /** Free the allocated memory. */
             ~base () {
                 component_deleter<T>{}(ptr);
-                esl::dout << "~component\n";
             }
 
             /** Release the underlying object ownership. */
