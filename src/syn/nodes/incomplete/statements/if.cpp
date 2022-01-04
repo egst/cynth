@@ -11,6 +11,9 @@
 #include "interface/nodes.hpp"
 #include "syn/nodes/common/if_nodes.hpp"
 
+// TMP
+#include "debug.hpp"
+
 namespace cynth::syn {
 
     using namespace esl::sugar;

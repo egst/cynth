@@ -45,24 +45,40 @@ namespace cynth::syn {
                         return esl::result_error{"Assigning incompatible values."};
 
                     return [&] (sem::type::Array const & type) -> esl::result<void> {
-                        if (type.constval())
-                            return esl::result_error{"Assigning to constant array values."};
+                        if (target.values) {
+                            // Assigning to array values:
+                            if (type.constval())
+                                return esl::result_error{"Assigning to constant array values."};
 
-                        return [&] (auto const & translType) -> esl::result<void> {
-                            auto copy = c::arrayBulkCopy(target.expression, value.expression, type.size, translType);
-                            /***
-                            memcpy(<target>, <value>, <size> * sizeof(<type>))
-                            ***/
-                            ctx.insertStatement(copy);
-                            return {};
+                            return [&] (auto const & translType) -> esl::result<void> {
+                                auto copy = c::statement(
+                                    c::arrayBulkCopy(target.expression, value.expression, type.size, translType)
+                                );
+                                /***
+                                memcpy(<target>, <value>, <size> * sizeof(<type>))
+                                ***/
+                                ctx.insertStatement(copy);
+                                return {};
 
-                        } || target::result{} <<= interface::translateType || target::category{} <<= *type.type;
+                            } || target::result{} <<= interface::translateType || target::category{} <<= *type.type;
+                        }
+
+                        // Reassigning the array reference:
+                        // Note: This is essentially the same as the case below (for simple values).
+                        if (type.constant)
+                            return esl::result_error{"Assigning to a constant variable."};
+                        auto assgn = c::statement(c::assignment(value.expression, target.expression));
+                        /***
+                        <target> = <value>
+                        ***/
+                        ctx.insertStatement(assgn);
+                        return {};
 
                     } | [&] <interface::simpleType T> (T const & type) -> esl::result<void> {
                         // TODO: Or I could take cake of this check in node::Name::resolveTarget.
                         if (type.constant)
                             return esl::result_error{"Assigning to a constant variable."};
-                        auto assgn = c::assignment(value.expression, target.expression);
+                        auto assgn = c::statement(c::assignment(value.expression, target.expression));
                         /***
                         <target> = <value>
                         ***/

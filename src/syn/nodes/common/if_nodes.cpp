@@ -233,7 +233,7 @@ namespace cynth::syn::if_nodes {
             // Note: No implicit conversions of the if condition will be implemented in the first version.
             auto boolResult = cond.template get<sem::value::Bool>();
             if (!boolResult)
-                return esl::result_error{"If condition must be an integer value."};
+                return esl::result_error{"If condition must be a boolean value."};
 
             auto branchScope = outerScope.makeScopeChild();
 
@@ -250,7 +250,7 @@ namespace cynth::syn::if_nodes {
                     return NoReturn{};
                 }
 
-            } || target::result{} <<= interface::get<Integral>(*boolResult);
+            } || target::result{} <<= interface::get<bool>(*boolResult);
 
             auto head = c::blockBegin();
             auto end  = c::end();
@@ -275,7 +275,7 @@ namespace cynth::syn::if_nodes {
 
             // Note: No implicit conversions of the if condition will be implemented in the first version.
             if (!cond.type.template holds_alternative<sem::type::Bool>())
-                return esl::result_error{"If condition must be an integer value."};
+                return esl::result_error{"If condition must be an boolean value."};
 
             auto posBranchScope = outerScope.makeScopeChild();
             auto negBranchScope = outerScope.makeScopeChild();

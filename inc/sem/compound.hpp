@@ -29,8 +29,10 @@ namespace cynth::sem {
     /** E.g. `var`, `*var`, `var[2]` */
     struct TypedTargetExpression {
         CompleteType  type;
-        //sem::Integral size;
         std::string   expression;
+        bool          values = false; // Assigning to array values.
+        //sem::Integral size; // The previous solution for array value assignments.
+        // I don't really like this way of dealing with array value assignments, but for now it's the simplest approach.
     };
 
 #if 0

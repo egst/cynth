@@ -12,24 +12,56 @@ Int const d = c + 2;
 
 Int a = x % 4;
 
-Int [2] arr = [1, 2];
-#Int [c] arr; # TODO
-#Int [c] arr2 = arr; # TODO
-#Int const [2] const carr = [1, 2]; # TODO
+Int [3] arr = [1, 2, 3];
+#Int [c] arr;
+Int [c] arr2 = arr;
+Int const [c] arr3       = Int const [c] (arr);
+Int const [2] const carr = Int const [2] ([1, 2]);
+Int const [2] cvarr      = Int const [2] ([1, 2]);
+Int [2] const crarr      = [1, 2];
 
-Int e = arr[1];
+Int e1 = arr[1];
+#Int e2 = arr[10];
+
+Int [4] range = [1 to 5];
+Int [c] spread1 = [...arr];
+Int [c + 1] spread2 = [...arr, 10];
+Int [3] const spread3 = [...carr, 10];
+Int const [3] spread4 = Int const [3] ([...carr, 10]);
+Int [2] view = Int [2] (spread3);
+
+spread3[1] = 2;
+view[1] = spread3[2];
+view[4] = spread3[2]; # TODO: Compile-time error for out of bounds access.
+#spread4[1] = 2;
+
+Int [2] ref  = view;
+Int [2] copy = view[];
+Int [2] def;
+def = view[];
+def = view;
+def[] = view;
+
+if (false) x = 5 else {
+    x = 6;
+    Int a = x;
+};
+
+#if (x == 1) x = 5 else x = 6; # TODO
+Bool cond = true;
+if (cond) x = 5 else x = 6;
+
+x = if (true) 1 else 2;
+x = if (cond) 1 else 2;
+
+Bool comp = 1 == 2;
+
+#for (Int e in [1, 2]) e * 2; # TODO
 
 #Int f () 1; # TODO
 #Int f (Int x) 1;
 #Int b = f(x); # TODO
 #f(1); # TODO
-
-#for (Int e in [1, 2]) e * 2; # TODO
-#Int p = if (true) 1 else 2; # TODO
-#if (true) x = 5 else x = 6; # TODO
-
-#[1 to 5]; # TODO
-#[...arr]; # TODO
 
 # TODO
 #Int const u = {
@@ -45,7 +77,7 @@ Int e = arr[1];
 #Int in i = input1;
 #Int out output1;
 #Int out o = output1;
-# TODO: comp-time values for IO pointers
-# Update: they are comp-time, but run-time values are also created
+# TODO: Comp-time values for IO pointers.
+# Update: They are comp-time, but run-time values are also created.
 
 #x = Int (input1);

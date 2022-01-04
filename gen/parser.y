@@ -722,6 +722,18 @@ node_if:
     } |
     IF paren_expr[cond] pure[pos] SEMI ELSE pure[neg] {
         $$ = {.condition = $cond, .positiveBranch = $pos, .negativeBranch = $neg};
+    } |
+    IF paren_expr[cond] cat_expression[pos] ELSE pure[neg] {
+        $$ = {.condition = $cond, .positiveBranch = cynth::syn::category::Statement{$pos}, .negativeBranch = $neg};
+    } |
+    IF paren_expr[cond] cat_expression[pos] SEMI ELSE pure[neg] {
+        $$ = {.condition = $cond, .positiveBranch = cynth::syn::category::Statement{$pos}, .negativeBranch = $neg};
+    } |
+    IF paren_expr[cond] pure[pos] ELSE cat_expression[neg] {
+        $$ = {.condition = $cond, .positiveBranch = $pos, .negativeBranch = cynth::syn::category::Statement{$neg}};
+    } |
+    IF paren_expr[cond] pure[pos] SEMI ELSE cat_expression[neg] {
+        $$ = {.condition = $cond, .positiveBranch = $pos, .negativeBranch = cynth::syn::category::Statement{$neg}};
     }
 
 node_when:
@@ -793,5 +805,5 @@ range_decl_list:
 
 void yy::parser::error (std::string const & msg) {
     // TODO: There's a syntax error every time for some reason.
-    //std::cerr << "parser error: " << msg << '\n';
+    std::cerr << "parser error: " << msg << '\n';
 }

@@ -144,6 +144,24 @@ namespace cynth::sem {
 
     //// Array ////
 
+    ArithmeticSequence::ArithmeticSequence (Integral const & from, Integral const & to, Integral const & by):
+        definition{
+            CompleteValue{value::Int{from}},
+            CompleteValue{value::Int{to}},
+            CompleteValue{value::Int{by}}
+        } {}
+
+    CompleteType ArithmeticSequence::type () const {
+        return interface::valueType || target::category{} <<= *definition.from;
+    }
+
+    Integral ArithmeticSequence::size () const {
+        auto from = *interface::get<Integral>(*definition.from->get<value::Int>());
+        auto to   = *interface::get<Integral>(*definition.from->get<value::Int>());
+        auto by   = *interface::get<Integral>(*definition.from->get<value::Int>());
+        return (to - from - 1) / by + 1; // TODO: Check if this makes sense.
+    }
+
     esl::view<ArrayAllocation::Vector::iterator> ArrayAllocation::trimmedValue (Integral size) {
         return esl::view{value.begin(), value.begin() + size};
     }
@@ -167,24 +185,6 @@ namespace cynth::sem {
 
         // An esl::result_error would indicate an implementation error here.
         return *result;
-    }
-
-    ArithmeticSequence::ArithmeticSequence (Integral const & from, Integral const & to, Integral const & by):
-        definition{
-            CompleteValue{value::Int{from}},
-            CompleteValue{value::Int{to}},
-            CompleteValue{value::Int{by}}
-        } {}
-
-    CompleteType ArithmeticSequence::type () const {
-        return interface::valueType || target::category{} <<= *definition.from;
-    }
-
-    Integral ArithmeticSequence::size () const {
-        auto from = *interface::get<Integral>(*definition.from->get<value::Int>());
-        auto to   = *interface::get<Integral>(*definition.from->get<value::Int>());
-        auto by   = *interface::get<Integral>(*definition.from->get<value::Int>());
-        return (to - from - 1) / by + 1; // TODO: Check if this makes sense.
     }
 
     std::optional<ArithmeticSequence> ArrayAllocation::sequentialize () {
@@ -235,10 +235,10 @@ namespace cynth::sem {
     ValueTranslationResult value::Array::translateValue (context::Main & ctx) const {
         return [&] (ArrayAllocation * alloc) -> ValueTranslationResult {
             auto val = alloc->allocate(ctx);
-            return TypedExpression{*valueType.type, c::addressof(val)}; // TODO: Cast to a const pointer?
+            return TypedExpression{valueType, val}; // TODO: Cast to a const pointer?
 
         } | [&] (std::string const & alloc) -> ValueTranslationResult {
-            return TypedExpression{*valueType.type, c::addressof(alloc)}; // TODO: Cast to a const pointer?
+            return TypedExpression{valueType, alloc}; // TODO: Cast to a const pointer?
 
         } || target::variant{} <<= allocation;
     }

@@ -7,6 +7,10 @@ SHELL := /bin/bash
 # (At least c++20.)
 STD = c++20
 
+# C standard for the generated C code:
+# Support of the GNU C dialect required.
+CYNTH_STD = gnu17
+
 # Directory names:
 # (Including the trailing slash. Leave empty for the project root directory. Add leading slash for absolute paths.)
 INC       = inc/
@@ -79,3 +83,6 @@ LINK_OPTIONS  += -fvisibility-inlines-hidden
 DEP_OPTIONS    =
 FLEX_OPTIONS   =
 BISON_OPTIONS  = -Wcounterexamples
+CYNTH_OPTIONS  = -Wall
+CYNTH_OPTIONS += -Wno-unused-variable
+CYNTH_OPTIONS += -Wno-unused-label

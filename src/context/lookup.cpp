@@ -13,7 +13,6 @@ namespace cynth::context {
     */
 
     esl::reference_result<Lookup::ValueEntry> Lookup::insertValue (std::string const & name, ValueEntry && entry) {
-        std::cout << "newvar: " << name << "\n";
         if (findValueInside(name))
             return esl::result_error{"Cannot redefine a value in the same scope."};
         return values.insert({name, std::move(entry)}).first->second;

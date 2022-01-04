@@ -244,13 +244,12 @@ namespace cynth::syn {
         if constexpr (Program) {
             return [&] (auto blockResult) -> ExpressionProcessingResult {
                 return [&] (auto blockResult) -> ExpressionProcessingResult {
-                    auto init  = c::returnInitFromDeclarations(blockResult.declarations);
+                    auto init  = c::returnInitFromDeclarations(blockResult.declarations, true);
                     auto begin = c::blockBegin();
                     auto end   = c::end();
                     auto ret   = c::mainReturn();
 
                     /***
-                    __label__ ret;
                     struct result {
                         <type1> e0;
                         <type2> e1;
@@ -261,11 +260,15 @@ namespace cynth::syn {
                     }
                     ret:
                     ***/
+                    outerScope.insertStatement(c::inlineComment("Initialization:"));
                     outerScope.insertStatement(init);
                     outerScope.insertStatement(begin);
                     outerScope.mergeChild(blockScope);
                     outerScope.insertStatement(end);
                     outerScope.insertStatement(ret);
+                    outerScope.insertStatement("printf(\"result...\\n\"); " + c::inlineComment("TODO"));
+                    outerScope.insertStatement(c::inlineComment("Main loop:"));
+                    outerScope.insertStatement(c::inlineComment("TODO"));
 
                     return blockResult.resolved;
                 } || target::result{} <<= processBlockExpression(outerScope.global, nullptr, blockResult.returned);

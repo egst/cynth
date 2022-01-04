@@ -148,6 +148,7 @@ namespace cynth::syn {
             return [&] (ResolvedValue firstArg, ResolvedValue secondArg) {
                 return [&] (CompleteValue firstArg, CompleteValue secondArg) {
                     // Both comp-time arguments:
+                    std::cout << "comp-time val comp: " << (interface::display || target::category{} <<= firstArg) << "\n";
                     return [&] <interface::simpleType Value> (
                         Value firstArg, Value secondArg
                     ) -> esl::result<ResolvedValue> {

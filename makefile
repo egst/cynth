@@ -1,5 +1,16 @@
 include setup.mk
 
+#### COMMANDS ####
+
+# Compile an executable file:
+COMPILE = mkdir -p $(dir $@); $(COMPILER) $(ALL_OPTIONS) -o $@ $^
+
+# Compile an object file:
+COMPILE_OBJ = mkdir -p $(dir $@); $(COMPILER) $(ALL_OPTIONS) -c -o $@ $<
+
+# Link object files into an executable file:
+LINK = mkdir -p $(dir $@); $(COMPILER) $(LINK_OPTIONS) -o $@ $^
+
 #### TARGETS ####
 
 BIN_SRC_FILES   = $(SRC_FILES:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ))
@@ -48,6 +59,10 @@ $(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
 # Dependencies of generated files:
 $(SRC)$(IMPL_PARSER): $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 $(SRC)$(IMPL_LEXER):  $(INC)$(HEAD_PARSER)$(EXT_HEAD)
+
+# Compile Cynth into executable:
+tests/out/%: tests/%.cth
+	cat $< | $(BIN_DIST)compiler | $(GCC) $(CYNTH_OPTIONS) -std=$(CYNTH_STD) -o $@ -xc - -lm
 
 #### DEPENDENCIES ####
 

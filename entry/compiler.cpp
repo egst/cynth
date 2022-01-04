@@ -13,6 +13,8 @@
 
 int main () {
 
+    constexpr bool debug = false;
+
     using namespace cynth;
     //using namespace esl::sugar;
     //namespace target = esl::target;
@@ -24,7 +26,8 @@ int main () {
 
     auto recreated = esl::pretty(interface::display(root));
 
-    std::cout << "recreated input:\n" << recreated << "\n\n";
+    if constexpr (debug)
+        std::cout << "recreated input:\n" << recreated << "\n\n";
 
     context::Global    globalCtx;
     context::Function  functionCtx;
@@ -43,10 +46,16 @@ int main () {
     ctx.global.insertFunction(sem::runtime::definition::imod());
     ctx.global.insertFunction(sem::runtime::definition::fmod());
 
+    // Standard library dependencies:
+    ctx.global.insertInclude(c::inclusion("<math.h>"));
+    ctx.global.insertInclude(c::inclusion("<stdbool.h>"));
+    ctx.global.insertInclude(c::inclusion("<stdio.h>"));
+    ctx.global.insertInclude(c::inclusion("<string.h>"));
+
     auto result = root.processProgram(ctx);
 
     if (!result) {
-        std::cout << "compilation error:" << result.error().message << '\n';
+        std::cerr << "compilation error:" << result.error().message << '\n';
         return 1;
     }
 
@@ -54,7 +63,10 @@ int main () {
 
     auto generated = ctx.assemble();
 
-    std::cout << "generated program:\n" << generated << '\n';
+    if constexpr (debug)
+        std::cout << "generated program:\n";
+
+    std::cout << generated << '\n';
 
     return 0;
 

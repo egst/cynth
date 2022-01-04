@@ -113,7 +113,7 @@ namespace cynth::sem {
                 constexpr auto first  = "a";
                 constexpr auto second = "b";
                 return
-                    c::inlined(c::inlineFunctionBegin(
+                    /*c::inlined*/(c::inlineFunctionBegin(
                         c::integralType(),
                         c::global(def::integralModulo),
                         c::declaration(c::integralType(), first),
@@ -134,7 +134,7 @@ namespace cynth::sem {
                 constexpr auto first  = "a";
                 constexpr auto second = "b";
                 return
-                    c::inlined(c::inlineFunctionBegin(
+                    /*c::inlined*/(c::inlineFunctionBegin(
                         c::integralType(),
                         c::global(def::integralDivision),
                         c::declaration(c::integralType(), first),
@@ -168,7 +168,7 @@ namespace cynth::sem {
             inline std::string floor () {
                 constexpr auto arg = "a";
                 return
-                    c::inlined(c::inlineFunctionBegin(
+                    /*c::inlined*/(c::inlineFunctionBegin(
                         c::integralType(),
                         c::global(def::floor),
                         c::declaration(c::floatingType(), arg)
@@ -188,7 +188,7 @@ namespace cynth::sem {
                 constexpr auto first  = "a";
                 constexpr auto second = "b";
                 return
-                    c::inlined(c::inlineFunctionBegin(
+                    /*c::inlined*/(c::inlineFunctionBegin(
                         c::floatingType(),
                         c::global(def::floatingModulo),
                         c::declaration(c::integralType(), first),

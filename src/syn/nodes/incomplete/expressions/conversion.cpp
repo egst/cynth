@@ -38,7 +38,7 @@ namespace cynth::syn {
 
     DisplayResult node::Conversion::display () const {
         return
-            (interface::display || target::category{} <<= *type) +
+            (interface::display || target::category{} <<= *type) + " " +
             esl::parenthesized(interface::display || target::category{} <<= *argument);
     }
 
@@ -134,9 +134,11 @@ namespace cynth::syn {
                     return esl::result_error{"Arrays can only be converted to smaller sizes."};
                 if (!(interface::sameTypes || target::category{} <<= args(*fromType.type, *type.type)))
                     return esl::result_error{"Conversion of array element types is not supported yet."};
-                if (type.constant && !fromType.constant)
+                /*
+                if (!type.constant && fromType.constant)
                     return esl::result_error{"Array conversion can't remove constness of the reference."};
-                if (type.constval() && !fromType.constval())
+                */
+                if (!type.constval() && fromType.constval())
                     return esl::result_error{"Array conversion can't remove constness of the values."};
 
                 return {TypedExpression{
@@ -216,9 +218,11 @@ namespace cynth::syn {
                     return esl::result_error{"Arrays can only be converted to smaller sizes."};
                 if (!(interface::sameTypes || target::category{} <<= args(*fromType.type, *type.type)))
                     return esl::result_error{"Conversion of array element types is not supported yet."};
-                if (type.constant && !fromType.constant)
+                /*
+                if (!type.constant && fromType.constant)
                     return esl::result_error{"Array conversion can't remove constness of the reference."};
-                if (type.constval() && !fromType.constval())
+                */
+                if (!type.constval() && fromType.constval())
                     return esl::result_error{"Array conversion can't remove constness of the values."};
 
                 return {CompleteValue{sem::value::Array{

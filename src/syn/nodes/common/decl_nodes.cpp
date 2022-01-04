@@ -62,11 +62,13 @@ namespace cynth::syn::decl_nodes {
         bool parameters
     ) {
         for (auto && decl: std::move(decls)) {
-            auto result = [&] (auto && vars) {
-                return ctx.lookup.insertValue(std::move(decl).name, std::move(std::move(vars)));
+            auto result = [&] (auto && vars) -> esl::result<void> {
+                auto lookupResult = ctx.lookup.insertValue(std::move(decl).name, std::move(std::move(vars)));
+                if (!lookupResult)
+                    return lookupResult.error();
+                return {};
 
-            } || target::result{} <<= esl::unite_results <<=
-            [&, parameters] (auto && type) -> esl::result<Variable> {
+            } || target::result{} <<= esl::unite_results <<= [&, parameters] (auto && type) -> esl::result<Variable> {
                 if (parameters) {
                     return [&] (auto && translType) -> esl::result<Variable> {
                         auto name = c::variableName(c::id(ctx.nextId()));
@@ -80,7 +82,6 @@ namespace cynth::syn::decl_nodes {
 
             } || target::nested<target::component_vector_tiny_result, target::category>{} <<=
                 std::move(decl).type;
-
             if (!result) return result.error();
         }
 

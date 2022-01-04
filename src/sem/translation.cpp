@@ -253,10 +253,13 @@ namespace cynth::c {
         return structure + "." + def::branchMember;
     }
 
+    // TODO: Remove this.
+    std::string arrayTypeName (std::size_t size, std::string const & type) {
+        return c::global(c::templateArguments(std::string{} + str::array, std::to_string(size), type));
+    }
+
     std::string arrayType (std::size_t size, std::string const & type) {
-        return c::structure(
-            c::global(c::templateArguments(std::string{} + str::array, std::to_string(size), type))
-        );
+        return c::global(c::templateArguments(std::string{} + str::array, std::to_string(size), type));
         //return std::string{} + str::gnuTypeof + "(" + type + " " + "[" + size + "])";
     }
 
@@ -461,7 +464,10 @@ namespace cynth::tpl {
     }
 
     std::string Array::definition () const {
-        return std::string{} + "typedef " + elemType.full() + " " + name() + " [" + std::to_string(size) + "]";
+        return c::statement(
+            "typedef " + elemType.full() + " " + name() +
+            " [" + std::to_string(size) + "]"
+        );
     }
 
     std::string Buffer::name () const {
@@ -469,11 +475,27 @@ namespace cynth::tpl {
     }
 
     std::string Buffer::definition () const {
-        return c::structureDefinition(
+        return c::statement(c::structureDefinition(
             name(),
             c::declaration(c::floatingType(), def::dataMember),
             c::declaration(c::integralType(), def::offsetMember)
-        );
+        ));
+    }
+
+    namespace {
+
+        // TODO: Put this into translation.hpp
+        template <typename... Ts>
+        std::string tupleTypeName (Ts const &... types) {
+            return c::global(c::templateArguments(str::tuple, types...));
+        }
+
+        std::string tupleName (Tuple const & tup) {
+            return tupleTypeName(
+                esl::lift<esl::target::vector>(mergeTypeSpecifier)(tup.types)
+            );
+        }
+
     }
 
     std::string Tuple::name () const {
@@ -487,7 +509,9 @@ namespace cynth::tpl {
         decls.reserve(types.size());
         for (auto const & [i, s]: esl::enumerate(types))
             decls.push_back(c::declaration(s.full(), c::tupleElementName(i)));
-        return c::structureDefinition(name(), decls);
+        //auto name = name();
+        auto name = tupleName(*this);
+        return c::statement(c::structureDefinition(name, decls));
     }
 
 }

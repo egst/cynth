@@ -181,6 +181,14 @@ namespace cynth {
 
         //// Misc. ////
 
+        inline std::string inclusion (std::string const & header) {
+            return "#include " + header;
+        }
+
+        inline std::string inlineComment (std::string const & content) {
+            return "// " + content;
+        }
+
         inline std::string inlined (std::string const & decl) {
             return "inline " + decl;
         }
@@ -867,7 +875,7 @@ namespace cynth {
                 auto assgn = c::statement(c::assignment(value, c::arraySubscript(array, std::to_string(i))));
                 result.push_back(assgn);
             }
-            return c::join(c::newLine(), result);
+            return c::join("", result);
         }
 
         /***
@@ -962,7 +970,7 @@ namespace cynth {
         ***/
         template <typename... Ts>
         std::string tupleType (Ts const &... types) {
-            return c::structure(c::global(std::string{} + str::tuple + c::templateArguments(types...)));
+            return c::structure(c::global(c::templateArguments(str::tuple, types...)));
         }
 
         /***
@@ -1231,13 +1239,13 @@ namespace cynth {
         } result;
         ***/
         template <esl::sized_range T> requires (std::convertible_to<esl::range_value_type<T>, std::string>)
-        std::string returnInit (T const & types) {
+        std::string returnInit (T const & types, bool function = false) {
             esl::tiny_vector<std::string> decls;
             decls.reserve(decls.size());
             for (auto const & [i, type]: esl::enumerate(types))
                 decls.push_back(std::string{type} + " " + c::tupleElementName(i));
             return
-                c::statement(c::labelDeclaration(def::returnLabel)) + c::newLine() +
+                (function ? "" : c::statement(c::labelDeclaration(def::returnLabel)) + c::newLine()) +
                 c::statement(c::declaration(c::structureDefinition(def::returnType, decls), def::returnVariable));
         }
 
@@ -1250,9 +1258,9 @@ namespace cynth {
         } result;
         ***/
         template <esl::sized_range T> requires (std::convertible_to<esl::range_value_type<T>, std::string>)
-        std::string returnInitFromDeclarations (T const & decls) {
+        std::string returnInitFromDeclarations (T const & decls, bool function = false) {
             return
-                c::statement(c::labelDeclaration(def::returnLabel)) + c::newLine() +
+                (function ? "" : c::statement(c::labelDeclaration(def::returnLabel)) + c::newLine()) +
                 c::statement(c::declaration(c::structureDefinition(def::returnType, decls), def::returnVariable));
         }
 

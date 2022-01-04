@@ -217,6 +217,7 @@ namespace cynth::context {
         auto local       = c::join("", statements);
         auto funAlloc    = c::join("", function.data);
         auto staticAlloc = c::join("", global.data);
+        auto includes    = c::join("", global.includes);
         auto types       = c::join("", global.types);
         auto funs        = c::join("", global.functions);
         auto mainHead    = c::inlineFunctionBegin("int", "main");
@@ -224,8 +225,12 @@ namespace cynth::context {
 
         // TODO: esl::join returns a new line for empty input
         return c::join("",
+            includes,
+            c::inlineComment("Types:"),
             types,
+            c::inlineComment("Functions:"),
             funs,
+            c::inlineComment("Static data:"),
             staticAlloc,
             mainHead,
             c::indented(c::join("",

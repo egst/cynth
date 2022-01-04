@@ -38,13 +38,3 @@ BASIC_OPTIONS = -I$(INC) -std=$(STD)
 OPTIMIZATIONS = -O2
 ALL_OPTIONS   = $(BASIC_OPTIONS) $(ADDITIONAL_OPTIONS) $(OPTIMIZATIONS)
 
-#### COMMANDS ####
-
-# Compile an executable file:
-COMPILE = mkdir -p $(dir $@); $(COMPILER) $(ALL_OPTIONS) -o $@ $^
-
-# Compile an object file:
-COMPILE_OBJ = mkdir -p $(dir $@); $(COMPILER) $(ALL_OPTIONS) -c -o $@ $<
-
-# Link object files into an executable file:
-LINK = mkdir -p $(dir $@); $(COMPILER) $(LINK_OPTIONS) -o $@ $^

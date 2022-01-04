@@ -2,9 +2,9 @@
 
 namespace cynth::context {
 
-    void Global::insertAllocation (std::string const & code) {
+    void Global::insertInclude (std::string const & code) {
         if (code.empty()) return;
-        data.push_back(code);
+        types.push_back(code);
     }
 
     void Global::insertType (std::string const & code) {
@@ -15,6 +15,11 @@ namespace cynth::context {
     void Global::insertFunction (std::string const & def) {
         if (def.empty()) return;
         functions.push_back(def);
+    }
+
+    void Global::insertAllocation (std::string const & code) {
+        if (code.empty()) return;
+        data.push_back(code);
     }
 
     void Global::registerGenerator (std::string const & buff, std::string const & fun, bool time) {

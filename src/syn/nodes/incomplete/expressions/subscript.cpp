@@ -58,7 +58,7 @@ namespace cynth::syn {
 
                         } | [&] (std::string const & alloc) -> ExpressionProcessingResult {
                             return [&] (auto translType) {
-                                auto allocName = array_nodes::arrayAllocation(ctx, translType, elemsResult.arraySize);
+                                auto allocName = array_nodes::arrayAllocation(ctx, translType, arrayType.size);
                                 array_nodes::bulkArrayInitialization(ctx, allocName, alloc);
                                 return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
                                     sem::value::Array{allocName, arrayType}
@@ -78,7 +78,7 @@ namespace cynth::syn {
                         arrayType.constant = false;
                         interface::loseConstness || target::category{} <<= *arrayType.type;
                         return [&] (auto translType) {
-                            auto allocName = array_nodes::arrayAllocation(ctx, translType, elemsResult.arraySize);
+                            auto allocName = array_nodes::arrayAllocation(ctx, translType, arrayType.size);
                             array_nodes::bulkArrayInitialization(ctx, allocName, container.expression);
                             return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
                                 sem::value::Array{allocName, arrayType}
@@ -148,8 +148,9 @@ namespace cynth::syn {
                     ***/
                     return esl::init<esl::tiny_vector>(TypedTargetExpression{
                         .type       = type,
-                        //.size       = type.size,
-                        .expression = lvalue
+                        .expression = lvalue,
+                        .values     = true
+                        //.size = type.size,
                     });
 
                 } else if (elemsResult.arraySize == 1) {

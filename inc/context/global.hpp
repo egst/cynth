@@ -38,8 +38,10 @@ namespace cynth::context {
             return id++;
         }
 
-        void insertAllocation (std::string const &);
+        void insertInclude    (std::string const &);
         void insertType       (std::string const &);
+        void insertAllocation (std::string const &);
+        void insertFunction   (std::string const &);
 
         /** Instantiate a specific version of a type template. */
         template <typename T>
@@ -47,21 +49,15 @@ namespace cynth::context {
 
         void registerGenerator (std::string const & buffer, std::string const & function, bool time);
 
-        void insertFunction (std::string const &);
-
     protected:
         std::size_t id = 0;
 
-        // Static lifetime allocations
-        std::vector<std::string> data;
-
-        std::vector<std::string> types;
-
-        std::vector<std::string> functions;
-
-        std::vector<GeneratorEntry> generators;
-
+        std::vector<std::string>        includes;
+        std::vector<std::string>        types;
+        std::vector<std::string>        functions;
+        std::vector<std::string>        data;
         std::unordered_set<std::string> instantiated;
+        std::vector<GeneratorEntry>     generators;
     };
 
 }

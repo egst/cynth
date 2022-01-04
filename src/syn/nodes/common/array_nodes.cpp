@@ -288,7 +288,7 @@ namespace cynth::syn::array_nodes {
         std::string    const & allocation,
         std::string    const & source
     ) {
-        auto init = c::arrayBulkInitialization(allocation, source);
+        auto init = c::statement(c::arrayBulkInitialization(allocation, source));
         ctx.insertStatement(init);
     }
 

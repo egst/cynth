@@ -66,7 +66,7 @@ namespace cynth::syn {
                 auto const & branch = cond ? *positiveBranch : *negativeBranch;
                 return interface::processExpression(ctx) || target::category{} <<= branch;
 
-            } || target::result{} <<= interface::get<Integral>(*boolResult);
+            } || target::result{} <<= interface::get<bool>(*boolResult);
 
         } | [&] (TypedExpression cond) -> ExpressionProcessingResult {
             // Run-time condition value:
@@ -182,7 +182,7 @@ namespace cynth::syn {
                 auto posExpr   = c::structureLiteral(tupleType, posTupleVals);
                 auto negExpr   = c::structureLiteral(tupleType, negTupleVals);
                 auto expr      = c::ternary(cond.expression, posExpr, negExpr);
-                auto tupleDef  = c::definition(c::autoType(), tupleVar, expr);
+                auto tupleDef  = c::statement(c::definition(c::autoType(), tupleVar, expr));
 
                 /***
                 __auto_type <tupvar> = <cond> ? (struct cth_tup$...) {

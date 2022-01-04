@@ -96,7 +96,7 @@ namespace cynth::sem {
             std::string  const & definition
         ) {
             auto varName  = c::variableName(c::id(ctx.nextId()));
-            auto local    = c::statement(c::definition(c::global(typeName), varName, definition));
+            auto local    = c::statement(c::definition(typeName, varName, definition));
 
             /***
             local:
@@ -491,7 +491,7 @@ namespace cynth::sem {
 
     DisplayResult type::Array::display () const {
         return
-            (interface::display || target::category{} <<= *type) + (constval() ? " const" : "") +
+            (interface::display || target::category{} <<= *type) + /*(constval() ? " const" : "") +*/
             " [" + std::to_string(size) + "]" + (constant ? " const" : "");
     }
 
@@ -513,6 +513,14 @@ namespace cynth::sem {
             .constptr = constant
         };
     }
+
+    /*
+    SameTypeResult type::Array::similarType (type::Array const & other) const {
+        return
+            (interface::sameTypes || target::category{} <<= args(*type, *other.type)) &&
+            size == other.size;
+    }
+    */
 
     SameTypeResult type::Array::sameType (type::Array const & other) const {
         return
@@ -537,8 +545,7 @@ namespace cynth::sem {
                     if (!interface::sameTypes(*this, definition.valueType))
                         return esl::result_error{"Initializing from an incompatible type."};
 
-                    if (constant)
-                        // Compconst reference variable:
+                    if (constant && constval())
                         return Variable{CompleteValue{sem::value::Array{definition.allocation, *this}}};
 
                     auto ptrType = translateType();
