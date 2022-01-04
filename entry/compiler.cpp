@@ -24,7 +24,7 @@ int main () {
 
     auto recreated = esl::pretty(interface::display(root));
 
-    std::cout << "recreated input:\n" << recreated << '\n';
+    std::cout << "recreated input:\n" << recreated << "\n\n";
 
     context::Global    globalCtx;
     context::Function  functionCtx;
@@ -36,6 +36,12 @@ int main () {
     ctx.lookup.insertType("Int",    {sem::type::Int{}});
     ctx.lookup.insertType("Float",  {sem::type::Float{}});
     ctx.lookup.insertType("String", {sem::type::String{}});
+
+    // Built-in operations:
+    ctx.global.insertFunction(sem::runtime::definition::floor());
+    ctx.global.insertFunction(sem::runtime::definition::idiv());
+    ctx.global.insertFunction(sem::runtime::definition::imod());
+    ctx.global.insertFunction(sem::runtime::definition::fmod());
 
     auto result = root.processProgram(ctx);
 

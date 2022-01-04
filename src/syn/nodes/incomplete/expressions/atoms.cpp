@@ -92,7 +92,7 @@ namespace cynth::syn {
             return esl::result_error{"Name not found."};
 
         return esl::unite_results <<= [] (CompleteValue const &) -> esl::result<TypedTargetExpression> {
-            return esl::result_error{"Cannot sasign to compconst values."};
+            return esl::result_error{"Cannot assign to compconst values."};
 
         } | [] (TypedName const & name) -> esl::result<sem::TypedTargetExpression> {
             return TypedTargetExpression{name.type, name.name};

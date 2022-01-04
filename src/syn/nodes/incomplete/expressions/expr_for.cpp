@@ -131,7 +131,7 @@ namespace cynth::syn {
                     );
                     for (auto & assgn: state.assignments)
                         assgn += c::brackets(c::iterationPosition());
-                    auto assgn   = c::indentedTerminatedJoin(";", state.assignments);
+                    auto assgn   = c::indented(c::terminatedJoin(";", state.assignments));
                     auto end     = c::end();
                     auto valName = c::valueName(c::id(outerScope.nextId()));
                     auto alloc   = c::declaration(c::arrayType(size, type), valName);

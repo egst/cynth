@@ -41,8 +41,8 @@ namespace cynth::syn {
 
             for (auto const & [target, value]: esl::zip(targets, values)) {
                 auto result = [&, &target = target] (auto value) -> esl::result<void> {
-                    if (interface::sameTypes || target::category{} <<= args(value.type, target.type))
-                        return esl::result_error{"Assigning incomatible values."};
+                    if (!(interface::sameTypes || target::category{} <<= args(value.type, target.type)))
+                        return esl::result_error{"Assigning incompatible values."};
 
                     return [&] (sem::type::Array const & type) -> esl::result<void> {
                         if (type.constval())

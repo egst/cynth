@@ -113,12 +113,12 @@ namespace cynth::sem {
                 constexpr auto first  = "a";
                 constexpr auto second = "b";
                 return
-                    c::inlineFunctionBegin(
+                    c::inlined(c::inlineFunctionBegin(
                         c::integralType(),
                         c::global(def::integralModulo),
                         c::declaration(c::integralType(), first),
                         c::declaration(c::integralType(), second)
-                    ) + c::newLine() +
+                    )) + c::newLine() +
                     c::functionBody(c::functionReturn(
                         c::mod(c::expression(c::add(c::expression(c::mod(first, second)), second)), second)
                     )) + c::newLine() +
@@ -134,12 +134,12 @@ namespace cynth::sem {
                 constexpr auto first  = "a";
                 constexpr auto second = "b";
                 return
-                    c::inlineFunctionBegin(
+                    c::inlined(c::inlineFunctionBegin(
                         c::integralType(),
                         c::global(def::integralDivision),
                         c::declaration(c::integralType(), first),
                         c::declaration(c::integralType(), second)
-                    ) + c::newLine() +
+                    )) + c::newLine() +
                     c::functionBody(c::functionReturn(
                         c::div(c::expression(
                             c::add(
@@ -168,13 +168,13 @@ namespace cynth::sem {
             inline std::string floor () {
                 constexpr auto arg = "a";
                 return
-                    c::inlineFunctionBegin(
+                    c::inlined(c::inlineFunctionBegin(
                         c::integralType(),
                         c::global(def::floor),
-                        c::declaration(c::integralType(), arg)
-                    ) + c::newLine() +
+                        c::declaration(c::floatingType(), arg)
+                    )) + c::newLine() +
                     c::functionBody(c::functionReturn(
-                        c::cast(c::call(def::nativeFloor, arg), c::integralType())
+                        c::cast(c::inlineCall(def::nativeFloor, arg), c::integralType())
                     )) + c::newLine() +
                     c::end();
             }
@@ -188,17 +188,17 @@ namespace cynth::sem {
                 constexpr auto first  = "a";
                 constexpr auto second = "b";
                 return
-                    c::inlineFunctionBegin(
-                        c::integralType(),
+                    c::inlined(c::inlineFunctionBegin(
+                        c::floatingType(),
                         c::global(def::floatingModulo),
                         c::declaration(c::integralType(), first),
                         c::declaration(c::integralType(), second)
-                    ) + c::newLine() +
+                    )) + c::newLine() +
                     c::functionBody(c::functionReturn(
-                        c::call(
+                        c::inlineCall(
                             def::nativeFloatingModulo,
                             c::add(
-                                c::call(def::nativeFloatingModulo, first, second),
+                                c::inlineCall(def::nativeFloatingModulo, first, second),
                                 second
                             ),
                             second
@@ -215,35 +215,35 @@ namespace cynth::sem {
             cth_floor(<a>)
             ***/
             inline std::string floor (std::string const & a) {
-                return c::call(c::global(def::floor), a);
+                return c::inlineCall(c::global(def::floor), a);
             }
 
             /***
             cth_idiv(<a>, <b>)
             ***/
             inline std::string idiv (std::string const & a, std::string const & b) {
-                return c::call(c::global(def::integralDivision), a, b);
+                return c::inlineCall(c::global(def::integralDivision), a, b);
             }
 
             /***
             cth_imod(<a>, <b>)
             ***/
             inline std::string imod (std::string const & a, std::string const & b) {
-                return c::call(c::global(def::integralModulo), a, b);
+                return c::inlineCall(c::global(def::integralModulo), a, b);
             }
 
             /***
             cth_fmod(<a>, <b>)
             ***/
             inline std::string fmod (std::string const & a, std::string const & b) {
-                return c::call(c::global(def::floatingModulo), a, b);
+                return c::inlineCall(c::global(def::floatingModulo), a, b);
             }
 
             /***
             powf(<a>, <b>)
             ***/
             inline std::string fpow (std::string const & a, std::string const & b) {
-                return c::call(c::global(def::nativeExponentiation), a, b);
+                return c::inlineCall(c::global(def::nativeExponentiation), a, b);
             }
 
             /** Identity. */

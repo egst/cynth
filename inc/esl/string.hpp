@@ -19,11 +19,13 @@ namespace esl {
 
     inline std::vector<std::string> split (std::string delim, std::string const & str) {
         std::vector<std::string> result;
-        std::size_t pos = 0;
-        std::size_t len = delim.size();
-        while ((pos = str.find(delim, pos ? pos + len : 0)) != std::string::npos) {
-            result.push_back(str.substr(0, pos));
+        std::size_t last = 0;
+        std::size_t next = 0;
+        while ((next = str.find(delim, last)) != std::string::npos) {
+            result.push_back(str.substr(last, next - last));
+            last = ++next;
         }
+        result.push_back(str.substr(last));
         return result;
     }
 
@@ -190,6 +192,7 @@ namespace esl {
         return esl::join(newline, result);
     }
 
+    // TODO: Support other indentation and new line characters.
     inline std::string pretty (std::string const & str) {
         std::size_t const line_count = std::count(str.begin(), str.end(), '\n') + 1;
         std::vector<std::string> result;

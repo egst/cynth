@@ -34,7 +34,7 @@ namespace cynth::syn {
     DisplayResult node::Subscript::display () const {
         using Target = target::nested<target::component_vector, target::category>;
         return
-            (interface::display || target::category{} <<= *container) + " [" +
+            (interface::display || target::category{} <<= *container) + "[" +
             esl::join(", ", interface::display || Target{} <<= location) + "]";
     }
 

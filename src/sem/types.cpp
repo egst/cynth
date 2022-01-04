@@ -96,7 +96,7 @@ namespace cynth::sem {
             std::string  const & definition
         ) {
             auto varName  = c::variableName(c::id(ctx.nextId()));
-            auto local    = c::definition(c::global(typeName), varName, definition);
+            auto local    = c::statement(c::definition(c::global(typeName), varName, definition));
 
             /***
             local:
@@ -331,8 +331,8 @@ namespace cynth::sem {
                 auto varName = c::variableName(c::id(ctx.nextId()));
                 auto valType = c::inputType(typeName);
                 auto valName = c::inputValueName(std::to_string(ctx.nextId()));
-                auto alloc   = c::declaration(valType, valName);
-                auto local   = c::definition(varType, varName, c::addressof(valName));
+                auto alloc   = c::statement(c::declaration(valType, valName));
+                auto local   = c::statement(c::definition(varType, varName, c::addressof(valName)));
 
                 /***
                 global:
@@ -368,7 +368,7 @@ namespace cynth::sem {
             return [&] (auto typeName) -> DefinitionProcessingResult {
                 auto varType = c::inputPointerType(typeName);
                 auto varName = c::variableName(c::id(ctx.nextId()));
-                auto local   = c::definition(varType, varName, definition.expression);
+                auto local   = c::statement(c::definition(varType, varName, definition.expression));
 
                 /***
                 local:
@@ -428,8 +428,8 @@ namespace cynth::sem {
                 auto varName = c::variableName(c::id(ctx.nextId()));
                 auto valType = c::outputType(typeName);
                 auto valName = c::outputValueName(std::to_string(ctx.nextId()));
-                auto alloc   = c::declaration(valType, valName);
-                auto local   = c::definition(varType, varName, c::addressof(valName));
+                auto alloc   = c::statement(c::declaration(valType, valName));
+                auto local   = c::statement(c::definition(varType, varName, c::addressof(valName)));
 
                 /***
                 global:
@@ -465,7 +465,7 @@ namespace cynth::sem {
             return [&] (auto typeName) -> DefinitionProcessingResult {
                 auto varType = c::outputPointerType(typeName);
                 auto varName = c::variableName(c::id(ctx.nextId()));
-                auto local   = c::definition(varType, varName, definition.expression);
+                auto local   = c::statement(c::definition(varType, varName, definition.expression));
 
                 /***
                 local:
@@ -533,7 +533,7 @@ namespace cynth::sem {
             // Referencing another value:
             return [&] (CompleteValue const & definition) -> DefinitionProcessingResult {
                 // Initializing from a comp-time value:
-                return [&] (sem::value::Array & definition) -> DefinitionProcessingResult {
+                return [&] (sem::value::Array const & definition) -> DefinitionProcessingResult {
                     if (!interface::sameTypes(*this, definition.valueType))
                         return esl::result_error{"Initializing from an incompatible type."};
 
@@ -548,7 +548,7 @@ namespace cynth::sem {
                     return [&] (ArrayAllocation * alloc) -> DefinitionProcessingResult {
                         // From comp-time values:
                         auto valName = alloc->allocate(ctx);
-                        auto local   = c::definition(ptrType, varName, valName);
+                        auto local   = c::statement(c::definition(ptrType, varName, valName));
 
                         /***
                         <type> * <var> = <val>;
@@ -560,7 +560,7 @@ namespace cynth::sem {
                     } | [&] (std::string const & alloc) -> DefinitionProcessingResult {
                         // From run-time values:
                         auto valName = alloc;
-                        auto local   = c::definition(ptrType, varName, valName);
+                        auto local   = c::statement(c::definition(ptrType, varName, valName));
 
                         /***
                         <type> * <var> = <val>;
@@ -583,7 +583,7 @@ namespace cynth::sem {
                 auto ptrType = translateType();
                 auto varName = c::variableName(c::id(ctx.nextId()));
                 auto valName = definition.expression;
-                auto local   = c::definition(ptrType, varName, valName);
+                auto local   = c::statement(c::definition(ptrType, varName, valName));
 
                 /***
                 <type> * <var> = <val>;
@@ -604,7 +604,7 @@ namespace cynth::sem {
 
             auto arrayType = ctx.global.instantiateType(tpl::Array{std::move(valueType), size});
             auto valName   = c::valueName(std::to_string(ctx.nextId()));
-            auto alloc     = c::definition(arrayType, valName, c::zeroInitialization());
+            auto alloc     = c::statement(c::definition(arrayType, valName, c::zeroInitialization()));
 
             /***
             function:
@@ -620,7 +620,7 @@ namespace cynth::sem {
 
             auto ptrType   = translateType();
             auto varName   = c::variableName(std::to_string(ctx.nextId()));
-            auto local     = c::definition(ptrType, varName, valName);
+            auto local     = c::statement(c::definition(ptrType, varName, valName));
 
             /***
             <type> * <var> = <val>;
@@ -676,7 +676,7 @@ namespace cynth::sem {
         } | [&] (TypedExpression const & value) -> DefinitionProcessingResult {
             auto ptrType = c::bufferPointer();
             auto varName = c::variableName(c::id(ctx.nextId()));
-            auto local   = c::definition(ptrType, varName, std::move(value.expression));
+            auto local   = c::statement(c::definition(ptrType, varName, std::move(value.expression)));
 
             /***
             local:
@@ -738,7 +738,7 @@ namespace cynth::sem {
         // Run-time captures:
         auto varType = c::autoType();
         auto varName = c::closureVariableName(c::id(ctx.nextId()));
-        auto local   = c::definition(varType, varName, *fun.closureVariable);
+        auto local   = c::statement(c::definition(varType, varName, *fun.closureVariable));
 
         /***
         __auto_type <closure> = <definition>;

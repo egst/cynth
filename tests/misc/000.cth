@@ -1,0 +1,51 @@
+Int x = 1;
+Int y;
+(Int z, Int w) = (x + y, 2);
+Int const c = 1 + 2;
+Int const d = c + 2;
+
+{
+    x = 1 + 2;
+    y = 1;
+    (x, y) = (2, 3);
+};
+
+Int a = x % 4;
+
+Int [2] arr = [1, 2];
+#Int [c] arr; # TODO
+#Int [c] arr2 = arr; # TODO
+#Int const [2] const carr = [1, 2]; # TODO
+
+Int e = arr[1];
+
+#Int f () 1; # TODO
+#Int f (Int x) 1;
+#Int b = f(x); # TODO
+#f(1); # TODO
+
+#for (Int e in [1, 2]) e * 2; # TODO
+#Int p = if (true) 1 else 2; # TODO
+#if (true) x = 5 else x = 6; # TODO
+
+#[1 to 5]; # TODO
+#[...arr]; # TODO
+
+# TODO
+#Int const u = {
+#    return 1;
+#};
+
+#buffer [3] b; # TODO
+#buffer [3] b = buffer [3] (Float fn (Int x) Float (x));
+# TODO: data in cth_buff
+# TODO: cth_tup$ <-- missing dollar sign
+
+#Int in input1;
+#Int in i = input1;
+#Int out output1;
+#Int out o = output1;
+# TODO: comp-time values for IO pointers
+# Update: they are comp-time, but run-time values are also created
+
+#x = Int (input1);

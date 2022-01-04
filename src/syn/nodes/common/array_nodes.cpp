@@ -64,7 +64,7 @@ namespace cynth::syn::array_nodes {
                 return esl::result_error{"Couldn't infer element type of an array."};
             */
             std::optional<sem::type::Array> arrayType;
-            if (!elemType)
+            if (elemType)
                 arrayType = {*elemType, arraySize};
 
             if (runtime || static_cast<Integral>(compVals.size()) != arraySize)
@@ -253,9 +253,24 @@ namespace cynth::syn::array_nodes {
         }); // cth_arr$<size>$<type>
         auto valName = c::valueName(c::id(ctx.nextId()));
         auto valInit = c::zeroInitialization();
-        auto alloc   = c::definition(valType, valName, valInit);
+        auto alloc   = c::statement(c::definition(valType, valName, valInit));
         ctx.function.insertAllocation(alloc);
         return valName;
+    }
+
+    namespace test {
+
+        template <esl::range T>
+        std::string arrayIndividualInitialization (std::string const & array, T const & values) {
+            std::vector<std::string> result;
+            result.reserve(values.size());
+            for (auto const & [i, value]: esl::enumerate(values)) {
+                auto assgn = c::statement(c::assignment(value, c::arraySubscript(array, std::to_string(i))));
+                result.push_back(assgn);
+            }
+            return c::join(c::newLine(), result);
+        }
+
     }
 
     void individualArrayInitialization (
@@ -263,7 +278,8 @@ namespace cynth::syn::array_nodes {
         std::string                   const & allocation,
         esl::tiny_vector<std::string> const & elements
     ) {
-        auto init = c::arrayIndividualInitialization(allocation, elements);
+        //auto init = c::arrayIndividualInitialization(allocation, elements);
+        auto init = test::arrayIndividualInitialization(allocation, elements);
         ctx.insertStatement(init);
     }
 

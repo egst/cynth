@@ -244,8 +244,10 @@ namespace cynth::syn {
         if constexpr (Program) {
             return [&] (auto blockResult) -> ExpressionProcessingResult {
                 return [&] (auto blockResult) -> ExpressionProcessingResult {
-                    auto init = c::returnInitFromDeclarations(blockResult.declarations);
-                    auto ret  = c::mainReturn();
+                    auto init  = c::returnInitFromDeclarations(blockResult.declarations);
+                    auto begin = c::blockBegin();
+                    auto end   = c::end();
+                    auto ret   = c::mainReturn();
 
                     /***
                     __label__ ret;
@@ -254,11 +256,15 @@ namespace cynth::syn {
                         <type2> e1;
                         // ...
                     } result;
-                    <body>
+                    {
+                        <body>
+                    }
                     ret:
                     ***/
                     outerScope.insertStatement(init);
+                    outerScope.insertStatement(begin);
                     outerScope.mergeChild(blockScope);
+                    outerScope.insertStatement(end);
                     outerScope.insertStatement(ret);
 
                     return blockResult.resolved;

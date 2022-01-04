@@ -15,6 +15,9 @@
 #include "esl/ranges.hpp"
 #include "esl/type_manip.hpp"
 
+// TMP
+#include "debug.hpp"
+
 namespace esl {
 
     // Missing features:
@@ -53,7 +56,6 @@ namespace esl {
                 rest  {rest},
                 pos   {pos} {}
 
-            // Note: The reference type could be a "fake reference proxy type
             decltype(auto) dereference () const {
                 return pos
                     ? rest[pos - 1]
@@ -61,7 +63,7 @@ namespace esl {
             }
 
             std::ptrdiff_t distance (tiny_iterator const & other) const {
-                return other.pos - pos;
+                return pos - other.pos;
             }
 
             void advance (std::ptrdiff_t offset) {

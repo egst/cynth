@@ -181,6 +181,10 @@ namespace cynth {
 
         //// Misc. ////
 
+        inline std::string inlined (std::string const & decl) {
+            return "inline " + decl;
+        }
+
         /***
         <arg1>, <arg2>, ...
         ***/
@@ -205,12 +209,14 @@ namespace cynth {
             <arg2>,
             ...
         ***/
+        /* Use c::indented(c::join(...)) instead
         template <typename... Ts>
         std::string indentedJoin (std::string const & sep, Ts const &... args) {
             auto indent = c::indentation();
             auto joined = esl::join(sep + c::newLine() + indent, args...);
             return joined.empty() ? "" : indent + joined;
         }
+        */
 
         /***
         <arg1>, <arg2>, ..., <argN>,
@@ -240,13 +246,14 @@ namespace cynth {
             ...
             <argN>,
         ***/
+        /* Use c::indented(c::terminatedJoin(...)) instead
         template <typename... Ts>
         std::string indentedTerminatedJoin (std::string const & sep, Ts const &... args) {
             auto indent = c::indentation();
-            auto joined = indent + esl::join(sep + c::newLine() + indent, args...);
-            std::cout << "joined: " << joined << '\n';
-            return joined.empty() ? "" : joined + sep;
+            auto joined = esl::join(sep + c::newLine() + indent, args...);
+            return joined.empty() ? "" : indent + joined + sep;
         }
+        */
 
         /**
          *  Most expressions are explicitly parenthesized to avoid precedence issues.
@@ -416,7 +423,9 @@ namespace cynth {
         ***/
         template <typename... Ts>
         std::string call (std::string f, Ts const &... args) {
-            return f + "(" + c::join(",", args...) + ")";
+            auto joined  = c::indented(c::join(",", args...));
+            auto newLine = c::newLine();
+            return f + "(" + (joined.empty() ? "" : newLine + joined + newLine) + ")";
         }
 
         /***
@@ -576,7 +585,7 @@ namespace cynth {
             ) {
                 auto head     = std::string{} + kind + " " + (name ? *name + " " : "") + "{";
                 auto newLine  = c::newLine();
-                auto contents = c::indentedTerminatedJoin(";", items...);
+                auto contents = c::indented(c::terminatedJoin(";", items...));
                 return head + (!contents.empty() ? newLine + contents + newLine : "") + "}";
                 // When empty: `<kind> <name> {}`
             }
@@ -593,7 +602,7 @@ namespace cynth {
 
                 auto head     = std::string{} + kind + " " + (name ? *name + " " : "") + "{";
                 auto newLine  = c::newLine();
-                auto contents = c::indentedTerminatedJoin(";", items);
+                auto contents = c::indented(c::terminatedJoin(";", items));
                 return head + (!contents.empty() ? newLine + contents + newLine : "") + "}";
                 // When empty: `<kind> <name> {}`
             }
@@ -808,7 +817,7 @@ namespace cynth {
         std::string init (Ts const &... args) {
             auto indent  = c::indentation();
             auto newLine = c::newLine();
-            auto contents = c::indentedJoin(",", args...);
+            auto contents = c::indented(c::join(",", args...));
             return "{" + (!contents.empty() ? newLine + contents + newLine : "") + "}";
         }
 
@@ -855,7 +864,7 @@ namespace cynth {
             std::vector<std::string> result;
             result.reserve(values.size());
             for (auto const & [i, value]: esl::enumerate(values)) {
-                auto assgn = c::statement(c::assignment(c::arraySubscript(array, std::to_string(i)), value));
+                auto assgn = c::statement(c::assignment(value, c::arraySubscript(array, std::to_string(i))));
                 result.push_back(assgn);
             }
             return c::join(c::newLine(), result);
@@ -1033,7 +1042,7 @@ namespace cynth {
         {
         ***/
         inline std::string blockBegin () {
-            return "}";
+            return "{";
         }
 
         /***
@@ -1086,7 +1095,7 @@ namespace cynth {
             auto newLine = c::newLine();
             auto indent  = c::indentation();
             auto label   = std::string{} + "case " + std::to_string(num) + ":" + (defolt ? " default:" : "");
-            return label + newLine + c::indentedJoin("", stmts...) + newLine + (brek ? indent + "break;" : "");
+            return label + newLine + c::indented(c::join("", stmts...)) + newLine + (brek ? indent + "break;" : "");
         }
 
         /***
@@ -1129,7 +1138,7 @@ namespace cynth {
         std::string functionBegin (
             std::string const & out, std::string const & name, Ts const &... params
         ) {
-            return out + " " + name + " (" + c::indentedJoin(",", params...) + ") {";
+            return out + " " + name + " (" + c::indented(c::join(",", params...)) + ") {";
         }
 
         /***
@@ -1166,7 +1175,7 @@ namespace cynth {
         std::string functionBody (
             Ts const &... params
         ) {
-            return c::indentedTerminatedJoin(";", params...);
+            return c::indented(c::terminatedJoin(";", params...));
         }
 
         //// Looping ////

@@ -47,6 +47,8 @@ namespace cynth::context {
 
         void registerGenerator (std::string const & buffer, std::string const & function, bool time);
 
+        void insertFunction (std::string const &);
+
     protected:
         std::size_t id = 0;
 
@@ -60,8 +62,6 @@ namespace cynth::context {
         std::vector<GeneratorEntry> generators;
 
         std::unordered_set<std::string> instantiated;
-
-        void insertFunction (std::string const &);
     };
 
 }

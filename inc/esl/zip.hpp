@@ -9,6 +9,8 @@
 #include "esl/ranges.hpp"
 #include "esl/type_manip.hpp"
 
+#include "debug.hpp"
+
 namespace esl {
 
     namespace detail::zip {
@@ -20,12 +22,12 @@ namespace esl {
 
             counter_iterator (std::size_t count): count{count} {}
 
-            decltype(auto) dereference () const {
+            std::size_t dereference () const {
                 return count;
             }
 
             std::ptrdiff_t distance (counter_iterator const & other) const {
-                return other.count - count;
+                return count - other.count;
             }
 
             void advance (std::ptrdiff_t offset) {
@@ -68,15 +70,23 @@ namespace esl {
                 iters{iters} {}
 
             decltype(auto) dereference () const {
-                return std::apply([] (auto &&... iters) { return std::forward_as_tuple(*iters...); }, iters);
+                if constexpr (Enum)
+                    return std::apply([] (auto i, auto const &... iters) {
+                        return std::tuple_cat(
+                            std::make_tuple(*i),
+                            std::forward_as_tuple(*iters...)
+                        );
+                    }, iters);
+                else
+                    return std::apply([] (auto const &... iters) { return std::forward_as_tuple(*iters...); }, iters);
             }
 
             std::ptrdiff_t distance (zip_iterator const & other) const {
-                return std::get<0>(other.iters) - std::get<0>(iters);
+                return std::get<0>(iters) - std::get<0>(other.iters);
             }
 
             void advance (std::ptrdiff_t offset) {
-                std::apply([&offset] (auto &&... iters) { return ((iters + offset), ...); }, iters);
+                std::apply([offset] (auto &... iters) { return ((iters += offset), ...); }, iters);
             }
 
         private:

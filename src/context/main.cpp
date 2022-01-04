@@ -21,10 +21,8 @@ namespace cynth::context {
 
     using namespace esl::sugar;
     namespace target = esl::target;
-    using sem::CompleteValue;
     using sem::FunctionDefinition;
     using sem::ResolvedCapture;
-    using sem::TypedName;
     using sem::Variable;
 
     void Main::insertStatement (std::string const & code) {
@@ -33,8 +31,9 @@ namespace cynth::context {
     }
 
     void Main::mergeChild (Main const & child) {
-        for (auto const & code: child.statements)
-            statements.push_back(esl::indent(c::indentation(child.indent), c::newLine(), code));
+        for (auto const & code: child.statements) {
+            statements.push_back(c::indented(code));
+        }
     }
 
     namespace {
@@ -201,7 +200,6 @@ namespace cynth::context {
 
             } || target::variant{} <<= def.implementation;
 
-
         } || target::result{} <<= args(
             esl::unite_results <<= interface::translateTypeSpecifier ||
                 target::nested<target::component_vector_tiny_result, target::category>{} <<= def.type.out,
@@ -214,11 +212,28 @@ namespace cynth::context {
     }
 
     std::string Main::assemble () const {
-        auto local = c::join("", statements);
+        auto indent      = c::indentation();
+        auto newLine     = c::newLine();
+        auto local       = c::join("", statements);
+        auto funAlloc    = c::join("", function.data);
+        auto staticAlloc = c::join("", global.data);
+        auto types       = c::join("", global.types);
+        auto funs        = c::join("", global.functions);
+        auto mainHead    = c::inlineFunctionBegin("int", "main");
+        auto end         = c::end();
 
-        // TODO...
-
-        return local;
+        // TODO: esl::join returns a new line for empty input
+        return c::join("",
+            types,
+            funs,
+            staticAlloc,
+            mainHead,
+            c::indented(c::join("",
+                funAlloc,
+                local
+            )),
+            end
+        );
     }
 
 }

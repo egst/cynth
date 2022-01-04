@@ -10,8 +10,8 @@ using namespace yy;
 
 %option noyywrap
 
-blank    [ \t\r]
-endl     \n
+blank    [ \t]
+endl     [\n\r]
 comment  ("//"|#).*
 name     [a-z][a-zA-Z0-9_]*
 typeName [A-Z][a-zA-Z0-9_]*

@@ -213,7 +213,7 @@ namespace cynth::syn::for_nodes {
             );
             for (auto & assgn: state.assignments)
                 assgn += c::brackets(c::iterationPosition());
-            auto assgn = c::indentedTerminatedJoin(";", state.assignments);
+            auto assgn = c::indented(c::terminatedJoin(";", state.assignments));
             auto end   = c::end();
 
             /***
