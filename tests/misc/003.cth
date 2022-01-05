@@ -1,0 +1,48 @@
+Int x = 1;
+Int cc = 1;
+//Int (Int) df = if (x == 1) Int fn (Int x) x + cc else Int fn (Int x) x - 1;
+Int (Int) df = if (x == 1) Int fn (Int x) x + 1 else Int fn (Int x) x - cc;
+df(0);
+
+Int (Int) dff = {
+    when (x == 2)
+        return Int fn (Int x) x + cc;
+
+    {
+        if (x == 1)
+            return Int fn (Int x) x - cc;
+        else
+            return Int fn (Int x) x + 1;
+    };
+
+    return Int fn (Int x) x - cc;
+};
+dff(1);
+
+Int bb = 1;
+//Int
+Int (Int)
+foob (Int xx) {
+    Int (Int) dff = {
+        when (x == 2)
+            return Int fn (Int x) x + bb;
+        {
+            if (x == 1)
+                return Int fn (Int x) x - xx;
+            else
+                return Int fn (Int x) x + 1;
+        };
+
+        return Int fn (Int x) x - bb;
+    };
+    //return dff(1);
+    return dff;
+};
+Int (Int) part = foob(2);
+Int app1 = part(1);
+Int app2 = foob(2)(1);
+
+Int (Int) (Int) add (Int const a) Int fn (Int const b) a + b;
+Int (Int) add1 = add(1);
+Int added = add1(2);
+

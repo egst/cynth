@@ -180,10 +180,35 @@ namespace cynth::syn {
                 ctx.insertStatement(resultDef);
 
                 std::size_t i = 0;
-                return [&] (auto const & type) {
-                    auto expr = c::tupleElement(resultName, i);
-                    ++i;
-                    return ResolvedValue{TypedExpression{.type = type, .expression = expr}};
+                // TODO: This is not needed anymore...
+                // Remove it from the FunctionDefinition type.
+                /*
+                auto funIter = fun.definition.returnedFunctions.begin();
+                auto funEnd  = fun.definition.returnedFunctions.end();
+                */
+                return esl::unite_results <<= [&] (auto const & type) {
+                    return [&] (sem::type::Function const & fun) -> esl::result<ResolvedValue> {
+                        if (!fun.definition) // Implementation error.
+                            return esl::result_error{"No definition in function type in application."};
+                        /*
+                        if (funIter == funEnd) // Implementation error.
+                            return esl::result_error{"More returned function types than stored definitions."};
+                        */
+
+                        auto expr = c::tupleElement(resultName, i);
+                        //++funIter;
+                        ++i;
+
+                        //return ResolvedValue{CompleteValue{sem::value::Function{**funIter, expr}}};
+                        return ResolvedValue{CompleteValue{sem::value::Function{*fun.definition, expr}}};
+
+                    } | [&] (auto const &) -> esl::result<ResolvedValue> {
+                        auto expr = c::tupleElement(resultName, i);
+                        ++i;
+                        return ResolvedValue{TypedExpression{.type = type, .expression = expr}};
+
+                    } || target::category{} <<= type;
+                    //if (!defResult) return defResult.error();
 
                 } || target::component_vector_tiny_result{} <<= fun.valueType.out;
 

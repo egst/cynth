@@ -32,17 +32,15 @@ namespace cynth::syn {
 
     NameExtractionResult node::For::extractNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(nestedScope) || target::category{} <<= *declarations,
-            interface::extractNames(nestedScope) || target::category{} <<= *body
-        );
+        auto d = interface::extractNames(nestedScope) || target::category{} <<= *declarations;
+        auto b = interface::extractNames(nestedScope) || target::category{} <<= *body;
+        return esl::insert_cat || target::result{} <<= args(d, b);
     }
 
     TypeNameExtractionResult node::For::extractTypeNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *declarations,
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
-        );
+        auto d = interface::extractTypeNames(nestedScope) || target::category{} <<= *declarations;
+        auto b = interface::extractTypeNames(nestedScope) || target::category{} <<= *body;
+        return esl::insert_cat || target::result{} <<= args(d, b);
     }
 }

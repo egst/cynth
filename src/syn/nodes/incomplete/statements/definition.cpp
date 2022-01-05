@@ -42,17 +42,15 @@ namespace cynth::syn {
     }
 
     NameExtractionResult node::Definition::extractNames (context::Lookup & ctx) const {
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(ctx) || target::category{} <<= *value,
-            interface::extractNames(ctx) || target::category{} <<= *target
-        );
+        auto v = interface::extractNames(ctx) || target::category{} <<= *value;
+        auto t = interface::extractNames(ctx) || target::category{} <<= *target;
+        return esl::insert_cat || target::result{} <<= args(v, t);
     }
 
     TypeNameExtractionResult node::Definition::extractTypeNames (context::Lookup & ctx) const {
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractTypeNames(ctx) || target::category{} <<= *value,
-            interface::extractTypeNames(ctx) || target::category{} <<= *target
-        );
+        auto v = interface::extractTypeNames(ctx) || target::category{} <<= *value;
+        auto t = interface::extractTypeNames(ctx) || target::category{} <<= *target;
+        return esl::insert_cat || target::result{} <<= args(v, t);
     }
 
 }

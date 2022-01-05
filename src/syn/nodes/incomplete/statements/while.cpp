@@ -70,18 +70,16 @@ namespace cynth::syn {
 
     NameExtractionResult node::While::extractNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(nestedScope) || target::category{} <<= *condition,
-            interface::extractNames(nestedScope) || target::category{} <<= *body
-        );
+        auto c = interface::extractNames(nestedScope) || target::category{} <<= *condition;
+        auto b = interface::extractNames(nestedScope) || target::category{} <<= *body;
+        return esl::insert_cat || target::result{} <<= args(c, b);
     }
 
     TypeNameExtractionResult node::While::extractTypeNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *condition,
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
-        );
+        auto c = interface::extractTypeNames(nestedScope) || target::category{} <<= *condition;
+        auto b = interface::extractTypeNames(nestedScope) || target::category{} <<= *body;
+        return esl::insert_cat || target::result{} <<= args(c, b);
     }
 
 }

@@ -25,6 +25,10 @@ namespace cynth::context {
     using sem::FunctionDefinition;
     using sem::ResolvedCapture;
     using sem::Variable;
+    using sem::CompleteType;
+    using sem::CompleteValue;
+    using sem::TypedExpression;
+    using sem::ResolvedValue;
 
     void Main::insertStatement (std::string const & code) {
         if (code.empty()) return;
@@ -46,22 +50,65 @@ namespace cynth::context {
             } || target::category{} <<= capture;
         }
 
+#if 0
+        esl::result<esl::tiny_vector<std::optional<tpl::TypeSpecifier>>> translateTypeSpecifiers (
+            esl::component_vector<CompleteType> types
+        ) {
+            esl::tiny_vector<std::optional<tpl::TypeSpecifier>> specs;
+            for (auto const & type: types) {
+                auto result = [&] (sem::type::Function const &) -> esl::result<void> {
+                    specs.push_back(std::nullopt);
+                    return {};
+
+                } | [&] (auto const & type) -> esl::result<void> {
+                    auto result = interface::translateTypeSpecifier(type);
+                    if (!result) return result.error();
+                    specs.emplace_back(*std::move(result));
+                    return {};
+
+                } || target::category{} <<= type;
+                if (!result) return result.error();
+            }
+            return specs;
+        }
+
+        esl::result<esl::tiny_vector<TypedExpression>> translateBody (
+            context::Main & ctx,
+            esl::tiny_vector<ResolvedValue> const & body
+        ) {
+            return esl::unite_results <<= [&] (CompleteValue const & body) {
+                return [] (sem::value::Function const & body) -> esl::result<TypedExpression> {
+
+                } | [&] (auto const & body) -> esl::result<TypedExpression> {
+                    return interface::translateValue(ctx)(body);
+
+                } || target::category{} <<= body;
+
+            } | [] (TypedExpression const & body) -> esl::result<TypedExpression> {
+                return body;
+
+            } || target::nested<target::tiny_vector, target::category>{} <<= body;
+        }
+#endif
+
     }
 
     esl::result<Global::FunctionId> Main::defineFunction (FunctionDefinition & def) {
-        if (def.name) // Already defined.
+        if (def.name && def.closureType) // Already defined.
             return Global::FunctionId{*def.name, *def.closureType};
 
-        if (!def.name)
-            def.name = c::functionName(c::id(nextId()));
+        //if (!def.name)
+        def.name = c::functionName(c::id(nextId()));
 
         // Note: The closure structure should already be defined (upon function definition).
         // If closureType is not set, there is no need for runtime closure,
         // and the `struct cth_empty {}` type is used instead.
 
-        auto result = [&] (auto outSpecs, auto inTypes) {
+        auto result = [&] (/*auto outSpecs, */auto inTypes) {
             auto newLine = c::newLine();
-            auto outType = global.instantiateType(tpl::Tuple{outSpecs});
+
+            //auto outType = global.instantiateType(tpl::Tuple{outSpecs});
+            //auto outType = "<out>";
 
             return [&] (FunctionDefinition::Implementation const & impl) -> esl::result<void> {
                 // Direct implementation:
@@ -85,12 +132,7 @@ namespace cynth::context {
                 } || target::result{} <<= interface::parameterDeclarations(impl.parameters, def.type.in);
                 if (!paramDecls) return paramDecls.error();
 
-                auto & params     = funScope.function.getParameters();
-                auto resultInit   = c::functionResultInit(outType);
-                auto resultReturn = c::functionResultReturn();
-                auto end          = c::end();
-                auto newLine      = c::newLine();
-                auto indent       = c::indentation();
+                auto & params = funScope.function.getParameters();
 
                 auto result = [&] (auto bodyResults) -> esl::result<void> {
                     auto const & outTypes = def.type.out;
@@ -103,8 +145,34 @@ namespace cynth::context {
                     for (auto const & [i, type, result]: esl::enumerate(outTypes, bodyResults)) {
                         if (!(interface::sameTypes || target::category{} <<= args(result.type, type)))
                             return esl::result_error{"Returning a value of an incompatible type."};
+
+                        auto defResult = [&, i = i] (sem::type::Function const & fun) -> esl::result<void> {
+                            if (!fun.definition) // Implementation error.
+                                return esl::result_error{"No definition in function type after translation."};
+                            // Add more info about the returned function to the function definition:
+                            def.type.out[i] = fun;
+                            // TODO: This is not needed anymore...
+                            // Remove it from the FunctionDefinition type.
+                            //def.returnedFunctions.push_back(fun.definition);
+                            return {};
+                        } | [] (auto const &) -> esl::result<void> {
+                            return {}; // Skip.
+                        } || target::category{} <<= result.type;
+                        if (!defResult) return defResult.error();
+
                         stmts.push_back(c::returnValue(i, result.expression));
                     }
+
+                    auto typeSpecResult = esl::unite_results <<= interface::translateTypeSpecifier ||
+                        target::nested<target::component_vector_tiny_result, target::category>{} <<= def.type.out;
+                    if (!typeSpecResult) return typeSpecResult.error();
+                    auto outType = global.instantiateType(tpl::Tuple{*typeSpecResult});
+
+                    auto resultInit   = c::functionResultInit(outType);
+                    auto resultReturn = c::functionResultReturn();
+                    auto end          = c::end();
+                    auto newLine      = c::newLine();
+                    auto indent       = c::indentation();
 
                     /*
                     auto closure  = def.closureType
@@ -114,6 +182,8 @@ namespace cynth::context {
                     auto closure  = def.closureType
                         ? c::declaration(*def.closureType, c::closureArgumentName())
                         : c::declaration(c::emptyType(), "_");
+                    if (!def.closureType)
+                        def.closureType = c::emptyType();
                     auto funHead  = c::functionBegin(outType, *def.name, closure, params);
                     auto returned = c::join("", stmts);
                     auto body     = c::join("", funScope.statements);
@@ -161,6 +231,11 @@ namespace cynth::context {
                     names.push_back(id->name);
                     closureTypes.push_back(id->closureType);
                 }
+
+                auto typeSpecResult = esl::unite_results <<= interface::translateTypeSpecifier ||
+                    target::nested<target::component_vector_tiny_result, target::category>{} <<= def.type.out;
+                if (!typeSpecResult) return typeSpecResult.error();
+                auto outType = global.instantiateType(tpl::Tuple{*typeSpecResult});
 
                 if (!def.closureType) // Implementation error.
                     return esl::result_error{"No closure type prepared for a switch function."};
@@ -235,8 +310,11 @@ namespace cynth::context {
             } || target::variant{} <<= def.implementation;
 
         } || target::result{} <<= args(
+            /*
             esl::unite_results <<= interface::translateTypeSpecifier ||
                 target::nested<target::component_vector_tiny_result, target::category>{} <<= def.type.out,
+            */
+            //translateTypeSpecifiers(def.type.out),
             esl::unite_results <<= interface::translateType ||
                 target::nested<target::component_vector_tiny_result, target::category>{} <<= def.type.in
         );

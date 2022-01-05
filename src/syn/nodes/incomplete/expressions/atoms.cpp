@@ -75,7 +75,7 @@ namespace cynth::syn {
     ExpressionProcessingResult node::Name::processExpression (context::Main & ctx) const {
         auto value = ctx.lookup.findValue(*name);
         if (!value)
-            return esl::result_error{"Name not found."};
+            return esl::result_error{"Name `" + *name + "` not found."};
 
         return [] (CompleteValue const & value) -> ResolvedValue {
             return value;
@@ -89,7 +89,7 @@ namespace cynth::syn {
     TargetResolutionResult node::Name::resolveTarget (context::Main & ctx) const {
         auto value = ctx.lookup.findValue(*name);
         if (!value)
-            return esl::result_error{"Name not found."};
+            return esl::result_error{"Name `" + *name + "` not found."};
 
         return esl::unite_results <<= [] (CompleteValue const &) -> esl::result<TypedTargetExpression> {
             return esl::result_error{"Cannot assign to constant values."};

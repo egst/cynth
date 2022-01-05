@@ -16,6 +16,8 @@
 
 # C++ details
 
+* Order of evaluation of operands of expressions might be unspecified.  
+    Some algorithms relied on this order. Some were fixed, but some might remian, I should check more thoroughly.
 * Go through all lifted lambdas and check that lvalue and rvalue references are used properly in the parameters.  
     Should I use rvalue references or direct vlaues? For some reason rvalue references don't work in some places.
 * Explicitly `inline` simple small functions?  

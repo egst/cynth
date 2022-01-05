@@ -1,11 +1,13 @@
 #include "syn/nodes/common/fun_nodes.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <utility>
 
 #include "esl/category.hpp"
 #include "esl/lift.hpp"
+#include "esl/ranges.hpp"
 #include "esl/string.hpp"
 #include "esl/sugar.hpp"
 #include "esl/tiny_vector.hpp"
@@ -39,26 +41,43 @@ namespace cynth::syn::fun_nodes {
         context::Main            & ctx,
         std::vector<std::string> & declarations,
         std::vector<std::string> & assignments,
-        std::string const        & closureName,
+        std::string const        & closureName, // I'm aware of this unused param. I'll remove it when I test that everything is ok.
         std::string const        & type,
         std::string const        & variable
     ) {
         auto captureName = c::variableName(c::id(ctx.nextId()));
         auto decl        = c::declaration(type, captureName);
-        auto assgn       = c::statement(closureName + c::designatedInitialization(variable, captureName));
+        //auto assgn       = c::statement(closureName + c::designatedInitialization(variable, captureName));
+        auto assgn       = c::designatedInitialization(variable, captureName);
         declarations.push_back(decl);
         assignments.push_back(assgn);
         return captureName;
     }
 
+    namespace {
+
+        template <esl::range R>
+        void makeRangeUnique (R & values) {
+            std::sort(values.begin(), values.end());
+            values.erase(std::unique(values.begin(), values.end()), values.end());
+        }
+
+    }
+
     esl::result<CaptureResult> capture (
         context::Main & ctx,
-        std::vector<std::string> const & names,
-        std::vector<std::string> const & typeNames
-    ) {
+        std::vector<std::string> const & names_,
+        std::vector<std::string> const & typeNames_
+    ) { // TODO: Why can't I take names and typeNames by value?
         CaptureResult            result;
         std::vector<std::string> declarations; // <type> <name>
         std::vector<std::string> assignments;  // <closure>.<name> = <var>;
+
+        // TODO: Take them by value instead...
+        std::vector<std::string> names     = names_;
+        std::vector<std::string> typeNames = typeNames_;
+        makeRangeUnique(names);
+        makeRangeUnique(typeNames);
 
         auto closureName = c::closureVariableName(c::id(ctx.nextId()));
 
@@ -74,7 +93,7 @@ namespace cynth::syn::fun_nodes {
 
             auto value = ctx.lookup.findValue(name);
             if (!value)
-                return esl::result_error{"Name not found."};
+                return esl::result_error{"Name `" + name + "` not found."};
 
             for (auto const & var: *value) {
                 auto captureResult = [&] (CompleteValue const & varVal) {
@@ -117,6 +136,7 @@ namespace cynth::syn::fun_nodes {
                         //using Type = decltype(captureType);
                         // TODO: This (simple || array) should be in interface/types and interface/values
                         // (as interface::mutableType and interface::mutableValue or something)
+                        /* TODO: This would be nice, but there are some problems with assigning structs with const members to unions.
                         [] <typename Type> (Type & type) requires (
                             interface::simpleType<Type> || esl::same_but_cvref<Type, sem::type::Array>
                         ) {
@@ -124,6 +144,7 @@ namespace cynth::syn::fun_nodes {
                         } | [] (auto &) {
                             // Skip. These are always cosnt.
                         } || target::category{} <<= captureType;
+                        */
                         capturedTuple.emplace_back(TypedName{
                             .type = captureType,
                             .name = c::memberAccess(c::closureArgumentName(), capturedMember)
@@ -149,7 +170,10 @@ namespace cynth::syn::fun_nodes {
             auto closureTypeName   = c::closureType(c::id(ctx.nextId()));
             result.closureType     = c::structure(closureTypeName);
             auto closureStruct     = c::statement(c::structureDefinition(closureTypeName, declarations));
-            auto closureDef        = c::statement(c::declaration(*result.closureType, *result.closureVariable));
+            //auto closureDef        = c::statement(c::declaration(*result.closureType, *result.closureVariable));
+            auto closureDef        = c::statement(
+                c::definition(*result.closureType, *result.closureVariable, c::init(assignments))
+            );
 
             /***
             struct <closure> {
@@ -162,11 +186,23 @@ namespace cynth::syn::fun_nodes {
             /***
             <closuretype> <closurevar>;
             ***/
-            ctx.insertStatement(closureDef);
+            //ctx.insertStatement(closureDef);
 
             // Closure variable initialization:
-            for (auto const & assgn: assignments)
+            /*
+            for (auto const & assgn: assignments) {
                 ctx.insertStatement(assgn);
+            }
+            */
+
+            /***
+            <closuretype> <closurevar> {
+                <assignment1>,
+                <assignment2>,
+                ...
+            };
+            ***/
+            ctx.insertStatement(closureDef);
         }
 
         return result;
@@ -211,7 +247,7 @@ namespace cynth::syn::fun_nodes {
 
                     return sem::value::Function{def, closureVariable};
 
-                } || target::result{} <<= fun_nodes::capture(ctx, names, typeNames);
+                } || target::result{} <<= fun_nodes::capture(ctx, (names), (typeNames));
 
             } || target::result{} <<= args(
                 //interface::extractNames(paramScope.lookup)     || target::category{} <<= body,

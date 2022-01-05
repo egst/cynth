@@ -732,14 +732,14 @@ namespace cynth::sem {
 
         auto valResult = definition->get<CompleteValue>();
         if (!valResult)
-            return esl::result_error{"Initializing from an incompatible type."};
+            return esl::result_error{"Initializing from an incompatible type. (not a function)"};
         auto funResult = valResult->get<sem::value::Function>();
         if (!funResult)
-            return esl::result_error{"Initializing from an incompatible type."};
+            return esl::result_error{"Initializing from an incompatible type. (not a function)"};
         auto & fun = *funResult;
 
         if (!interface::sameTypes(fun.valueType, *this))
-            return esl::result_error{"Initializing from an incompatible type."};
+            return esl::result_error{"Initializing from an incompatible type. (different function)"};
 
         if (!fun.runtimeClosure())
             // No run-time captures:
@@ -756,6 +756,35 @@ namespace cynth::sem {
         ctx.insertStatement(local);
 
         return Variable{CompleteValue{sem::value::Function{fun.definition, varName}}};
+    }
+
+    namespace {
+
+        // TODO: Temporary solution until I clean up the mess with "struct " in closure types.
+        std::string removeStructPrefix (std::string const & typeName) {
+            return typeName.substr(7);
+        }
+
+    }
+
+    TypeTranslationResult type::Function::translateType () const {
+        if (!definition || !definition->closureType) // TODO: This should be an error. (Probably an implementation error.)
+            return c::emptyValue();
+        //return c::structure(*definition->closureType); // TODO: Does this include "struct "?
+        return *definition->closureType; // Yep, it does
+    }
+
+    TypeSpecifierTranslationResult type::Function::translateTypeSpecifier () const {
+        if (!definition || !definition->closureType) // TODO: This should be an error. (Probably an implementation error.)
+            return tpl::TypeSpecifier{
+                .type      = def::empty,
+                .structure = true,
+            };
+        return tpl::TypeSpecifier{
+            //.type      = *definition->closureType, // TODO: Does this include "struct "?
+            .type      = removeStructPrefix(*definition->closureType), // Yep, it does.
+            .structure = true
+        };
     }
 
 }

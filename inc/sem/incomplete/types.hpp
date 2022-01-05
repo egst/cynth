@@ -237,6 +237,9 @@ namespace cynth::sem {
             esl::component_vector<CompleteType> in;
             esl::component_vector<CompleteType> out;
 
+            // Temporary solution for returning functions from functions:
+            FunctionDefinition * definition = nullptr;
+
             interface::DisplayResult                  display () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
@@ -247,6 +250,10 @@ namespace cynth::sem {
 
             interface::SameTypeResult sameType      (type::Function const &) const;
             interface::SameTypeResult identicalType (type::Function const &) const;
+
+            // Temporary solution for returning functions from functions:
+            interface::TypeTranslationResult          translateType          () const;
+            interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
         };
 
         struct IncompleteIn: detail::types::In<false> {

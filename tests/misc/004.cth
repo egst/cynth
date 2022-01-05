@@ -1,0 +1,30 @@
+//buffer [3] b;
+//buffer [3] b = buffer [3] (Float fn (Int x) Float (x));
+//buffer [3] b2 = b;
+//buffer [2] b3 = b; // TODO
+//buffer [4] b4 = b;
+
+//Float sample = b2[0]; // TODO
+
+// TODO: data in cth_buff
+
+/*
+Int in input1;
+Int in input2;
+Int in i = input1;
+Int in j = if (true) input1 else input2;
+Int in k = if (x == 2) input1 else input2;
+
+Int ival  = Int (input1);
+//Int ival2 = Int (k); // TODO
+Int ival3 = Int (j);
+*/
+
+//Int out output1;
+//Int out o = output1;
+// TODO: Comp-time values for IO pointers.
+// Update: They are comp-time, but run-time values are also created.
+
+//x = Int (input1);
+
+// TODO: Type definitions

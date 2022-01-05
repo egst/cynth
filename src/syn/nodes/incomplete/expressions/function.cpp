@@ -41,11 +41,10 @@ namespace cynth::syn {
 
     NameExtractionResult node::Function::extractNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(nestedScope) || target::category{} <<= *input,
-            interface::extractNames(nestedScope) || target::category{} <<= *output,
-            interface::extractNames(nestedScope) || target::category{} <<= *body
-        );
+        auto o = interface::extractNames(nestedScope) || target::category{} <<= *output;
+        auto i = interface::extractNames(nestedScope) || target::category{} <<= *input;
+        auto b = interface::extractNames(nestedScope) || target::category{} <<= *body;
+        return esl::insert_cat || target::result{} <<= args(o, i, b);
     }
 
     TypeNameExtractionResult node::Function::extractTypeNames (context::Lookup & outerScope) const {

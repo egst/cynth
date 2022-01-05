@@ -52,7 +52,7 @@ namespace esl {
                 esl::make_forwarding_iterator<Second>(second.end())
             );
 
-            if constexpr (sizeof...(rest) > 1)
+            if constexpr (sizeof...(rest) >= 1)
                 insert_cat(std::forward<First>(first), std::forward<Rest>(rest)...);
 
             return std::forward<First>(first);
@@ -73,7 +73,7 @@ namespace esl {
                 esl::make_forwarding_iterator<Second>(second.end())
             );
 
-            if constexpr (sizeof...(rest) > 1)
+            if constexpr (sizeof...(rest) >= 1)
                 insert_back_cat(std::forward<First>(first), std::forward<Rest>(rest)...);
 
             return std::forward<First>(first);

@@ -208,6 +208,7 @@ namespace cynth::sem {
             esl::component<syn::category::Expression> body;       // Unevaluated body expression
             esl::component<sem::Closure>              closure;    // Comp-time captured values and run-time typed names
         };
+        using Result = esl::component_vector<FunctionDefinition *>;
         using Switch = esl::component_vector<value::Function>;
         using Variant = std::variant<
             Implementation, // A "leaf" function with a direct implementation.
@@ -218,6 +219,7 @@ namespace cynth::sem {
         type::Function             type;
         std::optional<std::string> closureType; // Run-time closure variable type. No value => No run-time closure.
         std::optional<std::string> name;        // Run-time function name.         No value => Not defined yet.
+        Result                     returnedFunctions; // In case of returning functions.
     };
 
     namespace value {
@@ -273,6 +275,9 @@ namespace cynth::sem {
             }
 
             interface::DisplayResult display () const;
+
+            // Temporary solution for returning functions from functions:
+            interface::ValueTranslationResult translateValue (context::Main &) const;
 
             type::Function & valueType = definition.type;
             // TODO: Make sure this still satisfies the has::valueType concept.

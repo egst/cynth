@@ -50,11 +50,10 @@ namespace cynth::syn {
 
     NameExtractionResult node::FunDef::extractNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        auto names = esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(nestedScope) || target::category{} <<= *output,
-            interface::extractNames(nestedScope) || target::category{} <<= *input,
-            interface::extractNames(nestedScope) || target::category{} <<= *body
-        );
+        auto o = interface::extractNames(nestedScope) || target::category{} <<= *output;
+        auto i = interface::extractNames(nestedScope) || target::category{} <<= *input;
+        auto b = interface::extractNames(nestedScope) || target::category{} <<= *body;
+        auto names = esl::insert_cat || target::result{} <<= args(o, i, b);
         auto result = outerScope.insertValue(*name.name, {});
         if (!result) return result.error();
         return names;
@@ -62,11 +61,10 @@ namespace cynth::syn {
 
     TypeNameExtractionResult node::FunDef::extractTypeNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *output,
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *input,
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *body
-        );
+        auto o = interface::extractTypeNames(nestedScope) || target::category{} <<= *output;
+        auto i = interface::extractTypeNames(nestedScope) || target::category{} <<= *input;
+        auto b = interface::extractTypeNames(nestedScope) || target::category{} <<= *body;
+        return esl::insert_cat || target::result{} <<= args(o, i, b);
     }
 
 }

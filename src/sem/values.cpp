@@ -249,14 +249,22 @@ namespace cynth::sem {
         return "buffer(...)";
     }
 
+    ValueTranslationResult value::Buffer::translateValue (context::Main &) const {
+        return TypedExpression{valueType, c::addressof(allocation)}; // TODO: Cast to a const pointer?
+    }
+
     //// Function ////
 
     DisplayResult value::Function::display () const {
         return "function(...)";
     }
 
-    ValueTranslationResult value::Buffer::translateValue (context::Main &) const {
-        return TypedExpression{valueType, c::addressof(allocation)}; // TODO: Cast to a const pointer?
+    ValueTranslationResult value::Function::translateValue (context::Main & ctx) const {
+        auto typeCopy = valueType;
+        typeCopy.definition = &definition;
+        auto id = ctx.defineFunction(definition);
+        if (!id) return id.error();
+        return TypedExpression{typeCopy, closureVariable.value_or(c::emptyValue())};
     }
 
 }
