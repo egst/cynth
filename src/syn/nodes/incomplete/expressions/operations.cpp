@@ -148,12 +148,11 @@ namespace cynth::syn {
             return [&] (ResolvedValue firstArg, ResolvedValue secondArg) {
                 return [&] (CompleteValue firstArg, CompleteValue secondArg) {
                     // Both comp-time arguments:
-                    std::cout << "comp-time val comp: " << (interface::display || target::category{} <<= firstArg) << "\n";
-                    return [&] <interface::simpleType Value> (
+                    return [&] <interface::simpleValue Value> (
                         Value firstArg, Value secondArg
                     ) -> esl::result<ResolvedValue> {
                         auto result = compOp(firstArg.get(), secondArg.get());
-                        return ResolvedValue{CompleteValue{Value{result}}};
+                        return ResolvedValue{CompleteValue{sem::value::Bool{result}}};
 
                     } | [] (auto, auto) -> esl::result<ResolvedValue> {
                         // TODO: Separate the case of two different simple types for a better error message.
@@ -166,7 +165,7 @@ namespace cynth::syn {
                     return [&] (auto firstArg, auto secondArg) {
                         return [&] <interface::simpleType Type> (Type, Type) -> esl::result<ResolvedValue> {
                             auto result = runOp(Type{}, firstArg.expression, secondArg.expression);
-                            return ResolvedValue{TypedExpression{Type{}, result}};
+                            return ResolvedValue{TypedExpression{sem::type::Bool{}, result}};
 
                         } | [] (auto, auto) -> esl::result<ResolvedValue> {
                             // TODO: Separate the case of two different simple types for a better error message.
@@ -233,7 +232,7 @@ namespace cynth::syn {
                 } | [&] (auto arg) {
                     // At least one run-time argument:
                     return [&] (auto arg) {
-                        return [&] (sem::type::Bool, sem::type::Bool) -> esl::result<ResolvedValue> {
+                        return [&] (sem::type::Bool) -> esl::result<ResolvedValue> {
                             auto result = runOp(sem::type::Bool{}, arg.expression);
                             return ResolvedValue{TypedExpression{sem::type::Bool{}, result}};
 

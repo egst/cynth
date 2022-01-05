@@ -52,13 +52,15 @@ namespace cynth::syn {
             };
 
         } || target::result{} <<= [&] (auto const & x) {
+
             // TODO: Lift can't handle nested vectors and optional results for some reason (hence the two nested lambda calls).
             return [&] (CompleteValue const & value) {
                 return [&] (sem::value::Function const & fun) -> Returned {
                     // Partially run-time function:
-                    auto ctxExpr = fun.closureVariable.value_or("{}");
+                    //auto closure = fun.closureVariable.value_or("{}");
+                    auto closure = fun.closureVariable.value_or(c::emptyValue());
                     auto branch  = ctx.branching.nextBranch();
-                    auto ret     = c::returnFunction(i, branch, ctxExpr);
+                    auto ret     = c::returnFunction(i, branch, closure);
 
                     /***
                     result.e<i>.branch = <branch>;
@@ -78,6 +80,13 @@ namespace cynth::syn {
 
             } | [&] (TypedExpression const & expr) -> Returned {
                 // Run-time value:
+                auto ret = c::returnValue(i, expr.expression);
+
+                /***
+                result.e<i> = <expr>;
+                ***/
+                ctx.insertStatement(ret);
+
                 ++i;
                 return expr.type;
 

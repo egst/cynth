@@ -14,7 +14,7 @@ namespace cynth::context {
         }
 
     protected:
-        std::size_t branch;
+        std::size_t branch = 0;
     };
 
 }

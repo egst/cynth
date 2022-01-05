@@ -77,6 +77,7 @@ namespace cynth::syn {
             BlockResult blockResult = {};
 
             for (auto const & statement: statements) {
+
                 using Result = esl::result<bool>;
 
                 auto result = [] (NoReturn const &) -> Result {
@@ -86,28 +87,45 @@ namespace cynth::syn {
 
                     if (blockResult.returned.empty())
                         blockResult.returned.reserve(ret.returned.size());
-                        // TODO: Resize.
+                        // TODO: Resize?
                     else if (blockResult.returned.size() > ret.returned.size())
                         return esl::result_error{"Returning more values than last time."};
                     else if (blockResult.returned.size() < ret.returned.size())
                         return esl::result_error{"Returning less values than last time."};
 
                     for (auto const & [i, returned]: esl::enumerate(ret.returned)) {
+
                         auto returnedType = interface::returnedType(returned);
                         bool init = i >= blockResult.returned.size();
-                        if (init)
-                            blockResult.returned.push_back(Returned{returnedType});
 
-                        auto & entry = blockResult.returned[i];
+                        if (init) {
+                            // First reurn:
+                            [&] (ReturnedValues const & values) {
+                                // TODO: tiny_vector(begin_it, end_it) results in segfaults.
+                                // I don't think it's implemented directly and maybe the inherited implementation
+                                // from std::vector kicks in and breaks this.
+                                ReturnedValues copy;
+                                copy.insert_back(values.begin(), values.end());
+                                blockResult.returned.push_back(Returned{copy});
 
-                        if (!init) {
-                            auto lastType = interface::returnedType(entry);
-                            // Note: Conversion to comon types upon return will not be supported in the first version.
-                            if (!(interface::sameTypes || target::category{} <<= args(lastType, returnedType)))
-                                return esl::result_error{"Returning incompatible types."};
+                            } | [&] (CompleteType const &) {
+                                blockResult.returned.push_back(Returned{
+                                    returnedType
+                                });
+                                blockResult.runtime = true;
+
+                            } || target::category{} <<= args(returned);
+                            continue;
                         }
 
-                        [&] (ReturnedValues const & values, ReturnedValues entry) {
+                        // Some returns already encountered:
+                        auto & entry  = blockResult.returned[i];
+                        auto lastType = interface::returnedType(entry);
+                        // Note: Conversion to comon types upon return will not be supported in the first version.
+                        if (!(interface::sameTypes || target::category{} <<= args(lastType, returnedType)))
+                            return esl::result_error{"Returning incompatible types."};
+
+                        [&] (ReturnedValues const & values, ReturnedValues & entry) {
                             entry.insert_back(values.begin(), values.end());
 
                         } | [&] (ReturnedValues const &, auto const &) {
@@ -126,7 +144,7 @@ namespace cynth::syn {
                     return ret.always ? stop : next;
 
                 } || target::optional_result{} <<=
-                interface::processStatement(ctx) || target::category{} <<= statement;
+                    interface::processStatement(ctx) || target::category{} <<= statement;
 
                 if (!result) return result.error();
                 if (*result == stop) break;
@@ -171,11 +189,17 @@ namespace cynth::syn {
                                 }
 
                                 // A single function with run-time capture:
+                                /*
                                 auto decl = c::declaration(*fun.definition.closureType, name);
                                 auto copy = sem::value::Function{fun.definition, tupleElement};
                                 blockResult.declarations.push_back(decl);
                                 blockResult.resolved.push_back(CompleteValue{copy});
                                 return {};
+                                */
+                                // Note: For now, this case is handled the same as multiple functions.
+                                // TODO: Find a way to optimize this case.
+                                // I need to think of an appropriate way to let the return statement know, that
+                                // it doesn't need to return the branch number.
                             }
 
                             // Multiple functions combined in a run-time switch function:
@@ -183,11 +207,13 @@ namespace cynth::syn {
                             auto & def = global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{esl::make_component_vector(functions)},
                                 .type           = type,
-                                .closureType    = c::closureType(c::id(global.nextId())),
-                                .name           = c::functionName(c::id(global.nextId()))
+                                .closureType    = c::closureType(c::id(global.nextId()))
+                                //.name           = c::functionName(c::id(global.nextId()))
                             });
                             auto newFun = sem::value::Function{def, tupleElement};
-                            auto decl = c::declaration(*def.closureType, name);
+                            //auto decl = c::declaration(*def.closureType, name);
+                            // TODO: Solve the problem with `struct closure_type` vs `closure_type`.
+                            auto decl = c::declaration(c::structure(*def.closureType), name);
                             blockResult.declarations.push_back(decl);
                             blockResult.resolved.push_back(CompleteValue{newFun});
                             return {};
@@ -329,7 +355,6 @@ namespace cynth::syn {
                 }
 
                 // At least partially run-time block expression:
-
                 return [&] (auto blockResult) -> ExpressionProcessingResult {
                     auto head = c::blockExpressionBegin(tupleVar);
                     auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));

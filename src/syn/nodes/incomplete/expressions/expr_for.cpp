@@ -48,10 +48,16 @@ namespace cynth::syn {
 
 
     ExpressionProcessingResult node::ExprFor::processExpression (context::Main & outerScope) const {
+        auto helperScope = outerScope.makeScopeChild();
         return [&] (auto decl) -> ExpressionProcessingResult {
             auto & [size, iterDecls] = decl;
 
-            for_nodes::State state = {.ctx = outerScope};
+            // TODO: Add a State constructor that takes care of this.
+            for_nodes::State state = {
+                .ctx             = helperScope,
+                .initializations = {c::integralLiteral(0)},
+                .advancements    = {c::increment(c::iterationPosition())},
+            };
 
             for (auto & [decl, array]: iterDecls) {
                 auto result = [&, &decl = decl, &array = array] (auto type) {
@@ -72,7 +78,7 @@ namespace cynth::syn {
 
                 for (sem::Integral i = 0; i < size; ++i) {
                     // Init inner scope:
-                    auto loopScope = outerScope.makeScopeChild();
+                    auto loopScope = helperScope.makeScopeChild();
 
                     // Define iteration elements:
                     for (auto & [name, alloc]: state.allocations) {
@@ -101,7 +107,7 @@ namespace cynth::syn {
                 }
 
                 if (!runtime) {
-                    if (result.value.empty() || !type)
+                    if (result.value.empty() || !type) // Implementation error?
                         return esl::result_error{"Returning an empty array from a comp-time for expression."};
 
                     auto & stored = outerScope.function.storeValue(result);
@@ -114,8 +120,7 @@ namespace cynth::syn {
             }
 
             // At least some range arrays run-time:
-
-            auto loopScope = outerScope.makeScopeChild();
+            auto loopScope = helperScope.makeScopeChild();
             state.processAllocations();
             for (auto const & [name, var]: std::move(state.variables)) {
                 auto result = loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
@@ -134,9 +139,9 @@ namespace cynth::syn {
                     auto assgn   = c::indented(c::terminatedJoin(";", state.assignments));
                     auto end     = c::end();
                     auto valName = c::valueName(c::id(outerScope.nextId()));
-                    auto alloc   = c::declaration(c::arrayType(size, type), valName);
+                    auto alloc   = c::definition(c::arrayType(size, type), valName, c::zeroInitialization());
                     auto result  = c::indented(
-                        c::assignment(c::arraySubscript(valName, c::iterationPosition()), expr.expression)
+                        c::statement(c::assignment(expr.expression, c::arraySubscript(valName, c::iterationPosition())))
                     );
 
                     /***
@@ -167,7 +172,8 @@ namespace cynth::syn {
                     /***
                         <body>
                     ***/
-                    outerScope.mergeChild(loopScope);
+                    helperScope.mergeChild(loopScope);
+                    outerScope.mergeChild(helperScope);
 
                     /***
                         val_f[iter] = <result>;
@@ -183,7 +189,7 @@ namespace cynth::syn {
                     val_f
                     ***/
                     return esl::init<esl::tiny_vector>(ResolvedValue{TypedExpression{
-                        .type       = expr.type,
+                        .type       = sem::type::Array{expr.type, size},
                         .expression = valName
                     }});
 

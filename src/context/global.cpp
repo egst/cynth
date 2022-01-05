@@ -2,6 +2,8 @@
 
 namespace cynth::context {
 
+    // TODO: Implement the insert* methods once generically and reuse.
+
     void Global::insertInclude (std::string const & code) {
         if (code.empty()) return;
         types.push_back(code);
@@ -10,6 +12,11 @@ namespace cynth::context {
     void Global::insertType (std::string const & code) {
         if (code.empty()) return;
         types.push_back(code);
+    }
+
+    void Global::insertDependantType (std::string const & code) {
+        if (code.empty()) return;
+        dependantTypes.push_back(code);
     }
 
     void Global::insertFunction (std::string const & def) {
@@ -30,7 +37,8 @@ namespace cynth::context {
     std::string Global::instantiateType (T const & tpl) {
         auto name = tpl.name();
         if (!instantiated.contains(name))
-            insertType(tpl.definition());
+            insertDependantType(tpl.definition());
+        instantiated.insert(name);
         return name;
     }
 

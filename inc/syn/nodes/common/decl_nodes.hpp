@@ -13,7 +13,8 @@ namespace cynth::syn::decl_nodes {
     esl::result<void> define (
         context::Main &,
         esl::tiny_vector<sem::CompleteDeclaration> const &,
-        esl::tiny_vector<sem::ResolvedValue>       const &
+        esl::tiny_vector<sem::ResolvedValue>       const &,
+        bool parameters = false
     );
 
     esl::result<void> declare (

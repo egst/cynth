@@ -2345,7 +2345,7 @@ switch (yykind)
     };
 
     /// Build a parser object.
-    parser (cynth::syn::node::Block & result_yyarg);
+    parser (std::pair<cynth::syn::node::Block &, bool &> result_yyarg);
     virtual ~parser ();
 
 #if 201103L <= YY_CPLUSPLUS
@@ -3476,14 +3476,14 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 1218,     ///< Last index in yytable_.
+      yylast_ = 1223,     ///< Last index in yytable_.
       yynnts_ = 86,  ///< Number of nonterminal symbols.
-      yyfinal_ = 134 ///< Termination state number.
+      yyfinal_ = 135 ///< Termination state number.
     };
 
 
     // User arguments.
-    cynth::syn::node::Block & result;
+    std::pair<cynth::syn::node::Block &, bool &> result;
 
   };
 

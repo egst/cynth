@@ -267,7 +267,9 @@ namespace cynth::sem {
             // unlike the allocation variables of arrays, that have a wider (function) scope.
 
             inline bool runtimeClosure () const {
-                return closureVariable && definition.closureType;
+                //return closureVariable || definition.closureType;
+                //return closureVariable.has_value();
+                return definition.closureType.has_value();
             }
 
             interface::DisplayResult display () const;

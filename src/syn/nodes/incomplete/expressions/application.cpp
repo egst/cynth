@@ -72,6 +72,7 @@ namespace cynth::syn {
                     esl::make_component_vector(typeTuple),
                     param.name
                 });
+                typeIter += count;
             }
             return decls;
         }
@@ -100,17 +101,18 @@ namespace cynth::syn {
 
             for (auto const & [name, capture]: implementation.closure->values) {
                 auto varsResult = esl::unite_results <<= captureVariable || target::tiny_vector{} <<= capture;
-                if (!varsResult) return varsResult.error();
+                if (!varsResult) return {}; // Run-time capture.
                 auto result = funScope.lookup.insertValue(name, *std::move(varsResult));
                 if (!result) return result.error();
             }
             for (auto const & [name, type]: implementation.closure->types) {
-                funScope.lookup.insertType(name, {type});
+                auto typeResult = funScope.lookup.insertType(name, {type});
+                if (!typeResult) return typeResult.error();
             }
 
             return [&] (auto paramDecls) -> ComptimeResult {
                 auto defResult =
-                    decl_nodes::define(funScope, paramDecls, wrapResolved || target::tiny_vector{} <<= arguments);
+                    decl_nodes::define(funScope, paramDecls, wrapResolved || target::tiny_vector{} <<= arguments, true);
                 if (!defResult) return defResult.error();
                 if (!funScope.empty()) return {}; // Run-time params.
 
@@ -165,9 +167,12 @@ namespace cynth::syn {
             return [&] (auto args) -> ExpressionProcessingResult {
                 auto id = ctx.defineFunction(fun.definition);
                 if (!id) return id.error();
-                auto call = c::call(id->name, fun.closureVariable.value_or(c::emptyValue()), args);
+                // TODO: "NULL" should be in translation.hpp
+                //auto closure    = fun.closureVariable ? c::addressof(*fun.closureVariable) : "NULL";
+                auto closure    = fun.closureVariable.value_or(c::emptyValue());
+                auto call       = c::call(id->name, closure, args);
                 auto resultName = c::tupleVariableName(c::id(ctx.nextId()));
-                auto resultDef  = c::definition(c::autoType(), resultName, call);
+                auto resultDef  = c::statement(c::definition(c::autoType(), resultName, call));
 
                 /***
                 __auto_type <result> = <fun>(<closure>, <arg1>, <arg2>, ...);

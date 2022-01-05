@@ -16,7 +16,7 @@ namespace cynth::context {
         using TypeEntry  = esl::tiny_vector<sem::CompleteType>;
 
         /** Creates the root context. */
-        inline Lookup () {}
+        inline Lookup (): parent{nullptr} {}
 
         inline Lookup (Lookup const &) = default;
         inline Lookup (Lookup &&)      = default;

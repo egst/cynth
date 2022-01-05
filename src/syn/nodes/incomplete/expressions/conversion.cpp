@@ -99,7 +99,7 @@ namespace cynth::syn {
             else {
                 // Note: Without the else, this doesn't compile (with clang at least),
                 // because Cast is not specialized for the same types.
-                auto converted = Cast<FromType, Type>::op(expression.expression);
+                auto converted = c::expression(Cast<FromType, Type>::op(expression.expression));
                 return {TypedExpression{type, converted}};
             }
         }

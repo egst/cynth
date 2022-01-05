@@ -13,6 +13,7 @@ using namespace yy;
 blank    [ \t]
 endl     [\n\r]
 comment  ("//"|#).*
+multicom "/*"([^*]|(\*+[^*/]))*\*+\/
 name     [a-z][a-zA-Z0-9_]*
 typeName [A-Z][a-zA-Z0-9_]*
 int      [0-9]+([eE][+-]?[0-9]+)?
@@ -39,9 +40,10 @@ while    (?i:while)
 
 %%
 
-{blank}+
-{endl}+
+{blank}
+{endl}
 {comment}
+{multicom}
 
 {buffer}   return parser::make_BUFFER();
 {by}       return parser::make_BY();

@@ -16,6 +16,7 @@
 
 // TMP
 #include "debug.hpp"
+#include "interface/common.hpp"
 
 namespace cynth::context {
 
@@ -48,13 +49,15 @@ namespace cynth::context {
     }
 
     esl::result<Global::FunctionId> Main::defineFunction (FunctionDefinition & def) {
-        if (def.name && def.closureType) // Already defined.
+        if (def.name) // Already defined.
             return Global::FunctionId{*def.name, *def.closureType};
 
         if (!def.name)
             def.name = c::functionName(c::id(nextId()));
-        if (!def.closureType)
-            def.name = c::closureType(c::id(nextId()));
+
+        // Note: The closure structure should already be defined (upon function definition).
+        // If closureType is not set, there is no need for runtime closure,
+        // and the `struct cth_empty {}` type is used instead.
 
         auto result = [&] (auto outSpecs, auto inTypes) {
             auto newLine = c::newLine();
@@ -62,9 +65,6 @@ namespace cynth::context {
 
             return [&] (FunctionDefinition::Implementation const & impl) -> esl::result<void> {
                 // Direct implementation:
-
-                // Note: The closure structure should already be defined (upon function definition).
-
                 Function funCtx;
                 auto funScope = makeFunctionChild(funCtx);
 
@@ -76,16 +76,16 @@ namespace cynth::context {
                     if (!result) return result.error();
                 }
                 for (auto const & [name, type]: impl.closure->types) {
-                    funScope.lookup.insertType(name, {type});
+                    auto typeResult = funScope.lookup.insertType(name, {type});
+                    if (!typeResult) return typeResult.error();
                 }
 
                 auto paramDecls = [&] (auto decls) {
                     return syn::decl_nodes::declare(funScope, decls, true);
-                } || target::result{} <<= interface::parameterDeclarations(impl.parameters, def.type.out);
+                } || target::result{} <<= interface::parameterDeclarations(impl.parameters, def.type.in);
                 if (!paramDecls) return paramDecls.error();
 
-                auto params       = function.parameters;
-                auto funHead      = c::functionBegin(outType, *def.name, params);
+                auto & params     = funScope.function.getParameters();
                 auto resultInit   = c::functionResultInit(outType);
                 auto resultReturn = c::functionResultReturn();
                 auto end          = c::end();
@@ -105,17 +105,32 @@ namespace cynth::context {
                             return esl::result_error{"Returning a value of an incompatible type."};
                         stmts.push_back(c::returnValue(i, result.expression));
                     }
+
+                    /*
+                    auto closure  = def.closureType
+                        ? c::declaration(c::pointer(c::constness(*def.closureType)), c::closureArgumentName())
+                        : c::declaration(c::pointer(c::constness(c::emptyType())), "_");
+                    */
+                    auto closure  = def.closureType
+                        ? c::declaration(*def.closureType, c::closureArgumentName())
+                        : c::declaration(c::emptyType(), "_");
+                    auto funHead  = c::functionBegin(outType, *def.name, closure, params);
                     auto returned = c::join("", stmts);
                     auto body     = c::join("", funScope.statements);
-                    auto funBody  =
-                        resultInit + newLine +
-                        body       + newLine +
-                        returned   + newLine +
-                        resultReturn;
-                    auto funDef = funHead + newLine + esl::indent(funBody, indent, body) + end;
+                    auto funBody  = c::join("",
+                        resultInit,
+                        body,
+                        returned,
+                        resultReturn
+                    );
+                    auto funDef = c::join("",
+                        funHead,
+                        c::indented(funBody),
+                        end
+                    );
 
                     /***
-                    struct cth_tup$<outType1>$<outType2>$... <sfun> (<inDecl0>, <inDecl2>...) {
+                    struct cth_tup$<outType1>$<outType2>$... <sfun> (struct cth_empty _, <inDecl0>, <inDecl2>...) {
                         struct cth_tup$<outType1>$<outType2>$... result;
                         <body>; // Potential helper statements for the <result> values.
                         result.e0 = <result0>;
@@ -144,13 +159,29 @@ namespace cynth::context {
                     auto id = defineFunction(fun.definition);
                     if (!id) return id.error();
                     names.push_back(id->name);
-                    names.push_back(id->closureType);
+                    closureTypes.push_back(id->closureType);
                 }
 
-                auto closureStructDef = c::structureDefinition(
+                if (!def.closureType) // Implementation error.
+                    return esl::result_error{"No closure type prepared for a switch function."};
+
+                // Note: def.closureType already contains the "struct " part, so doing a little hack here...
+                // TODO: Solve this properly.
+                /*
+                auto closureStructDef = c::statement(c::detail::translation::compoundDefinition("",
+                    def.closureType,
                     c::declaration(c::integralType(), def::branchMember),
                     c::declaration(c::anonymousVariantUnionDefinition(closureTypes), def::closureDataMember)
-                );
+                ));
+                */
+                // Update: This is slightly better, but still not ideal:
+                auto closureTypeName = *def.closureType;
+                def.closureType = c::structure(closureTypeName);
+                auto closureStructDef = c::statement(c::structureDefinition(
+                    closureTypeName,
+                    c::declaration(c::integralType(), def::branchMember),
+                    c::declaration(c::anonymousVariantUnionDefinition(closureTypes), def::closureDataMember)
+                ));
 
                 /***
                 struct <closureType> {
@@ -164,21 +195,24 @@ namespace cynth::context {
                 ***/
                 global.insertType(closureStructDef);
 
-                auto params      = c::functionParameters(inTypes);
+                auto fwdParams   = c::functionParameters(inTypes);
                 auto args        = c::functionArguments(inTypes);
                 auto closureArg  = c::closureArgumentName();
                 auto closureDecl = c::declaration(*def.closureType, closureArg);
-                auto funHead     = c::functionBegin(outType, *def.name, closureDecl, params);
+                auto funHead     = c::functionBegin(outType, *def.name, closureDecl, fwdParams);
                 auto switchHead  = c::switchBegin(c::closureBranch(closureArg));
                 auto end         = c::end();
                 esl::tiny_vector<std::string> cases;
-                for (std::size_t i = 0; i < args.size(); ++i) {
-                    auto result = c::functionReturn(c::call("<name>", c::closureData(closureArg, i), args));
+                //for (std::size_t i = 0; i < names.size(); ++i) { // TODO: use esl::enumerate instead
+                for (auto const & [i, name]: esl::enumerate(names)) {
+                    auto result = c::statement(
+                        c::functionReturn(c::call(name, c::closureData(closureArg, i), args))
+                    );
                     cases.push_back(c::switchCase(i, i == 0, false, result));
                 }
-                auto switchBody = c::join(newLine, cases);
-                auto funBody    = switchHead + newLine + switchBody + newLine + end;
-                auto funDef     = funHead + newLine + funBody + end;
+                auto switchBody = c::join("", cases);
+                auto funBody    = c::indented(c::join("", switchHead, switchBody, end));
+                auto funDef     = c::join("", funHead, newLine, funBody, end);
 
                 /***
                 struct cth_tup$<outType1>$<outType2>$... <sfun> (
@@ -206,9 +240,9 @@ namespace cynth::context {
             esl::unite_results <<= interface::translateType ||
                 target::nested<target::component_vector_tiny_result, target::category>{} <<= def.type.in
         );
-        if (result) return result.error();
+        if (!result) return result.error();
 
-        return Global::FunctionId{*def.name, *def.closureType};
+        return Global::FunctionId{*def.name, def.closureType.value_or(c::emptyType())};
     }
 
     std::string Main::assemble () const {
@@ -219,6 +253,7 @@ namespace cynth::context {
         auto staticAlloc = c::join("", global.data);
         auto includes    = c::join("", global.includes);
         auto types       = c::join("", global.types);
+        auto depTypes    = c::join("", global.dependantTypes);
         auto funs        = c::join("", global.functions);
         auto mainHead    = c::inlineFunctionBegin("int", "main");
         auto end         = c::end();
@@ -228,6 +263,7 @@ namespace cynth::context {
             includes,
             c::inlineComment("Types:"),
             types,
+            depTypes,
             c::inlineComment("Functions:"),
             funs,
             c::inlineComment("Static data:"),

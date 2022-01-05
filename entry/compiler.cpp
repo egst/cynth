@@ -1,3 +1,6 @@
+#include <iostream>
+#include <tuple>
+
 #include "esl/string.hpp"
 //#include "esl/lift.hpp"
 //#include "esl/sugar.hpp"
@@ -21,8 +24,12 @@ int main () {
 
     syn::node::Block root;
 
-    yy::parser parse{root};
+    // TODO: Use a dedicated struct as the parser argument.
+    bool parseSuccess = false;
+    yy::parser parse{std::pair<cynth::syn::node::Block &, bool &>{root, parseSuccess}};
     parse();
+
+    if (!parseSuccess) return 1;
 
     auto recreated = esl::pretty(interface::display(root));
 
@@ -46,11 +53,15 @@ int main () {
     ctx.global.insertFunction(sem::runtime::definition::imod());
     ctx.global.insertFunction(sem::runtime::definition::fmod());
 
-    // Standard library dependencies:
+    // Internal library dependencies:
     ctx.global.insertInclude(c::inclusion("<math.h>"));
+    ctx.global.insertInclude(c::inclusion("<stddef.h>"));
     ctx.global.insertInclude(c::inclusion("<stdbool.h>"));
     ctx.global.insertInclude(c::inclusion("<stdio.h>"));
     ctx.global.insertInclude(c::inclusion("<string.h>"));
+
+    // Internal type definitions:
+    ctx.global.insertType(c::statement(c::emptyTypeDefinition()));
 
     auto result = root.processProgram(ctx);
 

@@ -99,18 +99,20 @@ namespace cynth::syn {
                             // Two partially run-time function values:
 
                             auto posResult = pos.template get<sem::value::Function>();
-                            auto negResult = pos.template get<sem::value::Function>();
+                            auto negResult = neg.template get<sem::value::Function>();
                             if (!posResult) return posResult.error();
                             if (!negResult) return negResult.error();
                             auto & posFun = *posResult;
                             auto & negFun = *negResult;
 
+                            // TODO: There should be two functions in translation.hpp: closureType and closureTypeName.
+                            //auto closureType = c::structure(c::closureType(c::id(ctx.nextId())));
                             auto closureType = c::closureType(c::id(ctx.nextId()));
                             auto & def = ctx.global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{posFun, negFun},
                                 .type           = type,
-                                .closureType    = closureType,
-                                .name           = c::functionName(c::id(ctx.nextId()))
+                                .closureType    = closureType
+                                //.name           = c::functionName(c::id(ctx.nextId()))
                             });
                             auto newFun = sem::value::Function{def, tupleElement};
 

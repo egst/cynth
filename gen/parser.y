@@ -28,7 +28,7 @@
 %define api.token.constructor
 %define api.value.type variant
 %define api.value.automove
-%parse-param { cynth::syn::node::Block & result }
+%parse-param { std::pair<cynth::syn::node::Block &, bool &> result }
 
 %token <std::string> NAME
 %token <std::string> TYPENAME
@@ -204,13 +204,20 @@
 
 start:
     %empty {
-        result = {};
+        result.first  = {};
+        result.second = true;
     } |
     stmt_list[list] {
-        result = {$list};
+        result.first  = {$list};
+        result.second = true;
     } |
     stmt_list[list] SEMI {
-        result = {$list};
+        result.first  = {$list};
+        result.second = true;
+    } |
+    error {
+        result.first  = {};
+        result.second = false;
     }
 
 /* [categories] */

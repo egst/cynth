@@ -65,6 +65,10 @@ namespace cynth::sem {
         template <typename T>
         concept numeric = esl::same_but_cvref<T, Integral> || esl::same_but_cvref<T, Floating>;
 
+        template <typename T>
+        concept simple =
+            esl::same_but_cvref<T, Integral> || esl::same_but_cvref<T, Floating> || esl::same_but_cvref<T, bool>;
+
         constexpr auto plus  = [] (numeric auto a) { return +a; };
         constexpr auto minus = [] (numeric auto a) { return -a; };
         constexpr auto add   = [] <numeric T> (T a, T b) { return a + b; };
@@ -73,12 +77,12 @@ namespace cynth::sem {
         constexpr auto div   = esl::overload(implementation::idiv, [] (Floating a, Floating b) { return a / b; });
         constexpr auto mod   = esl::overload(implementation::imod, implementation::fmod);
         constexpr auto pow   = implementation::fpow; // Integer exponentiation not supported yet.
-        constexpr auto lt    = [] <numeric T> (T a, T b) { return a < b; };
-        constexpr auto gt    = [] <numeric T> (T a, T b) { return a > b; };
-        constexpr auto le    = [] <numeric T> (T a, T b) { return a <= b; };
-        constexpr auto ge    = [] <numeric T> (T a, T b) { return a >= b; };
-        constexpr auto eq    = [] <numeric T> (T a, T b) { return a == b; };
-        constexpr auto ne    = [] <numeric T> (T a, T b) { return a != b; };
+        constexpr auto lt    = [] <simple T> (T a, T b) { return a < b; };
+        constexpr auto gt    = [] <simple T> (T a, T b) { return a > b; };
+        constexpr auto le    = [] <simple T> (T a, T b) { return a <= b; };
+        constexpr auto ge    = [] <simple T> (T a, T b) { return a >= b; };
+        constexpr auto eq    = [] <simple T> (T a, T b) { return a == b; };
+        constexpr auto ne    = [] <simple T> (T a, T b) { return a != b; };
         constexpr auto lnot  = [] (bool a) { return !a; };
         constexpr auto land  = [] (bool a, bool b) { return a && b; };
         constexpr auto lor   = [] (bool a, bool b) { return a || b; };

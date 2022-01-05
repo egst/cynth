@@ -17,6 +17,10 @@
 #include "sem/types.hpp"
 #include "sem/declarations.hpp"
 
+// TMP
+#include "interface/common.hpp"
+#include "debug.hpp"
+
 namespace cynth::interface {
 
     // Concepts:
@@ -53,14 +57,15 @@ namespace cynth::interface {
     ) {
         esl::tiny_vector<sem::CompleteDeclaration> result;
         auto typeIter = types.begin();
-        for (auto param: parameters) {
+        for (auto const & param: parameters) {
             std::size_t count = param.arity;
-            if (typeIter + count >= types.end()) // Implementation error.
+            if (typeIter + count > types.end()) // Implementation error.
                 return esl::result_error{"More parameters than types."};
             result.push_back(sem::CompleteDeclaration{
                 esl::make_component_vector(esl::view{typeIter, count}),
                 param.name
             });
+            typeIter += count;
         }
         return result;
     }

@@ -272,7 +272,7 @@ namespace cynth::c {
     }
 
     std::string emptyTypeDefinition () {
-        return c::structureDefinition(c::emptyType());
+        return c::structureDefinition(c::global(def::empty));
     }
 
     std::string bufferPointer () {
@@ -304,7 +304,7 @@ namespace cynth::c {
     }
 
     std::string switchBegin (std::string const & val) {
-        return std::string{} + "if (" + val + ") {";
+        return std::string{} + "switch (" + val + ") {";
     }
 
     std::string whileBegin (std::string const & cond) {
@@ -317,7 +317,7 @@ namespace cynth::c {
 
     std::string forBegin (std::string const & init, std::string const & cond, std::string const & iter) {
         auto newLine = c::newLine();
-        return "for (" + newLine + c::indented(c::join(";", init, cond, iter)) + ") {";
+        return "for (" + newLine + c::indented(c::join(";", init, cond, iter)) + newLine + ") {";
     }
 
     std::string iterationVariable () {
@@ -362,7 +362,8 @@ namespace cynth::c {
         auto branchString = std::to_string(branch);
         auto branchTarget = c::memberAccess(c::returnElement(number), def::branchMember);
         if (value) {
-            auto dataTarget = c::memberAccess(c::returnElement(number), def::closureDataMember);
+            auto dataTarget =
+                c::unionVariant(c::memberAccess(c::returnElement(number), def::closureDataMember), branch);
             return
                 c::statement(c::assignment(branchString, branchTarget)) + c::newLine() +
                 c::statement(c::assignment(*value, dataTarget));
@@ -371,11 +372,11 @@ namespace cynth::c {
     }
 
     std::string functionResultInit (std::string type) {
-        return c::declaration(type, def::returnVariable);
+        return c::statement(c::declaration(type, def::returnVariable));
     }
 
     std::string functionResultReturn () {
-        return c::functionReturn(def::returnVariable);
+        return c::statement(c::functionReturn(def::returnVariable));
     }
 
     std::string attribute (std::string const & attr) {
@@ -420,16 +421,10 @@ namespace cynth::c {
         std::size_t                const & branch,
         std::optional<std::string> const & expr
     ) {
-        if (expr)
-            return c::structureLiteral(
-                c::structure(type),
-                c::branchInitialization(branch),
-                c::closureDataInitialization(branch, *expr)
-            );
-
         return c::structureLiteral(
             c::structure(type),
-            c::branchInitialization(branch)
+            c::branchInitialization(branch),
+            c::closureDataInitialization(branch, expr.value_or(c::emptyValue()))
         );
     }
 
@@ -477,21 +472,15 @@ namespace cynth::tpl {
     std::string Buffer::definition () const {
         return c::statement(c::structureDefinition(
             name(),
-            c::declaration(c::floatingType(), def::dataMember),
+            c::declaration(c::arrayType(size, c::floatingType()), def::dataMember),
             c::declaration(c::integralType(), def::offsetMember)
         ));
     }
 
     namespace {
 
-        // TODO: Put this into translation.hpp
-        template <typename... Ts>
-        std::string tupleTypeName (Ts const &... types) {
-            return c::global(c::templateArguments(str::tuple, types...));
-        }
-
         std::string tupleName (Tuple const & tup) {
-            return tupleTypeName(
+            return c::tupleTypeName(
                 esl::lift<esl::target::vector>(mergeTypeSpecifier)(tup.types)
             );
         }

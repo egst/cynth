@@ -127,19 +127,22 @@ namespace cynth::sem {
                 if (!(interface::sameType(type) || target::category{} <<= valueType))
                     return esl::result_error{"Initializing from an incompatible type."};
 
-                if (type.constant) {
+                if (type.constant)
                     // Comp-const variable:
                     return Variable{definition};
-                }
 
                 // Run-time const variable:
                 return [&] (TypedExpression && definition) -> DefinitionProcessingResult {
-                    return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+                    return runtimeSimpleDefinition(ctx, type, type.translateType(), definition.expression);
 
                 } || target::result{} <<= interface::translateValue(ctx) || target::category{} <<= std::move(definition);
 
             } | [&] (TypedExpression && definition) -> DefinitionProcessingResult {
-                return runtimeSimpleDefinition(ctx, type, Type::typeName, definition.expression);
+                // Note: There will be no implicit conversions in the first version.
+                if (!(interface::sameType(type) || target::category{} <<= definition.type))
+                    return esl::result_error{"Initializing from an incompatible type."};
+
+                return runtimeSimpleDefinition(ctx, type, type.translateType(), definition.expression);
 
             } || target::category{} <<= std::move(definition);
         }

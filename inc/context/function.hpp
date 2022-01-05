@@ -26,6 +26,10 @@ namespace cynth::context {
         /** Run-time parameter. */
         void insertParameter (std::string const &); // TODO: Implement.
 
+        inline esl::tiny_vector<std::string> const & getParameters () const {
+            return parameters;
+        }
+
     protected:
         //std::size_t id = 0; // Unused, for now.
 

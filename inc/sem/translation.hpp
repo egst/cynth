@@ -835,7 +835,7 @@ namespace cynth {
         ***/
         template <typename... Ts>
         std::string inlineInit (Ts const &... args) {
-            return "{" + c::join("," , args...) + "}";
+            return "{" + c::inlineJoin("," , args...) + "}";
         }
 
         /***
@@ -965,12 +965,17 @@ namespace cynth {
             return esl::join("$", args...);
         }
 
+        template <typename... Ts>
+        std::string tupleTypeName (Ts const &... types) {
+            return c::global(c::templateArguments(str::tuple, types...));
+        }
+
         /***
         struct cth_tup$<type1>$<type2>$...
         ***/
         template <typename... Ts>
         std::string tupleType (Ts const &... types) {
-            return c::structure(c::global(c::templateArguments(str::tuple, types...)));
+            return c::structure(c::tupleTypeName(types...));
         }
 
         /***
@@ -1043,7 +1048,7 @@ namespace cynth {
         })
         ***/
         inline std::string blockExpressionEnd () {
-            return "({";
+            return "})";
         }
 
         /***
@@ -1146,7 +1151,10 @@ namespace cynth {
         std::string functionBegin (
             std::string const & out, std::string const & name, Ts const &... params
         ) {
-            return out + " " + name + " (" + c::indented(c::join(",", params...)) + ") {";
+            auto newLine = c::newLine();
+            auto joined  = c::join(",", params...);
+            return out + " " + name + " (" + 
+                (joined.empty() ? "" : newLine + c::indented(joined) + newLine) + ") {";
         }
 
         /***

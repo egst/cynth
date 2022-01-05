@@ -105,15 +105,15 @@ namespace cynth::syn {
 
     NameExtractionResult node::Assignment::extractNames (context::Lookup & ctx) const {
         return esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(ctx) || target::category{} <<= *target,
-            interface::extractNames(ctx) || target::category{} <<= *value
+            interface::extractNames(ctx) || target::category{} <<= *value,
+            interface::extractNames(ctx) || target::category{} <<= *target
         );
     }
 
     TypeNameExtractionResult node::Assignment::extractTypeNames (context::Lookup & ctx) const {
         return esl::insert_cat || target::result{} <<= args(
-            interface::extractTypeNames(ctx) || target::category{} <<= *target,
-            interface::extractTypeNames(ctx) || target::category{} <<= *value
+            interface::extractTypeNames(ctx) || target::category{} <<= *value,
+            interface::extractTypeNames(ctx) || target::category{} <<= *target
         );
     }
 

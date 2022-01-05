@@ -38,10 +38,11 @@ namespace cynth::context {
             return id++;
         }
 
-        void insertInclude    (std::string const &);
-        void insertType       (std::string const &);
-        void insertAllocation (std::string const &);
-        void insertFunction   (std::string const &);
+        void insertInclude       (std::string const &);
+        void insertType          (std::string const &);
+        void insertDependantType (std::string const &); // These might depend on other types from `types`.
+        void insertAllocation    (std::string const &);
+        void insertFunction      (std::string const &);
 
         /** Instantiate a specific version of a type template. */
         template <typename T>
@@ -54,6 +55,7 @@ namespace cynth::context {
 
         std::vector<std::string>        includes;
         std::vector<std::string>        types;
+        std::vector<std::string>        dependantTypes;
         std::vector<std::string>        functions;
         std::vector<std::string>        data;
         std::unordered_set<std::string> instantiated;

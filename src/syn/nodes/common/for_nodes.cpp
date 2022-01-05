@@ -44,10 +44,12 @@ namespace cynth::syn::for_nodes {
         std::string       const & value
     ) {
         return [&] (auto translType) -> esl::result<void> {
-            auto varName = c::variableName(c::id(state.ctx.nextId()));
+            auto memberName = c::variableName(c::id(state.ctx.nextId()));
+            // TODO: This should be in translation.hpp
+            auto expr = c::memberAccess(def::iteration, c::variableName(c::id(state.ctx.nextId())));
             state.variables.emplace_back(
                 name,
-                Variable{TypedName{.type = type, .name = varName}}
+                Variable{TypedName{.type = type, .name = expr}}
             );
             state.assignments.push_back(c::definition(translType, name, value));
             return {};
@@ -65,14 +67,16 @@ namespace cynth::syn::for_nodes {
             // Comp-time atithmetic sequence:
 
             return [&] (auto translType, auto by, auto from) -> esl::result<void> {
-                auto name           = c::variableName(c::id(state.ctx.nextId()));
-                auto declaration    = c::declaration(translType, name);
+                auto memberName     = c::variableName(c::id(state.ctx.nextId()));
+                // TODO: This should be in translation.hpp
+                auto expr           = c::memberAccess(def::iteration, memberName);
+                auto declaration    = c::declaration(translType, memberName);
                 auto initialization = from.expression;
-                auto advancement    = c::advance(name, by.expression);
+                auto advancement    = c::advance(expr, by.expression);
 
                 state.variables.emplace_back(
                     name,
-                    Variable{TypedName{.type = type, .name = name}}
+                    Variable{TypedName{.type = type, .name = expr}}
                 );
                 state.declarations.push_back(declaration);
                 state.initializations.push_back(initialization);
@@ -104,12 +108,12 @@ namespace cynth::syn::for_nodes {
     bool State::comptime () const {
         return
             // Everything but the allocations must be empty:
-            ctx.empty()             && // Empty context means that no local statements were added.
-            variables.empty()       && // No variables that require run-time representation.
-            assignments.empty()     &&
-            declarations.empty()    &&
-            initializations.empty() &&
-            advancements.empty();
+            ctx.empty()                 && // Empty context means that no local statements were added.
+            variables.empty()           && // No variables that require run-time representation.
+            assignments.empty()         &&
+            declarations.empty()        &&
+            initializations.size() <= 1 && // One initialization and advancement is for the position.
+            advancements.size()    <= 1;
     }
 
     esl::result<void> processArray (
@@ -129,7 +133,8 @@ namespace cynth::syn::for_nodes {
                 return esl::result_error{"Incompatible range declaration element and array types."};
 
             return [&] (ArrayAllocation * alloc) -> esl::result<void> {
-                // Comp-time allocations:
+                // Comp-time allocation:
+
                 auto allocType = alloc->type();
                 if (!(interface::sameTypes || target::category{} <<= args(type, allocType)))
                     return esl::result_error{"Incompatible range declaration element and sequence types."};
@@ -164,10 +169,16 @@ namespace cynth::syn::for_nodes {
         category::RangeDeclaration const & declarations,
         Body                       const & body
     ) {
+        // TODO: helperScope as in ExprFor::processExpression.
         return [&] (auto decl) -> StatementProcessingResult {
             auto & [size, iterDecls] = decl;
 
-            State state = {.ctx = outerScope};
+            // TODO: Add a State constructor that takes care of this.
+            State state = {
+                .ctx             = outerScope,
+                .initializations = {c::integralLiteral(0)},
+                .advancements    = {c::increment(c::iterationPosition())},
+            };
 
             for (auto & [decl, array]: iterDecls) {
                 auto result = [&, &decl = decl, &array = array] (auto type) {
@@ -203,11 +214,12 @@ namespace cynth::syn::for_nodes {
                 auto result = loopScope.lookup.insertValue(name, esl::init<esl::tiny_vector>(std::move(var)));
                 if (!result) return result.error();
             }
+
             auto bodyResult = interface::processStatement(loopScope) || target::category{} <<= body;
-            if (!bodyResult) return bodyResult.error();
+            if (bodyResult.has_error()) return bodyResult.error();
 
             auto head = c::forBegin(
-                c::iterationStructure(state.declarations, state.initializations),
+                c::iterationStructure(state.declarations,  state.initializations),
                 c::lt(c::iterationPosition(), c::integralLiteral(size)),
                 c::join(",", state.advancements)
             );
