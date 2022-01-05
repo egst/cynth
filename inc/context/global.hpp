@@ -31,6 +31,7 @@ namespace cynth::context {
             Integral    size;
             std::string function;
             bool time;
+            std::string closure;
         };
 
         struct FunctionId {
@@ -52,7 +53,7 @@ namespace cynth::context {
         template <typename T>
         std::string instantiateType (T const &);
 
-        void registerGenerator (std::string const & buffer, Integral size, std::string const & function, bool time);
+        void registerGenerator (std::string const & buffer, Integral size, std::string const & function, bool time, std::string const & closure);
 
         inline std::vector<GeneratorEntry> const & getGenerators () {
             return generators;

@@ -1,7 +1,16 @@
+Float param = 1.0;
+Float in input;
+Float in input2;
+Float in input3 = if (param > 0.0) input else input2;
 //buffer [3] b;
 buffer [3] b = buffer [3] (Float fn (Int x) Float (x));
-buffer [3] c = buffer [3] (Float fn (Int x) 1.5); // TODO
-//buffer [3] c = buffer [3] (Float fn () 1.5); // TODO
+buffer [3] c = buffer [3] (Float fn (Int x) 1.5);
+//buffer [3] c = buffer [3] (Float fn () 1.5);
+//buffer [3] c = buffer [3] (Float fn () param);
+//buffer [3] c = buffer [3] (Float fn () Float (input));
+//buffer [3] c = buffer [3] (Float fn () input[]);
+//buffer [3] c = buffer [3] (Float fn () input3[]);
+
 buffer [3] b2 = b;
 buffer [2] b3 = buffer [2] (b);
 //buffer [4] b4 = buffer [4] (b);
@@ -17,10 +26,11 @@ sample = b2[-2];
 //sample = b2[-3];
 sample = b2[x + 2];
 
-//(Int x, Int y, Int z);
-Int y;
-Int z;
-Int a = (x + y) * z;
+(Int t1, Int t2, Int t3) = (1, 2, 3);
+(Int u1, Int u2, Int u3);
+
+Int out output;
+output[] = 1;
 
 return 1;
 

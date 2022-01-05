@@ -49,7 +49,8 @@ namespace cynth::syn {
             sem::Integral                               size,
             esl::component_vector<CompleteType> const & in,
             esl::component_vector<CompleteType> const & out,
-            FunctionDefinition                        & definition
+            FunctionDefinition                        & definition,
+            std::optional<std::string>          const & closureVar
         ) {
             // Allocate a new buffer:
             auto valName  = c::bufferValueName(c::id(ctx.nextId()));
@@ -66,13 +67,32 @@ namespace cynth::syn {
                 return esl::result_error{"A buffer generator must return a single float value."};
             if (in.size() > 1)
                 return esl::result_error{"A buffer generator must take at most one parameter."};
-            bool time = out.size() == 1;
+            bool time = in.size() == 1;
             if (time && !in.front().holds_alternative<sem::type::Int>())
                 return esl::result_error{"A buffer generator can only take an integral time parameter."};
             auto id = ctx.defineFunction(definition);
             if (!id) return id.error();
-            ctx.global.registerGenerator(valName, size, id->name, time);
-            // TODO: Store a runtime closure.
+
+            if (closureVar) {
+                /***
+                // global:
+                struct <closuretype> <closureval>;
+                ***/
+                auto closureType  = id->closureType;
+                auto closureVal   = c::closureVariableName(c::id(ctx.nextId())); // TODO: Distinguish closurevars and closurevals
+                auto closureAlloc = c::statement(c::declaration(closureType, closureVal));
+                ctx.global.insertAllocation(closureAlloc);
+
+                /***
+                <closureval> = <closurevar>;
+                ***/
+                auto closureCopy = c::statement(c::assignment(*closureVar, closureVal));
+                ctx.insertStatement(closureCopy);
+
+                ctx.global.registerGenerator(valName, size, id->name, time, closureVal);
+
+            } else
+                ctx.global.registerGenerator(valName, size, id->name, time, c::emptyValue());
 
             return valName;
         }
@@ -253,7 +273,7 @@ namespace cynth::syn {
                         .allocation = alloc,
                         .valueType  = type
                     }}};
-                } || target::result{} <<= createBuffer(ctx, type.size, fromType.in, fromType.out, value.definition);
+                } || target::result{} <<= createBuffer(ctx, type.size, fromType.in, fromType.out, value.definition, value.closureVariable);
 
             } | [&] (auto value, auto const & type) -> esl::result<ResolvedValue> {
                 // Other types:

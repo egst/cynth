@@ -261,7 +261,7 @@ cat_statement:
 /* [syntactic categories] */
 
 pure:
-    node_declaration  { $$ = $1; } |
+    cat_declaration   { $$ = $1; } |
     node_definition   { $$ = $1; } |
     node_assignment   { $$ = $1; } |
     node_type_def     { $$ = $1; } |

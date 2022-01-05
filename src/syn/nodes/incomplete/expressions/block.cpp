@@ -310,7 +310,7 @@ namespace cynth::syn {
                         }
                     )code"));
 
-                    outerScope.insertStatement("double sample_rate = " + c::floatingLiteral(sampleRate) + "; // kHz");
+                    outerScope.insertStatement("double sample_rate = " + std::to_string(sampleRate) + "; // kHz");
 
                     outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
                         int time = 0; // samples (TODO: Should I start further away from zero?)
@@ -332,7 +332,7 @@ namespace cynth::syn {
                         auto write =
                             gen.buffer + ".data[(" + gen.buffer + ".offset + 1) % " +
                             c::integralLiteral(gen.size) + "] = " + gen.function +
-                            (gen.time ? "((struct cth_empty) {}, time)" : "") + ".e0;";
+                            "(" + gen.closure + (gen.time ? ", time" : "") + ").e0;";
 
                         /***
                         <buff>.data[(<buff>.offset + 1) % <size>] = <generator>(time); // Float (Int) generator
@@ -355,6 +355,8 @@ namespace cynth::syn {
                     }
 
                     outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
+                            ++time;
+
                             end = clock();
 
                             double elapsed = ((double) (end - start)) / CLOCKS_PER_SEC * 1000; // ms
@@ -366,7 +368,7 @@ namespace cynth::syn {
                         ? "Sleep(remains);"
                         : "sleep(remains / 1000);";
 
-                    outerScope.insertStatement(c::indented(wait));
+                    outerScope.insertStatement(c::indented(wait, 2));
 
                     outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
                             }

@@ -15,6 +15,9 @@
 #include "esl/ranges.hpp"
 #include "esl/type_manip.hpp"
 
+// TMP
+#include "debug.hpp"
+
 namespace esl {
 
     inline std::vector<std::string> split (std::string delim, std::string const & str) {
@@ -102,7 +105,7 @@ namespace esl {
                 std::size_t i = 0;
                 ((
                     i < vals_count - (range_count == 0) ? (
-                        // do this for every value frow `piece_vals...` but the last one (if there are no more values in `pieces_range`)
+                        // do this for every value from `piece_vals...` but the last one (if there are no more values in `pieces_range`)
                         result.insert(result.end(), make_string(piece_vals).data(), make_string(piece_vals).data() + make_string(piece_vals).size()),
                         result.insert(result.end(), delim.data(), delim.data() + delim.size()),
                         0
@@ -111,7 +114,7 @@ namespace esl {
                 ), ...);
             }
             // the same thing with the dynamc range:
-            for (auto it = pieces_range.begin(); it != pieces_range.end() - 1; ++it) {
+            for (auto it = pieces_range.begin(); it != pieces_range.end() && it != pieces_range.end() - 1; ++it) {
                 auto const & piece = make_string(*it);
                 result.insert(result.end(), piece.data(), piece.data() + piece.size());
                 result.insert(result.end(), delim.data(), delim.data() + delim.size());
@@ -125,7 +128,7 @@ namespace esl {
                     auto const & last = make_string(*(pieces_range.end() - 1));
                     result.insert(result.end(), last.data(), last.data() + last.size());
                 }
-            } else {
+            } else /*if (range_count > 0)*/ {
                 auto const & last = make_string(*(pieces_range.end() - 1));
                 result.insert(result.end(), last.data(), last.data() + last.size());
             }
