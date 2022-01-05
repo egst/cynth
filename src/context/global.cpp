@@ -29,15 +29,15 @@ namespace cynth::context {
         data.push_back(code);
     }
 
-    void Global::registerGenerator (std::string const & buff, std::string const & fun, bool time) {
-        generators.push_back(GeneratorEntry{buff, fun, time});
+    void Global::registerGenerator (std::string const & buff, Integral size, std::string const & fun, bool time) {
+        generators.push_back(GeneratorEntry{buff, size, fun, time});
     }
 
     template <typename T>
     std::string Global::instantiateType (T const & tpl) {
         auto name = tpl.name();
         if (!instantiated.contains(name))
-            insertDependantType(tpl.definition());
+            insertDependantType(tpl.definition(*this));
         instantiated.insert(name);
         return name;
     }

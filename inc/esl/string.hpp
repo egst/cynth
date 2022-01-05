@@ -192,6 +192,18 @@ namespace esl {
         return esl::join(newline, result);
     }
 
+    inline std::string reindent (std::size_t strip, std::string const & indentation, std::string const & newline, std::string const & str) {
+        auto lines = esl::split(newline, str);
+        if (lines.size() < 2) { // Just a small optimization to avoid more allocations.
+            return indentation + str.substr(std::min(strip, str.size()));
+        }
+        std::vector<std::string> result;
+        for (auto const & line: lines) {
+            result.push_back(indentation + line.substr(std::min(strip, line.size())));
+        }
+        return esl::join(newline, result);
+    }
+
     // TODO: Support other indentation and new line characters.
     inline std::string pretty (std::string const & str) {
         std::size_t const line_count = std::count(str.begin(), str.end(), '\n') + 1;

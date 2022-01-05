@@ -11,6 +11,7 @@
 #include "esl/tiny_vector.hpp"
 #include "esl/zip.hpp"
 
+#include "context/forward.hpp"
 #include "sem/numeric_types.hpp"
 
 // TMP
@@ -468,105 +469,105 @@ namespace cynth {
         -<a>
         ***/
         inline std::string negate (std::string const & a) {
-            return "-" + a;
+            return "-" + c::expression(a) + "";
         }
 
         /***
         <a> + <b>
         ***/
         inline std::string add (std::string const & a, std::string const & b) {
-            return a + " + " + b;
+            return c::expression(a) + " + " + c::expression(b);
         }
 
         /***
         <a> - <b>
         ***/
         inline std::string sub (std::string const & a, std::string const & b) {
-            return a + " - " + b;
+            return c::expression(a) + " - " + c::expression(b);
         }
 
         /***
         <a> * <b>
         ***/
         inline std::string mul (std::string const & a, std::string const & b) {
-            return a + " * " + b;
+            return c::expression(a) + " * " + c::expression(b);
         }
 
         /***
         <a> * <b>
         ***/
         inline std::string div (std::string const & a, std::string const & b) {
-            return a + " / " + b;
+            return c::expression(a) + " / " + c::expression(b);
         }
 
         /***
         <a> % <b>
         ***/
         inline std::string mod (std::string const & a, std::string const & b) {
-            return a + " % " + b;
+            return c::expression(a) + " % " + c::expression(b);
         }
 
         /***
         <a> < <b>
         ***/
         inline std::string lt (std::string const & a, std::string const & b) {
-            return a + " < " + b;
+            return c::expression(a) + " < " + c::expression(b);
         }
 
         /***
         <a> > <b>
         ***/
         inline std::string gt (std::string const & a, std::string const & b) {
-            return a + " > " + b;
+            return c::expression(a) + " > " + c::expression(b);
         }
 
         /***
         <a> <= <b>
         ***/
         inline std::string le (std::string const & a, std::string const & b) {
-            return a + " <= " + b;
+            return c::expression(a) + " <= " + c::expression(b);
         }
 
         /***
         <a> >= <b>
         ***/
         inline std::string ge (std::string const & a, std::string const & b) {
-            return a + " >= " + b;
+            return c::expression(a) + " >= " + c::expression(b);
         }
 
         /***
         <a> == <b>
         ***/
         inline std::string eq (std::string const & a, std::string const & b) {
-            return a + " == " + b;
+            return c::expression(a) + " == " + c::expression(b);
         }
 
         /***
         <a> != <b>
         ***/
         inline std::string ne (std::string const & a, std::string const & b) {
-            return a + " != " + b;
+            return c::expression(a) + " != " + c::expression(b);
         }
 
         /***
         !<a>
         ***/
         inline std::string lnot (std::string const & a) {
-            return "!" + a;
+            return "!" + c::expression(a);
         }
 
         /***
         <a> && <b>
         ***/
         inline std::string land (std::string const & a, std::string const & b) {
-            return a + " && " + b;
+            return c::expression(a) + " && " + c::expression(b);
         }
 
         /***
         <a> || <b>
         ***/
         inline std::string lor (std::string const & a, std::string const & b) {
-            return a + " || " + b;
+            return c::expression(a) + " || " + c::expression(b);
         }
 
         /***
@@ -1444,22 +1445,22 @@ namespace cynth {
             TypeSpecifier elemType;
             sem::Integral size;
 
-            std::string name       () const;
-            std::string definition () const;
+            std::string name       ()                const;
+            std::string definition (context::Global &) const;
         };
 
         struct Buffer {
             sem::Integral size;
 
-            std::string name       () const;
-            std::string definition () const;
+            std::string name       ()                const;
+            std::string definition (context::Global &) const;
         };
 
         struct Tuple {
             esl::tiny_vector<TypeSpecifier> types;
 
-            std::string name       () const;
-            std::string definition () const;
+            std::string name       ()                const;
+            std::string definition (context::Global &) const;
         };
 
     }

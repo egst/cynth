@@ -85,4 +85,5 @@ FLEX_OPTIONS   =
 BISON_OPTIONS  = -Wcounterexamples
 CYNTH_OPTIONS  = -Wall
 CYNTH_OPTIONS += -Wno-unused-variable
+CYNTH_OPTIONS += -Wno-unused-but-set-variable
 CYNTH_OPTIONS += -Wno-unused-label

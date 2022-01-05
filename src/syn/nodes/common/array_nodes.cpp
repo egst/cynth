@@ -133,14 +133,16 @@ namespace cynth::syn::array_nodes {
         return [index] (CompleteValue const & value) -> SingleExpressionProcessingResult {
             // Comp-time array pointer.
             auto arrayResult = value.get<sem::value::Array>();
-            if (!arrayResult)
-                return esl::result_error{"Subscript can only be performed on an array."};
+            if (!arrayResult) // Implementation error.
+                return esl::result_error{"Expecting an array."};
             auto & array = *arrayResult;
             // TODO: target::reference_result?
 
             auto type = array.valueType;
             if (index >= type.size)
                 return esl::result_error{"Subscript index out of bounds."};
+            if (index < 0)
+                return esl::result_error{"Subscript indices must be non-negative."};
 
             return [index, &type] (ArrayAllocation * alloc) -> SingleExpressionProcessingResult {
                 // Comp-time array allocation.
@@ -155,15 +157,61 @@ namespace cynth::syn::array_nodes {
         } | [index] (TypedExpression const & value) -> SingleExpressionProcessingResult {
             // Run-time array pointer.
             auto typeResult = value.type.get<sem::type::Array>();
-            if (!typeResult)
-                return esl::result_error{"Subscript can only be performed on an array."};
+            if (!typeResult) // Implementation error.
+                return esl::result_error{"Expecting an array."};
             auto & type = *typeResult;
 
             if (index >= type.size)
                 return esl::result_error{"Subscript index out of bounds."};
+            if (index < 0)
+                return esl::result_error{"Subscript indices must be non-negative."};
             return runtimeArraySubscript(*type.type, index, value.expression);
 
         } || target::category{} <<= array;
+    }
+
+    std::string bufferPosition (std::string const & index, std::string const & buff, sem::Integral size) {
+        return c::mod(c::expression(c::add(c::negate(index), c::bufferOffset(buff))), std::to_string(size));
+    }
+
+    SingleExpressionProcessingResult processStaticBufferSubscript (
+        Integral index,
+        ResolvedValue const & buffer
+    ) {
+        return [index] (CompleteValue const & value) -> SingleExpressionProcessingResult {
+            // Comp-time buffer pointer.
+            auto bufferResult = value.get<sem::value::Buffer>();
+            if (!bufferResult) // Implementation error.
+                return esl::result_error{"Expecting a buffer."};
+            auto const & buffer = *bufferResult;
+
+            auto type = buffer.valueType;
+            if (index <= -type.size)
+                return esl::result_error{"Buffer subscript index out of bounds."};
+            if (index > 0)
+                return esl::result_error{"Buffer subscript indices must be non-positive."};
+
+            auto position = bufferPosition(c::integralLiteral(index), buffer.allocation, type.size);
+            auto expr     = c::bufferData(buffer.allocation);
+            return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
+
+        } | [index] (TypedExpression const & value) -> SingleExpressionProcessingResult {
+            // Run-time buffer pointer.
+            auto typeResult = value.type.get<sem::type::Buffer>();
+            if (!typeResult) // Implementation error.
+                return esl::result_error{"Expecting a buffer."};
+            auto & type = *typeResult;
+
+            if (index <= -type.size)
+                return esl::result_error{"Buffer subscript index out of bounds."};
+            if (index > 0)
+                return esl::result_error{"Buffer subscript indices must be non-positive."};
+
+            auto position = bufferPosition(c::integralLiteral(index), value.expression, type.size);
+            auto expr     = c::bufferData(value.expression);
+            return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
+
+        } || target::category{} <<= buffer;
     }
 
     SingleExpressionProcessingResult processVerifiedSubscriptExpression (
@@ -174,8 +222,8 @@ namespace cynth::syn::array_nodes {
         return [&] (CompleteValue const & value) -> SingleExpressionProcessingResult {
             // Comp-time array pointer.
             auto arrayResult = value.get<sem::value::Array>();
-            if (!arrayResult)
-                return esl::result_error{"Subscript can only be performed on an array."};
+            if (!arrayResult) // Implementation error.
+                return esl::result_error{"Expecting an array."};
             auto & array = *arrayResult;
             auto type = array.valueType;
 
@@ -193,13 +241,43 @@ namespace cynth::syn::array_nodes {
         } | [&] (TypedExpression const & value) -> SingleExpressionProcessingResult {
             // Run-time array pointer.
             auto typeResult = value.type.get<sem::type::Array>();
-            if (!typeResult)
-                return esl::result_error{"Subscript can only be performed on an array."};
+            if (!typeResult) // Implementation error.
+                return esl::result_error{"Expecting an array."};
             auto & type = *typeResult;
 
             return runtimeSubscript(*type.type, index, value.expression);
 
         } || target::category{} <<= array;
+    };
+
+    SingleExpressionProcessingResult processVerifiedBufferSubscriptExpression (
+        std::string const & index,
+        ResolvedValue const & buffer
+    ) {
+        return [&] (CompleteValue const & value) -> SingleExpressionProcessingResult {
+            // Comp-time buffer pointer.
+            auto buffResult = value.get<sem::value::Buffer>();
+            if (!buffResult) // Implementation error.
+                return esl::result_error{"Expecting a buffer."};
+            auto & buffer = *buffResult;
+            auto type = buffer.valueType;
+
+            auto position = bufferPosition(index, buffer.allocation, type.size);
+            auto expr     = c::bufferData(buffer.allocation);
+            return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
+
+        } | [&] (TypedExpression const & value) -> SingleExpressionProcessingResult {
+            // Run-time buffer pointer.
+            auto typeResult = value.type.get<sem::type::Buffer>();
+            if (!typeResult) // Implementation error.
+                return esl::result_error{"Expecting a buffer."};
+            auto & type = *typeResult;
+
+            auto position = bufferPosition(index, value.expression, type.size);
+            auto expr     = c::bufferData(value.expression);
+            return runtimeSubscript(CompleteType{sem::type::Float{}}, index, expr);
+
+        } || target::category{} <<= buffer;
     };
 
     SingleExpressionProcessingResult processSubscriptExpression (
@@ -236,6 +314,26 @@ namespace cynth::syn::array_nodes {
 
         } | [&] (TypedExpression const & index) -> SingleExpressionProcessingResult {
             return processSubscriptExpression(ctx, index, array);
+
+        } || target::category{} <<= index;
+    }
+
+    SingleExpressionProcessingResult processBufferSubscript (
+        sem::ResolvedValue const & index,
+        sem::ResolvedValue const & buffer
+    ) {
+        return [&] (CompleteValue const & index) -> SingleExpressionProcessingResult {
+            // Note: There will be no implicit conversions in the first version.
+            auto valueResult = index.get<sem::value::Int>();
+            if (!valueResult) return valueResult.error();
+            auto intResult = interface::get<sem::Integral>(*valueResult);
+            return processStaticBufferSubscript(*intResult, buffer);
+
+        } | [&] (TypedExpression const & index) -> SingleExpressionProcessingResult {
+
+            if (!index.type.get<sem::type::Int>())
+                return esl::result_error{"Only integers can be used as subscript indices."};
+            return processVerifiedBufferSubscriptExpression(index.expression, buffer);
 
         } || target::category{} <<= index;
     }

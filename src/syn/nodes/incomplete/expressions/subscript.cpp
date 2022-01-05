@@ -25,11 +25,12 @@ namespace cynth::syn {
     using interface::NameExtractionResult;
     using interface::TargetResolutionResult;
     using interface::TypeNameExtractionResult;
+    using sem::ArrayAllocation;
+    using sem::CompleteType;
     using sem::CompleteValue;
     using sem::ResolvedValue;
     using sem::TypedExpression;
     using sem::TypedTargetExpression;
-    using sem::ArrayAllocation;
 
     DisplayResult node::Subscript::display () const {
         using Target = target::nested<target::component_vector, target::category>;
@@ -72,8 +73,8 @@ namespace cynth::syn {
                     } | [&] (TypedExpression const & container) -> ExpressionProcessingResult {
                         // Run-time container:
                         auto typeResult = container.type.template get<sem::type::Array>();
-                        if (!typeResult)
-                            return esl::result_error{"Only arrays can be subscripted."};
+                        if (!typeResult) // Implementation error.
+                            return esl::result_error{"Exprecting an array."};
                         auto arrayType = *typeResult;
                         arrayType.constant = false;
                         interface::loseConstness || target::category{} <<= *arrayType.type;
@@ -96,8 +97,47 @@ namespace cynth::syn {
 
                 } else {
                     // A subarray: (unsupported yet)
-                    return esl::result_error{"Subarray subscripts are nut supported yet."};
+                    return esl::result_error{"Subarray subscripts are not supported yet."};
                     // Note: This shouldn't be too complicated, but it's not really essential right now.
+                }
+
+            } | [&] (sem::type::Buffer const & type) -> ExpressionProcessingResult {
+                if (elemsResult.arraySize == 0) {
+                    // Whole buffer copy:
+                    return [&] (CompleteValue const & container) -> ExpressionProcessingResult {
+                        // Comp-time buffer:
+                        auto bufferResult = container.template get<sem::value::Buffer>();
+                        if (!bufferResult) return bufferResult.error();
+                        auto const & bufferValue = *bufferResult;
+                        auto const & bufferType  = type;
+
+                        auto allocName = array_nodes::arrayAllocation(ctx, tpl::TypeSpecifier{c::floatingType()}, bufferType.size);
+                        array_nodes::bulkArrayInitialization(ctx, allocName, bufferValue.allocation);
+                        return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
+                            sem::value::Array{allocName, CompleteType{bufferType}, bufferType.size}
+                        }});
+
+                    } | [&] (TypedExpression const & container) -> ExpressionProcessingResult {
+                        // Run-time buffer:
+                        auto const & bufferType = type;
+
+                        auto allocName = array_nodes::arrayAllocation(ctx, tpl::TypeSpecifier{c::floatingType()}, bufferType.size);
+                        array_nodes::bulkArrayInitialization(ctx, allocName, container.expression);
+                        return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
+                            sem::value::Array{allocName, CompleteType{bufferType}, bufferType.size}
+                        }});
+
+                    } || target::category{} <<= container;
+
+                } else if (elemsResult.arraySize == 1) {
+                    // A single buffer element:
+                    auto index = elemsResult.values.front();
+                    return esl::init<esl::tiny_vector> || target::result{} <<=
+                        array_nodes::processBufferSubscript(index, container);
+
+                } else {
+                    // A subarray: (unsupported yet)
+                    return esl::result_error{"Subarray subscripts of buffers are not supported yet."};
                 }
 
             } | [&] (sem::type::In const & type) -> ExpressionProcessingResult {

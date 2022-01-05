@@ -21,6 +21,7 @@
 #include "interface/values.hpp"
 #include "sem/translation.hpp"
 #include "syn/categories/statement.hpp"
+#include "config.hpp"
 
 namespace cynth::syn {
 
@@ -270,10 +271,12 @@ namespace cynth::syn {
         if constexpr (Program) {
             return [&] (auto blockResult) -> ExpressionProcessingResult {
                 return [&] (auto blockResult) -> ExpressionProcessingResult {
-                    auto init  = c::returnInitFromDeclarations(blockResult.declarations, true);
-                    auto begin = c::blockBegin();
-                    auto end   = c::end();
-                    auto ret   = c::mainReturn();
+                    auto init    = c::returnInitFromDeclarations(blockResult.declarations, true);
+                    auto begin   = c::blockBegin();
+                    auto end     = c::end();
+                    auto ret     = c::mainReturn();
+                    //auto indent  = c::indentation();
+                    auto newLine = c::newLine();
 
                     /***
                     struct result {
@@ -292,40 +295,112 @@ namespace cynth::syn {
                     outerScope.mergeChild(blockScope);
                     outerScope.insertStatement(end);
                     outerScope.insertStatement(ret);
-                    outerScope.insertStatement("printf(\"result...\\n\"); " + c::inlineComment("TODO"));
+                    outerScope.insertStatement("printf(\"Synthesizer initialized.\\n\"); " + c::inlineComment("TODO"));
                     outerScope.insertStatement(c::inlineComment("Main loop:"));
-                    outerScope.insertStatement(c::inlineComment("TODO"));
+
+                    /*** TODO: Initialization output.
+                    cth_init_output = <result>;
+                    ***/
+
+                    // Waiting for stop signal (^C):
+                    outerScope.global.insertFunction(esl::reindent(6 * 4, "", newLine, R"code(
+                        volatile bool cth_stop = false; // TODO: Should I use sig_atomic_t instead?
+                        void cth_stop_handler (int _) {
+                            cth_stop = true;
+                        }
+                    )code"));
+
+                    outerScope.insertStatement("double sample_rate = " + c::floatingLiteral(sampleRate) + "; // kHz");
+
+                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
+                        int time = 0; // samples (TODO: Should I start further away from zero?)
+                        double tick_time  = 1 / sample_rate; // ms
+
+                        signal(SIGINT, cth_stop_handler);
+
+                        while (!cth_stop) {
+                            clock_t start, end;
+
+                            start = clock();
+
+                    )code"));
+
+                    auto const & gens = outerScope.global.getGenerators();
+                    outerScope.insertStatement(c::indented(c::inlineComment("Write:")));
+                    for (auto const & gen: gens) {
+                        // TODO: Use the constructs from translation.hpp.
+                        auto write =
+                            gen.buffer + ".data[(" + gen.buffer + ".offset + 1) % " +
+                            c::integralLiteral(gen.size) + "] = " + gen.function +
+                            (gen.time ? "((struct cth_empty) {}, time)" : "") + ".e0;";
+
+                        /***
+                        <buff>.data[(<buff>.offset + 1) % <size>] = <generator>(time); // Float (Int) generator
+                        <buff>.data[(<buff>.offset + 1) % <size>] = <generator>();     // Float ()    generator
+                        ...
+                        ***/
+                        outerScope.insertStatement(c::indented(write));
+                    }
+
+                    outerScope.insertStatement(c::indented(c::inlineComment("Step:")));
+                    for (auto const & gen: gens) {
+                        // TODO: Use the constructs from translation.hpp.
+                        auto step = gen.buffer + ".offset = (" + gen.buffer + ".offset + 1) % " + c::integralLiteral(gen.size) + ";";
+
+                        /***
+                        <buff>.offset = (<buff>.offset + 1) % <size>;
+                        ...
+                        ***/
+                        outerScope.insertStatement(c::indented(step));
+                    }
+
+                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
+                            end = clock();
+
+                            double elapsed = ((double) (end - start)) / CLOCKS_PER_SEC * 1000; // ms
+                            double remains = tick_time - elapsed;
+                            if (remains > 0) {
+                    )code"));
+
+                    auto wait = platform == Platform::windows
+                        ? "Sleep(remains);"
+                        : "sleep(remains / 1000);";
+
+                    outerScope.insertStatement(c::indented(wait));
+
+                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
+                            }
+                        }
+
+                    )code"));
+
+                    outerScope.insertStatement(c::inlineComment("Debug:"));
+                    for (auto const & gen: gens) {
+                        // TODO: Use the constructs from translation.hpp.
+                        auto debug =
+                            "printf(\"Buffer `" + gen.buffer + "` stopped at %i.\\n\", " + gen.buffer + ".offset);" + newLine +
+                            "for (int i = 0; i < " + c::integralLiteral(gen.size) + "; ++i) {" + newLine +
+                            "    printf(\"%f\\n\", " + gen.buffer + ".data[i]);" + newLine +
+                            "}";
+
+                        /***
+                        printf("Buffer `<buff>` stopped at %i.\n", <buffval>.offset);
+                        for (int i = 0; i < <size>; ++i) {
+                            printf("%f\n", <bufval>.data[i]);
+                        }
+                        ...
+                        ***/
+                        outerScope.insertStatement(debug);
+                    }
+
+                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
+                        return 0;
+                    )code"));
 
                     return blockResult.resolved;
                 } || target::result{} <<= processBlockExpression(outerScope.global, nullptr, blockResult.returned);
 
             } || target::result{} <<= processBlock(blockScope, statements);
-
-            /*** TODO: Initialization output.
-            cth_init_output = <result>;
-            ***/
-
-            /*** TODO: Main loop.
-            int status = 0;
-            int stop   = 0;
-            int time   = 0;
-
-            while (!stop) {
-                // Write:
-                <buff>.data[(<buff>.offset + 1) % <size>] = <generator>(time);
-                ...
-
-                // Step forward:
-                <buff>.pos = (<buff>.pos + 1) % <size>;
-                ...
-
-                ++iter;
-
-                sleep(...);
-            }
-
-            return status;
-            ***/
 
             return {};
 

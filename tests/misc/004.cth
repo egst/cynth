@@ -1,12 +1,28 @@
 //buffer [3] b;
-//buffer [3] b = buffer [3] (Float fn (Int x) Float (x));
-//buffer [3] b2 = b;
-//buffer [2] b3 = b; // TODO
-//buffer [4] b4 = b;
+buffer [3] b = buffer [3] (Float fn (Int x) Float (x));
+buffer [3] c = buffer [3] (Float fn (Int x) 1.5); // TODO
+//buffer [3] c = buffer [3] (Float fn () 1.5); // TODO
+buffer [3] b2 = b;
+buffer [2] b3 = buffer [2] (b);
+//buffer [4] b4 = buffer [4] (b);
 
-//Float sample = b2[0]; // TODO
+Int x = 2;
+buffer [3] d1 = if (true) b else c;
+buffer [3] d2 = if (x == 1) b else c;
 
-// TODO: data in cth_buff
+Float sample = b2[0];
+sample = b2[-0];
+sample = b2[-1];
+sample = b2[-2];
+//sample = b2[-3];
+sample = b2[x + 2];
+
+//(Int x, Int y, Int z);
+Int y;
+Int z;
+Int a = (x + y) * z;
+
+return 1;
 
 /*
 Int in input1;
@@ -14,7 +30,9 @@ Int in input2;
 Int in i = input1;
 Int in j = if (true) input1 else input2;
 Int in k = if (x == 2) input1 else input2;
+*/
 
+/*
 Int ival  = Int (input1);
 //Int ival2 = Int (k); // TODO
 Int ival3 = Int (j);

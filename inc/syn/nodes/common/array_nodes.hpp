@@ -79,6 +79,11 @@ namespace cynth::syn::array_nodes {
         sem::ResolvedValue const & array
     );
 
+    SingleExpressionProcessingResult processBufferSubscript (
+        sem::ResolvedValue const & index,
+        sem::ResolvedValue const & buffer
+    );
+
     std::string arrayAllocation (
         context::Main &,
         tpl::TypeSpecifier const & type,

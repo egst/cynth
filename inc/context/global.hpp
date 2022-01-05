@@ -7,9 +7,12 @@
 
 #include "context/forward.hpp"
 #include "context/storage.hpp"
+#include "sem/numeric_types.hpp"
 #include "sem/values.hpp"
 
 namespace cynth::context {
+
+    using sem::Integral;
 
     // TODO: Global could contain warning and error entries.
     // Currently the whole translation process stops at any error.
@@ -25,6 +28,7 @@ namespace cynth::context {
 
         struct GeneratorEntry {
             std::string buffer;
+            Integral    size;
             std::string function;
             bool time;
         };
@@ -48,7 +52,11 @@ namespace cynth::context {
         template <typename T>
         std::string instantiateType (T const &);
 
-        void registerGenerator (std::string const & buffer, std::string const & function, bool time);
+        void registerGenerator (std::string const & buffer, Integral size, std::string const & function, bool time);
+
+        inline std::vector<GeneratorEntry> const & getGenerators () {
+            return generators;
+        }
 
     protected:
         std::size_t id = 0;

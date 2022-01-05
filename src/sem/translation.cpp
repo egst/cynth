@@ -1,5 +1,7 @@
 #include "sem/translation.hpp"
 
+#include "context/global.hpp"
+
 // TODO: Explicit includes
 
 namespace cynth::c {
@@ -98,11 +100,11 @@ namespace cynth::c {
     }
 
     std::string dereference (std::string const & val) {
-        return "*" + val;
+        return "*" + c::expression(val);
     }
 
     std::string addressof (std::string const & val) {
-        return "&" + val;
+        return "&" + c::expression(val);
     }
 
     std::string arraySubscript (std::string const & array, std::string const & index) {
@@ -114,7 +116,7 @@ namespace cynth::c {
     }
 
     std::string increment (std::string const & val) {
-        return "++" + val;
+        return "++" + c::expression(val);
     }
 
     std::string advance (std::string const & target, std::string const & diff) {
@@ -122,7 +124,7 @@ namespace cynth::c {
     }
 
     std::string ternary (std::string const & cond, std::string const & pos, std::string const & neg) {
-        return cond + " ? " + pos + " : " + neg;
+        return c::expression(cond) + " ? " + c::expression(pos) + " : " + c::expression(neg);
     }
 
     std::string structure (std::string const & name) {
@@ -230,7 +232,7 @@ namespace cynth::c {
     }
 
     std::string bufferOffset (std::string const & structure) {
-        return structure + "." + def::dataMember;
+        return structure + "." + def::offsetMember;
     }
 
     std::string iterationPosition () {
@@ -458,21 +460,37 @@ namespace cynth::tpl {
         return c::arrayType(size, elemType.merged());
     }
 
-    std::string Array::definition () const {
+    std::string Array::definition (context::Global &) const {
         return c::statement(
             "typedef " + elemType.full() + " " + name() +
             " [" + std::to_string(size) + "]"
         );
     }
 
+    namespace {
+
+        // TODO: This should be in translation.hpp
+        std::string bufferTypeName (sem::Integral size) {
+            return c::global(c::templateArguments(std::string{} + str::buffer, std::to_string(size)));
+        }
+
+        std::string bufferName (Buffer const & buff) {
+            return /*c::*/bufferTypeName(buff.size);
+        }
+
+    }
+
     std::string Buffer::name () const {
         return c::bufferType(size);
     }
 
-    std::string Buffer::definition () const {
+    std::string Buffer::definition (context::Global & ctx) const {
+        auto arrayType = ctx.instantiateType(tpl::Array{tpl::TypeSpecifier{c::floatingType()}, size});
+        //auto name = name();
+        auto name = bufferName(*this);
         return c::statement(c::structureDefinition(
-            name(),
-            c::declaration(c::arrayType(size, c::floatingType()), def::dataMember),
+            name,
+            c::declaration(arrayType, def::dataMember),
             c::declaration(c::integralType(), def::offsetMember)
         ));
     }
@@ -493,7 +511,7 @@ namespace cynth::tpl {
         );
     }
 
-    std::string Tuple::definition () const {
+    std::string Tuple::definition (context::Global &) const {
         std::vector<std::string> decls;
         decls.reserve(types.size());
         for (auto const & [i, s]: esl::enumerate(types))

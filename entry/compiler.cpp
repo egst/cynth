@@ -9,6 +9,7 @@
 #include "interface/all.hpp"
 #include "sem/all.hpp"
 #include "syn/all.hpp"
+#include "config.hpp"
 #include "parser.hpp"
 
 // TMP
@@ -47,6 +48,9 @@ int main () {
     ctx.lookup.insertType("Float",  {sem::type::Float{}});
     ctx.lookup.insertType("String", {sem::type::String{}});
 
+    // Built-in variables:
+    ctx.lookup.insertValue("srate", {sem::Variable{sem::CompleteValue{sem::value::Float{static_cast<sem::Floating>(sampleRate)}}}});
+
     // Built-in operations:
     ctx.global.insertFunction(sem::runtime::definition::floor());
     ctx.global.insertFunction(sem::runtime::definition::idiv());
@@ -55,10 +59,16 @@ int main () {
 
     // Internal library dependencies:
     ctx.global.insertInclude(c::inclusion("<math.h>"));
-    ctx.global.insertInclude(c::inclusion("<stddef.h>"));
+    ctx.global.insertInclude(c::inclusion("<signal.h>"));
     ctx.global.insertInclude(c::inclusion("<stdbool.h>"));
+    ctx.global.insertInclude(c::inclusion("<stddef.h>"));
     ctx.global.insertInclude(c::inclusion("<stdio.h>"));
     ctx.global.insertInclude(c::inclusion("<string.h>"));
+    ctx.global.insertInclude(c::inclusion("<time.h>"));
+    if constexpr (platform == Platform::windows)
+        ctx.global.insertInclude(c::inclusion("<windows.h>"));
+    else
+        ctx.global.insertInclude(c::inclusion("<unistd.h>"));
 
     // Internal type definitions:
     ctx.global.insertType(c::statement(c::emptyTypeDefinition()));

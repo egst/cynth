@@ -54,7 +54,7 @@ namespace cynth::syn {
             // Allocate a new buffer:
             auto valName  = c::bufferValueName(c::id(ctx.nextId()));
             auto buffType = ctx.global.instantiateType(tpl::Buffer{size});
-            auto alloc    = c::definition(buffType, valName, c::zeroInitialization());
+            auto alloc    = c::statement(c::definition(buffType, valName, c::zeroInitialization()));
             /***
             // global:
             cth_buff$size <val> = {0};
@@ -71,7 +71,7 @@ namespace cynth::syn {
                 return esl::result_error{"A buffer generator can only take an integral time parameter."};
             auto id = ctx.defineFunction(definition);
             if (!id) return id.error();
-            ctx.global.registerGenerator(valName, id->name, time);
+            ctx.global.registerGenerator(valName, size, id->name, time);
             // TODO: Store a runtime closure.
 
             return valName;
