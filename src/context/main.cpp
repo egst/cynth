@@ -274,15 +274,17 @@ namespace cynth::context {
                 auto args        = c::functionArguments(inTypes);
                 auto closureArg  = c::closureArgumentName();
                 auto closureDecl = c::declaration(*def.closureType, closureArg);
-                auto funHead     = c::functionBegin(outType, *def.name, closureDecl, fwdParams);
+                auto funHead     = fwdParams.empty()
+                    ? c::functionBegin(outType, *def.name, closureDecl)
+                    : c::functionBegin(outType, *def.name, closureDecl, fwdParams); // TODO...
                 auto switchHead  = c::switchBegin(c::closureBranch(closureArg));
                 auto end         = c::end();
                 esl::tiny_vector<std::string> cases;
                 //for (std::size_t i = 0; i < names.size(); ++i) { // TODO: use esl::enumerate instead
                 for (auto const & [i, name]: esl::enumerate(names)) {
-                    auto result = c::statement(
-                        c::functionReturn(c::call(name, c::closureData(closureArg, i), args))
-                    );
+                    auto result = args.empty()
+                        ? c::statement(c::functionReturn(c::call(name, c::closureData(closureArg, i))))
+                        : c::statement(c::functionReturn(c::call(name, c::closureData(closureArg, i), args))); // TODO...
                     cases.push_back(c::switchCase(i, i == 0, false, result));
                 }
                 auto switchBody = c::join("", cases);

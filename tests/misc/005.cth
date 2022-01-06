@@ -1,0 +1,23 @@
+type Time     = Int;
+type Sample   = Float;
+type Sig      = Sample (Time);
+type ConstSig = Sample ();
+
+Int const buffSize = 4;
+type Buff   = buffer [buffSize];
+type Single = buffer [1];
+
+Buff   b = Buff   (Sample fn (Time t) Sample (t));
+Single c = Single (Sample fn (Time t) Float (t % 10) / 10.);
+
+ConstSig foo (Buff a, Single b) {
+    return Sample fn () (a[-1] + a[0]) * b[0];
+};
+
+Sig bar (Buff a, Single b) {
+    return Sample fn (Time t)
+        if (t % 2 == 0) 0. else (a[-1] + a[0]) * b[0];
+};
+
+Buff out left  = Buff (foo(b, c));
+Buff out right = Buff (bar(b, c));

@@ -649,15 +649,25 @@ namespace cynth::sem {
     }
 
     TypeTranslationResult type::Buffer::translateType () const {
-        return c::bufferPointer();
+        return c::pointer(c::bufferType(size)); // Note: This assumes, that the corresponding C buffer and array is instantiated.
+    }
+
+    namespace {
+
+        // TODO: This should be in translation.hpp
+        std::string bufferTypeName (sem::Integral size) {
+            return c::global(c::templateArguments(std::string{} + str::buffer, std::to_string(size)));
+        }
+
     }
 
     TypeSpecifierTranslationResult type::Buffer::translateTypeSpecifier () const {
         // This assumes that the nested type can only be simple, and so will always be translatable.
         return tpl::TypeSpecifier{
-            .type     = c::floatingType(),
-            .constant = true,
-            .constptr = true
+            .type      = /*c::*/bufferTypeName(size),
+            .structure = true,
+            .constptr  = true
+            //.constant  = true
         };
     }
 
@@ -684,13 +694,21 @@ namespace cynth::sem {
             return Variable{value};
 
         } | [&] (TypedExpression const & value) -> DefinitionProcessingResult {
-            auto ptrType = c::bufferPointer();
-            auto varName = c::variableName(c::id(ctx.nextId()));
-            auto local   = c::statement(c::definition(ptrType, varName, std::move(value.expression)));
+            //auto ptrType = c::bufferPointer();
+            //auto local   = c::statement(c::definition(ptrType, varName, std::move(value.expression)));
+            auto buffType = translateType();
+            auto varName  = c::variableName(c::id(ctx.nextId()));
+            auto local    = c::statement(c::definition(buffType, varName, std::move(value.expression)));
 
             /***
             local:
             cth_float const * const <var> = <definition>;
+            ***/
+            //ctx.insertStatement(local);
+
+            /***
+            local:
+            struct <bufftype> * <var> = <definition>;
             ***/
             ctx.insertStatement(local);
 

@@ -191,8 +191,10 @@ namespace cynth::syn::array_nodes {
             if (index > 0)
                 return esl::result_error{"Buffer subscript indices must be non-positive."};
 
-            auto position = bufferPosition(c::integralLiteral(index), buffer.allocation, type.size);
-            auto expr     = c::bufferData(buffer.allocation);
+            // TODO: This should be done with buffer.translateValue(ctx) instead.
+            auto buffExpr = c::expression(c::addressof(buffer.allocation));
+            auto position = bufferPosition(c::integralLiteral(index), buffExpr, type.size);
+            auto expr     = c::bufferData(buffExpr);
             return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
 
         } | [index] (TypedExpression const & value) -> SingleExpressionProcessingResult {
@@ -209,6 +211,7 @@ namespace cynth::syn::array_nodes {
 
             auto position = bufferPosition(c::integralLiteral(index), value.expression, type.size);
             auto expr     = c::bufferData(value.expression);
+            //auto expr     = value.expression;
             return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
 
         } || target::category{} <<= buffer;
@@ -262,8 +265,10 @@ namespace cynth::syn::array_nodes {
             auto & buffer = *buffResult;
             auto type = buffer.valueType;
 
-            auto position = bufferPosition(index, buffer.allocation, type.size);
-            auto expr     = c::bufferData(buffer.allocation);
+            // TODO: This should be done with buffer.translateValue(ctx) instead.
+            auto buffExpr = c::expression(c::addressof(buffer.allocation));
+            auto position = bufferPosition(index, buffExpr, type.size);
+            auto expr     = c::bufferData(buffExpr);
             return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
 
         } | [&] (TypedExpression const & value) -> SingleExpressionProcessingResult {
@@ -275,6 +280,7 @@ namespace cynth::syn::array_nodes {
 
             auto position = bufferPosition(index, value.expression, type.size);
             auto expr     = c::bufferData(value.expression);
+            //auto expr     = value.expression;
             return runtimeSubscript(CompleteType{sem::type::Float{}}, index, expr);
 
         } || target::category{} <<= buffer;

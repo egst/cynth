@@ -228,11 +228,13 @@ namespace cynth::c {
     }
 
     std::string bufferData (std::string const & structure) {
-        return structure + "." + def::dataMember;
+        //return structure + "." + def::dataMember;
+        return structure + "->" + def::dataMember;
     }
 
     std::string bufferOffset (std::string const & structure) {
-        return structure + "." + def::offsetMember;
+        //return structure + "." + def::offsetMember;
+        return structure + "->" + def::offsetMember;
     }
 
     std::string iterationPosition () {

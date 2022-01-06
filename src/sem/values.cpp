@@ -250,7 +250,8 @@ namespace cynth::sem {
     }
 
     ValueTranslationResult value::Buffer::translateValue (context::Main &) const {
-        return TypedExpression{valueType, c::bufferData(allocation)}; // TODO: Cast to a const pointer?
+        //return TypedExpression{valueType, c::bufferData(allocation)}; // TODO: Cast to a const pointer?
+        return TypedExpression{valueType, c::expression(c::addressof(allocation))};
     }
 
     //// Function ////

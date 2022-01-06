@@ -215,20 +215,18 @@ namespace cynth::syn {
 
     NameExtractionResult node::ExprIf::extractNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractNames(nestedScope) || target::category{} <<= *condition,
-            interface::extractNames(nestedScope) || target::category{} <<= *positiveBranch,
-            interface::extractNames(nestedScope) || target::category{} <<= *negativeBranch
-        );
+        auto c = interface::extractNames(nestedScope) || target::category{} <<= *condition;
+        auto p = interface::extractNames(nestedScope) || target::category{} <<= *positiveBranch;
+        auto n = interface::extractNames(nestedScope) || target::category{} <<= *negativeBranch;
+        return esl::insert_cat || target::result{} <<= args(c, p, n);
     }
 
     TypeNameExtractionResult node::ExprIf::extractTypeNames (context::Lookup & outerScope) const {
         auto nestedScope = outerScope.makeChild();
-        return esl::insert_cat || target::result{} <<= args(
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *condition,
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *positiveBranch,
-            interface::extractTypeNames(nestedScope) || target::category{} <<= *negativeBranch
-        );
+        auto c = interface::extractTypeNames(nestedScope) || target::category{} <<= *condition;
+        auto p = interface::extractTypeNames(nestedScope) || target::category{} <<= *positiveBranch;
+        auto n = interface::extractTypeNames(nestedScope) || target::category{} <<= *negativeBranch;
+        return esl::insert_cat || target::result{} <<= args(c, p, n);
     }
 
 }
