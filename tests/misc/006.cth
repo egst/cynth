@@ -1,0 +1,23 @@
+Int in input1;
+
+Int foo (Int in input) {
+    return input[];
+};
+Int in bar (Int in input) {
+    Int x;
+    return input;
+};
+Int in baz () {
+    Int in input;
+    return input;
+};
+
+Int val = foo(input1);
+Int in link = bar(input1);
+Int in new = baz();
+Int in another = baz();
+
+buffer [1] main = buffer [1] (Float fn () {
+    Int in input = baz();
+    return Float (input[] + 1);
+});

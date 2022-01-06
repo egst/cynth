@@ -288,7 +288,8 @@ namespace cynth::c {
     }
 
     std::string inputPointerType (std::string const & type) {
-        return c::pointer(c::constness(c::inputType(type)));
+        //return c::pointer(c::constness(c::inputType(type)));
+        return c::pointer(c::inputType(type));
     }
 
     std::string outputType (std::string const & type) {

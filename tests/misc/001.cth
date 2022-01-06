@@ -3,3 +3,8 @@ Int v0 = 0; /*Int v1 = 2;*/
 Int v4 = 4;*/ Int v5 = 5;
 /*Int v6/* = 6; Int v7 = 7;*/
 Int v8 = 8; Int v9 = 9;
+
+//Int [3] a = [3 to 1];
+//Int [3] a = [4 to 1 by 1];
+//Int [3] a = [4 to 1 by -1];
+Int [3] a = [4 to 1];

@@ -285,32 +285,39 @@ namespace cynth::syn::for_nodes {
 
         RangeVector ranges;
 
-        auto result = [&] (auto decl) -> esl::result<void> {
-            auto arrayResult = interface::resolvedValueType(*decl.range).template get<sem::type::Array>();
-            if (!arrayResult)
-                return esl::result_error{"Only arrays can be used as for loop ranges."};
-            auto const & arrayType = *arrayResult;
-            auto arraySize = arrayType.size;
+        //auto result = [&] (auto decl) -> esl::result<void> {
+        auto result = [&] (auto decls) -> esl::result<void> {
 
-            auto const & declTypes = decl.declaration->type;
-            if (declTypes.size() == 0)
-                return esl::result_error{"Less types than values in a range declaration."};
-            if (declTypes.size() > 1)
-                return esl::result_error{"More types than values in a range declaration."};
-            auto const & declType = declTypes.front();
-            if (!(interface::sameTypes || target::category{} <<= args(declType, *arrayType.type)))
-                return esl::result_error{"Incompatible type in a range declaration."};
+            for (auto const & decl: decls) {
 
-            if (!size)
-                size = arraySize;
-            else if (*size != arraySize)
-                return esl::result_error{"All ranges in a for loop must be of the same size."};
+                auto arrayResult = interface::resolvedValueType(*decl.range).template get<sem::type::Array>();
+                if (!arrayResult)
+                    return esl::result_error{"Only arrays can be used as for loop ranges."};
+                auto const & arrayType = *arrayResult;
+                auto arraySize = arrayType.size;
 
-            ranges.emplace_back(*decl.declaration, *decl.range);
+                auto const & declTypes = decl.declaration->type;
+                if (declTypes.size() == 0)
+                    return esl::result_error{"Less types than values in a range declaration."};
+                if (declTypes.size() > 1)
+                    return esl::result_error{"More types than values in a range declaration."};
+                auto const & declType = declTypes.front();
+                if (!(interface::sameTypes || target::category{} <<= args(declType, *arrayType.type)))
+                    return esl::result_error{"Incompatible type in a range declaration."};
+
+                if (!size)
+                    size = arraySize;
+                else if (*size != arraySize)
+                    return esl::result_error{"All ranges in a for loop must be of the same size."};
+
+                ranges.emplace_back(*decl.declaration, *decl.range);
+
+            }
 
             return {};
 
-        } || target::nested<target::result, target::tiny_vector>{} <<=
+        //} || target::nested<target::result, target::tiny_vector>{} <<=
+        } || target::result{} <<=
             interface::resolveRangeDeclaration(ctx) || target::category{} <<= declaration;
         if (!result) return result.error();
 

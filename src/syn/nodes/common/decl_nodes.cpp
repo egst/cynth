@@ -30,9 +30,9 @@ namespace cynth::syn::decl_nodes {
         if (params && decls.empty() && values.empty())
             return {};
         if (params && decls.empty() && !values.empty())
-            return esl::result_error{"Arguments provided for a procedure call."};
+            return esl::result_error{"Arguments provided for a function without parameters."};
         if (params && !decls.empty() && values.empty())
-            return esl::result_error{"No arguments provided for a function application."};
+            return esl::result_error{"No arguments provided for a function with parameters."};
         if (decls.empty())
             return esl::result_error{"No declarations in a definition."};
         if (values.empty())

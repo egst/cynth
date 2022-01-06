@@ -1,0 +1,8 @@
+
+//Int [3] r = for (Int a in [1 to 4], Int b in [1 to 5]) a * b;
+Int [3] r = for (Int a in [1 to 4]) a * 2;
+
+Int x;
+for (Int a in [1 to 4], Int b in [4 to 1]) {
+    x = x + a * b;
+};

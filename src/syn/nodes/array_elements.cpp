@@ -106,10 +106,11 @@ namespace cynth::syn {
                 using Type     = decltype(Wrap::value);
                 auto fromValue = std::move(from).get();
                 auto toValue   = std::move(to).get();
-                auto step      = static_cast<Type>(1); // Default step - `1` or `1.0`.
+                bool forward   = toValue >= fromValue;
+                auto step      = forward ? static_cast<Type>(1) : static_cast<Type>(-1); // Default step - `1` or `1.0`.
 
                 esl::tiny_vector<ResolvedValue> range;
-                for (Type i = fromValue; i < toValue; i += step)
+                for (Type i = fromValue; forward ? i < toValue : i > toValue; i += step)
                     range.emplace_back(CompleteValue{Wrap{i}});
                 return range;
 
@@ -168,10 +169,15 @@ namespace cynth::syn {
                 using Type     = decltype(Wrap::value);
                 auto fromValue = std::move(from).get();
                 auto toValue   = std::move(to).get();
+                auto forward   = toValue >= fromValue;
                 auto step      = std::move(by).get();
+                if (forward && step < 0)
+                    return esl::result_error{"Forward range with negative step."};
+                if (!forward && step > 0)
+                    return esl::result_error{"Backward range with positive step."};
 
                 esl::tiny_vector<ResolvedValue> range;
-                for (Type i = fromValue; i < toValue; i += step)
+                for (Type i = fromValue; forward ? i < toValue : i > toValue; i += step)
                     range.emplace_back(CompleteValue{Wrap{i}});
                 return range;
 
