@@ -559,7 +559,7 @@ node_array:
     OBRACK array_elem_list[list] CBRACK {
         $$ = {$list};
     } |
-    OBRACK array_elem_list[list] SEMI CBRACK {
+    OBRACK array_elem_list[list] COMMA CBRACK {
         $$ = {$list};
     }
 

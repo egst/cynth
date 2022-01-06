@@ -1,0 +1,4 @@
+(Int a, Int b,);
+Int f (Int a, Int b,) { return 1; };
+f(1, 2,);
+Int [2] arr = [1, 2,];
