@@ -66,4 +66,4 @@ tests/out/%: tests/%.cth
 
 #### DEPENDENCIES ####
 
-include $(DEP_SRC_FILES) $(DEP_ENTRY_FILES)
+-include $(DEP_SRC_FILES) $(DEP_ENTRY_FILES)
