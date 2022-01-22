@@ -13,11 +13,18 @@
 #include "esl/zip.hpp"
 
 #include "sem/all.hpp"
+#include "sem/translation.hpp"
 
 using namespace cynth;
 //using esl::lift;
 //namespace target = esl::target;
 //using namespace esl::sugar;
+
+template <typename T>
+struct Foo {
+    int bar;
+    int foo (T x);
+};
 
 int main () {
 
@@ -30,6 +37,9 @@ int main () {
     T a = I;
     T b = I;
     a = b;
+    a = b;
+
+    foo;
 
     return 0;
 

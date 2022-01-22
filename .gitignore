@@ -3,6 +3,7 @@ dep/*
 obj/
 dist/
 notes/
+tests/out/
 **/*.swp
 **/*.swo
 **/*.swn

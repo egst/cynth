@@ -46,12 +46,13 @@ namespace cynth::syn::for_nodes {
         return [&] (auto translType) -> esl::result<void> {
             auto memberName = c::variableName(c::id(state.ctx.nextId()));
             // TODO: This should be in translation.hpp
-            auto expr = c::memberAccess(def::iteration, c::variableName(c::id(state.ctx.nextId())));
+            //auto expr = c::memberAccess(def::iteration, c::variableName(c::id(state.ctx.nextId())));
+            auto varname = c::variableName(c::id(state.ctx.nextId()));
             state.variables.emplace_back(
                 name,
-                Variable{TypedName{.type = type, .name = expr}}
+                Variable{TypedName{.type = type, .name = varname}}
             );
-            state.assignments.push_back(c::definition(translType, name, value));
+            state.assignments.push_back(c::definition(translType, varname, value));
             return {};
 
         } || target::result{} <<= interface::translateType || target::category{} <<= type;
