@@ -1,0 +1,8 @@
+Int const [12] const helloWorld =
+    Int const [12] ([
+        72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33
+    ]);
+
+buffer [12] output = buffer[12] (Float fn (Int t) {
+    return Float(helloWorld[t % 12]);
+});

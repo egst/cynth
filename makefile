@@ -17,7 +17,7 @@ BIN_SRC_FILES   = $(SRC_FILES:$(SRC)%$(EXT_IMPL)=$(BIN_SRC)%$(EXT_OBJ))
 BIN_ENTRY_FILES = $(ENTRY_FILES:$(ENTRY)%$(EXT_IMPL)=$(BIN_ENTRY)%$(EXT_OBJ))
 BIN_DIST_FILES  = $(ENTRY_FILES:$(ENTRY)%$(EXT_IMPL)=$(BIN_DIST)%$(EXT_EXE))
 
-.PHONY: all clean test clean-dist clean-bin clean-dep clean-gen
+.PHONY: all clean test clean-dist clean-bin clean-dep clean-gen test
 
 all: $(BIN_SRC_FILES) $(BIN_ENTRY_FILES) $(BIN_DIST_FILES)
 
@@ -25,7 +25,7 @@ compile: $(BIN_SRC_FILES) $(BIN_ENTRY_FILES)
 
 link: $(BIN_DIST_FILES)
 
-clean: clean-dist clean-bin
+clean: clean-dist clean-bin clean-tests
 
 # Removing executable files:
 clean-dist:
@@ -38,6 +38,15 @@ clean-bin:
 	rm -rf $(BIN_SRC)
 	$(call INFO,Removing intermediate binary entry files...)
 	rm -rf $(BIN_ENTRY)
+
+# Removing test output files:
+clean-tests:
+	$(call INFO,Removing intermediate C test files...)
+	rm -rf $(TESTS_C)
+	$(call INFO,Removing debugging test executables...)
+	rm -rf $(TESTS_DEBUG)
+	$(call INFO,Removing complete test executables...)
+	rm -rf $(TESTS_COMPL)
 
 # Compiling source files:
 $(BIN_SRC)%$(EXT_OBJ): $(SRC)%$(EXT_IMPL)
@@ -60,9 +69,19 @@ $(BIN_DIST)%$(EXT_EXE): $(BIN_ENTRY)%$(EXT_OBJ) $(BIN_SRC_FILES)
 $(SRC)$(IMPL_PARSER): $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 $(SRC)$(IMPL_LEXER):  $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 
-# Compile Cynth into executable:
-tests/out/%: tests/%.cth
-	cat $< | $(BIN_DIST)compiler | $(GCC) $(CYNTH_OPTIONS) -std=$(CYNTH_STD) -o $@ -xc - -lm
+# C synth code:
+$(TEST_C)%.c: $(TEST_IN)%$(EXT_CYNTH) $(BIN_DIST)compiler
+	mkdir -p $(dir $@)
+	touch $@
+	cat $< | $(BIN_DIST)compiler > $@
+
+# A standalone debug synth program:
+$(TEST_DEBUG)%$(EXT_EXE): $(TEST_C)%.c
+	mkdir -p $(dir $@)
+	touch $@
+	cat $< | $(GCC) $(CYNTH_OPTIONS) -std=$(CYNTH_STD) -o $@ -xc - -lm
+
+# TODO: Complete executable synth program.
 
 #### DEPENDENCIES ####
 

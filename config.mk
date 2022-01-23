@@ -13,17 +13,21 @@ CYNTH_STD = gnu17
 
 # Directory names:
 # (Including the trailing slash. Leave empty for the project root directory. Add leading slash for absolute paths.)
-INC       = inc/
-SRC       = src/
-DEP_SRC   = dep/src/
-DEP_ENTRY = dep/entry/
-DEP_LINK  = dep/link/
-BIN_SRC   = obj/src/
-BIN_ENTRY = obj/entry/
-BIN_DIST  = dist/
-GEN       = gen/
-TESTS     = tests/
-ENTRY     = entry/
+INC        = inc/
+SRC        = src/
+DEP_SRC    = dep/src/
+DEP_ENTRY  = dep/entry/
+DEP_LINK   = dep/link/
+BIN_SRC    = obj/src/
+BIN_ENTRY  = obj/entry/
+BIN_DIST   = dist/
+GEN        = gen/
+ENTRY      = entry/
+TEST_IN    = tests/in/
+TEST_C     = tests/out/c/
+TEST_DEBUG = tests/out/debug/
+TEST_SYNTH = tests/out/synth/
+TEST_COMPL = tests/out/complete/
 
 # Generated files location:
 # (Excluding the SRC or INC directory and the EXT_IMPL or EXT_HEAD extension.)
@@ -45,11 +49,9 @@ EXT_CYNTH = .cth
 # Entry points:
 # (Select entry point implementation files to compile to a final executable.)
 # (Excluding the ENTRY directory and the EXT_IMPL extension.)
-#ENTRY_POINTS += cynth
-#ENTRY_POINTS += parser
-#ENTRY_POINTS += interpreter
 #ENTRY_POINTS += test
 ENTRY_POINTS += compiler
+ENTRY_POINTS += control
 
 # Compiler:
 # (Tested with GCC 10, Clang 10 and 11.)
