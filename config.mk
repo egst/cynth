@@ -51,7 +51,7 @@ EXT_CYNTH = .cth
 # (Excluding the ENTRY directory and the EXT_IMPL extension.)
 #ENTRY_POINTS += test
 ENTRY_POINTS += compiler
-ENTRY_POINTS += control
+#ENTRY_POINTS += control
 
 # Compiler:
 # (Tested with GCC 10, Clang 10 and 11.)

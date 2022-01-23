@@ -362,8 +362,9 @@ namespace cynth::syn::array_nodes {
         return valName;
     }
 
-    namespace test {
+    namespace tmp {
 
+        // TODO: Move this back to translation.hpp
         template <esl::range T>
         std::string arrayIndividualInitialization (std::string const & array, T const & values) {
             std::vector<std::string> result;
@@ -383,8 +384,10 @@ namespace cynth::syn::array_nodes {
         esl::tiny_vector<std::string> const & elements
     ) {
         //auto init = c::arrayIndividualInitialization(allocation, elements);
-        auto init = test::arrayIndividualInitialization(allocation, elements);
+        auto init = tmp::arrayIndividualInitialization(allocation, elements);
         ctx.insertStatement(init);
+        // TODO: This should happen with fully compconst array values instead:
+        //ctx.global.insertAllocation(init); // TODO: Add a sepparate section for global initializations.
     }
 
     void bulkArrayInitialization (

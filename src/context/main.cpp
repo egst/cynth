@@ -187,7 +187,9 @@ namespace cynth::context {
                     auto funHead  = c::functionBegin(outType, *def.name, closure, params);
                     auto returned = c::join("", stmts);
                     auto body     = c::join("", funScope.statements);
+                    auto allocs   = c::join("", funScope.function.data);
                     auto funBody  = c::join("",
+                        allocs,
                         resultInit,
                         body,
                         returned,
