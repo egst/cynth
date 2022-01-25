@@ -6,3 +6,7 @@ Int const [12] const helloWorld =
 buffer [12] output = buffer[12] (Float fn (Int t) {
     return Float(helloWorld[t % 12]);
 });
+
+buffer [12] test = buffer[12] (Float fn (Int t) {
+    return Float(helloWorld[t % 12]);
+});

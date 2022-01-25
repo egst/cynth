@@ -326,17 +326,43 @@ namespace cynth::syn {
                     )code"));
 
                     auto const & gens = outerScope.global.getGenerators();
-                    outerScope.insertStatement(c::indented(c::inlineComment("Write:")));
-                    for (auto const & gen: gens) {
-                        // TODO: Use the constructs from translation.hpp.
-                        auto write =
-                            gen.buffer + ".data[(" + gen.buffer + ".offset + 1) % " +
-                            c::integralLiteral(gen.size) + "] = " + gen.function +
-                            "(" + gen.closure + (gen.time ? ", time" : "") + ").e0;";
+
+                    outerScope.insertStatement(c::indented(c::inlineComment("Evaluate:")));
+                    for (auto const & [i, gen]: esl::enumerate(gens)) {
+                        auto eval =
+                            c::statement(c::definition(
+                                c::floatingType(),
+                                std::string{} + "sample_" + std::to_string(i),
+                                c::tupleElement(c::inlineCall(gen.function, gen.closure + (gen.time ? ", time" : "")), 0)
+                            ));
 
                         /***
-                        <buff>.data[(<buff>.offset + 1) % <size>] = <generator>(time); // Float (Int) generator
-                        <buff>.data[(<buff>.offset + 1) % <size>] = <generator>();     // Float ()    generator
+                        sample_<i> = <generator>(time); // Float (Int) generator
+                        sample_<i> = <generator>();     // Float ()    generator
+                        ...
+                        ***/
+                        outerScope.insertStatement(c::indented(eval));
+                    }
+
+                    // TODO: Use c::bufferData and c::bufferOffset.
+
+                    outerScope.insertStatement(c::indented(c::inlineComment("Write:")));
+                    for (auto const & [i, gen]: esl::enumerate(gens)) {
+                        auto write =
+                            c::statement(c::assignment(
+                                "sample_" + std::to_string(i),
+                                c::arraySubscript(
+                                    c::memberAccess(gen.buffer, "data"),
+                                    c::mod(
+                                        c::expression(c::add(c::memberAccess(gen.buffer, "offset"), c::integralLiteral(1))),
+                                        c::integralLiteral(gen.size)
+                                    )
+                                )
+                            ));
+
+                        /***
+                        <buff>.data[(<buff>.offset + 1) % <size>] = sample_<i>;
+                        <buff>.data[(<buff>.offset + 1) % <size>] = sample_<i>;
                         ...
                         ***/
                         outerScope.insertStatement(c::indented(write));
@@ -345,7 +371,14 @@ namespace cynth::syn {
                     outerScope.insertStatement(c::indented(c::inlineComment("Step:")));
                     for (auto const & gen: gens) {
                         // TODO: Use the constructs from translation.hpp.
-                        auto step = gen.buffer + ".offset = (" + gen.buffer + ".offset + 1) % " + c::integralLiteral(gen.size) + ";";
+                        auto step =
+                            c::statement(c::assignment(
+                                c::mod(
+                                    c::expression(c::add(c::memberAccess(gen.buffer, "offset"), c::integralLiteral(1))),
+                                    c::integralLiteral(gen.size)
+                                ),
+                                c::memberAccess(gen.buffer, "offset")
+                            ));
 
                         /***
                         <buff>.offset = (<buff>.offset + 1) % <size>;
