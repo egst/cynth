@@ -31,6 +31,8 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	$(GEN_PARSER)
 	$(call INFO,Tweaking the generated parser a bit...)
 	sed -i 's/yylhs.value.emplace< cynth::syn::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
+	# TODO:
+#	sed -i 's/yylhs.value.as< \(cynth::syn::[^ ]*\) > () = \([^;]*\);/yylhs.value.emplace< \1 > ( \2 ); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 #	$(call INFO,Moving the generated parser header file to the correct location...)
 #	mv $(SRC)$(IMPL_PARSER)$(EXT_HEAD) $(INC)$(HEAD_PARSER)$(EXT_HEAD)
 

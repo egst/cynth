@@ -3,7 +3,7 @@
 //Int const count = 1000000; # Note: This is the limit for the Cynth compiler. After that, some overflows happen and bad alloc is thrown. (TODO: Might be a more serious issue)
 Int const count = 100000; # Note: This is the limit for the C compiler. After that, complains about too much memory allocated for compilation.
 
-for (Int i in [1 to count]) {
+for (Int const i in [1 to count]) {
     type Time     = Int;
     type Sample   = Float;
     type Sig      = Sample (Time);

@@ -387,7 +387,7 @@ namespace cynth::syn::array_nodes {
         auto init = tmp::arrayIndividualInitialization(allocation, elements);
         ctx.insertStatement(init);
         // TODO: This should happen with fully compconst array values instead:
-        //ctx.global.insertAllocation(init); // TODO: Add a sepparate section for global initializations.
+        //ctx.global.insertInitialization(init);
     }
 
     void bulkArrayInitialization (

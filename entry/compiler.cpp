@@ -32,10 +32,10 @@ int main () {
 
     if (!parseSuccess) return 1;
 
-    auto recreated = esl::pretty(interface::display(root));
-
-    if constexpr (debug)
+    if constexpr (debug) {
+        auto recreated = esl::pretty(interface::display(root));
         std::cout << "recreated input:\n" << recreated << "\n\n";
+    }
 
     context::Global    globalCtx;
     context::Function  functionCtx;

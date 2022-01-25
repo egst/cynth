@@ -166,13 +166,70 @@ namespace cynth::sem {
         return esl::view{value.begin(), value.begin() + size};
     }
 
+    namespace {
+
+        // Note: I'm copy-pasting some implementations here with some minor alterations temporarily,
+        // because I don't want to change the respective headers until I test everything thouroughly,
+        // which I don't have enough time for right now.
+
+        namespace tmp {
+
+            // TODO: Move this back to translation.hpp
+            template <esl::range T>
+            std::string arrayIndividualInitialization (std::string const & array, T const & values) {
+                std::vector<std::string> result;
+                result.reserve(values.size());
+                for (auto const & [i, value]: esl::enumerate(values)) {
+                    auto assgn = c::statement(c::assignment(value, c::arraySubscript(array, std::to_string(i))));
+                    result.push_back(assgn);
+                }
+                return c::join(c::newLine(), result);
+            }
+
+        }
+
+        // TODO: Incorporate these two into array_nodes::arrayAllocation and array_nodes::individualArrayInitialization respectively.
+        // See (*) below.
+        std::string globalArrayAllocation (
+            context::Main            & ctx,
+            tpl::TypeSpecifier const & type,
+            sem::Integral              size
+        ) {
+            auto valType = ctx.global.instantiateType(tpl::Array{
+                .elemType = type,
+                .size     = size
+            }); // cth_arr$<size>$<type>
+            // (*) And here's a change:
+            //auto valName = c::valueName(c::id(ctx.nextId()));
+            auto valName = c::global(c::valueName(c::id(ctx.nextId())));
+            auto valInit = c::zeroInitialization();
+            auto alloc   = c::statement(c::definition(valType, valName, valInit));
+            // (*) And here's another change:
+            //ctx.function.insertAllocation(alloc);
+            ctx.global.insertAllocation(alloc);
+            return valName;
+        }
+        void globalIndividualArrayInitialization (
+            context::Main                       & ctx,
+            std::string                   const & allocation,
+            esl::tiny_vector<std::string> const & elements
+        ) {
+            //auto init = c::arrayIndividualInitialization(allocation, elements);
+            auto init = tmp::arrayIndividualInitialization(allocation, elements);
+            // (*) Here's the only change that's needed for global allocations:
+            //ctx.insertStatement(init);
+            ctx.global.insertInitialization(init);
+        }
+
+    }
+
     std::string ArrayAllocation::allocate (context::Main & ctx) {
         if (variable)
             return *variable;
 
         auto result = [&] (auto translType, auto translElems) -> std::string {
-            auto allocName = syn::array_nodes::arrayAllocation(ctx, std::move(translType), value.size());
-            syn::array_nodes::individualArrayInitialization(ctx, allocName, translElems);
+            auto allocName = globalArrayAllocation(ctx, std::move(translType), value.size());
+            globalIndividualArrayInitialization(ctx, allocName, translElems);
             variable = allocName;
             return *variable;
 

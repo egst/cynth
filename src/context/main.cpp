@@ -333,6 +333,7 @@ namespace cynth::context {
         auto local       = c::join("", statements);
         auto funAlloc    = c::join("", function.data);
         auto staticAlloc = c::join("", global.data);
+        auto init        = c::join("", global.initializations);
         auto includes    = c::join("", global.includes);
         auto types       = c::join("", global.types);
         auto depTypes    = c::join("", global.dependantTypes);
@@ -352,6 +353,7 @@ namespace cynth::context {
             funs,
             mainHead,
             c::indented(c::join("",
+                init,
                 funAlloc,
                 local
             )),
