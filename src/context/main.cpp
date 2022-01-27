@@ -13,6 +13,7 @@
 #include "interface/types.hpp"
 #include "sem/translation.hpp"
 #include "syn/nodes/common/decl_nodes.hpp"
+#include "config.hpp"
 
 // TMP
 #include "debug.hpp"
@@ -333,16 +334,14 @@ namespace cynth::context {
         auto local       = c::join("", statements);
         auto funAlloc    = c::join("", function.data);
         auto staticAlloc = c::join("", global.data);
-        auto init        = c::join("", global.initializations);
         auto includes    = c::join("", global.includes);
         auto types       = c::join("", global.types);
         auto depTypes    = c::join("", global.dependantTypes);
         auto funs        = c::join("", global.functions);
-        auto mainHead    = c::inlineFunctionBegin("int", "main");
         auto end         = c::end();
 
         // TODO: esl::join returns a new line for empty input
-        return c::join("",
+        auto global = c::join("",
             includes,
             c::inlineComment("Types:"),
             types,
@@ -350,15 +349,46 @@ namespace cynth::context {
             c::inlineComment("Static data:"),
             staticAlloc,
             c::inlineComment("Functions:"),
-            funs,
-            mainHead,
-            c::indented(c::join("",
-                init,
-                funAlloc,
-                local
-            )),
-            end
+            funs
         );
+
+        switch (synthOutput) {
+        case SynthOutput::debug:
+            {
+                auto mainHead = c::inlineFunctionBegin("int", "main");
+
+                return c::join("",
+                    global,
+                    mainHead,
+                    c::indented(c::join("",
+                        funAlloc,
+                        local
+                    )),
+                    end
+                );
+            }
+            break;
+
+        //case SynthOutput::dynamic: // Not supported yet.
+        default:
+
+        case SynthOutput::stat:
+            {
+                // TODO...
+                auto time    = c::declaration("int", "time");
+                auto runHead = c::inlineFunctionBegin("int", c::global("run"), time);
+
+                return c::join("",
+                    global,
+                    runHead,
+                    c::indented(c::join("",
+                        funAlloc,
+                        local
+                    )),
+                    end
+                );
+            }
+        }
     }
 
 }

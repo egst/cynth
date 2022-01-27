@@ -1,0 +1,11 @@
+[
+    {
+        "directory": "/mnt/c/users/egst/eghe/personal/cynth/impl",
+        "file":      "entry/compiler.cpp",
+        "command":   "clang++ -std=c++20 -Iinc/ -Iext/asio/common/ -Iext/asio/host/ -Iext/asio/host/pc/ -DCTH_PLATFORM=CTH_PLATFORM_WINDOWS -DCTH_DRIVERAPI=CTH_DRIVERAPI_ASIO -DCTH_SYNTHOUT=CTH_SYNTHOUT_STAT -target x86_64-w64-mingw32 -fms-extensions -I/mnt/c/msys64/mingw64/include/c++/10.1.0 -I/mnt/c/msys64/mingw64/include/c++/10.1.0/backward -I/mnt/c/msys64/mingw64/include/c++/10.1.0/x86_64-w64-mingw32 -I/mnt/c/msys64/mingw64/x86_64-w64-mingw32/include -I/mnt/c/msys64/mingw64/lib/clang/10.0.0/include"
+    }, {
+        "directory": "/mnt/c/users/egst/eghe/personal/cynth/impl",
+        "file":      "entry/control.cpp",
+        "command":   "clang++ -std=c++20 -Iinc/ -Iext/asio/common/ -Iext/asio/host/ -Iext/asio/host/pc/ -DCTH_PLATFORM=CTH_PLATFORM_WINDOWS -DCTH_DRIVERAPI=CTH_DRIVERAPI_ASIO -DCTH_SYNTHOUT=CTH_SYNTHOUT_STAT -target x86_64-w64-mingw32 -fms-extensions -I/mnt/c/msys64/mingw64/include/c++/10.1.0 -I/mnt/c/msys64/mingw64/include/c++/10.1.0/backward -I/mnt/c/msys64/mingw64/include/c++/10.1.0/x86_64-w64-mingw32 -I/mnt/c/msys64/mingw64/x86_64-w64-mingw32/include -I/mnt/c/msys64/mingw64/lib/clang/10.0.0/include"
+    },
+]

@@ -22,10 +22,6 @@ namespace cynth::syn::node {
         interface::ExpressionProcessingResult processProgram    (context::Main   &) const;
         interface::NameExtractionResult       extractNames      (context::Lookup &) const;
         interface::TypeNameExtractionResult   extractTypeNames  (context::Lookup &) const;
-
-    private:
-        // Generic implementation for both `processProgram` and `processExpression`.
-        template <bool Program = true> interface::ExpressionProcessingResult process (context::Main &) const;
     };
 
 }

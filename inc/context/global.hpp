@@ -25,6 +25,7 @@ namespace cynth::context {
 
     struct Global: GlobalStorage {
         friend Main;
+        friend syn::node::Block;
 
         struct GeneratorEntry {
             std::string buffer;

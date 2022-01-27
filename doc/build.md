@@ -8,6 +8,10 @@ make
 
 To rebuild some internal parts during development, run other makefiles as described below.
 
+The main makefile works on both Windows and Linux.
+On Linux, it uses shell to execute commands while on Windows it uses CMD.
+Other makefiles (`gen.mk` and `dep.mk`) might not work on Windows currently.
+
 ## Structure
 
 The build process is separated into three parts:

@@ -16,6 +16,7 @@ namespace cynth::context {
 
     struct Function: FunctionStorage {
         friend Main;
+        friend syn::node::Block;
 
         template <typename T>
         using RefvalContainer = std::forward_list<T>;

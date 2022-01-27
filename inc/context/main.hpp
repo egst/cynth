@@ -17,6 +17,8 @@
 namespace cynth::context {
 
     struct Main {
+        friend syn::node::Block;
+
         Global    & global;
         Function  & function;
         Branching & branching;
@@ -51,6 +53,8 @@ namespace cynth::context {
 
         /** Insert a local statement. */
         void insertStatement (std::string const &);
+
+        inline void getStatements (std::string const &);
 
         /** Number of local statements. */
         inline bool count () const {

@@ -19,11 +19,11 @@ all: $(GEN_FILES)
 # Removing generated parser & lexer files:
 clean:
 	$(call INFO,Removing generated lexer implementation file...)
-	rm -f $(SRC)$(IMPL_LEXER)$(EXT_IMPL)
+	$(call RM,$(SRC)$(IMPL_LEXER)$(EXT_IMPL))
 	$(call INFO,Removing generated parser implementation file...)
-	rm -f $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
+	$(call RM,$(SRC)$(IMPL_PARSER)$(EXT_IMPL))
 	$(call INFO,Removing generated parser header file...)
-	rm -f $(INC)$(HEAD_PARSER)$(EXT_HEAD)
+	$(call RM,$(INC)$(HEAD_PARSER)$(EXT_HEAD))
 
 # Generating parser files:
 $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
@@ -32,9 +32,7 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	$(call INFO,Tweaking the generated parser a bit...)
 	sed -i 's/yylhs.value.emplace< cynth::syn::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 	# TODO:
-#	sed -i 's/yylhs.value.as< \(cynth::syn::[^ ]*\) > () = \([^;]*\);/yylhs.value.emplace< \1 > ( \2 ); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
-#	$(call INFO,Moving the generated parser header file to the correct location...)
-#	mv $(SRC)$(IMPL_PARSER)$(EXT_HEAD) $(INC)$(HEAD_PARSER)$(EXT_HEAD)
+	sed -i 's/yylhs.value.as< \(cynth::syn::[^ ]*\) > () = \([^;]*\);/yylhs.value.emplace< \1 > ( \2 ); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 
 # Generating lexer files:
 $(SRC)$(IMPL_LEXER)$(EXT_IMPL): $(GEN)lexer.l

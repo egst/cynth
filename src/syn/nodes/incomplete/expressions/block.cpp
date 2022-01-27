@@ -48,14 +48,6 @@ namespace cynth::syn {
             : "{\n" + esl::join(";\n", interface::display || Target{} <<= statements) + "\n}";
     }
 
-    ExpressionProcessingResult node::Block::processExpression (context::Main & ctx) const {
-        return process<false>(ctx);
-    }
-
-    ExpressionProcessingResult node::Block::processProgram (context::Main & ctx) const {
-        return process<true>(ctx);
-    }
-
     namespace {
 
         // TODO: These helper functions are huge.
@@ -263,238 +255,283 @@ namespace cynth::syn {
 
     }
 
-    template <bool Program>
-    ExpressionProcessingResult node::Block::process (context::Main & outerScope) const {
+    ExpressionProcessingResult node::Block::processExpression (context::Main & outerScope) const {
         context::Branching branching;
         auto blockScope = outerScope.makeBranchingChild(branching);
 
-        if constexpr (Program) {
-            return [&] (auto blockResult) -> ExpressionProcessingResult {
-                return [&] (auto blockResult) -> ExpressionProcessingResult {
-                    auto init    = c::returnInitFromDeclarations(blockResult.declarations, true);
-                    auto begin   = c::blockBegin();
-                    auto end     = c::end();
-                    auto ret     = c::mainReturn();
-                    //auto indent  = c::indentation();
-                    auto newLine = c::newLine();
+        auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
 
-                    /***
+        return [&] (auto blockResult) -> ExpressionProcessingResult {
+            if (!blockResult.always)
+                return esl::result_error{"Block expression does not always return."};
+                // Note: This actually includes the case when it never returns.
+
+            // Fully compile-time block expression:
+            if (!blockResult.runtime) {
+                esl::tiny_vector<ResolvedValue> result;
+                for (auto const & entry: blockResult.returned) {
+                    auto returnedResult = entry.template get<ReturnedValues>();
+                    if (!returnedResult) // Implementation error.
+                        return esl::result_error{"Unknown value of a compile-time return."};
+                    auto const & returned = *returnedResult;
+                    if (returned.size() == 0)
+                        return {}; // Returning void.
+                    if (returned.size() > 1) // Implementation error.
+                        return esl::result_error{"More than one compile-time return."};
+                    result.push_back(returned.front());
+                }
+                return result;
+            }
+
+            // At least partially run-time block expression:
+            return [&] (auto blockResult) -> ExpressionProcessingResult {
+                auto head = c::blockExpressionBegin(tupleVar);
+                auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
+                auto ret  = c::indented(c::blockExpressionReturn());
+                auto end  = c::statement(c::blockExpressionEnd());
+
+                /***
+                __auto_type <tupvar> = ({
+                    __label__ ret;
                     struct result {
                         <type1> e0;
                         <type2> e1;
                         // ...
                     } result;
-                    {
-                        <body>
-                    }
-                    ret:
-                    ***/
-                    outerScope.insertStatement(c::inlineComment("Initialization:"));
-                    outerScope.insertStatement(init);
-                    outerScope.insertStatement(begin);
-                    outerScope.mergeChild(blockScope);
-                    outerScope.insertStatement(end);
-                    outerScope.insertStatement(ret);
-                    outerScope.insertStatement("printf(\"Synthesizer initialized.\\n\"); " + c::inlineComment("TODO"));
-                    outerScope.insertStatement(c::inlineComment("Main loop:"));
+                    <body>
+                    ret: result;
+                });
+                ***/
+                outerScope.insertStatement(head);
+                outerScope.insertStatement(init);
+                outerScope.mergeChild(blockScope);
+                outerScope.insertStatement(ret);
+                outerScope.insertStatement(end);
 
-                    /*** TODO: Initialization output.
-                    cth_init_output = <result>;
-                    ***/
+                return blockResult.resolved;
+            } || target::result{} <<= processBlockExpression(outerScope.global, &tupleVar, blockResult.returned);
 
-                    // Waiting for stop signal (^C):
-                    outerScope.global.insertFunction(esl::reindent(6 * 4, "", newLine, R"code(
-                        volatile bool cth_stop = false; // TODO: Should I use sig_atomic_t instead?
-                        void cth_stop_handler (int _) {
-                            cth_stop = true;
-                        }
-                    )code"));
+        } || target::result{} <<= processBlock(blockScope, statements);
+    }
 
-                    outerScope.insertStatement("double sample_rate = " + std::to_string(sampleRate) + "; // kHz");
+    namespace {
 
-                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
-                        int time = 0; // samples (TODO: Should I start further away from zero?)
-                        double tick_time  = 1 / sample_rate; // ms
+        void emulationStep (context::Main & ctx) {
+            auto const & gens = ctx.global.getGenerators();
 
-                        signal(SIGINT, cth_stop_handler);
+            ctx.insertStatement(c::indented(c::inlineComment("Evaluate:")));
+            for (auto const & [i, gen]: esl::enumerate(gens)) {
+                auto eval =
+                    c::statement(c::definition(
+                        c::floatingType(),
+                        std::string{} + "sample_" + std::to_string(i),
+                        c::tupleElement(c::inlineCall(gen.function, gen.closure + (gen.time ? ", time" : "")), 0)
+                    ));
 
-                        while (!cth_stop) {
-                            clock_t start, end;
+                /***
+                sample_<i> = <generator>(time); // Float (Int) generator
+                sample_<i> = <generator>();     // Float ()    generator
+                ...
+                ***/
+                ctx.insertStatement(c::indented(eval));
+            }
 
-                            start = clock();
+            // TODO: Use c::bufferData and c::bufferOffset.
 
-                    )code"));
+            ctx.insertStatement(c::indented(c::inlineComment("Write:")));
+            for (auto const & [i, gen]: esl::enumerate(gens)) {
+                auto write =
+                    c::statement(c::assignment(
+                        "sample_" + std::to_string(i),
+                        c::arraySubscript(
+                            c::memberAccess(gen.buffer, "data"),
+                            c::mod(
+                                c::expression(c::add(c::memberAccess(gen.buffer, "offset"), c::integralLiteral(1))),
+                                c::integralLiteral(gen.size)
+                            )
+                        )
+                    ));
 
-                    auto const & gens = outerScope.global.getGenerators();
+                /***
+                <buff>.data[(<buff>.offset + 1) % <size>] = sample_<i>;
+                <buff>.data[(<buff>.offset + 1) % <size>] = sample_<i>;
+                ...
+                ***/
+                ctx.insertStatement(c::indented(write));
+            }
 
-                    outerScope.insertStatement(c::indented(c::inlineComment("Evaluate:")));
-                    for (auto const & [i, gen]: esl::enumerate(gens)) {
-                        auto eval =
-                            c::statement(c::definition(
-                                c::floatingType(),
-                                std::string{} + "sample_" + std::to_string(i),
-                                c::tupleElement(c::inlineCall(gen.function, gen.closure + (gen.time ? ", time" : "")), 0)
-                            ));
+            ctx.insertStatement(c::indented(c::inlineComment("Step:")));
+            for (auto const & gen: gens) {
+                // TODO: Use the constructs from translation.hpp.
+                auto step =
+                    c::statement(c::assignment(
+                        c::mod(
+                            c::expression(c::add(c::memberAccess(gen.buffer, "offset"), c::integralLiteral(1))),
+                            c::integralLiteral(gen.size)
+                        ),
+                        c::memberAccess(gen.buffer, "offset")
+                    ));
 
-                        /***
-                        sample_<i> = <generator>(time); // Float (Int) generator
-                        sample_<i> = <generator>();     // Float ()    generator
-                        ...
-                        ***/
-                        outerScope.insertStatement(c::indented(eval));
-                    }
-
-                    // TODO: Use c::bufferData and c::bufferOffset.
-
-                    outerScope.insertStatement(c::indented(c::inlineComment("Write:")));
-                    for (auto const & [i, gen]: esl::enumerate(gens)) {
-                        auto write =
-                            c::statement(c::assignment(
-                                "sample_" + std::to_string(i),
-                                c::arraySubscript(
-                                    c::memberAccess(gen.buffer, "data"),
-                                    c::mod(
-                                        c::expression(c::add(c::memberAccess(gen.buffer, "offset"), c::integralLiteral(1))),
-                                        c::integralLiteral(gen.size)
-                                    )
-                                )
-                            ));
-
-                        /***
-                        <buff>.data[(<buff>.offset + 1) % <size>] = sample_<i>;
-                        <buff>.data[(<buff>.offset + 1) % <size>] = sample_<i>;
-                        ...
-                        ***/
-                        outerScope.insertStatement(c::indented(write));
-                    }
-
-                    outerScope.insertStatement(c::indented(c::inlineComment("Step:")));
-                    for (auto const & gen: gens) {
-                        // TODO: Use the constructs from translation.hpp.
-                        auto step =
-                            c::statement(c::assignment(
-                                c::mod(
-                                    c::expression(c::add(c::memberAccess(gen.buffer, "offset"), c::integralLiteral(1))),
-                                    c::integralLiteral(gen.size)
-                                ),
-                                c::memberAccess(gen.buffer, "offset")
-                            ));
-
-                        /***
-                        <buff>.offset = (<buff>.offset + 1) % <size>;
-                        ...
-                        ***/
-                        outerScope.insertStatement(c::indented(step));
-                    }
-
-                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
-                            ++time;
-
-                            end = clock();
-
-                            double elapsed = ((double) (end - start)) / CLOCKS_PER_SEC * 1000; // ms
-                            double remains = tick_time - elapsed;
-                            if (remains > 0) {
-                    )code"));
-
-                    auto wait = platform == Platform::windows
-                        ? "Sleep(remains);"
-                        : "sleep(remains / 1000);";
-
-                    outerScope.insertStatement(c::indented(wait, 2));
-
-                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
-                            }
-                        }
-
-                    )code"));
-
-                    outerScope.insertStatement(c::inlineComment("Debug:"));
-                    for (auto const & gen: gens) {
-                        // TODO: Use the constructs from translation.hpp.
-                        auto debug =
-                            "printf(\"Buffer `" + gen.buffer + "` stopped at %i.\\n\", " + gen.buffer + ".offset);" + newLine +
-                            "for (int i = 0; i < " + c::integralLiteral(gen.size) + "; ++i) {" + newLine +
-                            "    printf(\"%f\\n\", " + gen.buffer + ".data[i]);" + newLine +
-                            "}";
-
-                        /***
-                        printf("Buffer `<buff>` stopped at %i.\n", <buffval>.offset);
-                        for (int i = 0; i < <size>; ++i) {
-                            printf("%f\n", <bufval>.data[i]);
-                        }
-                        ...
-                        ***/
-                        outerScope.insertStatement(debug);
-                    }
-
-                    outerScope.insertStatement(esl::reindent(6 * 4, "", newLine, R"code(
-                        return 0;
-                    )code"));
-
-                    return blockResult.resolved;
-                } || target::result{} <<= processBlockExpression(outerScope.global, nullptr, blockResult.returned);
-
-            } || target::result{} <<= processBlock(blockScope, statements);
-
-            return {};
-
-        } else {
-            auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
-
-            return [&] (auto blockResult) -> ExpressionProcessingResult {
-                if (!blockResult.always)
-                    return esl::result_error{"Block expression does not always return."};
-                    // Note: This actually includes the case when it never returns.
-
-                // Fully compile-time block expression:
-                if (!blockResult.runtime) {
-                    esl::tiny_vector<ResolvedValue> result;
-                    for (auto const & entry: blockResult.returned) {
-                        auto returnedResult = entry.template get<ReturnedValues>();
-                        if (!returnedResult) // Implementation error.
-                            return esl::result_error{"Unknown value of a compile-time return."};
-                        auto const & returned = *returnedResult;
-                        if (returned.size() == 0)
-                            return {}; // Returning void.
-                        if (returned.size() > 1) // Implementation error.
-                            return esl::result_error{"More than one compile-time return."};
-                        result.push_back(returned.front());
-                    }
-                    return result;
-                }
-
-                // At least partially run-time block expression:
-                return [&] (auto blockResult) -> ExpressionProcessingResult {
-                    auto head = c::blockExpressionBegin(tupleVar);
-                    auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
-                    auto ret  = c::indented(c::blockExpressionReturn());
-                    auto end  = c::statement(c::blockExpressionEnd());
-
-                    /***
-                    __auto_type <tupvar> = ({
-                        __label__ ret;
-                        struct result {
-                            <type1> e0;
-                            <type2> e1;
-                            // ...
-                        } result;
-                        <body>
-                        ret: result;
-                    });
-                    ***/
-                    outerScope.insertStatement(head);
-                    outerScope.insertStatement(init);
-                    outerScope.mergeChild(blockScope);
-                    outerScope.insertStatement(ret);
-                    outerScope.insertStatement(end);
-
-                    return blockResult.resolved;
-                } || target::result{} <<= processBlockExpression(outerScope.global, &tupleVar, blockResult.returned);
-
-            } || target::result{} <<= processBlock(blockScope, statements);
+                /***
+                <buff>.offset = (<buff>.offset + 1) % <size>;
+                ...
+                ***/
+                ctx.insertStatement(c::indented(step));
+            }
         }
 
+        void emulationLoop (context::Main & ctx) {
+            auto newLine = c::newLine();
+            // Handling a stop signal (^C):
+            ctx.global.insertFunction(esl::reindent(4 * 4, "", newLine, R"code(
+                volatile bool cth_stop = false; // TODO: Should I use sig_atomic_t instead?
+                void cth_stop_handler (int _) {
+                    cth_stop = true;
+                }
+            )code"));
+
+            ctx.insertStatement(esl::reindent(4 * 4, "", newLine, R"code(
+                int time = 0; // samples (TODO: Should I start further away from zero?)
+                double tick_time  = 1 / sample_rate; // ms
+
+                signal(SIGINT, cth_stop_handler);
+
+                while (!cth_stop) {
+                    clock_t start, end;
+
+                    start = clock();
+
+            )code"));
+
+            emulationStep(ctx);
+
+            ctx.insertStatement(esl::reindent(4 * 4, "", newLine, R"code(
+                    ++time;
+
+                    end = clock();
+
+                    double elapsed = ((double) (end - start)) / CLOCKS_PER_SEC * 1000; // ms
+                    double remains = tick_time - elapsed;
+                    if (remains > 0) {
+            )code"));
+
+            auto wait = platform == Platform::windows
+                ? "Sleep(remains);"
+                : "sleep(remains / 1000);";
+
+            ctx.insertStatement(c::indented(wait, 2));
+
+            ctx.insertStatement(esl::reindent(4 * 4, "", newLine, R"code(
+                    }
+                }
+
+            )code"));
+        }
+
+        void emulationDebug (context::Main & ctx) {
+            auto newLine = c::newLine();
+            auto const & gens = ctx.global.getGenerators();
+            ctx.insertStatement(c::inlineComment("Debug:"));
+            for (auto const & gen: gens) {
+                // TODO: Use the constructs from translation.hpp.
+                auto debug =
+                    "printf(\"Buffer `" + gen.buffer + "` stopped at %i.\\n\", " + gen.buffer + ".offset);" + newLine +
+                    "for (int i = 0; i < " + c::integralLiteral(gen.size) + "; ++i) {" + newLine +
+                    "    printf(\"%f\\n\", " + gen.buffer + ".data[i]);" + newLine +
+                    "}";
+
+                /***
+                printf("Buffer `<buff>` stopped at %i.\n", <buffval>.offset);
+                for (int i = 0; i < <size>; ++i) {
+                    printf("%f\n", <bufval>.data[i]);
+                }
+                ...
+                ***/
+                ctx.insertStatement(debug);
+            }
+        }
+
+        void emulationSuccess (context::Main & ctx) {
+            auto newLine = c::newLine();
+            ctx.insertStatement(esl::reindent(4 * 4, "", newLine, R"code(
+                return 0;
+            )code"));
+        }
+
+    }
+
+    ExpressionProcessingResult node::Block::processProgram (context::Main & mainScope) const {
+        context::Branching branching;
+        auto initScope  = mainScope.makeBranchingChild(branching);
+        auto blockScope = initScope.makeBranchingChild(branching);
+
+        return [&] (auto blockResult) -> ExpressionProcessingResult {
+            return [&] (auto blockResult) -> ExpressionProcessingResult {
+                auto init        = c::returnInitFromDeclarations(blockResult.declarations, true);
+                auto begin       = c::blockBegin();
+                auto end         = c::end();
+                auto ret         = c::mainReturn();
+                //auto indent    = c::indentation();
+                auto newLine     = c::newLine();
+                auto initFunName = c::global("init");
+                auto initHead    = c::inlineFunctionBegin("void", initFunName);
+                auto inits       = c::join("", mainScope.global.initializations);
+
+                /***
+                struct result {
+                    <type1> e0;
+                    <type2> e1;
+                    // ...
+                } result;
+                {
+                    <body>
+                }
+                ret:
+                ***/
+                initScope.insertStatement(c::inlineComment("Initialization:"));
+                initScope.insertStatement(init);
+                initScope.insertStatement(begin);
+                initScope.mergeChild(blockScope);
+                initScope.insertStatement(end);
+                initScope.insertStatement(ret);
+                initScope.insertStatement("printf(\"Synthesizer initialized.\\n\"); " + c::inlineComment("TODO"));
+
+                auto initLocal = c::join("", initScope.statements);
+                auto initAlloc = c::join("", initScope.function.data);
+                auto initFun = c::join("",
+                    initHead,
+                    c::indented(c::join("",
+                        inits,
+                        initAlloc,
+                        initLocal
+                    )),
+                    end
+                );
+                mainScope.global.insertFunction(initFun);
+
+                // TODO: Initialization output.
+
+                auto srate = "double sample_rate = " + std::to_string(sampleRate) + "; // kHz";
+
+                if (synthOutput == SynthOutput::debug) {
+                    mainScope.insertStatement(c::statement(c::inlineCall(initFunName)));
+                    mainScope.insertStatement(srate);
+                    emulationLoop(mainScope);
+                    emulationDebug(mainScope);
+                    emulationSuccess(mainScope);
+
+                } else { // Note: SynthOutput::dynamic not supported yet.
+                    mainScope.insertStatement(srate);
+                    emulationStep(mainScope);
+                    emulationSuccess(mainScope);
+                }
+
+                return blockResult.resolved;
+            } || target::result{} <<= processBlockExpression(mainScope.global, nullptr, blockResult.returned);
+
+        } || target::result{} <<= processBlock(blockScope, statements);
+
+        return {};
     }
 
     StatementProcessingResult node::Block::processStatement (context::Main & outerScope) const {
