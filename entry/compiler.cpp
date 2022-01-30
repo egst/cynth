@@ -1,6 +1,12 @@
 #include <iostream>
 #include <tuple>
 
+// Note: Support for the C++20 <numbers> library is missing from many compilers,
+// so I'll just use the macros for now.
+//#include <numbers>
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "esl/string.hpp"
 //#include "esl/lift.hpp"
 //#include "esl/sugar.hpp"
@@ -48,8 +54,43 @@ int main () {
     ctx.lookup.insertType("Float",  {sem::type::Float{}});
     ctx.lookup.insertType("String", {sem::type::String{}});
 
-    // Built-in variables:
-    ctx.lookup.insertValue("srate", {sem::Variable{sem::CompleteValue{sem::value::Float{static_cast<sem::Floating>(sampleRate)}}}});
+    // Built-in constants:
+    ctx.lookup.insertValue(
+        "srate",
+        // TODO: I should probably stick with sampleRate in Hz (not kHz) everywhere to avoid confusion.
+        {sem::Variable{sem::CompleteValue{sem::value::Float{static_cast<sem::Floating>(sampleRate * 1000)}}}}
+    );
+    ctx.lookup.insertValue(
+        "pi",
+        {sem::Variable{sem::CompleteValue{sem::value::Float{static_cast<sem::Floating>(M_PI)}}}}
+    );
+    ctx.lookup.insertValue(
+        "e",
+        {sem::Variable{sem::CompleteValue{sem::value::Float{static_cast<sem::Floating>(M_E)}}}}
+    );
+    auto noteValues = {
+        sem::CompleteValue{sem::value::Float{32.7}},
+        sem::CompleteValue{sem::value::Float{32.65}},
+        sem::CompleteValue{sem::value::Float{36.71}},
+        sem::CompleteValue{sem::value::Float{38.89}},
+        sem::CompleteValue{sem::value::Float{41.20}},
+        sem::CompleteValue{sem::value::Float{43.65}},
+        sem::CompleteValue{sem::value::Float{46.25}},
+        sem::CompleteValue{sem::value::Float{49.0}},
+        sem::CompleteValue{sem::value::Float{51.91}},
+        sem::CompleteValue{sem::value::Float{55.0}},
+        sem::CompleteValue{sem::value::Float{58.27}},
+        sem::CompleteValue{sem::value::Float{61.74}}
+    };
+    auto noteAlloc = sem::ArrayAllocation{esl::make_component_vector(noteValues)};
+    ctx.lookup.insertValue(
+        "notes",
+        {sem::Variable{sem::CompleteValue{sem::value::Array{
+            .allocation = &noteAlloc,
+            .valueType  = sem::type::Array{sem::CompleteType{sem::type::Float{true}}, 12, true}
+        }}}}
+    );
+    //constexpr std::array<float,        13> frequencies = {32.7, 32.65, 36.71, 38.89, 41.20, 43.65, 46.25, 49.0, 51.91, 55.0, 58.27, 61.74, 65.41};
 
     // Built-in operations:
     ctx.global.insertFunction(sem::runtime::definition::floor());
@@ -59,11 +100,12 @@ int main () {
 
     // Internal library dependencies:
     ctx.global.insertInclude(c::inclusion("<math.h>"));
-    ctx.global.insertInclude(c::inclusion("<signal.h>"));
     ctx.global.insertInclude(c::inclusion("<stdbool.h>"));
     ctx.global.insertInclude(c::inclusion("<stddef.h>"));
-    ctx.global.insertInclude(c::inclusion("<stdio.h>"));
     ctx.global.insertInclude(c::inclusion("<string.h>"));
+    // Debug: (TODO: Only use these in debug mode.)
+    ctx.global.insertInclude(c::inclusion("<stdio.h>"));
+    ctx.global.insertInclude(c::inclusion("<signal.h>"));
     ctx.global.insertInclude(c::inclusion("<time.h>"));
     if constexpr (platform == Platform::windows)
         ctx.global.insertInclude(c::inclusion("<windows.h>"));

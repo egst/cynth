@@ -47,7 +47,7 @@ namespace cynth::syn::decl_nodes {
                 return esl::result_error{"More values than targets in a definition."};
 
             for (auto const & [type, value]: esl::zip(decl.type, esl::view(valueIterator, valueIterator + count))) {
-                auto definitionResult = interface::processDefinition(ctx)(value) || target::category{} <<= type;
+                auto definitionResult = interface::processDefinition(ctx)(decl.name, value) || target::category{} <<= type;
                 if (!definitionResult) return definitionResult.error();
 
                 vars.push_back(*definitionResult);
@@ -86,7 +86,7 @@ namespace cynth::syn::decl_nodes {
 
                     } || target::result{} <<= interface::translateType(type);
                 }
-                return interface::processDeclaration(ctx)(type);
+                return interface::processDeclaration(ctx)(decl.name)(type);
 
             } || target::nested<target::component_vector_tiny_result, target::category>{} <<=
                 decl.type;

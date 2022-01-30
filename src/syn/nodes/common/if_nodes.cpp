@@ -58,6 +58,8 @@ namespace cynth::syn::if_nodes {
 
             auto returnResult = [&] (sem::Return pos, sem::Return neg) -> StatementProcessingResult {
                 // Both branches return.
+                if (pos.returned.size() != neg.returned.size())
+                    return esl::result_error{"Returning a different number of values in each branch."};
 
                 sem::Return returnResult;
                 returnResult.always = pos.always && neg.always;
@@ -84,7 +86,7 @@ namespace cynth::syn::if_nodes {
                             // Compile-time value:
                             if (posVals.size() > 1 || negVals.size() > 1) // Implementation error.
                                 return esl::result_error{"Returning multiple compile-time values in a run-time if statement."};
-                            if (posVals.size() == 0 || negVals.size() == 1) // Implementation error.
+                            if (posVals.size() == 0 || negVals.size() == 0) // Implementation error.
                                 return esl::result_error{"Returning empty compile-time values in a run-time if statement."};
                             auto const & posVal = posVals.front();
                             auto const & negVal = negVals.front();
@@ -181,10 +183,11 @@ namespace cynth::syn::if_nodes {
 
                             return [&] (auto expr) -> esl::result<void> {
                                 returnStmts.push_back(c::returnValue(i, expr.expression));
+                                returnResult.returned.emplace_back(expr.type);
                                 return {};
 
                             } || target::result{} <<=
-                            interface::translateValue(outerScope) || target::category{} <<= value;
+                                interface::translateValue(outerScope) || target::category{} <<= value;
 
                         } || target::category{} <<= interface::returnedValuesType <<= values;
 
@@ -291,20 +294,25 @@ namespace cynth::syn::if_nodes {
             auto ifHead   = c::ifBegin(cond.expression);
             auto elseHead = c::cuddledElse();
             auto end      = c::end();
+            auto jump     = c::returnJump();
 
             /***
             if (<cond>) {
                 result.e<n> = <value> # for all comp-time values
                 <pos>
+                goto ret; # if ayways returns
             ***/
             outerScope.insertStatement(ifHead);
             for (auto const & ret: result.posReturnStmts)
                 outerScope.insertStatement(c::indented(ret));
             outerScope.mergeChild(posBranchScope);
+            if (result.returnResult)
+                outerScope.insertStatement(c::indented(jump));
 
             /***
             } else {
                 <neg>
+                goto ret; # if ayways returns
             ***/
             if (negativeBranch) {
                 // if..else:
@@ -312,6 +320,8 @@ namespace cynth::syn::if_nodes {
                 for (auto const & ret: result.negReturnStmts)
                     outerScope.insertStatement(c::indented(ret));
                 outerScope.mergeChild(negBranchScope);
+                if (result.returnResult)
+                    outerScope.insertStatement(c::indented(jump));
             }
 
             /***

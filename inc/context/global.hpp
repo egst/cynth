@@ -50,6 +50,8 @@ namespace cynth::context {
         void insertAllocation     (std::string const &);
         void insertFunction       (std::string const &);
         void insertInitialization (std::string const &);
+        bool insertOutputBuffer   (std::string const & name, std::string const & var);
+        bool insertInputValue     (std::string const & type, std::string const & name, std::string const & var);
 
         /** Instantiate a specific version of a type template. */
         template <typename T>
@@ -72,6 +74,10 @@ namespace cynth::context {
         std::vector<std::string>        initializations;
         std::unordered_set<std::string> instantiated;
         std::vector<GeneratorEntry>     generators;
+        //std::unordered_map<std::string, std::string> inputBuffers;
+        std::unordered_map<std::string, std::string> outputBuffers;
+        std::unordered_map<std::string, std::pair<std::string, std::string>> inputValues;
+        //std::unordered_map<std::string, std::string> outputValues;
     };
 
 }

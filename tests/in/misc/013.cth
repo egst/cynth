@@ -1,0 +1,40 @@
+type Sample = Float;
+type Time   = Int;
+type Signal = Sample (Time);
+
+Int const small  = 16;
+Int const medium = 64;
+Int const large  = 128;
+Int const huge   = 1028;
+
+//Float in freq;
+Float in note;
+Int in press;
+Int in release;
+//Float in knob1;
+//Float in knob2;
+
+Float realTime (Time time) Float (time) / srate;
+
+Sample (Time) saw (Float amp, Float freq)
+    Sample fn (Time time)
+        amp * (2. * ((freq * realTime(time)) % 1.) - 1.);
+
+Sample () avg (buffer [small] input) Sample fn () {
+    Int const n = small;
+    Sample result = 0.;
+    for (Sample const sample in input[])
+        result = result + sample / Sample (n);
+    return result;
+};
+
+
+Int const octave = 4;
+//Float note () freq[] * Float (octave);
+Float freq () notes[note[]] * Float (octave);
+Sample tone (Time time) saw(0.9, note())(time);
+
+//buffer [small] b1 = buffer [small] (tone);
+
+//note();
+

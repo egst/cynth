@@ -402,6 +402,14 @@ namespace yy {
       // expr_pre
       // expr_post
       // expr_atom
+      // expr_or_right
+      // expr_and_right
+      // expr_eq_right
+      // expr_ord_right
+      // expr_add_right
+      // expr_mul_right
+      // expr_pow_right
+      // expr_pre_right
       // expr_right
       // expr_assgn_target
       // paren_expr
@@ -422,9 +430,11 @@ namespace yy {
       char dummy6[sizeof (cynth::syn::category::Type)];
 
       // node_add
+      // node_add_right
       char dummy7[sizeof (cynth::syn::node::Add)];
 
       // node_and
+      // node_and_right
       char dummy8[sizeof (cynth::syn::node::And)];
 
       // node_application
@@ -464,9 +474,11 @@ namespace yy {
       char dummy20[sizeof (cynth::syn::node::Definition)];
 
       // node_div
+      // node_div_right
       char dummy21[sizeof (cynth::syn::node::Div)];
 
       // node_eq
+      // node_eq_right
       char dummy22[sizeof (cynth::syn::node::Eq)];
 
       // node_expr_for
@@ -491,9 +503,11 @@ namespace yy {
       char dummy29[sizeof (cynth::syn::node::FunctionType)];
 
       // node_ge
+      // node_ge_right
       char dummy30[sizeof (cynth::syn::node::Ge)];
 
       // node_gt
+      // node_gt_right
       char dummy31[sizeof (cynth::syn::node::Gt)];
 
       // node_if
@@ -506,39 +520,49 @@ namespace yy {
       char dummy34[sizeof (cynth::syn::node::Int)];
 
       // node_le
+      // node_le_right
       char dummy35[sizeof (cynth::syn::node::Le)];
 
       // node_lt
+      // node_lt_right
       char dummy36[sizeof (cynth::syn::node::Lt)];
 
       // node_minus
+      // node_minus_right
       char dummy37[sizeof (cynth::syn::node::Minus)];
 
       // node_mod
+      // node_mod_right
       char dummy38[sizeof (cynth::syn::node::Mod)];
 
       // node_mul
+      // node_mul_right
       char dummy39[sizeof (cynth::syn::node::Mul)];
 
       // node_name
       char dummy40[sizeof (cynth::syn::node::Name)];
 
       // node_ne
+      // node_ne_right
       char dummy41[sizeof (cynth::syn::node::Ne)];
 
       // node_not
+      // node_not_right
       char dummy42[sizeof (cynth::syn::node::Not)];
 
       // node_or
+      // node_or_right
       char dummy43[sizeof (cynth::syn::node::Or)];
 
       // node_out_type
       char dummy44[sizeof (cynth::syn::node::OutType)];
 
       // node_plus
+      // node_plus_right
       char dummy45[sizeof (cynth::syn::node::Plus)];
 
       // node_pow
+      // node_pow_right
       char dummy46[sizeof (cynth::syn::node::Pow)];
 
       // node_range_decl
@@ -560,6 +584,7 @@ namespace yy {
       char dummy52[sizeof (cynth::syn::node::String)];
 
       // node_sub
+      // node_sub_right
       char dummy53[sizeof (cynth::syn::node::Sub)];
 
       // node_subscript
@@ -603,6 +628,7 @@ namespace yy {
       // INT
       // FLOAT
       // STRING
+      // ILLEGAL
       char dummy66[sizeof (std::string)];
     };
 
@@ -784,73 +810,98 @@ namespace yy {
         S_expr_pre = 68,                         // expr_pre
         S_expr_post = 69,                        // expr_post
         S_expr_atom = 70,                        // expr_atom
-        S_expr_right = 71,                       // expr_right
-        S_expr_assgn_target = 72,                // expr_assgn_target
-        S_paren_type = 73,                       // paren_type
-        S_void_type = 74,                        // void_type
-        S_node_auto = 75,                        // node_auto
-        S_node_type_name = 76,                   // node_type_name
-        S_node_const_type = 77,                  // node_const_type
-        S_node_in_type = 78,                     // node_in_type
-        S_node_out_type = 79,                    // node_out_type
-        S_node_function_type = 80,               // node_function_type
-        S_node_array_type = 81,                  // node_array_type
-        S_node_buffer_type = 82,                 // node_buffer_type
-        S_paren_decl = 83,                       // paren_decl
-        S_paren_range_decl = 84,                 // paren_range_decl
-        S_void_decl = 85,                        // void_decl
-        S_node_declaration = 86,                 // node_declaration
-        S_node_range_decl = 87,                  // node_range_decl
-        S_node_range_to = 88,                    // node_range_to
-        S_node_range_to_by = 89,                 // node_range_to_by
-        S_node_spread = 90,                      // node_spread
-        S_paren_expr = 91,                       // paren_expr
-        S_void = 92,                             // void
-        S_node_name = 93,                        // node_name
-        S_node_block = 94,                       // node_block
-        S_node_bool = 95,                        // node_bool
-        S_node_int = 96,                         // node_int
-        S_node_float = 97,                       // node_float
-        S_node_string = 98,                      // node_string
-        S_node_function = 99,                    // node_function
-        S_node_array = 100,                      // node_array
-        S_node_or = 101,                         // node_or
-        S_node_and = 102,                        // node_and
-        S_node_eq = 103,                         // node_eq
-        S_node_ne = 104,                         // node_ne
-        S_node_ge = 105,                         // node_ge
-        S_node_le = 106,                         // node_le
-        S_node_gt = 107,                         // node_gt
-        S_node_lt = 108,                         // node_lt
-        S_node_add = 109,                        // node_add
-        S_node_sub = 110,                        // node_sub
-        S_node_mul = 111,                        // node_mul
-        S_node_div = 112,                        // node_div
-        S_node_mod = 113,                        // node_mod
-        S_node_pow = 114,                        // node_pow
-        S_node_plus = 115,                       // node_plus
-        S_node_minus = 116,                      // node_minus
-        S_node_not = 117,                        // node_not
-        S_node_application = 118,                // node_application
-        S_node_conversion = 119,                 // node_conversion
-        S_node_subscript = 120,                  // node_subscript
-        S_node_expr_if = 121,                    // node_expr_if
-        S_node_expr_for = 122,                   // node_expr_for
-        S_node_definition = 123,                 // node_definition
-        S_node_assignment = 124,                 // node_assignment
-        S_node_function_def = 125,               // node_function_def
-        S_node_type_def = 126,                   // node_type_def
-        S_node_return = 127,                     // node_return
-        S_node_if = 128,                         // node_if
-        S_node_when = 129,                       // node_when
-        S_node_for = 130,                        // node_for
-        S_node_while = 131,                      // node_while
-        S_type_list = 132,                       // type_list
-        S_decl_list = 133,                       // decl_list
-        S_range_decl_list = 134,                 // range_decl_list
-        S_array_elem_list = 135,                 // array_elem_list
-        S_expr_list = 136,                       // expr_list
-        S_stmt_list = 137                        // stmt_list
+        S_expr_or_right = 71,                    // expr_or_right
+        S_expr_and_right = 72,                   // expr_and_right
+        S_expr_eq_right = 73,                    // expr_eq_right
+        S_expr_ord_right = 74,                   // expr_ord_right
+        S_expr_add_right = 75,                   // expr_add_right
+        S_expr_mul_right = 76,                   // expr_mul_right
+        S_expr_pow_right = 77,                   // expr_pow_right
+        S_expr_pre_right = 78,                   // expr_pre_right
+        S_expr_right = 79,                       // expr_right
+        S_expr_assgn_target = 80,                // expr_assgn_target
+        S_paren_type = 81,                       // paren_type
+        S_void_type = 82,                        // void_type
+        S_node_auto = 83,                        // node_auto
+        S_node_type_name = 84,                   // node_type_name
+        S_node_const_type = 85,                  // node_const_type
+        S_node_in_type = 86,                     // node_in_type
+        S_node_out_type = 87,                    // node_out_type
+        S_node_function_type = 88,               // node_function_type
+        S_node_array_type = 89,                  // node_array_type
+        S_node_buffer_type = 90,                 // node_buffer_type
+        S_paren_decl = 91,                       // paren_decl
+        S_paren_range_decl = 92,                 // paren_range_decl
+        S_void_decl = 93,                        // void_decl
+        S_node_declaration = 94,                 // node_declaration
+        S_node_range_decl = 95,                  // node_range_decl
+        S_node_range_to = 96,                    // node_range_to
+        S_node_range_to_by = 97,                 // node_range_to_by
+        S_node_spread = 98,                      // node_spread
+        S_paren_expr = 99,                       // paren_expr
+        S_void = 100,                            // void
+        S_node_name = 101,                       // node_name
+        S_node_block = 102,                      // node_block
+        S_node_bool = 103,                       // node_bool
+        S_node_int = 104,                        // node_int
+        S_node_float = 105,                      // node_float
+        S_node_string = 106,                     // node_string
+        S_node_function = 107,                   // node_function
+        S_node_array = 108,                      // node_array
+        S_node_or = 109,                         // node_or
+        S_node_and = 110,                        // node_and
+        S_node_eq = 111,                         // node_eq
+        S_node_ne = 112,                         // node_ne
+        S_node_ge = 113,                         // node_ge
+        S_node_le = 114,                         // node_le
+        S_node_gt = 115,                         // node_gt
+        S_node_lt = 116,                         // node_lt
+        S_node_add = 117,                        // node_add
+        S_node_sub = 118,                        // node_sub
+        S_node_mul = 119,                        // node_mul
+        S_node_div = 120,                        // node_div
+        S_node_mod = 121,                        // node_mod
+        S_node_pow = 122,                        // node_pow
+        S_node_plus = 123,                       // node_plus
+        S_node_minus = 124,                      // node_minus
+        S_node_not = 125,                        // node_not
+        S_node_or_right = 126,                   // node_or_right
+        S_node_and_right = 127,                  // node_and_right
+        S_node_eq_right = 128,                   // node_eq_right
+        S_node_ne_right = 129,                   // node_ne_right
+        S_node_ge_right = 130,                   // node_ge_right
+        S_node_le_right = 131,                   // node_le_right
+        S_node_gt_right = 132,                   // node_gt_right
+        S_node_lt_right = 133,                   // node_lt_right
+        S_node_add_right = 134,                  // node_add_right
+        S_node_sub_right = 135,                  // node_sub_right
+        S_node_mul_right = 136,                  // node_mul_right
+        S_node_div_right = 137,                  // node_div_right
+        S_node_mod_right = 138,                  // node_mod_right
+        S_node_pow_right = 139,                  // node_pow_right
+        S_node_plus_right = 140,                 // node_plus_right
+        S_node_minus_right = 141,                // node_minus_right
+        S_node_not_right = 142,                  // node_not_right
+        S_node_application = 143,                // node_application
+        S_node_conversion = 144,                 // node_conversion
+        S_node_subscript = 145,                  // node_subscript
+        S_node_expr_if = 146,                    // node_expr_if
+        S_node_expr_for = 147,                   // node_expr_for
+        S_node_definition = 148,                 // node_definition
+        S_node_assignment = 149,                 // node_assignment
+        S_node_function_def = 150,               // node_function_def
+        S_node_type_def = 151,                   // node_type_def
+        S_node_return = 152,                     // node_return
+        S_node_if = 153,                         // node_if
+        S_node_when = 154,                       // node_when
+        S_node_for = 155,                        // node_for
+        S_node_while = 156,                      // node_while
+        S_type_list = 157,                       // type_list
+        S_decl_list = 158,                       // decl_list
+        S_range_decl_list = 159,                 // range_decl_list
+        S_array_elem_list = 160,                 // array_elem_list
+        S_expr_list = 161,                       // expr_list
+        S_stmt_list = 162                        // stmt_list
       };
     };
 
@@ -906,6 +957,14 @@ namespace yy {
       case symbol_kind::S_expr_pre: // expr_pre
       case symbol_kind::S_expr_post: // expr_post
       case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_or_right: // expr_or_right
+      case symbol_kind::S_expr_and_right: // expr_and_right
+      case symbol_kind::S_expr_eq_right: // expr_eq_right
+      case symbol_kind::S_expr_ord_right: // expr_ord_right
+      case symbol_kind::S_expr_add_right: // expr_add_right
+      case symbol_kind::S_expr_mul_right: // expr_mul_right
+      case symbol_kind::S_expr_pow_right: // expr_pow_right
+      case symbol_kind::S_expr_pre_right: // expr_pre_right
       case symbol_kind::S_expr_right: // expr_right
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
@@ -930,10 +989,12 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_add: // node_add
+      case symbol_kind::S_node_add_right: // node_add_right
         value.move< cynth::syn::node::Add > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
+      case symbol_kind::S_node_and_right: // node_and_right
         value.move< cynth::syn::node::And > (std::move (that.value));
         break;
 
@@ -986,10 +1047,12 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_div: // node_div
+      case symbol_kind::S_node_div_right: // node_div_right
         value.move< cynth::syn::node::Div > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
+      case symbol_kind::S_node_eq_right: // node_eq_right
         value.move< cynth::syn::node::Eq > (std::move (that.value));
         break;
 
@@ -1022,10 +1085,12 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_ge: // node_ge
+      case symbol_kind::S_node_ge_right: // node_ge_right
         value.move< cynth::syn::node::Ge > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
+      case symbol_kind::S_node_gt_right: // node_gt_right
         value.move< cynth::syn::node::Gt > (std::move (that.value));
         break;
 
@@ -1042,22 +1107,27 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_le: // node_le
+      case symbol_kind::S_node_le_right: // node_le_right
         value.move< cynth::syn::node::Le > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
+      case symbol_kind::S_node_lt_right: // node_lt_right
         value.move< cynth::syn::node::Lt > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
+      case symbol_kind::S_node_minus_right: // node_minus_right
         value.move< cynth::syn::node::Minus > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
+      case symbol_kind::S_node_mod_right: // node_mod_right
         value.move< cynth::syn::node::Mod > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
+      case symbol_kind::S_node_mul_right: // node_mul_right
         value.move< cynth::syn::node::Mul > (std::move (that.value));
         break;
 
@@ -1066,14 +1136,17 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_ne: // node_ne
+      case symbol_kind::S_node_ne_right: // node_ne_right
         value.move< cynth::syn::node::Ne > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
+      case symbol_kind::S_node_not_right: // node_not_right
         value.move< cynth::syn::node::Not > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
+      case symbol_kind::S_node_or_right: // node_or_right
         value.move< cynth::syn::node::Or > (std::move (that.value));
         break;
 
@@ -1082,10 +1155,12 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_plus: // node_plus
+      case symbol_kind::S_node_plus_right: // node_plus_right
         value.move< cynth::syn::node::Plus > (std::move (that.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
+      case symbol_kind::S_node_pow_right: // node_pow_right
         value.move< cynth::syn::node::Pow > (std::move (that.value));
         break;
 
@@ -1114,6 +1189,7 @@ namespace yy {
         break;
 
       case symbol_kind::S_node_sub: // node_sub
+      case symbol_kind::S_node_sub_right: // node_sub_right
         value.move< cynth::syn::node::Sub > (std::move (that.value));
         break;
 
@@ -1170,6 +1246,7 @@ namespace yy {
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_FLOAT: // FLOAT
       case symbol_kind::S_STRING: // STRING
+      case symbol_kind::S_ILLEGAL: // ILLEGAL
         value.move< std::string > (std::move (that.value));
         break;
 
@@ -1963,6 +2040,14 @@ switch (yykind)
       case symbol_kind::S_expr_pre: // expr_pre
       case symbol_kind::S_expr_post: // expr_post
       case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_or_right: // expr_or_right
+      case symbol_kind::S_expr_and_right: // expr_and_right
+      case symbol_kind::S_expr_eq_right: // expr_eq_right
+      case symbol_kind::S_expr_ord_right: // expr_ord_right
+      case symbol_kind::S_expr_add_right: // expr_add_right
+      case symbol_kind::S_expr_mul_right: // expr_mul_right
+      case symbol_kind::S_expr_pow_right: // expr_pow_right
+      case symbol_kind::S_expr_pre_right: // expr_pre_right
       case symbol_kind::S_expr_right: // expr_right
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
@@ -1987,10 +2072,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_add: // node_add
+      case symbol_kind::S_node_add_right: // node_add_right
         value.template destroy< cynth::syn::node::Add > ();
         break;
 
       case symbol_kind::S_node_and: // node_and
+      case symbol_kind::S_node_and_right: // node_and_right
         value.template destroy< cynth::syn::node::And > ();
         break;
 
@@ -2043,10 +2130,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_div: // node_div
+      case symbol_kind::S_node_div_right: // node_div_right
         value.template destroy< cynth::syn::node::Div > ();
         break;
 
       case symbol_kind::S_node_eq: // node_eq
+      case symbol_kind::S_node_eq_right: // node_eq_right
         value.template destroy< cynth::syn::node::Eq > ();
         break;
 
@@ -2079,10 +2168,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_ge: // node_ge
+      case symbol_kind::S_node_ge_right: // node_ge_right
         value.template destroy< cynth::syn::node::Ge > ();
         break;
 
       case symbol_kind::S_node_gt: // node_gt
+      case symbol_kind::S_node_gt_right: // node_gt_right
         value.template destroy< cynth::syn::node::Gt > ();
         break;
 
@@ -2099,22 +2190,27 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_le: // node_le
+      case symbol_kind::S_node_le_right: // node_le_right
         value.template destroy< cynth::syn::node::Le > ();
         break;
 
       case symbol_kind::S_node_lt: // node_lt
+      case symbol_kind::S_node_lt_right: // node_lt_right
         value.template destroy< cynth::syn::node::Lt > ();
         break;
 
       case symbol_kind::S_node_minus: // node_minus
+      case symbol_kind::S_node_minus_right: // node_minus_right
         value.template destroy< cynth::syn::node::Minus > ();
         break;
 
       case symbol_kind::S_node_mod: // node_mod
+      case symbol_kind::S_node_mod_right: // node_mod_right
         value.template destroy< cynth::syn::node::Mod > ();
         break;
 
       case symbol_kind::S_node_mul: // node_mul
+      case symbol_kind::S_node_mul_right: // node_mul_right
         value.template destroy< cynth::syn::node::Mul > ();
         break;
 
@@ -2123,14 +2219,17 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_ne: // node_ne
+      case symbol_kind::S_node_ne_right: // node_ne_right
         value.template destroy< cynth::syn::node::Ne > ();
         break;
 
       case symbol_kind::S_node_not: // node_not
+      case symbol_kind::S_node_not_right: // node_not_right
         value.template destroy< cynth::syn::node::Not > ();
         break;
 
       case symbol_kind::S_node_or: // node_or
+      case symbol_kind::S_node_or_right: // node_or_right
         value.template destroy< cynth::syn::node::Or > ();
         break;
 
@@ -2139,10 +2238,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_plus: // node_plus
+      case symbol_kind::S_node_plus_right: // node_plus_right
         value.template destroy< cynth::syn::node::Plus > ();
         break;
 
       case symbol_kind::S_node_pow: // node_pow
+      case symbol_kind::S_node_pow_right: // node_pow_right
         value.template destroy< cynth::syn::node::Pow > ();
         break;
 
@@ -2171,6 +2272,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_sub: // node_sub
+      case symbol_kind::S_node_sub_right: // node_sub_right
         value.template destroy< cynth::syn::node::Sub > ();
         break;
 
@@ -2227,6 +2329,7 @@ switch (yykind)
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_FLOAT: // FLOAT
       case symbol_kind::S_STRING: // STRING
+      case symbol_kind::S_ILLEGAL: // ILLEGAL
         value.template destroy< std::string > ();
         break;
 
@@ -2320,26 +2423,26 @@ switch (yykind)
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::FOR || tok == token::WHILE || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::IN || tok == token::OUT || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::VOID || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT || tok == token::ILLEGAL);
+        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::FOR || tok == token::WHILE || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::IN || tok == token::OUT || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::VOID || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT);
       }
 #else
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::FOR || tok == token::WHILE || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::IN || tok == token::OUT || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::VOID || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT || tok == token::ILLEGAL);
+        YY_ASSERT (tok == token::YYEOF || tok == token::YYerror || tok == token::YYUNDEF || tok == token::IF || tok == token::ELSE || tok == token::WHEN || tok == token::FOR || tok == token::WHILE || tok == token::TYPE || tok == token::FN || tok == token::BUFFER || tok == token::RETURN || tok == token::TRUE || tok == token::FALSE || tok == token::CONST || tok == token::AUTO || tok == token::ASSGN || tok == token::SEMI || tok == token::COMMA || tok == token::IN || tok == token::OUT || tok == token::TO || tok == token::BY || tok == token::ELIP || tok == token::OPAREN || tok == token::CPAREN || tok == token::OBRACE || tok == token::CBRACE || tok == token::OBRACK || tok == token::CBRACK || tok == token::VOID || tok == token::ADD || tok == token::SUB || tok == token::MUL || tok == token::DIV || tok == token::MOD || tok == token::POW || tok == token::NOT || tok == token::AND || tok == token::OR || tok == token::EQ || tok == token::NE || tok == token::GE || tok == token::LE || tok == token::GT || tok == token::LT);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
       symbol_type (int tok, std::string v)
         : super_type(token_type (tok), std::move (v))
       {
-        YY_ASSERT (tok == token::NAME || tok == token::TYPENAME || tok == token::INT || tok == token::FLOAT || tok == token::STRING);
+        YY_ASSERT (tok == token::NAME || tok == token::TYPENAME || tok == token::INT || tok == token::FLOAT || tok == token::STRING || tok == token::ILLEGAL);
       }
 #else
       symbol_type (int tok, const std::string& v)
         : super_type(token_type (tok), v)
       {
-        YY_ASSERT (tok == token::NAME || tok == token::TYPENAME || tok == token::INT || tok == token::FLOAT || tok == token::STRING);
+        YY_ASSERT (tok == token::NAME || tok == token::TYPENAME || tok == token::INT || tok == token::FLOAT || tok == token::STRING || tok == token::ILLEGAL);
       }
 #endif
     };
@@ -3160,16 +3263,16 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_ILLEGAL ()
+      make_ILLEGAL (std::string v)
       {
-        return symbol_type (token::ILLEGAL);
+        return symbol_type (token::ILLEGAL, std::move (v));
       }
 #else
       static
       symbol_type
-      make_ILLEGAL ()
+      make_ILLEGAL (const std::string& v)
       {
-        return symbol_type (token::ILLEGAL);
+        return symbol_type (token::ILLEGAL, v);
       }
 #endif
 
@@ -3476,9 +3579,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 1290,     ///< Last index in yytable_.
-      yynnts_ = 86,  ///< Number of nonterminal symbols.
-      yyfinal_ = 134 ///< Termination state number.
+      yylast_ = 1236,     ///< Last index in yytable_.
+      yynnts_ = 111,  ///< Number of nonterminal symbols.
+      yyfinal_ = 164 ///< Termination state number.
     };
 
 
@@ -3569,6 +3672,14 @@ switch (yykind)
       case symbol_kind::S_expr_pre: // expr_pre
       case symbol_kind::S_expr_post: // expr_post
       case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_or_right: // expr_or_right
+      case symbol_kind::S_expr_and_right: // expr_and_right
+      case symbol_kind::S_expr_eq_right: // expr_eq_right
+      case symbol_kind::S_expr_ord_right: // expr_ord_right
+      case symbol_kind::S_expr_add_right: // expr_add_right
+      case symbol_kind::S_expr_mul_right: // expr_mul_right
+      case symbol_kind::S_expr_pow_right: // expr_pow_right
+      case symbol_kind::S_expr_pre_right: // expr_pre_right
       case symbol_kind::S_expr_right: // expr_right
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
@@ -3593,10 +3704,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_add: // node_add
+      case symbol_kind::S_node_add_right: // node_add_right
         value.copy< cynth::syn::node::Add > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
+      case symbol_kind::S_node_and_right: // node_and_right
         value.copy< cynth::syn::node::And > (YY_MOVE (that.value));
         break;
 
@@ -3649,10 +3762,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_div: // node_div
+      case symbol_kind::S_node_div_right: // node_div_right
         value.copy< cynth::syn::node::Div > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
+      case symbol_kind::S_node_eq_right: // node_eq_right
         value.copy< cynth::syn::node::Eq > (YY_MOVE (that.value));
         break;
 
@@ -3685,10 +3800,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_ge: // node_ge
+      case symbol_kind::S_node_ge_right: // node_ge_right
         value.copy< cynth::syn::node::Ge > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
+      case symbol_kind::S_node_gt_right: // node_gt_right
         value.copy< cynth::syn::node::Gt > (YY_MOVE (that.value));
         break;
 
@@ -3705,22 +3822,27 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_le: // node_le
+      case symbol_kind::S_node_le_right: // node_le_right
         value.copy< cynth::syn::node::Le > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
+      case symbol_kind::S_node_lt_right: // node_lt_right
         value.copy< cynth::syn::node::Lt > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
+      case symbol_kind::S_node_minus_right: // node_minus_right
         value.copy< cynth::syn::node::Minus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
+      case symbol_kind::S_node_mod_right: // node_mod_right
         value.copy< cynth::syn::node::Mod > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
+      case symbol_kind::S_node_mul_right: // node_mul_right
         value.copy< cynth::syn::node::Mul > (YY_MOVE (that.value));
         break;
 
@@ -3729,14 +3851,17 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_ne: // node_ne
+      case symbol_kind::S_node_ne_right: // node_ne_right
         value.copy< cynth::syn::node::Ne > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
+      case symbol_kind::S_node_not_right: // node_not_right
         value.copy< cynth::syn::node::Not > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
+      case symbol_kind::S_node_or_right: // node_or_right
         value.copy< cynth::syn::node::Or > (YY_MOVE (that.value));
         break;
 
@@ -3745,10 +3870,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_plus: // node_plus
+      case symbol_kind::S_node_plus_right: // node_plus_right
         value.copy< cynth::syn::node::Plus > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
+      case symbol_kind::S_node_pow_right: // node_pow_right
         value.copy< cynth::syn::node::Pow > (YY_MOVE (that.value));
         break;
 
@@ -3777,6 +3904,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_sub: // node_sub
+      case symbol_kind::S_node_sub_right: // node_sub_right
         value.copy< cynth::syn::node::Sub > (YY_MOVE (that.value));
         break;
 
@@ -3833,6 +3961,7 @@ switch (yykind)
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_FLOAT: // FLOAT
       case symbol_kind::S_STRING: // STRING
+      case symbol_kind::S_ILLEGAL: // ILLEGAL
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
@@ -3886,6 +4015,14 @@ switch (yykind)
       case symbol_kind::S_expr_pre: // expr_pre
       case symbol_kind::S_expr_post: // expr_post
       case symbol_kind::S_expr_atom: // expr_atom
+      case symbol_kind::S_expr_or_right: // expr_or_right
+      case symbol_kind::S_expr_and_right: // expr_and_right
+      case symbol_kind::S_expr_eq_right: // expr_eq_right
+      case symbol_kind::S_expr_ord_right: // expr_ord_right
+      case symbol_kind::S_expr_add_right: // expr_add_right
+      case symbol_kind::S_expr_mul_right: // expr_mul_right
+      case symbol_kind::S_expr_pow_right: // expr_pow_right
+      case symbol_kind::S_expr_pre_right: // expr_pre_right
       case symbol_kind::S_expr_right: // expr_right
       case symbol_kind::S_expr_assgn_target: // expr_assgn_target
       case symbol_kind::S_paren_expr: // paren_expr
@@ -3910,10 +4047,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_add: // node_add
+      case symbol_kind::S_node_add_right: // node_add_right
         value.move< cynth::syn::node::Add > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_and: // node_and
+      case symbol_kind::S_node_and_right: // node_and_right
         value.move< cynth::syn::node::And > (YY_MOVE (s.value));
         break;
 
@@ -3966,10 +4105,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_div: // node_div
+      case symbol_kind::S_node_div_right: // node_div_right
         value.move< cynth::syn::node::Div > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_eq: // node_eq
+      case symbol_kind::S_node_eq_right: // node_eq_right
         value.move< cynth::syn::node::Eq > (YY_MOVE (s.value));
         break;
 
@@ -4002,10 +4143,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_ge: // node_ge
+      case symbol_kind::S_node_ge_right: // node_ge_right
         value.move< cynth::syn::node::Ge > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_gt: // node_gt
+      case symbol_kind::S_node_gt_right: // node_gt_right
         value.move< cynth::syn::node::Gt > (YY_MOVE (s.value));
         break;
 
@@ -4022,22 +4165,27 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_le: // node_le
+      case symbol_kind::S_node_le_right: // node_le_right
         value.move< cynth::syn::node::Le > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_lt: // node_lt
+      case symbol_kind::S_node_lt_right: // node_lt_right
         value.move< cynth::syn::node::Lt > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_minus: // node_minus
+      case symbol_kind::S_node_minus_right: // node_minus_right
         value.move< cynth::syn::node::Minus > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_mod: // node_mod
+      case symbol_kind::S_node_mod_right: // node_mod_right
         value.move< cynth::syn::node::Mod > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_mul: // node_mul
+      case symbol_kind::S_node_mul_right: // node_mul_right
         value.move< cynth::syn::node::Mul > (YY_MOVE (s.value));
         break;
 
@@ -4046,14 +4194,17 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_ne: // node_ne
+      case symbol_kind::S_node_ne_right: // node_ne_right
         value.move< cynth::syn::node::Ne > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_not: // node_not
+      case symbol_kind::S_node_not_right: // node_not_right
         value.move< cynth::syn::node::Not > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_or: // node_or
+      case symbol_kind::S_node_or_right: // node_or_right
         value.move< cynth::syn::node::Or > (YY_MOVE (s.value));
         break;
 
@@ -4062,10 +4213,12 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_plus: // node_plus
+      case symbol_kind::S_node_plus_right: // node_plus_right
         value.move< cynth::syn::node::Plus > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_node_pow: // node_pow
+      case symbol_kind::S_node_pow_right: // node_pow_right
         value.move< cynth::syn::node::Pow > (YY_MOVE (s.value));
         break;
 
@@ -4094,6 +4247,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_node_sub: // node_sub
+      case symbol_kind::S_node_sub_right: // node_sub_right
         value.move< cynth::syn::node::Sub > (YY_MOVE (s.value));
         break;
 
@@ -4150,6 +4304,7 @@ switch (yykind)
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_FLOAT: // FLOAT
       case symbol_kind::S_STRING: // STRING
+      case symbol_kind::S_ILLEGAL: // ILLEGAL
         value.move< std::string > (YY_MOVE (s.value));
         break;
 
@@ -4214,7 +4369,7 @@ switch (yykind)
   }
 
 } // yy
-#line 4218 "inc/parser.hpp"
+#line 4373 "inc/parser.hpp"
 
 
 // "%code provides" blocks.
@@ -4228,7 +4383,7 @@ switch (yykind)
     }
 
 
-#line 4232 "inc/parser.hpp"
+#line 4387 "inc/parser.hpp"
 
 
 #endif // !YY_YY_INC_PARSER_HPP_INCLUDED

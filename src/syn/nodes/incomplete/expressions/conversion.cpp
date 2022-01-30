@@ -79,7 +79,9 @@ namespace cynth::syn {
                 struct <closuretype> <closureval>;
                 ***/
                 auto closureType  = id->closureType;
-                auto closureVal   = c::closureVariableName(c::id(ctx.nextId())); // TODO: Distinguish closurevars and closurevals
+                auto closureVal   = c::closureVariableName(c::id(ctx.nextId()));
+                // TODO: Distinguish closurevars and closurevals
+                // Or at least add a cth_ prefix to avoid collisions in the global namespace.
                 auto closureAlloc = c::statement(c::declaration(closureType, closureVal));
                 ctx.global.insertAllocation(closureAlloc);
 
@@ -267,6 +269,8 @@ namespace cynth::syn {
 
             } | [&] (sem::value::Function value, sem::type::Buffer const & type) -> esl::result<ResolvedValue> {
                 // Function -> buffer:
+                if (type.io != sem::IO::internal)
+                    return esl::result_error{"IO buffers can only be declared as named variables."};
                 auto fromType = value.valueType;
                 return [&] (auto alloc) -> esl::result<ResolvedValue> {
                     return {CompleteValue{sem::value::Buffer{

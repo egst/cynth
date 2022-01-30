@@ -116,4 +116,4 @@ while    (?i:while)
 ";"        return parser::make_SEMI();
 "$"        return parser::make_AUTO();
 
-.          return parser::make_ILLEGAL();
+.          return parser::make_ILLEGAL(yytext);

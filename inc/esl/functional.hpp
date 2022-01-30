@@ -31,12 +31,12 @@ namespace esl {
     template <typename F> requires (std::is_class_v<std::remove_reference_t<F>>)
     constexpr F && functor (F && f) {
         return std::forward<F>(f);
-    };
+    }
 
     template <typename F>
     constexpr functor_type<F> functor (F && f) {
         return {std::forward<F>(f)};
-    };
+    }
 
     /** Overload set from lambda functions. */
     template <typename... Fs>

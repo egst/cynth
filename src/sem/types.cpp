@@ -181,6 +181,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Bool::processDefinition (
         context::Main       & ctx,
+        std::string   const &,
         ResolvedValue const * definition
     ) const {
         return processSimpleDefinition(ctx, *this, definition);
@@ -218,6 +219,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Int::processDefinition (
         context::Main       & ctx,
+        std::string   const &,
         ResolvedValue const * definition
     ) const {
         return processSimpleDefinition(ctx, *this, definition);
@@ -255,6 +257,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Float::processDefinition (
         context::Main       & ctx,
+        std::string   const &,
         ResolvedValue const * definition
     ) const {
         return processSimpleDefinition(ctx, *this, definition);
@@ -288,6 +291,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::String::processDefinition (
         context::Main &,
+        std::string   const &,
         ResolvedValue const *
     ) const {
         return esl::result_error{"Strings are not implemented yet."};
@@ -324,6 +328,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::In::processDefinition (
         context::Main       & ctx,
+        std::string   const & name,
         ResolvedValue const * definition
     ) const {
         auto valueType = *type;
@@ -344,6 +349,7 @@ namespace cynth::sem {
                 <type> const * <var> = &<val>;
                 ***/
                 ctx.global.insertAllocation(alloc);
+                ctx.global.insertInputValue(typeName, name, valName);
                 ctx.insertStatement(local);
 
                 return Variable{CompleteValue{sem::value::In{valName, *this}}};
@@ -421,6 +427,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Out::processDefinition (
         context::Main       & ctx,
+        std::string   const &, // TODO
         ResolvedValue const * definition
     ) const {
         auto valueType = *type;
@@ -537,6 +544,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Array::processDefinition (
         context::Main       & ctx,
+        std::string   const &,
         ResolvedValue const * definition
     ) const {
 
@@ -681,6 +689,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Buffer::processDefinition (
         context::Main       & ctx,
+        std::string   const & name,
         ResolvedValue const * definition
     ) const {
         if (!definition)
@@ -691,6 +700,14 @@ namespace cynth::sem {
             return esl::result_error{"Initializing from an incompatible type."};
 
         return [&] (CompleteValue const & value) -> DefinitionProcessingResult {
+            auto bufferValue = *value.get<sem::value::Buffer>();
+
+            if (io == IO::output) {
+                if (size != 1)
+                    return esl::result_error{"Only buffers of size 1 can currently be used as output buffers."};
+                ctx.global.insertOutputBuffer(name, bufferValue.allocation);
+            }
+
             return Variable{value};
 
         } | [&] (TypedExpression const & value) -> DefinitionProcessingResult {
@@ -699,6 +716,23 @@ namespace cynth::sem {
             auto buffType = translateType();
             auto varName  = c::variableName(c::id(ctx.nextId()));
             auto local    = c::statement(c::definition(buffType, varName, std::move(value.expression)));
+
+            if (io == IO::output) {
+                if (size != 1)
+                    return esl::result_error{"Only buffers of size 1 can currently be used as output buffers."};
+                auto valName = c::bufferValueName(c::id(ctx.nextId())); // TODO: Maybe distinguish global buffer values and buffer pointers?
+                auto global  = c::statement(c::definition(buffType, valName, std::move(value.expression)));
+                auto init    = c::statement(c::assignment(std::move(value.expression), valName));
+                /***
+                global:
+                struct <bufftype> * <val>;
+                local:
+                <val> = <definition>;
+                ***/
+                ctx.global.insertAllocation(global);
+                ctx.insertStatement(init);
+                ctx.global.insertOutputBuffer(name, valName);
+            }
 
             /***
             local:
@@ -743,6 +777,7 @@ namespace cynth::sem {
 
     DefinitionProcessingResult type::Function::processDefinition (
         context::Main       & ctx,
+        std::string   const &,
         ResolvedValue const * definition
     ) const {
         if (!definition)

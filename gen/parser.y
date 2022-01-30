@@ -78,7 +78,7 @@
 %token LE
 %token GT
 %token LT
-%token ILLEGAL
+%token <std::string> ILLEGAL
 
 /**
  *  Naming convention:
@@ -112,6 +112,14 @@
 %nterm <cynth::syn::category::Expression>  expr_pre
 %nterm <cynth::syn::category::Expression>  expr_post
 %nterm <cynth::syn::category::Expression>  expr_atom
+%nterm <cynth::syn::category::Expression>  expr_or_right
+%nterm <cynth::syn::category::Expression>  expr_and_right
+%nterm <cynth::syn::category::Expression>  expr_eq_right
+%nterm <cynth::syn::category::Expression>  expr_ord_right
+%nterm <cynth::syn::category::Expression>  expr_add_right
+%nterm <cynth::syn::category::Expression>  expr_mul_right
+%nterm <cynth::syn::category::Expression>  expr_pow_right
+%nterm <cynth::syn::category::Expression>  expr_pre_right
 %nterm <cynth::syn::category::Expression>  expr_right
 %nterm <cynth::syn::category::Expression>  expr_assgn_target
 
@@ -175,6 +183,23 @@
 %nterm <cynth::syn::node::Plus>            node_plus
 %nterm <cynth::syn::node::Minus>           node_minus
 %nterm <cynth::syn::node::Not>             node_not
+%nterm <cynth::syn::node::Or>              node_or_right
+%nterm <cynth::syn::node::And>             node_and_right
+%nterm <cynth::syn::node::Eq>              node_eq_right
+%nterm <cynth::syn::node::Ne>              node_ne_right
+%nterm <cynth::syn::node::Ge>              node_ge_right
+%nterm <cynth::syn::node::Le>              node_le_right
+%nterm <cynth::syn::node::Gt>              node_gt_right
+%nterm <cynth::syn::node::Lt>              node_lt_right
+%nterm <cynth::syn::node::Add>             node_add_right
+%nterm <cynth::syn::node::Sub>             node_sub_right
+%nterm <cynth::syn::node::Mul>             node_mul_right
+%nterm <cynth::syn::node::Div>             node_div_right
+%nterm <cynth::syn::node::Mod>             node_mod_right
+%nterm <cynth::syn::node::Pow>             node_pow_right
+%nterm <cynth::syn::node::Plus>            node_plus_right
+%nterm <cynth::syn::node::Minus>           node_minus_right
+%nterm <cynth::syn::node::Not>             node_not_right
 %nterm <cynth::syn::node::Application>     node_application
 %nterm <cynth::syn::node::Conversion>      node_conversion
 %nterm <cynth::syn::node::Subscript>       node_subscript
@@ -215,6 +240,11 @@ start:
         result.first  = {$list};
         result.second = true;
     } |
+    ILLEGAL[token] {
+        result.first  = {};
+        result.second = true;
+        std::cout << "invalid token:" << $token << '\n';
+    } |
     error {
         result.first  = {};
         result.second = false;
@@ -251,8 +281,8 @@ cat_type:
     paren_type         { $$ = $1; }
 
 cat_expression:
-    expr_or    { $$ = $1; } |
-    expr_right { $$ = $1; }
+    expr_or       { $$ = $1; } |
+    expr_or_right { $$ = $1; }
 
 cat_statement:
     pure           { $$ = $1; } |
@@ -276,14 +306,27 @@ expr_or:
     node_or  { $$ = $1; } |
     expr_and { $$ = $1; }
 
+expr_or_right:
+    node_or_right  { $$ = $1; } |
+    expr_and_right { $$ = $1; }
+
 expr_and:
     node_and { $$ = $1; } |
     expr_eq  { $$ = $1; }
+
+expr_and_right:
+    node_and_right { $$ = $1; } |
+    expr_eq_right  { $$ = $1; }
 
 expr_eq:
     node_eq  { $$ = $1; } |
     node_ne  { $$ = $1; } |
     expr_ord { $$ = $1; }
+
+expr_eq_right:
+    node_eq_right  { $$ = $1; } |
+    node_ne_right  { $$ = $1; } |
+    expr_ord_right { $$ = $1; }
 
 expr_ord:
     node_ge  { $$ = $1; } |
@@ -292,10 +335,22 @@ expr_ord:
     node_lt  { $$ = $1; } |
     expr_add { $$ = $1; }
 
+expr_ord_right:
+    node_ge_right  { $$ = $1; } |
+    node_le_right  { $$ = $1; } |
+    node_gt_right  { $$ = $1; } |
+    node_lt_right  { $$ = $1; } |
+    expr_add_right { $$ = $1; }
+
 expr_add:
     node_add { $$ = $1; } |
     node_sub { $$ = $1; } |
     expr_mul { $$ = $1; }
+
+expr_add_right:
+    node_add_right { $$ = $1; } |
+    node_sub_right { $$ = $1; } |
+    expr_mul_right { $$ = $1; }
 
 expr_mul:
     node_mul { $$ = $1; } |
@@ -303,15 +358,31 @@ expr_mul:
     node_mod { $$ = $1; } |
     expr_pow { $$ = $1; }
 
+expr_mul_right:
+    node_mul_right { $$ = $1; } |
+    node_div_right { $$ = $1; } |
+    node_mod_right { $$ = $1; } |
+    expr_pow_right { $$ = $1; }
+
 expr_pow:
     node_pow { $$ = $1; } |
     expr_pre { $$ = $1; }
+
+expr_pow_right:
+    node_pow_right { $$ = $1; } |
+    expr_pre_right { $$ = $1; }
 
 expr_pre:
     node_minus { $$ = $1; } |
     node_plus  { $$ = $1; } |
     node_not   { $$ = $1; } |
     expr_post  { $$ = $1; }
+
+expr_pre_right:
+    node_minus_right { $$ = $1; } |
+    node_plus_right  { $$ = $1; } |
+    node_not_right   { $$ = $1; } |
+    expr_right       { $$ = $1; }
 
 expr_post:
     node_application { $$ = $1; } |
@@ -330,9 +401,9 @@ expr_atom:
     paren_expr  { $$ = $1; }
 
 expr_right:
-    node_expr_if  { $$ = $1; } |
-    node_expr_for { $$ = $1; } |
-    node_function { $$ = $1; }
+    node_expr_if     { $$ = $1; } |
+    node_expr_for    { $$ = $1; } |
+    node_function    { $$ = $1; }
 
 expr_assgn_target:
     expr_post { $$ = $1; }
@@ -570,8 +641,18 @@ node_or:
         $$ = {$lhs, $rhs};
     }
 
+node_or_right:
+    expr_or[lhs] OR expr_and_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_and:
     expr_and[lhs] AND expr_eq[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_and_right:
+    expr_and[lhs] AND expr_eq_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -580,8 +661,18 @@ node_eq:
         $$ = {$lhs, $rhs};
     }
 
+node_eq_right:
+    expr_eq[lhs] EQ expr_ord_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_ne:
     expr_eq[lhs] NE expr_ord[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_ne_right:
+    expr_eq[lhs] NE expr_ord_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -590,8 +681,18 @@ node_ge:
         $$ = {$lhs, $rhs};
     }
 
+node_ge_right:
+    expr_ord[lhs] GE expr_add_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_le:
     expr_ord[lhs] LE expr_add[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_le_right:
+    expr_ord[lhs] LE expr_add_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -600,8 +701,18 @@ node_gt:
         $$ = {$lhs, $rhs};
     }
 
+node_gt_right:
+    expr_ord[lhs] GT expr_add_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_lt:
     expr_ord[lhs] LT expr_add[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_lt_right:
+    expr_ord[lhs] LT expr_add_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -610,8 +721,18 @@ node_add:
         $$ = {$lhs, $rhs};
     }
 
+node_add_right:
+    expr_add[lhs] ADD expr_mul_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_sub:
     expr_add[lhs] SUB expr_mul[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_sub_right:
+    expr_add[lhs] SUB expr_mul_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -620,8 +741,18 @@ node_mul:
         $$ = {$lhs, $rhs};
     }
 
+node_mul_right:
+    expr_mul[lhs] MUL expr_pow_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_div:
     expr_mul[lhs] DIV expr_pow[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_div_right:
+    expr_mul[lhs] DIV expr_pow_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -630,8 +761,18 @@ node_mod:
         $$ = {$lhs, $rhs};
     }
 
+node_mod_right:
+    expr_mul[lhs] MOD expr_pow_right[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
 node_pow:
     expr_pre[lhs] POW expr_pow[rhs] {
+        $$ = {$lhs, $rhs};
+    }
+
+node_pow_right:
+    expr_pre[lhs] POW expr_pow_right[rhs] {
         $$ = {$lhs, $rhs};
     }
 
@@ -640,13 +781,28 @@ node_minus:
         $$ = {$arg};
     }
 
+node_minus_right:
+    SUB expr_right[arg] {
+        $$ = {$arg};
+    }
+
 node_plus:
     ADD expr_pre[arg] {
         $$ = {$arg};
     }
 
+node_plus_right:
+    ADD expr_right[arg] {
+        $$ = {$arg};
+    }
+
 node_not:
     NOT expr_pre[arg] {
+        $$ = {$arg};
+    }
+
+node_not_right:
+    NOT expr_right[arg] {
         $$ = {$arg};
     }
 
@@ -811,6 +967,5 @@ range_decl_list:
 %%
 
 void yy::parser::error (std::string const & msg) {
-    // TODO: There's a syntax error every time for some reason.
     std::cerr << "parser error: " << msg << '\n';
 }

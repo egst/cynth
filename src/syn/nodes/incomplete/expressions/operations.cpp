@@ -49,7 +49,7 @@ namespace cynth::syn {
 
                     } | [] (auto, auto) -> esl::result<ResolvedValue> {
                         // TODO: Separate the case of two different numeric types for a better error message.
-                        return esl::result_error{"This operation can only be performed with numeric values."};
+                        return esl::result_error{"Invalid operands in a binary operator"};
 
                     } || target::category{} <<= args(std::move(firstArg), std::move(secondArg));
 
@@ -62,7 +62,7 @@ namespace cynth::syn {
 
                         } | [] (auto, auto) -> esl::result<ResolvedValue> {
                             // TODO: Separate the case of two different numeric types for a better error message.
-                            return esl::result_error{"This operation can only be performed with numeric values."};
+                            return esl::result_error{"Invalid operands in a binary operator"};
 
                         } || target::category{} <<= args(firstArg.type, secondArg.type);
 
@@ -87,7 +87,7 @@ namespace cynth::syn {
 
                     } | [] (auto, auto) -> esl::result<ResolvedValue> {
                         // TODO: Separate the case of two different numeric types for a better error message.
-                        return esl::result_error{"This operation can only be performed with numeric values."};
+                        return esl::result_error{"Invalid operators in a binary arithmetic operator."};
 
                     } || target::category{} <<= args(std::move(firstArg), std::move(secondArg));
 
@@ -100,7 +100,7 @@ namespace cynth::syn {
 
                         } | [] (auto, auto) -> esl::result<ResolvedValue> {
                             // TODO: Separate the case of two different numeric types for a better error message.
-                            return esl::result_error{"This operation can only be performed with numeric values."};
+                            return esl::result_error{"Invalid operators in a binary arithmetic operator."};
 
                         } || target::category{} <<= args(firstArg.type, secondArg.type);
 
@@ -116,25 +116,25 @@ namespace cynth::syn {
         constexpr auto unArith = [] (context::Main & ctx, auto const & compOp, auto const & runOp) {
             return [&] (ResolvedValue arg) {
                 return [&] (CompleteValue arg) {
-                    // Both comp-time arguments:
+                    // Comp-time argument:
                     return [&] <interface::numericValue Value> (Value arg) -> esl::result<ResolvedValue> {
                         auto result = compOp(arg.get());
                         return ResolvedValue{CompleteValue{Value{result}}};
 
                     } | [] (auto) -> esl::result<ResolvedValue> {
-                        return esl::result_error{"This operation can only be performed with numeric values."};
+                        return esl::result_error{"Invalid operand in a unary arithmetic operator."};
 
                     } || target::category{} <<= std::move(arg);
 
                 } | [&] (auto arg) {
-                    // At least one run-time argument:
+                    // Run-time argument:
                     return [&] (auto arg) {
-                        return [&] <interface::numericType Type> (Type, Type) -> esl::result<ResolvedValue> {
+                        return [&] <interface::numericType Type> (Type) -> esl::result<ResolvedValue> {
                             auto result = runOp(Type{}, arg.expression);
                             return ResolvedValue{TypedExpression{Type{}, result}};
 
                         } | [] (auto) -> esl::result<ResolvedValue> {
-                            return esl::result_error{"This operation can only be performed with numeric values."};
+                            return esl::result_error{"Invalid operand in a unary arithmetic operator."};
 
                         } || target::category{} <<= arg.type;
 
@@ -155,8 +155,7 @@ namespace cynth::syn {
                         return ResolvedValue{CompleteValue{sem::value::Bool{result}}};
 
                     } | [] (auto, auto) -> esl::result<ResolvedValue> {
-                        // TODO: Separate the case of two different simple types for a better error message.
-                        return esl::result_error{"This operation can only be performed with simple values."};
+                        return esl::result_error{"Invalid operands in a comparison operator."};
 
                     } || target::category{} <<= args(std::move(firstArg), std::move(secondArg));
 
@@ -168,8 +167,7 @@ namespace cynth::syn {
                             return ResolvedValue{TypedExpression{sem::type::Bool{}, result}};
 
                         } | [] (auto, auto) -> esl::result<ResolvedValue> {
-                            // TODO: Separate the case of two different simple types for a better error message.
-                            return esl::result_error{"This operation can only be performed with simple values."};
+                            return esl::result_error{"Invalid operands in a comparison operator."};
 
                         } || target::category{} <<= args(firstArg.type, secondArg.type);
 
@@ -191,7 +189,7 @@ namespace cynth::syn {
                         return ResolvedValue{CompleteValue{sem::value::Bool{result}}};
 
                     } | [] (auto, auto) -> esl::result<ResolvedValue> {
-                        return esl::result_error{"This operation can only be performed with boolean values."};
+                        return esl::result_error{"Invalid operands in a binary logical operator."};
 
                     } || target::category{} <<= args(std::move(firstArg), std::move(secondArg));
 
@@ -203,7 +201,7 @@ namespace cynth::syn {
                             return ResolvedValue{TypedExpression{sem::type::Bool{}, result}};
 
                         } | [] (auto, auto) -> esl::result<ResolvedValue> {
-                            return esl::result_error{"This operation can only be performed with boolean values."};
+                            return esl::result_error{"Invalid operands in a binary logical operator."};
 
                         } || target::category{} <<= args(firstArg.type, secondArg.type);
 
@@ -225,7 +223,7 @@ namespace cynth::syn {
                         return ResolvedValue{CompleteValue{sem::value::Bool{result}}};
 
                     } | [] (auto) -> esl::result<ResolvedValue> {
-                        return esl::result_error{"This operation can only be performed with boolean values."};
+                        return esl::result_error{"Invalid operand in a unary logical operator."};
 
                     } || target::category{} <<= args(std::move(arg));
 
@@ -237,7 +235,7 @@ namespace cynth::syn {
                             return ResolvedValue{TypedExpression{sem::type::Bool{}, result}};
 
                         } | [] (auto) -> esl::result<ResolvedValue> {
-                            return esl::result_error{"This operation can only be performed with boolean values."};
+                            return esl::result_error{"Invalid operand in a unary logical operator."};
 
                         } || target::category{} <<= args(arg.type);
 

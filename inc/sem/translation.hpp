@@ -143,6 +143,8 @@ namespace cynth {
 
         constexpr char const * empty = "empty";
 
+        // TODO: integral and floating types should be connected with the main config file.
+
         // Note: str::floating and str::integral are only used to construct names,
         // while these are actual C type names.
         constexpr char const * boolean  = "bool"; // Requires <stdbool.h>.

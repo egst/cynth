@@ -1170,7 +1170,7 @@ return parser::make_AUTO();
 case 54:
 YY_RULE_SETUP
 #line 119 "gen/lexer.l"
-return parser::make_ILLEGAL();
+return parser::make_ILLEGAL(yytext);
 	YY_BREAK
 case 55:
 YY_RULE_SETUP

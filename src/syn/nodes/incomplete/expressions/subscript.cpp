@@ -112,9 +112,9 @@ namespace cynth::syn {
                         auto const & bufferType  = type;
 
                         auto allocName = array_nodes::arrayAllocation(ctx, tpl::TypeSpecifier{c::floatingType()}, bufferType.size);
-                        array_nodes::bulkArrayInitialization(ctx, allocName, bufferValue.allocation);
+                        array_nodes::bulkArrayInitialization(ctx, allocName, bufferValue.allocation + ".data"); // TODO: Don't use member access string directly.
                         return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
-                            sem::value::Array{allocName, CompleteType{bufferType}, bufferType.size}
+                            sem::value::Array{allocName, CompleteType{sem::type::Float{}}, bufferType.size}
                         }});
 
                     } | [&] (TypedExpression const & container) -> ExpressionProcessingResult {
@@ -124,7 +124,7 @@ namespace cynth::syn {
                         auto allocName = array_nodes::arrayAllocation(ctx, tpl::TypeSpecifier{c::floatingType()}, bufferType.size);
                         array_nodes::bulkArrayInitialization(ctx, allocName, container.expression);
                         return esl::init<esl::tiny_vector>(ResolvedValue{CompleteValue{
-                            sem::value::Array{allocName, CompleteType{bufferType}, bufferType.size}
+                            sem::value::Array{allocName, CompleteType{sem::type::Float{}}, bufferType.size}
                         }});
 
                     } || target::category{} <<= container;

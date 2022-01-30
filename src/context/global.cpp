@@ -34,6 +34,20 @@ namespace cynth::context {
         initializations.push_back(code);
     }
 
+    bool Global::insertOutputBuffer (std::string const & name, std::string const & var) {
+        if (outputBuffers.contains(name))
+            return false;
+        outputBuffers.insert({name, var});
+        return true;
+    }
+
+    bool Global::insertInputValue (std::string const & type, std::string const & name, std::string const & var) {
+        if (inputValues.contains(name))
+            return false;
+        inputValues.insert({name, {type, var}});
+        return true;
+    }
+
     void Global::registerGenerator (std::string const & buff, Integral size, std::string const & fun, bool time, std::string const & closure) {
         generators.push_back(GeneratorEntry{buff, size, fun, time, closure});
     }

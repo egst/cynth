@@ -10,7 +10,7 @@ STD = c++20
 
 # C standard for the generated C code:
 # Support of the GNU C dialect required.
-CYNTH_STD = gnu17
+SYNTH_STD = gnu17
 
 PLATFORM = WINDOWS
 #PLATFORM = LINUX
@@ -34,23 +34,24 @@ CROSSCOMP_INC    += /mnt/c/msys64/mingw64/lib/clang/10.0.0/include
 
 # Directory names:
 # (Including the trailing slash. Leave empty for the project root directory. Add leading slash for absolute paths.)
-INC        = inc/
-EXTERN     = ext/
-SRC        = src/
-DEP_SRC    = dep/src/
-DEP_ENTRY  = dep/entry/
-DEP_LINK   = dep/link/
-BIN_SRC    = obj/src/
-BIN_ENTRY  = obj/entry/
-BIN_EXTERN = obj/ext/
-BIN_DIST   = dist/
-GEN        = gen/
-ENTRY      = entry/
-TEST_IN    = tests/in/
-TEST_C     = tests/out/c/
-TEST_DEBUG = tests/out/debug/
-TEST_SYNTH = tests/out/synth/
-TEST_COMPL = tests/out/complete/
+INC            = inc/
+EXTERN         = ext/
+SRC            = src/
+DEP_SRC        = dep/src/
+DEP_ENTRY      = dep/entry/
+DEP_LINK       = dep/link/
+BIN_SRC        = obj/src/
+BIN_ENTRY      = obj/entry/
+BIN_EXTERN     = obj/ext/
+BIN_DIST       = dist/
+GEN            = gen/
+ENTRY          = entry/
+TEST_IN        = tests/in/
+TEST_C_DEBUG   = tests/out/c/debug/
+TEST_C_STAT    = tests/out/c/static/
+TEST_BIN_DEBUG = tests/out/bin/debug/
+TEST_BIN_STAT  = tests/out/bin/static/
+TEST_BIN_COMPL = tests/out/bin/complete/
 
 # Generated files location:
 # (Excluding the SRC or INC directory and the EXT_IMPL or EXT_HEAD extension.)
@@ -65,26 +66,26 @@ EXT_HEAD  = .hpp
 EXT_DEP   = .mk
 #EXT_DEP  = .d
 EXT_OBJ   = .o
-EXT_EXE   =
-#EXT_EXE  = .exe
+#EXT_EXE   =
+EXT_EXE  = .exe
 EXT_CYNTH = .cth
 
 # Entry points:
 # (Select entry point implementation files to compile to a final executable.)
 # (Excluding the ENTRY directory and the EXT_IMPL extension.)
-#ENTRY_POINTS += test
 ENTRY_POINTS += compiler
-ENTRY_POINTS += control
+#ENTRY_POINTS += test
+#ENTRY_POINTS += control
 
 # Compiler:
 # (Tested with GCC 10, Clang 10 and 11.)
 #COMPILER = g++
 #COMPILER = g++-10
-#COMPILER = clang++
+COMPILER = clang++
 #COMPILER = clang++-10
 #COMPILER = clang++-11
 # Note: This is just to work around some path problems on my machine:
-COMPILER = C:\msys64\mingw64\bin\clang++
+#COMPILER = C:\msys64\mingw64\bin\clang++
 
 # GCC (gcc and g++), Flex and Bison executable names/locations:
 # (GCC must be installed even when compiling with Clang. It is used for dependencies generation.)
@@ -101,6 +102,7 @@ COMP_OPTIONS += -fdiagnostics-color=always
 COMP_OPTIONS += -ftemplate-backtrace-limit=0
 COMP_OPTIONS += -fvisibility-inlines-hidden
 #COMP_OPTIONS += -fsanitize=undefined
+#COMP_OPTIONS += -pthread
 
 # More options:
 # * linkage (with the chosen compiler)
@@ -116,10 +118,10 @@ BISON_OPTIONS      += -Wcounterexamples
 
 # Generated Cynth program compilation options:
 # (Do not set the -std and -I options here.)
-CYNTH_COMP_OPTIONS += -Wall -O2
-CYNTH_COMP_OPTIONS += -Wno-unused-variable
-CYNTH_COMP_OPTIONS += -Wno-unused-but-set-variable
-CYNTH_COMP_OPTIONS += -Wno-unused-label
+SYNTH_COMP_OPTIONS += -Wall -O2
+SYNTH_COMP_OPTIONS += -Wno-unused-variable
+SYNTH_COMP_OPTIONS += -Wno-unused-but-set-variable
+SYNTH_COMP_OPTIONS += -Wno-unused-label
 
 # Macro definitions:
 DEFS +=

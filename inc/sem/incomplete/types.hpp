@@ -35,6 +35,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -60,6 +61,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -85,6 +87,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -111,6 +114,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -169,6 +173,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -186,6 +191,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -201,6 +207,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -220,6 +227,7 @@ namespace cynth::sem {
             interface::TypeSpecifierTranslationResult translateTypeSpecifier () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 
@@ -243,6 +251,7 @@ namespace cynth::sem {
             interface::DisplayResult                  display () const;
             interface::DefinitionProcessingResult     processDefinition (
                 context::Main &,
+                std::string   const &,
                 ResolvedValue const *
             ) const;
 

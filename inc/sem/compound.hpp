@@ -159,7 +159,7 @@ namespace cynth::sem {
             TypedName      // Run-time non-static value => Typed name of a runtime context member
         >;
 
-    };
+    }
 
     struct ResolvedCapture: esl::category<ResolvedCapture, detail::compound::ResolvedCaptureVariant> {
         using base = esl::category<ResolvedCapture, detail::compound::ResolvedCaptureVariant>;

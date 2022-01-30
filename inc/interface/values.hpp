@@ -172,6 +172,6 @@ namespace cynth::interface {
                 return {esl::result_error{"This value cannot be translated."}};
             }
         );
-    };
+    }
 
 }

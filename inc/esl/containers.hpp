@@ -56,7 +56,7 @@ namespace esl {
                 insert_cat(std::forward<First>(first), std::forward<Rest>(rest)...);
 
             return std::forward<First>(first);
-        };
+        }
 
         /** Concat using the simplified insert_back method in tiny_vector. (Until I implement the standard insert.) */
         //template <typename T, template <typename...> typename V>
@@ -77,7 +77,7 @@ namespace esl {
                 insert_back_cat(std::forward<First>(first), std::forward<Rest>(rest)...);
 
             return std::forward<First>(first);
-        };
+        }
 
         // Note: Exposed as lambda functions to allow passing them to other functions without template parameters.
     }

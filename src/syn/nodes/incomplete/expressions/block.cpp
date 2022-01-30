@@ -62,21 +62,22 @@ namespace cynth::syn {
             bool runtime = false;
         };
 
-        esl::result<BlockResult> processBlock (
+        esl::optional_result<BlockResult> processBlock (
             context::Main & ctx,
             esl::component_vector<category::Statement> const & statements
         ) {
             auto before = ctx.count();
             BlockResult blockResult = {};
+            bool never = true;
 
             for (auto const & statement: statements) {
-
                 using Result = esl::result<bool>;
 
-                auto result = [] (NoReturn const &) -> Result {
+                auto result = [] (NoReturn) -> Result {
                     return next;
 
-                } | [&] (sem::Return const & ret) -> Result {
+                } | [&] (sem::Return ret) -> Result {
+                    never = false;
 
                     if (blockResult.returned.empty())
                         blockResult.returned.reserve(ret.returned.size());
@@ -87,12 +88,11 @@ namespace cynth::syn {
                         return esl::result_error{"Returning less values than last time."};
 
                     for (auto const & [i, returned]: esl::enumerate(ret.returned)) {
-
                         auto returnedType = interface::returnedType(returned);
                         bool init = i >= blockResult.returned.size();
 
                         if (init) {
-                            // First reurn:
+                            // First return:
                             [&] (ReturnedValues const & values) {
                                 // TODO: tiny_vector(begin_it, end_it) results in segfaults.
                                 // I don't think it's implemented directly and maybe the inherited implementation
@@ -121,8 +121,13 @@ namespace cynth::syn {
                         [&] (ReturnedValues const & values, ReturnedValues & entry) {
                             entry.insert_back(values.begin(), values.end());
 
-                        } | [&] (ReturnedValues const &, auto const &) {
-                            // Ignore those.
+                        } | [&] (ReturnedValues const & values, CompleteType &) {
+                            ReturnedValues copy;
+                            copy.insert_back(values.begin(), values.end());
+                            entry = Returned{copy};
+
+                        } | [&] (CompleteType const &, ReturnedValues const &) {
+                            // Ignore those. (Some previous compile-time return would have already eliminated this one.)
 
                         } | [&] (CompleteType const &, auto const &) {
                             blockResult.runtime = true;
@@ -147,16 +152,20 @@ namespace cynth::syn {
                 // If any local statements added, enforce the run-time state.
                 blockResult.runtime = true;
 
+            if (never)
+                return {};
+
             return blockResult;
         };
 
         struct BlockExpressionResult {
             esl::tiny_vector<ResolvedValue> resolved;
             esl::tiny_vector<std::string>   declarations;
+            esl::tiny_vector<std::pair<std::size_t, CompleteValue>> returns; // comp-time returns
         };
 
         esl::result<BlockExpressionResult> processBlockExpression (
-            context::Global & global,
+            context::Main & ctx,
             std::string const * tupleVar,
             esl::tiny_vector<Returned> const & returned
         ) {
@@ -167,7 +176,7 @@ namespace cynth::syn {
                 auto tupleElement = tupleVar ? c::tupleElement(*tupleVar, i) : "<result>";
                 // TODO: Take care of nullptr tupleVar properly...
 
-                auto result = [&] (ReturnedValues const & values) {
+                auto result = [&, i = i] (ReturnedValues const & values) {
                     return [&] (sem::type::Function const & type) -> esl::result<void> {
                         // Partially run-time function values:
                         if (values.size() == 0) // Implemetation error.
@@ -178,6 +187,14 @@ namespace cynth::syn {
                                 if (!fun.runtimeClosure()) {
                                     // A single function with no run-time capture:
                                     blockResult.resolved.push_back(CompleteValue{fun});
+
+                                    // TODO: Find a better way to solve this:
+                                    auto dummyClosure = c::declaration(
+                                        "struct { int branch; union { struct cth_empty v0; } data; }",
+                                        name
+                                    );
+                                    blockResult.declarations.push_back(dummyClosure);
+
                                     return {};
                                 }
 
@@ -197,11 +214,11 @@ namespace cynth::syn {
 
                             // Multiple functions combined in a run-time switch function:
 
-                            auto & def = global.storeValue<FunctionDefinition>(FunctionDefinition{
+                            auto & def = ctx.global.storeValue<FunctionDefinition>(FunctionDefinition{
                                 .implementation = FunctionDefinition::Switch{esl::make_component_vector(functions)},
                                 .type           = type,
-                                .closureType    = c::closureType(c::id(global.nextId()))
-                                //.name           = c::functionName(c::id(global.nextId()))
+                                .closureType    = c::closureType(c::id(ctx.global.nextId()))
+                                //.name           = c::functionName(c::id(ctx.global.nextId()))
                             });
                             auto newFun = sem::value::Function{def, tupleElement};
                             //auto decl = c::declaration(*def.closureType, name);
@@ -209,21 +226,32 @@ namespace cynth::syn {
                             auto decl = c::declaration(c::structure(*def.closureType), name);
                             blockResult.declarations.push_back(decl);
                             blockResult.resolved.push_back(CompleteValue{newFun});
+
+                            // TODO: This will complicate things with passing functions as arguments in the future.
+                            // This is done only because the closure type needs to be defined.
+                            // I should find a way to do this without fully defining the function.
+                            ctx.defineFunction(def);
+
                             return {};
 
                         } || target::result{} <<= esl::unite_results <<=
                             [] (auto value) { return std::move(value).template get<sem::value::Function>(); } ||
                             target::tiny_vector{} <<= std::move(values);
 
-                    } | [&] (auto const &) -> esl::result<void> {
+                    } | [&, i = i] (auto const &) -> esl::result<void> {
                         // Compile-time value:
                         // This only happens when there is only one possible return value independent from any runtime conditions.
+                        // Update: Nope, this also happens when there is a certain comp-time value return
+                        // but it's after some possible run-time value returns. In such cases, the result value needs
+                        // to be set to this comp-time value up front.
                         if (values.size() > 1) // Implementation error.
                             return esl::result_error{"Returning multiple values in a compile-time block return."};
                         if (values.size() == 0)
                             return {}; // Returning void.
                         auto const & value = values.front();
                         blockResult.resolved.push_back(value);
+                        blockResult.returns.emplace_back(i, value);
+                        blockResult.declarations.push_back("");
 
                         // TODO: What about arrays? (value copy...)
                         // Well, they should be returned as pointers, so I don't think anything special needs to be done.
@@ -261,10 +289,14 @@ namespace cynth::syn {
 
         auto tupleVar = c::tupleVariableName(c::id(outerScope.nextId()));
 
-        return [&] (auto blockResult) -> ExpressionProcessingResult {
+        return [] (NoReturn) -> ExpressionProcessingResult {
+            return esl::result_error{"Block expression never returns."};
+
+        } | [&] (BlockResult blockResult) -> ExpressionProcessingResult {
             if (!blockResult.always)
                 return esl::result_error{"Block expression does not always return."};
                 // Note: This actually includes the case when it never returns.
+                // Update: Does it really? The "never" case should be handled by the NoReturn overload above.
 
             // Fully compile-time block expression:
             if (!blockResult.runtime) {
@@ -286,9 +318,20 @@ namespace cynth::syn {
             // At least partially run-time block expression:
             return [&] (auto blockResult) -> ExpressionProcessingResult {
                 auto head = c::blockExpressionBegin(tupleVar);
-                auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
                 auto ret  = c::indented(c::blockExpressionReturn());
                 auto end  = c::statement(c::blockExpressionEnd());
+                std::vector<std::string> compReturns;
+                compReturns.reserve(blockResult.returns.size());
+                for (auto const & [i, val]: blockResult.returns) {
+                    auto tr = interface::translateValue(blockScope) || target::category{} <<= val;
+                    if (!tr) return tr.error();
+                    compReturns.push_back(c::indented(c::statement(c::returnValue(i, tr->expression))));
+                    auto trt = interface::translateType || target::category{} <<= tr->type;
+                    if (!trt) return trt.error();
+                    blockResult.declarations[i] = c::declaration(*trt, c::tupleElementName(i));
+                }
+                auto rets = c::join("", compReturns);
+                auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));
 
                 /***
                 __auto_type <tupvar> = ({
@@ -298,20 +341,22 @@ namespace cynth::syn {
                         <type2> e1;
                         // ...
                     } result;
+                    result.e<i> = <compvalI> # for every comp-time returns
                     <body>
                     ret: result;
                 });
                 ***/
                 outerScope.insertStatement(head);
                 outerScope.insertStatement(init);
+                outerScope.insertStatement(rets);
                 outerScope.mergeChild(blockScope);
                 outerScope.insertStatement(ret);
                 outerScope.insertStatement(end);
 
                 return blockResult.resolved;
-            } || target::result{} <<= processBlockExpression(outerScope.global, &tupleVar, blockResult.returned);
+            } || target::result{} <<= processBlockExpression(outerScope, &tupleVar, blockResult.returned);
 
-        } || target::result{} <<= processBlock(blockScope, statements);
+        } || target::optional_result{} <<= processBlock(blockScope, statements);
     }
 
     namespace {
@@ -465,79 +510,89 @@ namespace cynth::syn {
         auto initScope  = mainScope.makeBranchingChild(branching);
         auto blockScope = initScope.makeBranchingChild(branching);
 
-        return [&] (auto blockResult) -> ExpressionProcessingResult {
+        // TODO... Ignoring any initialization return value for now.
+        auto result = [&] (NoReturn) -> ExpressionProcessingResult {
+            return esl::init<esl::tiny_vector>(
+                ResolvedValue{CompleteValue{sem::value::Bool{true}}}
+            );
+
+        } | [&] (BlockResult blockResult) -> ExpressionProcessingResult {
             return [&] (auto blockResult) -> ExpressionProcessingResult {
-                auto init        = c::returnInitFromDeclarations(blockResult.declarations, true);
-                auto begin       = c::blockBegin();
-                auto end         = c::end();
-                auto ret         = c::mainReturn();
-                //auto indent    = c::indentation();
-                auto newLine     = c::newLine();
-                auto initFunName = c::global("init");
-                auto initHead    = c::inlineFunctionBegin("void", initFunName);
-                auto inits       = c::join("", mainScope.global.initializations);
-
-                /***
-                struct result {
-                    <type1> e0;
-                    <type2> e1;
-                    // ...
-                } result;
-                {
-                    <body>
-                }
-                ret:
-                ***/
-                initScope.insertStatement(c::inlineComment("Initialization:"));
-                initScope.insertStatement(init);
-                initScope.insertStatement(begin);
-                initScope.mergeChild(blockScope);
-                initScope.insertStatement(end);
-                initScope.insertStatement(ret);
-                initScope.insertStatement("printf(\"Synthesizer initialized.\\n\"); " + c::inlineComment("TODO"));
-
-                auto initLocal = c::join("", initScope.statements);
-                auto initAlloc = c::join("", initScope.function.data);
-                auto initFun = c::join("",
-                    initHead,
-                    c::indented(c::join("",
-                        inits,
-                        initAlloc,
-                        initLocal
-                    )),
-                    end
-                );
-                mainScope.global.insertFunction(initFun);
-
-                // TODO: Initialization output.
-
-                auto srate = "double sample_rate = " + std::to_string(sampleRate) + "; // kHz";
-
-                if (synthOutput == SynthOutput::debug) {
-                    mainScope.insertStatement(c::statement(c::inlineCall(initFunName)));
-                    mainScope.insertStatement(srate);
-                    emulationLoop(mainScope);
-                    emulationDebug(mainScope);
-                    emulationSuccess(mainScope);
-
-                } else { // Note: SynthOutput::dynamic not supported yet.
-                    mainScope.insertStatement(srate);
-                    emulationStep(mainScope);
-                    emulationSuccess(mainScope);
-                }
-
                 return blockResult.resolved;
-            } || target::result{} <<= processBlockExpression(mainScope.global, nullptr, blockResult.returned);
+            } || target::result{} <<= processBlockExpression(mainScope, nullptr, blockResult.returned);
 
-        } || target::result{} <<= processBlock(blockScope, statements);
+        } || target::optional_result{} <<= processBlock(blockScope, statements);
 
-        return {};
+        //auto init        = c::returnInitFromDeclarations(blockResult.declarations, true);
+        auto init        = c::returnInitFromDeclarations(std::vector<std::string>{}, true);
+        auto begin       = c::blockBegin();
+        auto end         = c::end();
+        auto ret         = c::mainReturn();
+        //auto indent    = c::indentation();
+        auto newLine     = c::newLine();
+        auto initFunName = c::global("init");
+        auto initHead    = c::inlineFunctionBegin("void", initFunName);
+        auto inits       = c::join("", mainScope.global.initializations);
+
+        /***
+        struct result {
+            <type1> e0;
+            <type2> e1;
+            // ...
+        } result;
+        {
+            <body>
+        }
+        ret:
+        ***/
+        initScope.insertStatement(c::inlineComment("Initialization:"));
+        initScope.insertStatement(init);
+        initScope.insertStatement(begin);
+        initScope.mergeChild(blockScope);
+        initScope.insertStatement(end);
+        initScope.insertStatement(ret);
+        initScope.insertStatement("printf(\"Synthesizer initialized.\\n\"); " + c::inlineComment("TODO"));
+
+        auto initLocal = c::join("", initScope.statements);
+        auto initAlloc = c::join("", initScope.function.data);
+        auto initFun = c::join("",
+            initHead,
+            c::indented(c::join("",
+                inits,
+                initAlloc,
+                initLocal
+            )),
+            end
+        );
+        mainScope.global.insertFunction(initFun);
+
+        // TODO: Initialization output.
+
+        auto srate = "double sample_rate = " + std::to_string(sampleRate) + "; // kHz";
+
+        if (synthOutput == SynthOutput::debug) {
+            mainScope.insertStatement(c::statement(c::inlineCall(initFunName)));
+            mainScope.insertStatement(srate);
+            emulationLoop(mainScope);
+            emulationDebug(mainScope);
+            emulationSuccess(mainScope);
+
+        } else { // Note: SynthOutput::dynamic not supported yet.
+            mainScope.insertStatement(srate);
+            emulationStep(mainScope);
+            emulationSuccess(mainScope);
+        }
+
+        return result;
     }
 
     StatementProcessingResult node::Block::processStatement (context::Main & outerScope) const {
         auto blockScope = outerScope.makeScopeChild();
 
-        return [&] (auto blockResult) -> StatementProcessingResult {
+        return [&] (NoReturn) -> StatementProcessingResult {
+            return NoReturn{};
+
+        } | [&] (BlockResult blockResult) -> StatementProcessingResult {
 
             if (blockResult.runtime) {
                 // At least partially run-time block statement:
@@ -560,7 +615,7 @@ namespace cynth::syn {
                 .always   = blockResult.always
             };
 
-        } || target::result{} <<= processBlock(blockScope, statements);
+        } || target::optional_result{} <<= processBlock(blockScope, statements);
     }
 
     NameExtractionResult node::Block::extractNames (context::Lookup & outerScope) const {

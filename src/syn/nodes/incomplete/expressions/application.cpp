@@ -135,11 +135,13 @@ namespace cynth::syn {
     }
 
     ExpressionProcessingResult node::Application::processExpression (context::Main & ctx) const {
-        return [&] (auto f, auto args) -> ExpressionProcessingResult {
+        return [&] (auto f, auto arguments) -> ExpressionProcessingResult {
             auto valResult = std::move(f).template get<CompleteValue>();
-            if (!valResult) return valResult.error();
+            if (!valResult) //return valResult.error();
+                return esl::result_error{"Calling a non-function value."};
             auto funResult = valResult->template get<sem::value::Function>();
-            if (!funResult) return funResult.error();
+            if (!funResult) //return funResult.error();
+                return esl::result_error{"Calling a non-function value."};
             auto & fun = *funResult;
 
             if (!fun.closureVariable) {
@@ -152,8 +154,8 @@ namespace cynth::syn {
                         compargs.push_back(value);
                     } | [] (TypedExpression const &) {
                         // skip
-                    } || target::nested<target::tiny_vector, target::category>{} <<= args;
-                    if (compargs.size() == args.size()) {
+                    } || target::nested<target::tiny_vector, target::category>{} <<= arguments;
+                    if (compargs.size() == arguments.size()) {
                         // Comp-time arguments only:
                         auto evalResult = comptimeApplication(ctx, fun.valueType, *implResult, compargs);
                         if (evalResult.has_error()) return evalResult.error();
@@ -164,13 +166,23 @@ namespace cynth::syn {
             }
 
             // Run-time capture or some arguments run-time:
-            return [&] (auto args) -> ExpressionProcessingResult {
+            return [&] (auto arguments) -> ExpressionProcessingResult {
+                std::vector<std::string> translArgs;
+                translArgs.reserve(arguments.size());
+                if (arguments.size() != fun.valueType.in.size())
+                    return esl::result_error{"Wrong number of arguments."};
+                for (auto const & [arg, type]: esl::zip(arguments, fun.valueType.in)) {
+                    if (!(interface::sameTypes || target::category{} <<= args(arg.type, type)))
+                        return esl::result_error{"Wrong argument types."};
+                    translArgs.push_back(arg.expression);
+                }
+
                 auto id = ctx.defineFunction(fun.definition);
                 if (!id) return id.error();
                 // TODO: "NULL" should be in translation.hpp
                 //auto closure    = fun.closureVariable ? c::addressof(*fun.closureVariable) : "NULL";
                 auto closure    = fun.closureVariable.value_or(c::emptyValue());
-                auto call       = c::call(id->name, closure, args);
+                auto call       = c::call(id->name, closure, translArgs);
                 auto resultName = c::tupleVariableName(c::id(ctx.nextId()));
                 auto resultDef  = c::statement(c::definition(c::autoType(), resultName, call));
 
@@ -213,8 +225,8 @@ namespace cynth::syn {
                 } || target::component_vector_tiny_result{} <<= fun.valueType.out;
 
             } || target::result{} <<=
-                expression || target::nested<target::result, target::tiny_vector>{} <<=
-                esl::unite_results <<= interface::translateResolvedValue(ctx) || target::tiny_vector{} <<= args;
+                //expression || target::nested<target::result, target::tiny_vector>{} <<=
+                esl::unite_results <<= interface::translateResolvedValue(ctx) || target::tiny_vector{} <<= arguments;
 
             return {};
 

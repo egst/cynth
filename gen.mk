@@ -32,7 +32,7 @@ $(SRC)$(IMPL_PARSER)$(EXT_IMPL) $(INC)$(HEAD_PARSER)$(EXT_HEAD): $(GEN)parser.y
 	$(call INFO,Tweaking the generated parser a bit...)
 	sed -i 's/yylhs.value.emplace< cynth::syn::[^ ]* > ();/yylhs.value.emplace< int > (); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 	# TODO:
-	sed -i 's/yylhs.value.as< \(cynth::syn::[^ ]*\) > () = \([^;]*\);/yylhs.value.emplace< \1 > ( \2 ); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
+	#sed -i 's/yylhs.value.as< \(cynth::syn::[^ ]*\) > () = \([^;]*\);/yylhs.value.emplace< \1 > ( \2 ); \/\/ Modified./g' $(SRC)$(IMPL_PARSER)$(EXT_IMPL)
 
 # Generating lexer files:
 $(SRC)$(IMPL_LEXER)$(EXT_IMPL): $(GEN)lexer.l

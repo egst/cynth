@@ -195,8 +195,8 @@ namespace cynth::sem {
                     /*c::inlined*/(c::inlineFunctionBegin(
                         c::floatingType(),
                         c::global(def::floatingModulo),
-                        c::declaration(c::integralType(), first),
-                        c::declaration(c::integralType(), second)
+                        c::declaration(c::floatingType(), first),
+                        c::declaration(c::floatingType(), second)
                     )) + c::newLine() +
                     c::functionBody(c::functionReturn(
                         c::inlineCall(

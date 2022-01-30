@@ -20,6 +20,10 @@
 #define CTH_SYNTHOUT_STAT    2
 #define CTH_SYNTHOUT_DYNAMIC 3
 
+// Apparently MS doesn't care about poluting global namespace... (Or is it a MinGW thing?)
+// (Same needs to be done for `interface` in some places.)
+#undef stdout
+
 namespace cynth {
 
     /**
@@ -61,5 +65,13 @@ namespace cynth {
     constexpr Platform    platform    = static_cast<Platform>(CTH_PLATFORM);
     constexpr DriverApi   driverApi   = static_cast<DriverApi>(CTH_DRIVERAPI);
     constexpr SynthOutput synthOutput = static_cast<SynthOutput>(CTH_SYNTHOUT);
+
+    // TODO: Set this up in the makefile
+    // and use these types instead of the types in sem/numeric_types and driver/controller
+    // and also to pick corresponding type names (strings) in sem/translation.
+    /*
+    using Integral = CTH_INTEGRAL;
+    using Floating = CTH_FLOATING;
+    */
 
 }

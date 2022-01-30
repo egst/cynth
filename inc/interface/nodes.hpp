@@ -2,10 +2,11 @@
 
 #include <concepts>
 
+#include "esl/concepts.hpp"
 #include "esl/containers.hpp"
 #include "esl/functional.hpp"
+#include "esl/lift.hpp"
 #include "esl/result.hpp"
-#include "esl/concepts.hpp"
 
 #include "context/lookup.hpp"
 #include "context/main.hpp"
@@ -118,7 +119,7 @@ namespace cynth::interface {
             interface::ArrayElementVector<sem::ResolvedValue> processed;
             processed.reserve(elems.size()); // Lower-bound size estimate.
             for (auto const & elem: elems) {
-                auto result = lift<Target>(processArrayElement(ctx))(elem);
+                auto result = esl::lift<Target>(processArrayElement(ctx))(elem);
                 if (!result) return result.error();
                 processed.insert_back(std::make_move_iterator(result->begin()), std::make_move_iterator(result->end()));
             }

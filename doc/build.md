@@ -12,6 +12,11 @@ The main makefile works on both Windows and Linux.
 On Linux, it uses shell to execute commands while on Windows it uses CMD.
 Other makefiles (`gen.mk` and `dep.mk`) might not work on Windows currently.
 
+> ** Warning **
+>
+> There seem to be some proglems when compling with GCC. I must have done something not fully standard-compliant somewhere.
+> So please use Clang until I solve this and make the whole code base standard-compliant again.
+
 ## Structure
 
 The build process is separated into three parts:
@@ -73,9 +78,12 @@ regeneration of these dependencies when the header dependencies change.
 `makefile` compiles implementation files from `src/` into object files in `bin/`
 and also links these object files into final executable files in `dist/` for every entry file in `entry/`.
 Both actions are performed by default but are also separated into phony targets `compile` and `link`.
+Additionally it can generate (on demand) outputs of test files (see `doc/testing.md`) and clangd configuration (`compile_commands.json`).
+*The clangd config is kept in the git repository for now, but it contains paths and other configurations specific to my machine.
+To generate a more fitting config, see available configurations in `config.mk`.*
 
 Each one of the makefiles contains a phony `clean` target for cleanup of the respective parts.
-For `makefile`, the cleanup is also separated into targets `clean-bin` and `clean-dist`.
+For `makefile`, the cleanup is also separated into targets `clean-bin`, `clean-dist`, `clean-tests` and `clean-clangd`.
 
 ## Pretty output
 

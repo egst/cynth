@@ -1,2 +1,146 @@
-#type Foo = Int;
-Int a;
+type Sample = Float;
+type Time   = Int;
+type Signal = Sample (Time);
+
+Int const small  = 16;
+Int const medium = 64;
+Int const large  = 128;
+Int const huge   = 1028;
+
+Int in note;
+Int in press;
+Int in release;
+Int in knob1;
+Int in knob2;
+
+Float realTime (Time time) Float (time) / srate;
+
+Sample (Sample) envelope = {
+    Float knobScale (Int value) Float (value) * .005;
+    Float pressTime   () realTime(press[]);
+    Float releaseTime () realTime(release[]);
+
+    Float envAttack  () knobScale(knob1[]) * 5.; // seconds
+    Float envDecay   () .05;                     // seconds
+    Float envRelease () knobScale(knob2[]) * 5.; // seconds
+    Float envSustain () .5;
+
+    return Sample fn (Sample sample) {
+        when (press[] > 0)
+            return sample;
+        Int a = 1;
+        return 1.;
+        //return sample;
+        //Sample a = sample * if (pressTime() < attackTime())
+        /*
+        return sample * if (releaseTime() > 0.)
+            if (releaseTime() < envRelease())
+                releaseTime () * -envSustain() / envRelease() // release
+            else
+                0.
+        else if (pressTime() < envAttack())
+            pressTime() / envAttack() // attack
+        else if (pressTime() < envDecay())
+            (pressTime() - envAttack()) * (envSustain() - 1.) / envDecay() + envSustain() // decay
+        else
+            envSustain(); // sustain
+        */
+    }
+};
+
+Sample (Time) saw (Float amp, Float freq)
+    Sample fn (Time time)
+        amp * (2. * ((freq * realTime(time)) % 1.) - 1.);
+
+Sample () avg (buffer [small] input) Sample fn () {
+    //Int const n = small;
+    Int n = if (knob1[] > small) small else knob1[];
+    Sample result = 0.;
+    for (Sample const sample in input[])
+        result = result + sample / Sample (n);
+    return result;
+};
+
+Int const octave = 4;
+//Float note () freq[] * Float (octave);
+Float freq () notes[note[]] * Float (octave);
+Sample tone (Time time) saw(.9, freq())(time);
+
+//buffer [small] b1 = buffer [small] (saw(.9, 440.));
+buffer [small] b1 = buffer [small] (tone);
+
+Signal lfo = saw(.5, 10.);
+Signal flfo = Sample fn (Time time) saw(5., 5.)(time) + 5.;
+Signal mlfo (Float freq) saw(.5, freq);
+
+//buffer [1] out out1 = buffer [1] (avg(b1));
+//buffer [1] out out1 = buffer [1] (b1); // TODO: There is a problem with buffer conversions to smaller sizes.
+buffer [1] out out1 = buffer [1] (Sample fn (Time time) {
+    //return avg(b1)();
+    return envelope(avg(b1)());
+    //return envelope(avg(b1)() * lfo(time));
+    //return (avg(b1)() * lfo(time));
+    //return avg(b1)() * mlfo(flfo(time))(time);
+});
+
+### Notes: #####################
+
+// Predefined variables.
+// These are regular variables.
+// Note that they can be shadowed in nested scopes.
+
+// Math constants - Float:
+#pi;
+#e;
+
+// Sample rate - Float, Hz:
+#srate;
+
+// Frequencies of notes from C1 to B1 - Float [12], Hz:
+#notes;
+
+// Special variables.
+// When a variable of a specific name and type is defined by a user,
+// it might be treated in a special way.
+// This feature will be eliminated over time, once better mechanisms are implemented.
+// However, for now, IO is handled this way.
+
+// Controls - special names
+
+// Binary switch, default off: (on / off)
+#Bool  in switch1; // 1 / !
+#Bool  in switch2; // 2 / @
+#Bool  in switch3; // 3 / #
+// Integral values in the [0, 255] range, default 0: (+1 / -1)
+#Int   in dial1; // 4 / $
+#Int   in dial2; // 5 / %
+#Int   in dial3; // 6 / ^
+// Real values in the [0, 1] range, default 0: (+0.05 / -0.05)
+#Float in knob1; // 7 / &
+#Float in knob2; // 8 / *
+#Float in knob3; // 9 / (
+
+// Note that this does not create a mappable input since it only references an existing one,
+// even though it does have one of the special names.
+#Float in knob3 = knob2;
+
+// Real values representing the frequencies in the [C1, C2] range:
+#Float in freq; // awsedftgyhujk
+// Time from the last key press/release. (Can be used to calculate envelope.)
+#Int in press;
+#Int in release;
+// press is always >= 0
+// press is < 0 when no key is pressed
+// release is >= 0 when no key is pressed
+// release is < 0 when a key is pressed
+// TODO: Can't decide, if the following alternative would be better or not:
+// press is >= 0 only when a key is pressed. Otherwise it's < 0.
+
+// Special buffers:
+// (TODO)
+
+// Output buffers:
+#buffer [1] out out1;
+#buffer [1] out out2;
+
+################################

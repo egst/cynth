@@ -81,6 +81,7 @@ namespace cynth::syn {
             } | [&] (TypedExpression const & expr) -> Returned {
                 // Run-time value:
                 auto ret = c::returnValue(i, expr.expression);
+                //runtime = true; // TODO: Was this removed at some point? Why?
 
                 /***
                 result.e<i> = <expr>;

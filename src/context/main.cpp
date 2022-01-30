@@ -26,10 +26,6 @@ namespace cynth::context {
     using sem::FunctionDefinition;
     using sem::ResolvedCapture;
     using sem::Variable;
-    using sem::CompleteType;
-    using sem::CompleteValue;
-    using sem::TypedExpression;
-    using sem::ResolvedValue;
 
     void Main::insertStatement (std::string const & code) {
         if (code.empty()) return;
@@ -338,6 +334,8 @@ namespace cynth::context {
         auto types       = c::join("", global.types);
         auto depTypes    = c::join("", global.dependantTypes);
         auto funs        = c::join("", global.functions);
+        auto inVals      = global.inputValues;
+        auto outBuffs    = global.outputBuffers;
         auto end         = c::end();
 
         // TODO: esl::join returns a new line for empty input
@@ -374,12 +372,56 @@ namespace cynth::context {
 
         case SynthOutput::stat:
             {
-                // TODO...
                 auto time    = c::declaration("int", "time");
                 auto runHead = c::inlineFunctionBegin("int", c::global("run"), time);
 
+                /***
+                float * cth_output_buffer (char const * name) {
+                    if (strcmp(name, "<name1>") == 0) return &<var1>; else
+                    if (strcmp(name, "<name2>") == 0) return &<var2>; else
+                    ...
+                    if (strcmp(name, "<nameN>") == 0) return &<varN>; else
+                    return NULL;
+                }
+                bool * cth_input_bool (char const * name) {
+                    ...
+                }
+                int * cth_input_int (char const * name) {
+                    ...
+                }
+                float * cth_input_float (char const * name) {
+                    ...
+                }
+                ***/
+
+
+                std::vector<std::string> getters;
+
+                std::vector<std::string> types = {"bool", "int", "float"};
+                for (auto const & type: types) {
+                    std::vector<std::string> cases;
+                    for (auto const & [name, entry]: inVals) if (entry.first == type)
+                        cases.push_back(indent + "if (strcmp(name, \"" + name + "\") == 0) return &" + entry.second + "; else ");
+                    cases.push_back(indent + "return NULL;");
+                    getters.push_back(
+                        type + " * cth_input_" + type + " (char const * name) {" + newLine +
+                        c::join("", cases) + newLine +
+                        "}"
+                    );
+                }
+                std::vector<std::string> buffCases;
+                for (auto const & [name, var]: outBuffs)
+                    buffCases.push_back(indent + "if (strcmp(name, \"" + name + "\") == 0) return " + var + ".data; else ");
+                buffCases.push_back(indent + "return NULL;");
+                getters.push_back(
+                    "float * cth_output_buffer (char const * name) {" + newLine +
+                    c::join("", buffCases) + newLine +
+                    "}"
+                );
+
                 return c::join("",
                     global,
+                    c::join("", getters),
                     runHead,
                     c::indented(c::join("",
                         funAlloc,

@@ -123,9 +123,9 @@ namespace cynth::interface {
 
         template <typename T>
         concept processDefinition = type<T> && requires (
-            T type, context::Main & ctx, sem::ResolvedValue const * definition
+            T type, context::Main & ctx, sem::ResolvedValue const * definition, std::string name
         ) {
-            { type.processDefinition(ctx, definition) } -> std::same_as<DefinitionProcessingResult>;
+            { type.processDefinition(ctx, name, definition) } -> std::same_as<DefinitionProcessingResult>;
         };
 
         /*
@@ -345,10 +345,10 @@ namespace cynth::interface {
     );
 
     constexpr auto processDefinition (context::Main & ctx) {
-        return [&ctx] (sem::ResolvedValue const & definition) {
+        return [&ctx] (std::string const & name, sem::ResolvedValue const & definition) {
             return esl::overload(
-                [&ctx, &definition] <has::processDefinition T> (T const & type) -> DefinitionProcessingResult {
-                    return type.processDefinition(ctx, &definition);
+                [&ctx, &name, &definition] <has::processDefinition T> (T const & type) -> DefinitionProcessingResult {
+                    return type.processDefinition(ctx, name, &definition);
                 },
                 [] (type auto const &) -> DefinitionProcessingResult {
                     return esl::result_error{"A definition of this type cannot be translated."};
@@ -358,14 +358,16 @@ namespace cynth::interface {
     }
 
     constexpr auto processDeclaration (context::Main & ctx) {
-        return esl::overload(
-            [&ctx] <has::processDefinition T> (T const & type) -> DeclarationProcessingResult {
-                return type.processDefinition(ctx, nullptr);
-            },
-            [] (type auto const &) -> DeclarationProcessingResult {
-                return esl::result_error{"A declaration of this type cannot be translated."};
-            }
-        );
+        return [&ctx] (std::string const & name) {
+            return esl::overload(
+                [&ctx, &name] <has::processDefinition T> (T const & type) -> DeclarationProcessingResult {
+                    return type.processDefinition(ctx, name, nullptr);
+                },
+                [] (type auto const &) -> DeclarationProcessingResult {
+                    return esl::result_error{"A declaration of this type cannot be translated."};
+                }
+            );
+        };
     }
 
     /*
