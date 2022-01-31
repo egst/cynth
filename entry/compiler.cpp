@@ -1,3 +1,4 @@
+#include "esl/component.hpp"
 #include <iostream>
 #include <tuple>
 
@@ -70,7 +71,7 @@ int main () {
     );
     auto noteValues = {
         sem::CompleteValue{sem::value::Float{32.7}},
-        sem::CompleteValue{sem::value::Float{32.65}},
+        sem::CompleteValue{sem::value::Float{34.65}},
         sem::CompleteValue{sem::value::Float{36.71}},
         sem::CompleteValue{sem::value::Float{38.89}},
         sem::CompleteValue{sem::value::Float{41.20}},
@@ -92,11 +93,39 @@ int main () {
     );
     //constexpr std::array<float,        13> frequencies = {32.7, 32.65, 36.71, 38.89, 41.20, 43.65, 46.25, 49.0, 51.91, 55.0, 58.27, 61.74, 65.41};
 
+    // Built-in functions:
+    auto sinDef = sem::FunctionDefinition{
+        /*
+        .implementation = sem::FunctionDefinition::Implementation{
+            // Dummy values:
+            .parameters = {},
+            .body       = syn::category::Expression{syn::node::Int{0}},
+            .closure    = sem::Closure{}
+        },
+        */
+        .implementation = sem::FunctionDefinition::Switch{},
+        .type = sem::type::Function{
+            .in  = esl::make_component_vector(std::array{sem::CompleteType{sem::type::Float{}}}),
+            .out = esl::make_component_vector(std::array{sem::CompleteType{sem::type::Float{}}})
+        },
+        .closureType = c::emptyType(),
+        .name = "cth_sin"
+    };
+    ctx.lookup.insertValue(
+        "sin",
+        {sem::Variable{sem::CompleteValue{sem::value::Function{
+            sinDef/*, std::make_optional(c::emptyValue())*/
+        }}}}
+    );
+
     // Built-in operations:
     ctx.global.insertFunction(sem::runtime::definition::floor());
     ctx.global.insertFunction(sem::runtime::definition::idiv());
     ctx.global.insertFunction(sem::runtime::definition::imod());
     ctx.global.insertFunction(sem::runtime::definition::fmod());
+    // TODO: Introduce some utilities to make this easier.
+    ctx.global.insertFunction("struct cth_tup$float cth_sin (struct cth_empty _, float a) { return (struct cth_tup$float) {sinf(a)}; }");
+    ctx.global.instantiateType(tpl::Tuple{.types = {tpl::TypeSpecifier{.type = "float"}}});
 
     // Internal library dependencies:
     ctx.global.insertInclude(c::inclusion("<math.h>"));

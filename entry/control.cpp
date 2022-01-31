@@ -22,10 +22,12 @@ constexpr bool windows = false;
 
 namespace {
 
+    using cynth::driver::Rack;
+
     //constexpr bool debug = true;
-    constexpr unsigned delay     = 10;    // Delay for keyboard controlls.
-    constexpr unsigned srate     = 41000; // TODO: Config...
-    constexpr unsigned step      = srate / delay;
+    constexpr unsigned delay    = 2; // Delay for keyboard controlls in ms.
+    constexpr unsigned knobDiff = 1;
+    constexpr unsigned knobDef  = 0;
 
     std::atomic<bool> stop = false;
 
@@ -62,23 +64,23 @@ namespace {
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
 
-    void switchOn (std::size_t n) {
+    void switchOn (int n) {
         *switches[n] = true;
         printf("[switch %i]: on\n", n + 1);
     }
 
-    void switchOff (std::size_t n) {
+    void switchOff (int n) {
         *switches[n] = false;
         printf("[switch %i]: off\n", n + 1);
     }
 
-    void knobUp (std::size_t n) {
-        *knobs[n] += 2;
+    void knobUp (int n) {
+        *knobs[n] += knobDiff;
         printf("[knob %i]: %i (+)\n", n + 1, *knobs[n]);
     }
 
-    void knobDown (std::size_t n) {
-        *knobs[n] -= 2;
+    void knobDown (int n) {
+        *knobs[n] -= knobDiff;
         printf("[knob %i]: %i (-)\n", n + 1, *knobs[n]);
     }
 
@@ -94,33 +96,21 @@ namespace {
     }
     */
 
-    constexpr std::array<char const *, 13> notes       = {"C", "C#",   "D",   "D#",  "E",   "F",   "F#",  "G",  "G#",  "A",  "A#",  "B",   "C2"};
-    constexpr std::array<float,        13> frequencies = {32.7, 32.65, 36.71, 38.89, 41.20, 43.65, 46.25, 49.0, 51.91, 55.0, 58.27, 61.74, 65.41};
+    //constexpr std::array<char const *, 13> notes = {"C", "C#",   "D",   "D#",  "E",   "F",   "F#",  "G",  "G#",  "A",  "A#",  "B",   "C2"};
 
-    void toneStart (std::size_t n) {
-        //printf("[%s]\n", notes[n]);
-        if (*press >= 0 && *note == n) { // Hold.
-            //printf("hold\n");
-            *press += step;
-        } else { // Press.
-            //printf("press\n");
-            *press     = 0;
-            //*release   = -1;
-            *note      = n;
-            //*frequency = frequencies[n];
-        }
+    void toneHold (int step) {
+        *press += step;
     }
 
-    void toneStop () {
-        /*
-        if (upCount < upCheck) return;
-        //if (upCount == upDelay) printf("[up]\n");
-        *press = -1;
-        if (*release < 0)
-            *release = 0;
-        else
-            *release += step;
-        */
+    void toneStart (int step, int n) {
+        if (*note == n)
+            toneHold(step);
+        else {
+            //printf("[%s]\n", notes[n]);
+            //printf("%i\n", step);
+            *press = 0;
+            *note  = n;
+        }
     }
 
     enum struct Key {
@@ -155,27 +145,32 @@ namespace {
     }
 
     void keyboard () {
+        //toneStart(0);
+        int timer = 0;
         while (!stop) {
-            //printf("%i %i\n", *press, *release);
-            printf("%i\n", *press);
+            int time = Rack::offset;
+            int step = time - timer;
+            timer = time;
+            //printf("%i %i %i\n", time, step);
+            //printf("%i\n", *press);
             // Note: Keyboard controls only work on Wnidows currently.
             // On Linux, only ctrl+c works.
             if constexpr (windows) {
                 // "Piano" keys:
-                if      (keyPressed(Key::a)) toneStart(0);
-                else if (keyPressed(Key::w)) toneStart(1);
-                else if (keyPressed(Key::s)) toneStart(2);
-                else if (keyPressed(Key::e)) toneStart(3);
-                else if (keyPressed(Key::d)) toneStart(4);
-                else if (keyPressed(Key::f)) toneStart(5);
-                else if (keyPressed(Key::t)) toneStart(6);
-                else if (keyPressed(Key::g)) toneStart(7);
-                else if (keyPressed(Key::y)) toneStart(8);
-                else if (keyPressed(Key::h)) toneStart(9);
-                else if (keyPressed(Key::u)) toneStart(10);
-                else if (keyPressed(Key::j)) toneStart(11);
-                else if (keyPressed(Key::k)) toneStart(12);
-                else                         toneStop();
+                if      (keyPressed(Key::a)) toneStart(step, 0);
+                else if (keyPressed(Key::w)) toneStart(step, 1);
+                else if (keyPressed(Key::s)) toneStart(step, 2);
+                else if (keyPressed(Key::e)) toneStart(step, 3);
+                else if (keyPressed(Key::d)) toneStart(step, 4);
+                else if (keyPressed(Key::f)) toneStart(step, 5);
+                else if (keyPressed(Key::t)) toneStart(step, 6);
+                else if (keyPressed(Key::g)) toneStart(step, 7);
+                else if (keyPressed(Key::y)) toneStart(step, 8);
+                else if (keyPressed(Key::h)) toneStart(step, 9);
+                else if (keyPressed(Key::u)) toneStart(step, 10);
+                else if (keyPressed(Key::j)) toneStart(step, 11);
+                else if (keyPressed(Key::k)) toneStart(step, 12);
+                else                         toneHold(step);
 
                 // Modulation keys:
                 if      (keyPressed(Key::n1)) switchOn(0);
@@ -224,7 +219,8 @@ namespace {
                 */
             }
 
-            wait(delay);
+            if (delay)
+                wait(delay);
         }
     }
 
@@ -280,9 +276,9 @@ int main () {
 
     // Default values of controls:
     for (auto & sw:   switches) *sw   = false;
-    for (auto & knob: knobs)    *knob = 100;
+    for (auto & knob: knobs)    *knob = knobDef;
     //for (auto & dial: dials) *dial = 0.5;
-    *press   = 0;
+    *press   = -1;
     //*release = 0;
     *note    = 0;
     //*frequency = frequencies[0];

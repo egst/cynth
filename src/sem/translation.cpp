@@ -280,7 +280,8 @@ namespace cynth::c {
     }
 
     std::string bufferPointer () {
-        return c::constness(c::pointer(c::constness(c::floatingType())));
+        //return c::constness(c::pointer(c::constness(c::floatingType())));
+        return c::pointer(c::constness(c::floatingType()));
     }
 
     std::string inputType (std::string const & type) {

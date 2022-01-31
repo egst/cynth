@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <concepts>
 #include <string>
 
@@ -31,6 +32,8 @@ namespace cynth::driver {
     }
 
     struct Rack {
+
+        inline static std::atomic<int> offset = 0;
 
         // This function will be evaluated before every write.
         inline static Evaluator eval = [] (Time) {};

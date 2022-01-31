@@ -247,7 +247,7 @@ namespace cynth::sem {
             powf(<a>, <b>)
             ***/
             inline std::string fpow (std::string const & a, std::string const & b) {
-                return c::inlineCall(c::global(def::nativeExponentiation), a, b);
+                return c::inlineCall(def::nativeExponentiation, a, b);
             }
 
             /** Identity. */

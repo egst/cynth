@@ -281,7 +281,7 @@ namespace cynth::syn::array_nodes {
             auto position = bufferPosition(index, value.expression, type.size);
             auto expr     = c::bufferData(value.expression);
             //auto expr     = value.expression;
-            return runtimeSubscript(CompleteType{sem::type::Float{}}, index, expr);
+            return runtimeSubscript(CompleteType{sem::type::Float{}}, position, expr);
 
         } || target::category{} <<= buffer;
     };

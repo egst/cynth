@@ -404,6 +404,7 @@ namespace cynth::driver::asio {
 
             for (std::size_t j = 0; j < buffer_size; ++j) {
                 Time time = sample_pos_ + j;
+                Rack::offset = time;
                 Rack::eval(time);
 
                 /*

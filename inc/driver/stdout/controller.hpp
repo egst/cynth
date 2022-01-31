@@ -28,6 +28,7 @@ namespace cynth::driver::stdout {
 
         static Status start () {
             for (Time time = 0; !stopFlag; ++time) {
+                Rack::offset = time;
                 Rack::eval(time);
                 printf("%f %f\n", Rack::outChan1(time), Rack::outChan2(time));
                 // Note: The intervals do not correspond to the emulated sample rate.

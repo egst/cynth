@@ -173,7 +173,7 @@ namespace cynth::syn {
 
             for (auto const & [i, entry]: esl::enumerate(returned)) {
                 auto name         = c::tupleElementName(i);
-                auto tupleElement = tupleVar ? c::tupleElement(*tupleVar, i) : "<result>";
+                auto tupleElement = tupleVar ? c::tupleElement(*tupleVar, i) : "<result>"; // TODO: When does "<result>" happen?
                 // TODO: Take care of nullptr tupleVar properly...
 
                 auto result = [&, i = i] (ReturnedValues const & values) {
@@ -230,7 +230,8 @@ namespace cynth::syn {
                             // TODO: This will complicate things with passing functions as arguments in the future.
                             // This is done only because the closure type needs to be defined.
                             // I should find a way to do this without fully defining the function.
-                            ctx.defineFunction(def);
+                            auto defResult = ctx.defineFunction(def);
+                            if (!defResult) return defResult.error();
 
                             return {};
 
@@ -329,6 +330,10 @@ namespace cynth::syn {
                     auto trt = interface::translateType || target::category{} <<= tr->type;
                     if (!trt) return trt.error();
                     blockResult.declarations[i] = c::declaration(*trt, c::tupleElementName(i));
+                    blockResult.resolved[i] = TypedExpression{
+                        .type       = tr->type,
+                        .expression = c::tupleElement(tupleVar, i)
+                    };
                 }
                 auto rets = c::join("", compReturns);
                 auto init = c::indented(c::returnInitFromDeclarations(blockResult.declarations));

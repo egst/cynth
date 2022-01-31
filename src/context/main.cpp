@@ -91,8 +91,9 @@ namespace cynth::context {
     }
 
     esl::result<Global::FunctionId> Main::defineFunction (FunctionDefinition & def) {
-        if (def.name && def.closureType) // Already defined.
+        if (def.name && def.closureType) { // Already defined.
             return Global::FunctionId{*def.name, *def.closureType};
+        }
 
         //if (!def.name)
         def.name = c::functionName(c::id(nextId()));

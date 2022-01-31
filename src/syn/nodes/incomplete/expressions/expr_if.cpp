@@ -56,7 +56,7 @@ namespace cynth::syn {
     }
 
     ExpressionProcessingResult node::ExprIf::processExpression (context::Main & ctx) const {
-        return [&] (CompleteValue cond) -> ExpressionProcessingResult {
+        auto r =  [&] (CompleteValue cond) -> ExpressionProcessingResult {
             // Compile-time condition value:
             // Note: No implicit conversions of the if condition will be implemented in the first version.
             auto boolResult = cond.template get<sem::value::Bool>();
@@ -205,8 +205,9 @@ namespace cynth::syn {
             );
 
         } || target::nested<target::result, target::category>{} <<=
-        esl::single || target::result{} <<=
-        interface::processExpression(ctx) || target::category{} <<= *condition;
+            esl::single || target::result{} <<=
+            interface::processExpression(ctx) || target::category{} <<= *condition;
+        return r;
     }
 
     StatementProcessingResult node::ExprIf::processStatement (context::Main & ctx) const {

@@ -157,13 +157,14 @@ namespace cynth::sem {
 
     TypeTranslationResult type::Bool::translateType () const {
         auto name = c::booleanType();
-        return constant ? c::constness(name) : name;
+        return name;
+        //return constant ? c::constness(name) : name;
     }
 
     TypeSpecifierTranslationResult type::Bool::translateTypeSpecifier () const {
         return tpl::TypeSpecifier{
             .type     = c::booleanType(),
-            .constant = constant
+            //.constant = constant
         };
     }
 
@@ -195,13 +196,14 @@ namespace cynth::sem {
 
     TypeTranslationResult type::Int::translateType () const {
         auto name = c::integralType();
-        return constant ? c::constness(name) : name;
+        return name;
+        //return constant ? c::constness(name) : name;
     }
 
     TypeSpecifierTranslationResult type::Int::translateTypeSpecifier () const {
         return tpl::TypeSpecifier{
             .type     = c::integralType(),
-            .constant = constant
+            //.constant = constant
         };
     }
 
@@ -233,13 +235,14 @@ namespace cynth::sem {
 
     TypeTranslationResult type::Float::translateType () const {
         auto name = c::floatingType();
-        return constant ? c::constness(name) : name;
+        return name;
+        //return constant ? c::constness(name) : name;
     }
 
     TypeSpecifierTranslationResult type::Float::translateTypeSpecifier () const {
         return tpl::TypeSpecifier{
             .type     = c::floatingType(),
-            .constant = constant
+            //.constant = constant
         };
     }
 
@@ -277,7 +280,7 @@ namespace cynth::sem {
         // Not implemented.
         return tpl::TypeSpecifier{
             .type     = "cth_str",
-            .constant = true
+            //.constant = true
         };
     }
 
@@ -508,9 +511,12 @@ namespace cynth::sem {
     TypeTranslationResult type::Array::translateType () const {
         // This assumes that the nested type can only be simple, and so will always be translatable.
         auto nested = *(interface::translateType || target::category{} <<= *type);
+        return c::pointer(nested);
+        /*
         return constant
             ? c::constness(c::pointer(nested))
             : c::pointer(nested);
+        */
     }
 
     TypeSpecifierTranslationResult type::Array::translateTypeSpecifier () const {
