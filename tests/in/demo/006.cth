@@ -17,6 +17,7 @@ Int  in press;
 //Int  in release;
 Int  in knob1;
 Int  in knob2;
+Int  in knob3;
 Bool in switch1;
 Bool in switch2;
 
@@ -75,72 +76,32 @@ Signal avg (Int const size)
         return result / Sample (n);
     };
 
-Float sinc (Int const time, Float const cutoff)
-    if (time == 0)
-        2. * cutoff / srate
-    else
-        sin(2. * pi * cutoff * Float(time) / srate) / (pi * Float(time));
-
-Float blackman (Int const time, Int const size) {
-    Float const alpha = 0.16;
-    return
-        1. - ((1. - alpha) / 2. -
-        .5 * cos(2. * pi * Float(time - (size - 1) / 2) / Float(size - 1)) +
-        alpha / 2. * cos(4. * pi * Float(time - (size - 1) / 2) / Float(size - 1)));
-};
-
 ########
 
-Int   const size   = medium;
-Float const cutoff = 400.;
-type Impulse = Float const [size];
+Float modFreq () Float(if (knob1[] < 1) 1 else knob1[]);
+Float modAmp  () Float(knob3[] + 5) / 10.;
+Sample lfoa (Time time) sine(modAmp(), 1.)(time);
 
-Impulse const impulse = Impulse(for (Int const i in [0 to size]) {
-    Int const t = i - (size / 2);
-    return blackman(i, size) * sinc(t, cutoff);
-    //return sinc(t, cutoff);
-    //return blackman(i, size);
-});
-/*
-        for (int i = 0; i < 64; ++i) {
-            printf("%f\n", var_56[i]);
-        }
-        */
-
-Signal conv (Buff input) Sample fn () {
-    Sample result = 0.;
-    for (Int const i in [0 to medium])
-        result = result + input[-i] * impulse[i];
-        //result = result + input[-i];
-    return result;
-};
-
-CfgTimeSignal lfoWave = triangle;
-//CfgTimeSignal lfoWave = sine;
-
-Float modFreq () Float(if (knob1[] < 3) 3 else knob1[]);
-Sample lfo (Time time) lfoWave(.9, modFreq())(time);
-//Signal filteredLfo = avg(64)(SmallBuff(lfo));
-//Signal filteredLfo = conv(Buff(lfo), impulse);
-Signal filteredLfo = conv(Buff(lfo));
-
+Sample lfo1 (Time time) sine(.1, modFreq())(time);
+Sample lfo2 (Time time) triangle(.3, lfo1(time))(time);
 Sample tone (Time time) saw(.9, freq())(time);
+Sample mod1 (Time time) tone(time) * lfo2(time);
 
-buffer [1] out out1 = buffer [1] (Sample fn (Time const time) {
-    SmallBuff toneBuff    = SmallBuff(tone);
-    Signal    filtered    = if (switch1[]) avg(8)(toneBuff) else Sample fn () toneBuff[0];
-    //Sample    result      = if (switch2[]) env(1.)(filtered()) else filtered();
-    Sample    result      = filtered();
+Sample lfo3 (Time time) sine(.001, modFreq())(time);
+Sample mod2 (Time time) sine(.9, freq() * lfo3(time))(time) * lfoa(time);
+//Sample mod2 (Time time) sine(.9, freq() * lfo3(time))(time);
 
-    return result * if (switch2[]) filteredLfo() else 1.;
-});
 /*
-buffer [1] out out2 = buffer [1] (Sample fn (Time time) {
-    time = time;
-    SmallBuff toneBuff    = SmallBuff(tone);
-    Signal    filtered    = if (switch1[]) avg(4)(toneBuff) else Sample fn () toneBuff[0];
-    Sample    result      = if (switch2[]) env(1.)(filtered()) else filtered();
-
-    return result * (filteredLfo() ** 2.);
-});
+Float keyFreq () Float (note * 2);
+Sample lfok (Time time) sine(.001, keyFreq())(time);
+Sample mod3 (Time time) sine(.9, freq() * lfok(time))(time);
 */
+
+buffer [1] out out1 = buffer [1] (Float fn (Time time) {
+
+    //return avg(16)(buffer[small](mod1))();
+    return avg(16)(buffer[small](mod2))();
+    //return mod2(time);
+    //return avg(16)(buffer[small](mod3))();
+    
+});
