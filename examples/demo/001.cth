@@ -1,0 +1,64 @@
+type Sample = Float;
+type Time   = Int;
+type Signal = Sample (Time);
+
+Int const small  = 16;
+Int const medium = 64;
+Int const large  = 128;
+Int const huge   = 1028;
+
+type Buff = buffer [small];
+
+Int  in note;
+Int  in press;
+Int  in release;
+Bool in switch1;
+Int  in knob1;
+Int  in knob2;
+
+Float realTime (Time time) Float (time) / srate;
+
+//Int const octave = 4;
+Int octave () if (knob2[] > 8) 8 else if (knob2[] < 0) 0 else knob2[];
+Float freq () notes[(note[] % 12)] * (2. ** Float (octave() + 1 + note[] / 12));
+
+// A simple envelope with no sustain time.
+Sample (Sample) envelope (Float const hold) {
+    // TODO: Make these constant.
+    Float const base = 4.;
+    Float fun (Float const x) // Just some cubic function that fits nicely on the (0, 4) interval.
+        +1.380952   * (x) +
+        -0.6785714  * (x ** 2.) +
+        +0.08333333 * (x ** 3.);
+    Float env (Float const x) fun(x * base / hold);
+
+    return Sample fn (Sample sample) {
+        when (press[] < 0) return 0.;
+        Float time = realTime(press[]);
+        return sample * if (time < hold) env(time) else 0.;
+    }
+};
+
+// A configurable saw wave:
+Sample (Time) saw (Float amp, Float freq)
+    Sample fn (Time time)
+        amp * (2. * ((freq * realTime(time)) % 1.) - 1.);
+
+Sample tone (Time time) saw(.9, freq())(time);
+
+Sample () avg (Int const size)
+    Sample () fn (buffer [small] input) Sample fn () {
+        Int const n = if (size > small) small else size;
+        Sample result = 0.;
+        for (Int const i in [0 to -n])
+            result = result + input[i];
+        return result / Sample (n);
+    };
+
+buffer [1] out out1 = buffer [1] (Sample fn ()
+    (Float (knob1) / 100.) *
+        if (switch1[])
+            envelope(1.)(avg(12)(Buff (tone))())
+        else
+            avg(12)(Buff (tone))()
+);
