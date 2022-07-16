@@ -4,8 +4,14 @@ build/obj/win/asio/entry$(obj) dep/win/asio/entry.mk: entry.cpp \
  ../../external/asio/common/asiosys.h ../../external/asio/common/asio.h \
  ../../external/asio/host/asiodrivers.h \
  ../../external/asio/host/ginclude.h \
- ../../external/asio/host/pc/asiolist.h inc/driver/asio/errors.hpp \
- inc/driver/asio/types.hpp inc/driver/asio/write.hpp inc/controls.hpp \
+ ../../external/asio/host/pc/asiolist.h \
+ ../../internal/esl/inc/esl/zip.hpp \
+ ../../internal/esl/inc/esl/iterator.hpp \
+ ../../internal/esl/inc/esl/concepts.hpp \
+ ../../internal/esl/inc/esl/type_manip.hpp \
+ ../../internal/esl/inc/esl/ranges.hpp inc/driver/asio/errors.hpp \
+ inc/driver/asio/types.hpp inc/driver/asio/write.hpp \
+ ../../internal/esl/inc/esl/debug.hpp inc/controls.hpp \
  ../../internal/computer/inc/synth.hpp inc/util.hpp inc/gui.hpp \
  ../../external/ultralight/win/include/AppCore/App.h \
  ../../external/ultralight/win/include/AppCore/Defines.h \
@@ -39,4 +45,7 @@ build/obj/win/asio/entry$(obj) dep/win/asio/entry.mk: entry.cpp \
  ../../external/ultralight/win/include/Ultralight/platform/Config.h \
  ../../external/ultralight/win/include/AppCore/JSHelpers.h \
  ../../external/ultralight/win/include/AppCore/Overlay.h \
- ../../external/ultralight/win/include/AppCore/Window.h inc/keyboard.hpp
+ ../../external/ultralight/win/include/AppCore/Window.h inc/keyboard.hpp \
+ inc/midi.hpp ../../external/libremidi/include/libremidi/libremidi.hpp \
+ ../../external/libremidi/include/libremidi/message.hpp \
+ ../../external/libremidi/include/libremidi/api.hpp

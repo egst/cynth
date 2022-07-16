@@ -23,6 +23,8 @@
 #include "asio.hpp"
 #include "asiodrivers.h"
 
+#include "esl/zip.hpp"
+
 #include "driver/asio/errors.hpp"
 #include "driver/asio/types.hpp"
 #include "driver/asio/write.hpp"
@@ -31,6 +33,7 @@
 // TMP
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include "esl/debug.hpp"
 
 // TODO: Is this really the way to do this?
 // (ASIO is missing these declarations in the headers.)
@@ -159,12 +162,25 @@ namespace cynth::driver::asio {
         }
 
         static Status choseDriver () {
-            auto const driver_names = listDrivers();
-            std::size_t chosen = 0; // TODO
+            auto driver_names = listDrivers();
+            if (driver_names.size() == 0) {
+                std::cout << "No compatible output audio device available.\n";
+                return Status::missingDriver;
+            }
+            std::size_t chosen = 0;
+            if (driver_names.size() > 1) {
+                std::cout << "Choose an output audio device from the following list. Enter the corresponding number.\n";
+                for (auto const & [i, name]: esl::enumerate(driver_names))
+                    std::cout << i << ": " << name << '\n';
+                std::cin >> chosen;
+                if (chosen < 0)
+                    chosen = 0;
+                if (chosen >= driver_names.size())
+                    chosen = driver_names.size() - 1;
+            }
             if (!loadDriver(driver_names[chosen]))
                 return Status::failedSetup;
-            if constexpr (debug)
-                std::cout << "device: " << driver_names[chosen] << '\n';
+            std::cout << "Output audio device chosen: " << driver_names[chosen] << '\n';
             return Status::ok;
         }
 
@@ -498,8 +514,6 @@ namespace cynth::driver::asio {
         inline static std::shared_mutex       operation_mutex_;
         inline static std::condition_variable stop_signal_;
         inline static std::atomic<Stop>       requested_stop_;
-
-        constexpr static bool debug = true;
     };
 
 }

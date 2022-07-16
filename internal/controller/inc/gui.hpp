@@ -27,23 +27,33 @@ namespace cynth {
         void setBool (ultralight::JSObject const & thisObject, ultralight::JSArgs const & args) {
             auto name  = static_cast<ultralight::String>(args[0].ToString()).utf8().data();
             auto value = args[1].ToBoolean();
-            Controls::boolSet(name, value, log);
+            Controls::setBool(name, value, log);
         }
 
         void setInt (ultralight::JSObject const & thisObject, ultralight::JSArgs const & args) {
             auto name  = static_cast<ultralight::String>(args[0].ToString()).utf8().data();
             auto value = static_cast<Integral>(args[1].ToInteger());
-            Controls::intSet(name, value, log);
+            Controls::setInt(name, value, log);
         }
 
         ultralight::JSValue getBool (ultralight::JSObject const & thisObject, ultralight::JSArgs const & args) {
             auto name = static_cast<ultralight::String>(args[0].ToString()).utf8().data();
-            return {Controls::boolGet(name)};
+            return {Controls::getBool(name)};
         }
 
         ultralight::JSValue getInt (ultralight::JSObject const & thisObject, ultralight::JSArgs const & args) {
             auto name = static_cast<ultralight::String>(args[0].ToString()).utf8().data();
-            return {Controls::intGet(name)};
+            return {Controls::getInt(name)};
+        }
+
+        ultralight::JSValue getInBool (ultralight::JSObject const & thisObject, ultralight::JSArgs const & args) {
+            auto name = static_cast<ultralight::String>(args[0].ToString()).utf8().data();
+            return {Controls::getInBool(name)};
+        }
+
+        ultralight::JSValue getInInt (ultralight::JSObject const & thisObject, ultralight::JSArgs const & args) {
+            auto name = static_cast<ultralight::String>(args[0].ToString()).utf8().data();
+            return {Controls::getInInt(name)};
         }
 
         virtual void OnDOMReady (ultralight::View * caller, uint64_t, bool, ultralight::String const &) override {
@@ -66,6 +76,12 @@ namespace cynth {
             );
             global["getInt"] = static_cast<ultralight::JSCallbackWithRetval>(
                 std::bind(&Listener::getInt, this, std::placeholders::_1, std::placeholders::_2)
+            );
+            global["getInBool"] = static_cast<ultralight::JSCallbackWithRetval>(
+                std::bind(&Listener::getInBool, this, std::placeholders::_1, std::placeholders::_2)
+            );
+            global["getInInt"] = static_cast<ultralight::JSCallbackWithRetval>(
+                std::bind(&Listener::getInInt, this, std::placeholders::_1, std::placeholders::_2)
             );
             global["defaultBool"] = ultralight::JSValue{Controls::boolDefault};
             global["defaultInt"]  = ultralight::JSValue{Controls::intDefault};
@@ -141,7 +157,45 @@ namespace cynth {
 
                         <script>
                             try {
+                                const throttle = (callback, limit = 10) => {
+                                    let wait = false
+                                    return (...args) => {
+                                        if (wait) return
+                                        callback(...args)
+                                        wait = true
+                                        setTimeout(() => { wait = false }, limit)
+                                    }
+                                }
+
                                 window.onload = () => {
+
+                                    const logger = document.querySelector('#logger')
+                                    const log = msg => {
+                                        logger.innerHTML += '<br>'
+                                        logger.innerHTML += msg
+                                    }
+
+                                    const knobs = document.querySelectorAll('input[type=range]')
+                                    // ...
+
+                                    for (const knob of knobs)
+                                        knob.value = defaultInt
+                                    // ...
+
+                                    const loop = () => {
+                                        for (const knob of knobs) {
+                                            if (knob.last == knob.value)
+                                                knob.value = getInInt(knob.id)
+                                            else
+                                                setInt(knob.id, knob.value)
+                                            knob.last = knob.value
+                                        }
+                                        // ...
+                                    }
+                                    const delay = 10 // ms
+                                    setInterval(loop, delay)
+
+                                    /*
                                     logger = document.querySelector('#logger')
                                     const log = msg => {
                                         logger.innerHTML += '<br>'
@@ -149,11 +203,11 @@ namespace cynth {
                                     }
                                     document.querySelectorAll('input[type=range]').forEach(knob => {
                                         knob.value = defaultInt
-                                        knob.addEventListener('change', () => {
+                                        knob.addEventListener('input', throttle(() => {
                                             setInt(knob.id, knob.value)
-                                            log(`change: ${knob.id} ${knob.value}`)
-                                        })
+                                        }))
                                     })
+                                    */
                                 }
                             } catch (e) {
                                 document.write(`Error: ${e}`)

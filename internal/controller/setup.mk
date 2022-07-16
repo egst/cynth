@@ -46,3 +46,6 @@ inc_paths += $(root)external/rapidyaml/
 
 # Ultralight:
 inc_paths += $(root)external/ultralight/$(platform)/include/
+
+# Libremidi:
+inc_paths += $(root)external/libremidi/include/

@@ -19,24 +19,41 @@ Int  in knob2;
 Float realTime (Time time) Float (time) / srate;
 
 //Int const octave = 4;
-Int octave () if (knob2[] > 8) 8 else if (knob2[] < 0) 0 else knob2[];
-Float freq () notes[(note[] % 12)] * (2. ** Float (octave() + 1 + note[] / 12));
+//Int octave () if (knob2[] > 8) 8 else if (knob2[] < 0) 0 else knob2[];
+
+Int   notePos () note[] % 12;
+Int   noteOct () (note[] / 12) - 2;
+Float freq    () notes[notePos()] * (2. ** Float (noteOct()));
+
+//Float freq () notes[(note[] % 12)] * (2. ** Float (octave() + 1 + note[] / 12));
 
 // A simple envelope with no sustain time.
-Sample (Sample) envelope (Float const hold) {
-    // TODO: Make these constant.
-    Float const base = 4.;
-    Float fun (Float const x) // Just some cubic function that fits nicely on the (0, 4) interval.
-        +1.380952   * (x) +
-        -0.6785714  * (x ** 2.) +
-        +0.08333333 * (x ** 3.);
-    Float env (Float const x) fun(x * base / hold);
+Sample (Sample) envelope (
+    Float const attack,
+    Float const decay,
+    Float const sustain,
+    Float const frelease
+) {
+    Float up (Float const x)
+        if (x < attack)
+            (1. / attack) * x
+        else if (x < attack + decay)
+            ((sustain - 1.) / decay) * (x - attack) + 1.
+        else
+            sustain;
+    Float down (Float const x)
+        if (x < frelease)
+            -(sustain / frelease) * x + sustain
+        else
+            0.;
 
-    return Sample fn (Sample sample) {
-        when (press[] < 0) return 0.;
-        Float time = realTime(press[]);
-        return sample * if (time < hold) env(time) else 0.;
-    }
+    return Sample fn (Sample sample)
+        if (press[] >= 0)
+            sample * up(realTime(press[]))
+        else if (release[] >= 0)
+            sample * down(realTime(release[]))
+        else
+            0.;
 };
 
 // A configurable saw wave:
@@ -58,7 +75,7 @@ Sample () avg (Int const size)
 buffer [1] out out1 = buffer [1] (Sample fn ()
     (Float (knob1) / 100.) *
         if (switch1[])
-            envelope(1.)(avg(12)(Buff (tone))())
-        else
             avg(12)(Buff (tone))()
+        else
+            envelope(0.2, 0.1, 0.7, 0.2)(avg(12)(Buff (tone))())
 );

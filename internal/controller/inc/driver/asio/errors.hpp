@@ -20,6 +20,7 @@ namespace cynth::driver::asio {
         // These were added:
         failedSetup,
         unsupportedSystem,
+        missingDriver,
         error // A general error - just a fallback case.
     };
 

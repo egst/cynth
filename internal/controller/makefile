@@ -85,6 +85,18 @@ else
 lib_paths += $(ul_path)bin
 endif
 
+# Libremidi:
+definitions += LIBREMIDI_HEADER_ONLY=1
+#definitions += LIBREMIDI_JACK=1
+ifeq ($(platform), win)
+definitions += LIBREMIDI_WINMM=1
+libraries   += winmm
+else
+definitions += LIBREMIDI_ALSA=1
+libraries   += asound
+# TODO: Libraries on Linux are ignored right now.
+endif
+
 dist_dlib       = $(patsubst %,$(dist_dlib_dir)%,$(notdir $1))
 dlib_from       = $(patsubst $(dist_dlib_dir)%,$($1_dpath)%,$2)
 dist_dlibs_from = $(foreach f,$($1_dlibs),$(call dist_dlib,$f))
